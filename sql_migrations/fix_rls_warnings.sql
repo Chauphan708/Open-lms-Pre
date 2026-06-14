@@ -1,5 +1,5 @@
 -- ============================================
--- SQL MIGRATION: KHẮC PHỤC CẢNH BÁO BẢO MẬT RLS TRÊN SUPABASE
+-- SQL MIGRATION: KHẮC PHỤC CẢNH BÁO BẢO MẬT RLS TRÊN SUPABASE (Đã sửa lỗi kiểu dữ liệu text = uuid)
 -- Chạy đoạn mã này trong Supabase SQL Editor
 -- ============================================
 
@@ -17,7 +17,7 @@ CREATE POLICY "Teachers and admins manage classes"
   ON public.classes FOR ALL 
   TO authenticated 
   USING (
-    (SELECT role FROM public.profiles WHERE id = auth.uid()::text) IN ('ADMIN', 'TEACHER')
+    (SELECT role FROM public.profiles WHERE id::text = auth.uid()::text) IN ('ADMIN', 'TEACHER')
   );
 
 
@@ -35,8 +35,8 @@ CREATE POLICY "Teachers manage assignments"
   ON public.assignments FOR ALL 
   TO authenticated 
   USING (
-    auth.uid()::text = teacher_id 
-    OR (SELECT role FROM public.profiles WHERE id = auth.uid()::text) = 'ADMIN'
+    auth.uid()::text = teacher_id::text 
+    OR (SELECT role FROM public.profiles WHERE id::text = auth.uid()::text) = 'ADMIN'
   );
 
 
@@ -50,13 +50,13 @@ DROP POLICY IF EXISTS "Users delete own notifications" ON public.notifications;
 CREATE POLICY "Users read own notifications" 
   ON public.notifications FOR SELECT 
   TO authenticated 
-  USING (auth.uid()::text = user_id);
+  USING (auth.uid()::text = user_id::text);
 
 CREATE POLICY "Users update own notifications" 
   ON public.notifications FOR UPDATE 
   TO authenticated 
-  USING (auth.uid()::text = user_id) 
-  WITH CHECK (auth.uid()::text = user_id);
+  USING (auth.uid()::text = user_id::text) 
+  WITH CHECK (auth.uid()::text = user_id::text);
 
 CREATE POLICY "Allow authenticated insert notifications" 
   ON public.notifications FOR INSERT 
@@ -66,7 +66,7 @@ CREATE POLICY "Allow authenticated insert notifications"
 CREATE POLICY "Users delete own notifications" 
   ON public.notifications FOR DELETE 
   TO authenticated 
-  USING (auth.uid()::text = user_id);
+  USING (auth.uid()::text = user_id::text);
 
 
 -- 4. BẢNG AI_SUBMISSIONS (Bài nộp AI OCR/LMS)
@@ -79,20 +79,20 @@ CREATE POLICY "Read submissions"
   ON public.ai_submissions FOR SELECT 
   TO authenticated 
   USING (
-    auth.uid()::text = student_id 
-    OR (SELECT role FROM public.profiles WHERE id = auth.uid()::text) IN ('ADMIN', 'TEACHER')
+    auth.uid()::text = student_id::text 
+    OR (SELECT role FROM public.profiles WHERE id::text = auth.uid()::text) IN ('ADMIN', 'TEACHER')
   );
 
 CREATE POLICY "Insert own submissions" 
   ON public.ai_submissions FOR INSERT 
   TO authenticated 
-  WITH CHECK (auth.uid()::text = student_id);
+  WITH CHECK (auth.uid()::text = student_id::text);
 
 CREATE POLICY "Teachers manage submissions" 
   ON public.ai_submissions FOR ALL 
   TO authenticated 
   USING (
-    (SELECT role FROM public.profiles WHERE id = auth.uid()::text) IN ('ADMIN', 'TEACHER')
+    (SELECT role FROM public.profiles WHERE id::text = auth.uid()::text) IN ('ADMIN', 'TEACHER')
   );
 
 
@@ -105,15 +105,15 @@ CREATE POLICY "Read reviews"
   ON public.ai_grading_reviews FOR SELECT 
   TO authenticated 
   USING (
-    auth.uid()::text = student_id 
-    OR (SELECT role FROM public.profiles WHERE id = auth.uid()::text) IN ('ADMIN', 'TEACHER')
+    auth.uid()::text = student_id::text 
+    OR (SELECT role FROM public.profiles WHERE id::text = auth.uid()::text) IN ('ADMIN', 'TEACHER')
   );
 
 CREATE POLICY "Teachers manage reviews" 
   ON public.ai_grading_reviews FOR ALL 
   TO authenticated 
   USING (
-    (SELECT role FROM public.profiles WHERE id = auth.uid()::text) IN ('ADMIN', 'TEACHER')
+    (SELECT role FROM public.profiles WHERE id::text = auth.uid()::text) IN ('ADMIN', 'TEACHER')
   );
 
 
@@ -130,7 +130,7 @@ CREATE POLICY "Read portfolio shares"
 CREATE POLICY "Manage own portfolio shares" 
   ON public.portfolio_shares FOR ALL 
   TO authenticated 
-  USING (auth.uid()::text = student_id);
+  USING (auth.uid()::text = student_id::text);
 
 
 -- 7. BẢNG DAILY_EVALUATIONS (Nhận xét hàng ngày)
@@ -142,13 +142,13 @@ CREATE POLICY "Read evaluations"
   ON public.daily_evaluations FOR SELECT 
   TO authenticated 
   USING (
-    auth.uid()::text = student_id 
-    OR (SELECT role FROM public.profiles WHERE id = auth.uid()::text) IN ('ADMIN', 'TEACHER')
+    auth.uid()::text = student_id::text 
+    OR (SELECT role FROM public.profiles WHERE id::text = auth.uid()::text) IN ('ADMIN', 'TEACHER')
   );
 
 CREATE POLICY "Teachers manage evaluations" 
   ON public.daily_evaluations FOR ALL 
   TO authenticated 
   USING (
-    (SELECT role FROM public.profiles WHERE id = auth.uid()::text) IN ('ADMIN', 'TEACHER')
+    (SELECT role FROM public.profiles WHERE id::text = auth.uid()::text) IN ('ADMIN', 'TEACHER')
   );
