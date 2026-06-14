@@ -1,9 +1,10 @@
 import { supabase } from '../../services/supabaseClient';
 import React, { useEffect, useState, useRef, useMemo } from 'react';
+import mammoth from 'mammoth';
 import { useNavigate } from 'react-router-dom';
 import { useStore } from '../../store';
 import { ArenaQuestion } from '../../types';
-import { generateQuestionsByTopic } from '../../services/geminiService';
+import { generateQuestionsByTopic, parseArenaQuestionsFromText } from '../../services/geminiService';
 import { Brain, Plus, Pencil, Trash2, Save, X, BookOpen, Filter, ArrowLeft, Upload, Download, FileText, CheckCircle, AlertTriangle, Sparkles, Loader2, Trophy, Search } from 'lucide-react';
 import MathText from '../../components/MathText';
 
@@ -66,6 +67,12 @@ export const ArenaAdmin: React.FC = () => {
     const [aiPreviewList, setAiPreviewList] = useState<Omit<ArenaQuestion, 'id'>[]>([]);
     const [showAiPreviewModal, setShowAiPreviewModal] = useState(false);
     const [editingPreviewIndex, setEditingPreviewIndex] = useState<number | null>(null);
+
+    // AI Scan state variables
+    const [showAiScan, setShowAiScan] = useState(false);
+    const [aiScanText, setAiScanText] = useState('');
+    const [aiScanFileLoading, setAiScanFileLoading] = useState(false);
+    const [aiScanning, setAiScanning] = useState(false);
 
     // Edit form
     const [formContent, setFormContent] = useState('');
@@ -269,6 +276,55 @@ export const ArenaAdmin: React.FC = () => {
         setAiPreviewList([]);
         setShowAiPreviewModal(false);
         await fetchArenaQuestions();
+    };
+
+    const handleWordFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        setAiScanFileLoading(true);
+        try {
+            const reader = new FileReader();
+            reader.onload = async (event) => {
+                try {
+                    const arrayBuffer = event.target?.result as ArrayBuffer;
+                    const result = await mammoth.extractRawText({ arrayBuffer });
+                    setAiScanText(prev => (prev ? prev + '\n' : '') + result.value);
+                } catch (err) {
+                    console.error("Lỗi đọc file Word:", err);
+                    alert("Không thể giải nén file Word. Vui lòng kiểm tra lại định dạng file.");
+                } finally {
+                    setAiScanFileLoading(false);
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        } catch (error) {
+            console.error("Lỗi FileReader:", error);
+            setAiScanFileLoading(false);
+        }
+    };
+
+    const handleStartAiScan = async () => {
+        if (!aiScanText.trim()) {
+            alert("Vui lòng nhập văn bản đề thi hoặc chọn file Word trước.");
+            return;
+        }
+        setAiScanning(true);
+        try {
+            const parsed = await parseArenaQuestionsFromText(aiScanText);
+            if (!parsed || parsed.length === 0) {
+                alert("AI không tìm thấy câu hỏi hợp lệ trong nội dung của bạn. Vui lòng kiểm tra cấu trúc đề.");
+                return;
+            }
+            setAiPreviewList(parsed);
+            setShowAiScan(false);
+            setShowAiPreviewModal(true);
+            setAiScanText('');
+        } catch (error: any) {
+            console.error("Lỗi AI Đọc Đề:", error);
+            alert("Đã xảy ra lỗi trong quá trình quét đề bằng AI: " + (error?.message || "Không xác định"));
+        } finally {
+            setAiScanning(false);
+        }
     };
 
     const handleRemovePreviewItem = (index: number) => {
@@ -643,6 +699,9 @@ export const ArenaAdmin: React.FC = () => {
                 <div className="flex gap-2 flex-wrap">
                     <button onClick={() => setShowAiGen(true)} className="px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-xl font-bold text-sm hover:shadow-lg flex items-center gap-2 transition-all hover:scale-105 active:scale-95">
                         <Sparkles className="h-4 w-4" /> AI Tạo
+                    </button>
+                    <button onClick={() => { setShowAiScan(true); setAiScanText(''); }} className="px-4 py-2 bg-gradient-to-r from-purple-500 to-indigo-600 text-white rounded-xl font-bold text-sm hover:shadow-lg flex items-center gap-2 transition-all hover:scale-105 active:scale-95">
+                        <FileText className="h-4 w-4" /> AI Đọc Đề
                     </button>
                     <button onClick={() => { setShowBankImport(true); setImportResult(null); }} className="px-4 py-2 bg-indigo-50 text-indigo-700 rounded-xl font-bold text-sm hover:bg-indigo-100 flex items-center gap-2 transition-colors">
                         <BookOpen className="h-4 w-4" /> Lấy từ Ngân hàng đề
@@ -1094,6 +1153,69 @@ export const ArenaAdmin: React.FC = () => {
                                     )}
                                 </>
                             )}
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* AI Scan Modal */}
+            {showAiScan && (
+                <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4" onClick={() => { if (!aiScanning) setShowAiScan(false); }}>
+                    <div className="bg-white rounded-3xl shadow-xl w-full max-w-2xl max-h-[90vh] flex flex-col" onClick={e => e.stopPropagation()}>
+                        <div className="p-5 border-b flex items-center justify-between bg-purple-50/50 rounded-t-3xl">
+                            <h3 className="font-black text-lg text-purple-950 flex items-center gap-2">
+                                <FileText className="h-5 w-5 text-purple-600" /> Soạn Đấu Trí Bằng AI (Văn bản / File Word)
+                            </h3>
+                            <button disabled={aiScanning} onClick={() => setShowAiScan(false)} className="text-gray-400 hover:text-gray-600 disabled:opacity-50"><X className="h-5 w-5" /></button>
+                        </div>
+                        <div className="p-5 flex-1 overflow-y-auto space-y-4">
+                            <div className="bg-purple-50 border border-purple-100 rounded-xl p-4 text-xs text-purple-800 space-y-1.5">
+                                <p className="font-bold">💡 Hướng dẫn nhanh:</p>
+                                <p>1. Sao chép và dán toàn bộ nội dung đề thi, câu hỏi trắc nghiệm hoặc bài tập cũ vào ô dưới.</p>
+                                <p>2. Hoặc bạn có thể tải lên trực tiếp file Word (.docx) chứa đề thi bằng nút bên dưới.</p>
+                                <p>3. AI sẽ tự động phân tích câu hỏi, các đáp án lựa chọn, đáp án đúng, tự thiết lập môn học và phân chia độ khó (Mức 1 - 4).</p>
+                                <p className="font-bold text-indigo-700">📌 Chú ý: Dấu chia đối với cấp tiểu học trong công thức Toán học sẽ được AI tự động định dạng thành dấu hai chấm ":" thay vì "÷".</p>
+                            </div>
+
+                            <div className="flex gap-2 items-center">
+                                <label className="cursor-pointer px-4 py-2 bg-purple-50 hover:bg-purple-100 border border-purple-200 text-purple-700 rounded-xl font-bold text-xs flex items-center gap-1.5 transition-colors">
+                                    <input type="file" accept=".docx" onChange={handleWordFileSelect} className="hidden" />
+                                    {aiScanFileLoading ? '⏳ Đang đọc file...' : <><FileText className="h-4 w-4" /> Tải lên File Word (.docx)</>}
+                                </label>
+                                <span className="text-[10px] text-gray-400">Hỗ trợ file .docx có sẵn câu hỏi</span>
+                            </div>
+
+                            <div className="flex flex-col gap-1.5">
+                                <label className="text-xs font-bold text-gray-500">Nội dung đề thi/câu hỏi:</label>
+                                <textarea
+                                    disabled={aiScanning}
+                                    value={aiScanText}
+                                    onChange={e => setAiScanText(e.target.value)}
+                                    placeholder="Ví dụ:&#10;Câu 1: Phân số 1/2 bằng bao nhiêu?&#10;A. 0.5&#10;B. 0.2&#10;C. 0.3&#10;D. 0.4&#10;Đáp án đúng: A&#10;&#10;Hoặc dán bất kỳ văn bản thô nào..."
+                                    className="w-full h-64 border rounded-2xl p-4 text-sm font-medium outline-none focus:ring-2 focus:ring-purple-500 bg-gray-50/50 resize-none"
+                                />
+                            </div>
+                        </div>
+
+                        <div className="p-4 border-t bg-gray-50/50 flex justify-end gap-2 rounded-b-3xl">
+                            <button
+                                disabled={aiScanning}
+                                onClick={() => setShowAiScan(false)}
+                                className="px-5 py-2 bg-white border text-gray-700 rounded-xl font-bold hover:bg-gray-50 text-sm active:scale-95 transition-all"
+                            >
+                                Hủy bộ
+                            </button>
+                            <button
+                                disabled={aiScanning || !aiScanText.trim()}
+                                onClick={handleStartAiScan}
+                                className="px-6 py-2 bg-gradient-to-r from-purple-500 to-indigo-600 text-white rounded-xl font-bold hover:shadow-md disabled:opacity-50 flex items-center gap-2 text-sm active:scale-95 transition-all"
+                            >
+                                {aiScanning ? (
+                                    <>⏳ Đang phân tích đề...</>
+                                ) : (
+                                    <><Sparkles className="h-4.5 w-4.5" /> Bắt đầu AI phân tích đề</>
+                                )}
+                            </button>
                         </div>
                     </div>
                 </div>

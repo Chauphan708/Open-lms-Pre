@@ -1,5 +1,5 @@
 import { GoogleGenAI, Type, Schema } from "@google/genai";
-import { Question, Attempt } from '../types';
+import { Question, Attempt, ArenaQuestion } from '../types';
 import { supabase } from './supabaseClient';
 
 // Cache helpers for saving Gemini API quotas and increasing performance
@@ -226,6 +226,128 @@ export const parseQuestionsFromText = async (rawText: string): Promise<Question[
   // All models exhausted
   const finalMsg = lastError?.message || lastError?.toString() || 'All models failed';
   console.error("[Parse] All attempts failed:", finalMsg);
+  throw new Error(finalMsg);
+};
+
+const ARENA_QUESTION_SCHEMA: Schema = {
+  type: Type.ARRAY,
+  description: "List of parsed Arena questions",
+  items: {
+    type: Type.OBJECT,
+    properties: {
+      content: { type: Type.STRING, description: "Question content stem, formatted in Vietnamese. MATH FORMATTING: Math expressions must use LaTeX enclosed in single dollar signs ($) for inline math. CRITICAL RULE FOR ELEMENTARY DIVISION: division symbol MUST be represented as ':' (never '÷', never '\\div'). E.g. $12 : 3 = 4$ or $x : 5 = 10$." },
+      answers: { 
+        type: Type.ARRAY, 
+        items: { type: Type.STRING },
+        description: "Exactly 4 options for MCQ/MCQ_MULTIPLE, or empty array for SHORT_ANSWER."
+      },
+      correct_index: { type: Type.INTEGER, description: "Index of correct answer (0-3) for MCQ, or 0 if not applicable" },
+      correct_indices: { 
+        type: Type.ARRAY, 
+        items: { type: Type.INTEGER },
+        description: "Array of indices (0-3) for multiple choice MCQ_MULTIPLE"
+      },
+      correct_answer_string: { type: Type.STRING, description: "The exact correct text answer for SHORT_ANSWER" },
+      difficulty: { type: Type.INTEGER, description: "Difficulty level: 1 (Mức 1), 2 (Mức 2), 3 (Mức 3), 4 (Mức nâng cao)" },
+      subject: { type: Type.STRING, description: "One of: math, science, technology, vietnamese, english, history_geography" },
+      topic: { type: Type.STRING, description: "Clean topic name, e.g. 'Phân số', 'Địa lí tự nhiên'" },
+      time_limit_seconds: { type: Type.INTEGER, description: "Recommended time in seconds, e.g. 30, 45, 60" },
+      xp_reward: { type: Type.INTEGER, description: "XP reward. Level 1: 10, Level 2: 15, Level 3: 20, Level 4: 30" },
+      type: { type: Type.STRING, description: "Type: MCQ, MCQ_MULTIPLE, SHORT_ANSWER" }
+    },
+    required: ["content", "answers", "difficulty", "subject", "topic", "type"]
+  }
+};
+
+export const parseArenaQuestionsFromText = async (rawText: string): Promise<Omit<ArenaQuestion, 'id'>[]> => {
+  const ai = getAiClient();
+
+  const prompt = `
+    You are an AI exam parser for an LMS system. 
+    Analyze the following raw text which contains exam questions.
+    Extract all questions into a structured JSON array suitable for the Arena Question Bank.
+    
+    Rules:
+    1. Identify the question stem.
+    2. Identify options (A, B, C, D) for MCQ/MCQ_MULTIPLE. If the question is SHORT_ANSWER (no A/B/C/D choices), extract the exact short answer text (e.g. "3300" or "Hà Nội") and put it into 'correct_answer_string'. Set 'answers' to an empty array.
+    3. MATH FORMATTING: If you encounter math formulas or expressions, use LaTeX format enclosed in single dollar signs ($) for inline math. Example: $x^2 + 5$.
+    4. **CRITICAL DIVISION RULE FOR ELEMENTARY SCHOOL**: Always represent division in LaTeX using the colon ":" symbol (e.g., $12 : 3$ or $x : 5$). Do NOT use "÷", do NOT use "\\div", do NOT use "/".
+    5. Determine the correct index (0-3) for MCQ, or correct_indices (e.g. [0, 2]) for MCQ_MULTIPLE.
+    6. **DIFFICULTY (1-4)**: Classify each question's difficulty level: 1 (Mức 1), 2 (Mức 2), 3 (Mức 3), 4 (Mức nâng cao).
+    7. **SUBJECT**: Must be mapped to one of these lowercased codes: 'math', 'science', 'technology', 'vietnamese', 'english', 'history_geography'.
+    8. **TOPIC**: Identify the specific knowledge topic/chapter for each question.
+    9. **type**: Detect the question format: MCQ, MCQ_MULTIPLE, or SHORT_ANSWER.
+    
+    Raw Text:
+    """
+    ${rawText}
+    """
+  `;
+
+  const parseResponse = (text: string): Omit<ArenaQuestion, 'id'>[] => {
+    const cleanedText = cleanJsonString(text || "[]");
+    const parsedData = JSON.parse(cleanedText);
+    return parsedData.map((item: any) => ({
+      type: (item.type || 'MCQ') as any,
+      content: item.content,
+      answers: item.answers || [],
+      correct_index: item.correct_index,
+      correct_indices: item.correct_indices,
+      correct_answer_string: item.correct_answer_string,
+      difficulty: Number(item.difficulty) || 1,
+      subject: item.subject || 'math',
+      topic: item.topic || 'general',
+      time_limit_seconds: Number(item.time_limit_seconds) || 30,
+      xp_reward: Number(item.xp_reward) || 10
+    }));
+  };
+
+  let lastError: any = null;
+
+  for (const modelId of AI_MODELS) {
+    try {
+      console.log(`[ArenaParse] Trying ${modelId} with schema...`);
+      const response = await ai.models.generateContent({
+        model: modelId,
+        contents: prompt,
+        config: {
+          responseMimeType: "application/json",
+          responseSchema: ARENA_QUESTION_SCHEMA
+        }
+      });
+      const result = parseResponse(response.text || "[]");
+      console.log(`[ArenaParse] Success with ${modelId} + schema! Got ${result.length} questions.`);
+      return result;
+    } catch (schemaError: any) {
+      const errMsg = schemaError?.message || schemaError?.toString() || '';
+      console.warn(`[ArenaParse] ${modelId} + schema failed:`, errMsg);
+
+      if (errMsg.includes('429') || errMsg.includes('quota') || errMsg.includes('RESOURCE_EXHAUSTED')) {
+        lastError = schemaError;
+        continue;
+      }
+
+      try {
+        console.log(`[ArenaParse] Retrying ${modelId} without schema...`);
+        const response = await ai.models.generateContent({
+          model: modelId,
+          contents: prompt + "\n\nIMPORTANT: Return ONLY a valid JSON array. No markdown, no explanation, just the JSON array.",
+          config: {
+            responseMimeType: "application/json"
+          }
+        });
+        const result = parseResponse(response.text || "[]");
+        console.log(`[ArenaParse] Success with ${modelId} without schema! Got ${result.length} questions.`);
+        return result;
+      } catch (noSchemaError: any) {
+        lastError = noSchemaError;
+        continue;
+      }
+    }
+  }
+
+  const finalMsg = lastError?.message || lastError?.toString() || 'All models failed';
+  console.error("[ArenaParse] All attempts failed:", finalMsg);
   throw new Error(finalMsg);
 };
 
