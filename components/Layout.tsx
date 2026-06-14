@@ -173,7 +173,7 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
         { label: 'Phòng Thảo luận', path: '/discussion/join', icon: MessageSquare, roles: ['STUDENT'] },
         { label: 'QL Đấu trí', path: '/arena/admin', icon: Brain, roles: ['ADMIN', 'TEACHER'] },
         { label: 'Tổ chức Giải đấu', path: '/arena/tournament/host', icon: Trophy, roles: ['ADMIN', 'TEACHER'] },
-        { label: 'Đấu trí', path: '/arena', icon: Brain, roles: ['STUDENT'] },
+        { label: 'Đấu trí', path: '/arena', icon: Brain, roles: ['STUDENT', 'TEACHER', 'ADMIN'] },
       ]
     },
     {
