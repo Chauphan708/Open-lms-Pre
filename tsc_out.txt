@@ -1,0 +1,3 @@
+pages/teacher/DailyEvaluation.tsx(11,29): error TS2395: Individual declarations in merged declaration 'DailyEvaluation' must be all exported or all local.
+pages/teacher/DailyEvaluation.tsx(11,29): error TS2865: Import 'DailyEvaluation' conflicts with local value, so must be declared with a type-only import when 'isolatedModules' is enabled.
+pages/teacher/DailyEvaluation.tsx(386,14): error TS2395: Individual declarations in merged declaration 'DailyEvaluation' must be all exported or all local.

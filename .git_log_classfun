@@ -1,0 +1,5 @@
+﻿74977c5 feat: Add Record, Attendance, Groups pages with routes and sidebar
+8173746 refactor: Remove Arena code from class-fun branch (moved to feature/arena)
+a0fdd4b feat: Add ClassFun (Lop Hoc Vui Ve) integration foundation - SQL schema, Zustand store, Dashboard page, routing, sidebar navigation
+f564072 Feat: Add Academic Year filter to Dashboard
+ba6658e Fix Build Error: Remove duplicate variable declaration

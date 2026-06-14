@@ -1,0 +1,22 @@
+﻿commit 74977c531dee5f32ec79d59bfa21eec3f593d762
+Author: Chauphan708 <ptchau708@gmail.com>
+Date:   Fri Feb 20 15:53:15 2026 +0700
+
+    feat: Add Record, Attendance, Groups pages with routes and sidebar
+
+ App.tsx                              |  69 +++++++
+ arena_schema.sql                     | 152 ++++++++++++++
+ components/Layout.tsx                | 212 ++++++++++----------
+ pages/arena/ArenaAdmin.tsx           | 308 +++++++++++++++++++++++++++++
+ pages/arena/ArenaHome.tsx            | 217 ++++++++++++++++++++
+ pages/arena/Leaderboard.tsx          | 163 +++++++++++++++
+ pages/arena/MatchResult.tsx          |  99 ++++++++++
+ pages/arena/PvPBattle.tsx            | 370 +++++++++++++++++++++++++++++++++++
+ pages/arena/PvPLobby.tsx             | 184 +++++++++++++++++
+ pages/arena/TowerMode.tsx            | 293 +++++++++++++++++++++++++++
+ pages/teacher/ClassFunAttendance.tsx | 233 ++++++++++++++++++++++
+ pages/teacher/ClassFunGroups.tsx     | 252 ++++++++++++++++++++++++
+ pages/teacher/ClassFunRecord.tsx     | 347 ++++++++++++++++++++++++++++++++
+ store.ts                             | 176 +++++++++++++++++
+ types.ts                             |  77 ++++++++
+ 15 files changed, 3051 insertions(+), 101 deletions(-)

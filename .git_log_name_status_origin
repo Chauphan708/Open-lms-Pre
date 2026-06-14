@@ -1,0 +1,29 @@
+﻿commit 04de787aef13c7500bb4a6d60797e947ce96ec01
+Author: Chauphan708 <ptchau708@gmail.com>
+Date:   Fri Feb 20 15:35:19 2026 +0700
+
+    feat: Add ClassFun pages - Record Behavior, Attendance, Group Management with routes and sidebar
+
+M	App.tsx
+A	arena_schema.sql
+M	components/Layout.tsx
+A	pages/arena/ArenaAdmin.tsx
+A	pages/arena/ArenaHome.tsx
+A	pages/arena/Leaderboard.tsx
+A	pages/arena/MatchResult.tsx
+A	pages/arena/PvPBattle.tsx
+A	pages/arena/PvPLobby.tsx
+A	pages/arena/TowerMode.tsx
+A	pages/teacher/ClassFunAttendance.tsx
+A	pages/teacher/ClassFunGroups.tsx
+A	pages/teacher/ClassFunRecord.tsx
+M	store.ts
+M	types.ts
+
+commit f5640721e3958d5dffbad1b1e0283b4384d2f7ef
+Author: Chauphan708 <ptchau708@gmail.com>
+Date:   Thu Feb 19 21:15:18 2026 +0700
+
+    Feat: Add Academic Year filter to Dashboard
+
+M	pages/Dashboard.tsx

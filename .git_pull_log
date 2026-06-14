@@ -1,0 +1,21 @@
+﻿git : fatal: couldn't 
+find remote ref feature
+/class-fun-integration
+At line:1 char:1
++ git pull origin featu
+re/class-fun-integratio
+n 2>&1 | Out-File 
+-Encodi ...
++ ~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~
+    + CategoryInfo     
+         : NotSpecifi  
+  ed: (fatal: couldn   
+ 't...fun-integrati    
+on:String) [], Rem    
+oteException
+    + FullyQualifiedEr 
+   rorId : NativeComm  
+  andError
+ 

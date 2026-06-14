@@ -1,0 +1,29 @@
+﻿commit 74977c531dee5f32ec79d59bfa21eec3f593d762
+Author: Chauphan708 <ptchau708@gmail.com>
+Date:   Fri Feb 20 15:53:15 2026 +0700
+
+    feat: Add Record, Attendance, Groups pages with routes and sidebar
+
+commit 817374624a04bf1fb0f66f56c95db828aa9ee5da
+Author: Chauphan708 <ptchau708@gmail.com>
+Date:   Fri Feb 20 15:43:07 2026 +0700
+
+    refactor: Remove Arena code from class-fun branch (moved to feature/arena)
+
+commit a0fdd4b62ede5e0ad0e31d5ea549310c590f11cb
+Author: Chauphan708 <ptchau708@gmail.com>
+Date:   Fri Feb 20 15:18:05 2026 +0700
+
+    feat: Add ClassFun (Lop Hoc Vui Ve) integration foundation - SQL schema, Zustand store, Dashboard page, routing, sidebar navigation
+
+commit f5640721e3958d5dffbad1b1e0283b4384d2f7ef
+Author: Chauphan708 <ptchau708@gmail.com>
+Date:   Thu Feb 19 21:15:18 2026 +0700
+
+    Feat: Add Academic Year filter to Dashboard
+
+commit ba6658e0fcab200fd89caeada31e6635b60fe7d8
+Author: Chauphan708 <ptchau708@gmail.com>
+Date:   Thu Feb 19 20:56:51 2026 +0700
+
+    Fix Build Error: Remove duplicate variable declaration

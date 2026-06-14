@@ -1,0 +1,5 @@
+{
+  "name": "OpenLMS - Azota Clone",
+  "description": "A lightweight, open-source LMS for creating and taking exams with AI-powered question parsing.",
+  "requestFramePermissions": []
+}

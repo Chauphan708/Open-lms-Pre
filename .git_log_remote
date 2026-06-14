@@ -1,0 +1,17 @@
+﻿commit 04de787aef13c7500bb4a6d60797e947ce96ec01
+Author: Chauphan708 <ptchau708@gmail.com>
+Date:   Fri Feb 20 15:35:19 2026 +0700
+
+    feat: Add ClassFun pages - Record Behavior, Attendance, Group Management with routes and sidebar
+
+commit f5640721e3958d5dffbad1b1e0283b4384d2f7ef
+Author: Chauphan708 <ptchau708@gmail.com>
+Date:   Thu Feb 19 21:15:18 2026 +0700
+
+    Feat: Add Academic Year filter to Dashboard
+
+commit ba6658e0fcab200fd89caeada31e6635b60fe7d8
+Author: Chauphan708 <ptchau708@gmail.com>
+Date:   Thu Feb 19 20:56:51 2026 +0700
+
+    Fix Build Error: Remove duplicate variable declaration

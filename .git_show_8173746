@@ -1,0 +1,19 @@
+﻿commit 817374624a04bf1fb0f66f56c95db828aa9ee5da
+Author: Chauphan708 <ptchau708@gmail.com>
+Date:   Fri Feb 20 15:43:07 2026 +0700
+
+    refactor: Remove Arena code from class-fun branch (moved to feature/arena)
+
+ App.tsx                     |  51 ------
+ arena_schema.sql            | 152 ------------------
+ components/Layout.tsx       | 209 ++++++++++++-------------
+ pages/arena/ArenaAdmin.tsx  | 308 ------------------------------------
+ pages/arena/ArenaHome.tsx   | 217 --------------------------
+ pages/arena/Leaderboard.tsx | 163 -------------------
+ pages/arena/MatchResult.tsx |  99 ------------
+ pages/arena/PvPBattle.tsx   | 370 --------------------------------------------
+ pages/arena/PvPLobby.tsx    | 184 ----------------------
+ pages/arena/TowerMode.tsx   | 293 -----------------------------------
+ store.ts                    | 176 ---------------------
+ types.ts                    |  77 ---------
+ 12 files changed, 101 insertions(+), 2198 deletions(-)

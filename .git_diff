@@ -1,0 +1,653 @@
+﻿diff --git a/classfun_schema.sql b/classfun_schema.sql
+new file mode 100644
+index 0000000..abe8bca
+--- /dev/null
++++ b/classfun_schema.sql
+@@ -0,0 +1,83 @@
++-- =============================================
++-- CLASS FUN (Lớp Học Vui Vẻ) - Supabase Schema
++-- Chạy script này trên Supabase SQL Editor
++-- =============================================
++
++-- 1. Bảng Nhóm/Tổ trong lớp
++create table if not exists public.class_groups (
++    id text primary key default concat('grp_', replace(gen_random_uuid()::text, '-', '')),
++    class_id text not null, -- Liên kết với bảng classes có sẵn
++    name text not null,
++    color text default 'bg-sky-500',
++    sort_order int default 0,
++    created_at timestamptz default now()
++);
++
++-- 2. Bảng Hành vi (Tích cực / Tiêu cực)
++create table if not exists public.behaviors (
++    id text primary key default concat('beh_', replace(gen_random_uuid()::text, '-', '')),
++    teacher_id text references public.profiles(id) on delete cascade,
++    description text not null,
++    type text not null check (type in ('POSITIVE', 'NEGATIVE')),
++    points int not null, -- Dương cho tích cực, Âm cho tiêu cực
++    created_at timestamptz default now()
++);
++
++-- 3. Bảng Ghi nhận điểm hành vi (Thay thế "history" array cũ)
++create table if not exists public.behavior_logs (
++    id text primary key default concat('log_', replace(gen_random_uuid()::text, '-', '')),
++    student_id text not null references public.profiles(id) on delete cascade,
++    class_id text not null,
++    behavior_id text references public.behaviors(id) on delete set null,
++    points int not null,
++    reason text,
++    recorded_by text references public.profiles(id) on delete set null,
++    created_at timestamptz default now()
++);
++
++-- 4. Bảng Điểm danh
++create table if not exists public.attendance (
++    id text primary key default concat('att_', replace(gen_random_uuid()::text, '-', '')),
++    student_id text not null references public.profiles(id) on delete cascade,
++    class_id text not null,
++    date date not null,
++    status text not null check (status in ('present', 'excused', 'unexcused')),
++    recorded_by text references public.profiles(id) on delete set null,
++    created_at timestamptz default now(),
++    unique(student_id, class_id, date) -- Mỗi học sinh chỉ có 1 bản ghi/ngày/lớp
++);
++
++-- 5. Bảng Phân công học sinh vào nhóm/tổ
++create table if not exists public.class_group_members (
++    group_id text not null references public.class_groups(id) on delete cascade,
++    student_id text not null references public.profiles(id) on delete cascade,
++    created_at timestamptz default now(),
++    primary key (group_id, student_id)
++);
++
++-- Indexes cho hiệu suất truy vấn
++create index if not exists idx_behavior_logs_student on public.behavior_logs(student_id);
++create index if not exists idx_behavior_logs_class on public.behavior_logs(class_id);
++create index if not exists idx_behavior_logs_created on public.behavior_logs(created_at);
++create index if not exists idx_attendance_date on public.attendance(date);
++create index if not exists idx_attendance_class on public.attendance(class_id);
++
++-- RLS Policies (Prototype: Allow All - Cần siết lại cho production)
++alter table public.class_groups enable row level security;
++create policy "Public access" on public.class_groups for all using (true) with check (true);
++
++alter table public.behaviors enable row level security;
++create policy "Public access" on public.behaviors for all using (true) with check (true);
++
++alter table public.behavior_logs enable row level security;
++create policy "Public access" on public.behavior_logs for all using (true) with check (true);
++
++alter table public.attendance enable row level security;
++create policy "Public access" on public.attendance for all using (true) with check (true);
++
++alter table public.class_group_members enable row level security;
++create policy "Public access" on public.class_group_members for all using (true) with check (true);
++
++-- Enable Realtime cho các bảng mới
++alter publication supabase_realtime add table public.behavior_logs;
++alter publication supabase_realtime add table public.attendance;
+diff --git a/pages/teacher/ClassFunDashboard.tsx b/pages/teacher/ClassFunDashboard.tsx
+new file mode 100644
+index 0000000..9182fd6
+--- /dev/null
++++ b/pages/teacher/ClassFunDashboard.tsx
+@@ -0,0 +1,318 @@
++import React, { useEffect, useMemo, useState } from 'react';
++import { useStore } from '../../store';
++import { useClassFunStore } from '../../services/classFunStore';
++import { Trophy, Star, TrendingUp, TrendingDown, Users, Award, Clock, ChevronLeft, ChevronRight } from 'lucide-react';
++
++// --- Helper: Format date ---
++const toDateKey = (date: Date): string => {
++    const y = date.getFullYear();
++    const m = (date.getMonth() + 1).toString().padStart(2, '0');
++    const d = date.getDate().toString().padStart(2, '0');
++    return `${y}-${m}-${d}`;
++};
++
++export const ClassFunDashboard: React.FC = () => {
++    const { user, classes, users } = useStore();
++    const { groups, logs, behaviors, groupMembers, isLoading, fetchClassFunData } = useClassFunStore();
++
++    // Chọn lớp (nếu giáo viên có nhiều lớp)
++    const myClasses = classes.filter(c => c.teacherId === user?.id);
++    const [selectedClassId, setSelectedClassId] = useState<string>(myClasses[0]?.id || '');
++
++    // View mode
++    const [viewMode, setViewMode] = useState<'week' | 'all'>('week');
++    const [weekOffset, setWeekOffset] = useState(0);
++
++    // Load data khi chọn lớp
++    useEffect(() => {
++        if (selectedClassId && user?.id) {
++            fetchClassFunData(selectedClassId, user.id);
++        }
++    }, [selectedClassId, user?.id, fetchClassFunData]);
++
++    // Auto-select first class
++    useEffect(() => {
++        if (!selectedClassId && myClasses.length > 0) {
++            setSelectedClassId(myClasses[0].id);
++        }
++    }, [myClasses, selectedClassId]);
++
++    // Lấy danh sách học sinh từ class
++    const selectedClass = classes.find(c => c.id === selectedClassId);
++    const classStudents = useMemo(() => {
++        if (!selectedClass) return [];
++        return users.filter(u => selectedClass.studentIds.includes(u.id));
++    }, [selectedClass, users]);
++
++    // Tính tuần
++    const { startDate, endDate, label } = useMemo(() => {
++        const now = new Date();
++        const target = new Date(now);
++        target.setDate(target.getDate() + (weekOffset * 7));
++        const day = target.getDay();
++        const diff = target.getDate() - day + (day === 0 ? -6 : 1);
++        const start = new Date(target);
++        start.setDate(diff);
++        start.setHours(0, 0, 0, 0);
++        const end = new Date(start);
++        end.setDate(start.getDate() + 6);
++        end.setHours(23, 59, 59, 999);
++
++        let lbl = '';
++        if (weekOffset === 0) lbl = 'Tuần Này';
++        else if (weekOffset === -1) lbl = 'Tuần Trước';
++        else lbl = `${start.getDate()}/${start.getMonth() + 1} - ${end.getDate()}/${end.getMonth() + 1}`;
++
++        return { startDate: start, endDate: end, label: lbl };
++    }, [weekOffset]);
++
++    // Lọc logs theo tuần
++    const filteredLogs = useMemo(() => {
++        if (viewMode === 'all') return logs;
++        return logs.filter(l => {
++            const t = new Date(l.created_at).getTime();
++            return t >= startDate.getTime() && t <= endDate.getTime();
++        });
++    }, [logs, viewMode, startDate, endDate]);
++
++    // Tính điểm từng học sinh
++    const studentScores = useMemo(() => {
++        const scores = new Map<string, number>();
++        filteredLogs.forEach(l => {
++            scores.set(l.student_id, (scores.get(l.student_id) || 0) + l.points);
++        });
++        return scores;
++    }, [filteredLogs]);
++
++    // Tính điểm tổ
++    const groupScores = useMemo(() => {
++        return groups.map(g => {
++            const memberIds = groupMembers.filter(m => m.group_id === g.id).map(m => m.student_id);
++            const totalPoints = memberIds.reduce((sum, id) => sum + (studentScores.get(id) || 0), 0);
++            return { ...g, totalPoints, memberCount: memberIds.length };
++        }).sort((a, b) => b.totalPoints - a.totalPoints);
++    }, [groups, groupMembers, studentScores]);
++
++    // Top students
++    const topStudents = useMemo(() => {
++        return classStudents.map(s => ({
++            ...s,
++            score: studentScores.get(s.id) || 0,
++        })).sort((a, b) => b.score - a.score).slice(0, 10);
++    }, [classStudents, studentScores]);
++
++    if (isLoading) {
++        return (
++            <div className="flex items-center justify-center p-20">
++                <div className="text-center">
++                    <div className="h-10 w-10 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
++                    <p className="text-gray-500">Đang tải dữ liệu thi đua...</p>
++                </div>
++            </div>
++        );
++    }
++
++    if (myClasses.length === 0) {
++        return (
++            <div className="text-center p-20 text-gray-500">
++                <Users className="h-16 w-16 mx-auto mb-4 opacity-30" />
++                <p className="text-lg font-semibold">Bạn chưa có lớp học nào.</p>
++                <p className="text-sm mt-2">Vui lòng tạo lớp học trước khi sử dụng tính năng Thi Đua.</p>
++            </div>
++        );
++    }
++
++    return (
++        <div className="space-y-6">
++            {/* Header */}
++            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
++                <div>
++                    <h1 className="text-3xl font-extrabold text-gray-900 flex items-center gap-3">
++                        <Trophy className="h-8 w-8 text-amber-500" />
++                        Bảng Thi Đua Lớp
++                    </h1>
++                    <p className="text-gray-500 mt-1">Theo dõi và quản lý hành vi học sinh</p>
++                </div>
++
++                {/* Class Selector */}
++                {myClasses.length > 1 && (
++                    <select
++                        value={selectedClassId}
++                        onChange={e => setSelectedClassId(e.target.value)}
++                        className="border border-gray-300 rounded-lg px-4 py-2 text-sm font-medium focus:ring-2 focus:ring-indigo-500 outline-none"
++                    >
++                        {myClasses.map(c => (
++                            <option key={c.id} value={c.id}>{c.name}</option>
++                        ))}
++                    </select>
++                )}
++            </div>
++
++            {/* Filter Bar */}
++            <div className="bg-white p-4 rounded-xl shadow-sm border flex flex-col sm:flex-row justify-between items-center gap-4">
++                <div className="flex bg-gray-100 p-1 rounded-lg">
++                    <button
++                        onClick={() => setViewMode('week')}
++                        className={`px-4 py-2 rounded-md text-sm font-semibold transition-all ${viewMode === 'week' ? 'bg-white text-indigo-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'
++                            }`}
++                    >
++                        Theo Tuần
++                    </button>
++                    <button
++                        onClick={() => setViewMode('all')}
++                        className={`px-4 py-2 rounded-md text-sm font-semibold transition-all ${viewMode === 'all' ? 'bg-white text-indigo-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'
++                            }`}
++                    >
++                        Tất Cả
++                    </button>
++                </div>
++
++                {viewMode === 'week' && (
++                    <div className="flex items-center gap-4 bg-indigo-50 px-4 py-2 rounded-lg border border-indigo-100">
++                        <button onClick={() => setWeekOffset(p => p - 1)} className="p-1 hover:bg-indigo-200 rounded-full text-indigo-600 transition">
++                            <ChevronLeft className="w-5 h-5" />
++                        </button>
++                        <div className="text-center min-w-[140px]">
++                            <span className="block text-indigo-800 font-bold text-lg">{label}</span>
++                            <span className="block text-indigo-500 text-xs font-medium">
++                                {startDate.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' })} - {endDate.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' })}
++                            </span>
++                        </div>
++                        <button onClick={() => setWeekOffset(p => p + 1)} className="p-1 hover:bg-indigo-200 rounded-full text-indigo-600 transition" disabled={weekOffset >= 0}>
++                            <ChevronRight className="w-5 h-5" />
++                        </button>
++                    </div>
++                )}
++            </div>
++
++            {/* Stats Cards */}
++            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
++                <div className="bg-white rounded-xl p-4 shadow-sm border">
++                    <div className="flex items-center gap-3">
++                        <div className="p-2 bg-emerald-100 rounded-lg"><TrendingUp className="h-5 w-5 text-emerald-600" /></div>
++                        <div>
++                            <p className="text-xs text-gray-500">Điểm tốt</p>
++                            <p className="text-xl font-bold text-emerald-600">
++                                +{filteredLogs.filter(l => l.points > 0).reduce((s, l) => s + l.points, 0)}
++                            </p>
++                        </div>
++                    </div>
++                </div>
++                <div className="bg-white rounded-xl p-4 shadow-sm border">
++                    <div className="flex items-center gap-3">
++                        <div className="p-2 bg-red-100 rounded-lg"><TrendingDown className="h-5 w-5 text-red-600" /></div>
++                        <div>
++                            <p className="text-xs text-gray-500">Điểm trừ</p>
++                            <p className="text-xl font-bold text-red-600">
++                                {filteredLogs.filter(l => l.points < 0).reduce((s, l) => s + l.points, 0)}
++                            </p>
++                        </div>
++                    </div>
++                </div>
++                <div className="bg-white rounded-xl p-4 shadow-sm border">
++                    <div className="flex items-center gap-3">
++                        <div className="p-2 bg-blue-100 rounded-lg"><Users className="h-5 w-5 text-blue-600" /></div>
++                        <div>
++                            <p className="text-xs text-gray-500">Sĩ số</p>
++                            <p className="text-xl font-bold text-blue-600">{classStudents.length}</p>
++                        </div>
++                    </div>
++                </div>
++                <div className="bg-white rounded-xl p-4 shadow-sm border">
++                    <div className="flex items-center gap-3">
++                        <div className="p-2 bg-amber-100 rounded-lg"><Clock className="h-5 w-5 text-amber-600" /></div>
++                        <div>
++                            <p className="text-xs text-gray-500">Lượt ghi nhận</p>
++                            <p className="text-xl font-bold text-amber-600">{filteredLogs.length}</p>
++                        </div>
++                    </div>
++                </div>
++            </div>
++
++            {/* Group Leaderboard */}
++            {groupScores.length > 0 && (
++                <div className="bg-white rounded-xl shadow-sm border p-6">
++                    <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
++                        <Award className="h-6 w-6 text-amber-500" />
++                        Bảng Xếp Hạng Tổ
++                    </h2>
++                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
++                        {groupScores.map((g, idx) => (
++                            <div key={g.id} className={`rounded-xl p-4 text-white ${g.color} shadow-md relative overflow-hidden`}>
++                                {idx === 0 && (
++                                    <div className="absolute top-2 right-2 bg-white/20 rounded-full p-1">
++                                        <Trophy className="h-5 w-5" />
++                                    </div>
++                                )}
++                                <p className="font-bold text-lg">{g.name}</p>
++                                <p className="text-3xl font-extrabold mt-2">{g.totalPoints} <span className="text-sm font-normal opacity-80">điểm</span></p>
++                                <p className="text-sm opacity-80 mt-1">{g.memberCount} thành viên</p>
++                            </div>
++                        ))}
++                    </div>
++                </div>
++            )}
++
++            {/* Individual Leaderboard */}
++            <div className="bg-white rounded-xl shadow-sm border p-6">
++                <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
++                    <Star className="h-6 w-6 text-amber-500" />
++                    Top 10 Học Sinh
++                </h2>
++                {topStudents.length === 0 ? (
++                    <p className="text-gray-400 text-center py-8">Chưa có dữ liệu điểm.</p>
++                ) : (
++                    <div className="space-y-2">
++                        {topStudents.map((s, idx) => (
++                            <div key={s.id} className="flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 transition">
++                                <div className="flex items-center gap-3">
++                                    <span className={`w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-sm ${idx === 0 ? 'bg-amber-500' : idx === 1 ? 'bg-gray-400' : idx === 2 ? 'bg-orange-400' : 'bg-indigo-400'
++                                        }`}>
++                                        {idx + 1}
++                                    </span>
++                                    <span className="font-semibold text-gray-800">{s.name}</span>
++                                </div>
++                                <span className={`font-bold text-lg ${s.score >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
++                                    {s.score > 0 ? '+' : ''}{s.score}
++                                </span>
++                            </div>
++                        ))}
++                    </div>
++                )}
++            </div>
++
++            {/* Recent Activity */}
++            <div className="bg-white rounded-xl shadow-sm border p-6">
++                <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
++                    <Clock className="h-6 w-6 text-indigo-500" />
++                    Hoạt Động Gần Đây
++                </h2>
++                {filteredLogs.length === 0 ? (
++                    <p className="text-gray-400 text-center py-8">Chưa có hoạt động nào.</p>
++                ) : (
++                    <div className="space-y-2 max-h-96 overflow-y-auto">
++                        {filteredLogs.slice(0, 20).map(l => {
++                            const student = classStudents.find(s => s.id === l.student_id);
++                            return (
++                                <div key={l.id} className="flex items-center justify-between p-3 rounded-lg bg-gray-50">
++                                    <div>
++                                        <span className="font-semibold text-gray-800">{student?.name || 'Không rõ'}</span>
++                                        <span className="text-gray-500 text-sm ml-2">— {l.reason || 'Không có ghi chú'}</span>
++                                    </div>
++                                    <div className="flex items-center gap-3">
++                                        <span className={`font-bold ${l.points > 0 ? 'text-emerald-600' : 'text-red-600'}`}>
++                                            {l.points > 0 ? '+' : ''}{l.points}
++                                        </span>
++                                        <span className="text-xs text-gray-400">
++                                            {new Date(l.created_at).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}
++                                        </span>
++                                    </div>
++                                </div>
++                            );
++                        })}
++                    </div>
++                )}
++            </div>
++        </div>
++    );
++};
+diff --git a/services/classFunStore.ts b/services/classFunStore.ts
+new file mode 100644
+index 0000000..851a87b
+--- /dev/null
++++ b/services/classFunStore.ts
+@@ -0,0 +1,234 @@
++import { create } from 'zustand';
++import { supabase } from '../services/supabaseClient';
++
++// --- Types ---
++export interface ClassGroup {
++  id: string;
++  class_id: string;
++  name: string;
++  color: string;
++  sort_order: number;
++}
++
++export interface Behavior {
++  id: string;
++  teacher_id: string;
++  description: string;
++  type: 'POSITIVE' | 'NEGATIVE';
++  points: number;
++}
++
++export interface BehaviorLog {
++  id: string;
++  student_id: string;
++  class_id: string;
++  behavior_id: string | null;
++  points: number;
++  reason: string | null;
++  recorded_by: string | null;
++  created_at: string;
++  // Joined fields
++  student_name?: string;
++  group_name?: string;
++}
++
++export interface AttendanceRecord {
++  id: string;
++  student_id: string;
++  class_id: string;
++  date: string;
++  status: 'present' | 'excused' | 'unexcused';
++}
++
++export interface GroupMember {
++  group_id: string;
++  student_id: string;
++}
++
++// --- Store Interface ---
++interface ClassFunState {
++  // Data
++  groups: ClassGroup[];
++  behaviors: Behavior[];
++  logs: BehaviorLog[];
++  attendance: AttendanceRecord[];
++  groupMembers: GroupMember[];
++  isLoading: boolean;
++
++  // Actions - Groups
++  fetchClassFunData: (classId: string, teacherId: string) => Promise<void>;
++  addGroup: (group: Omit<ClassGroup, 'id'>) => Promise<void>;
++  updateGroup: (id: string, data: Partial<ClassGroup>) => Promise<void>;
++  deleteGroup: (id: string) => Promise<void>;
++  addStudentToGroup: (groupId: string, studentId: string) => Promise<void>;
++  removeStudentFromGroup: (groupId: string, studentId: string) => Promise<void>;
++
++  // Actions - Behaviors
++  addBehavior: (behavior: Omit<Behavior, 'id'>) => Promise<void>;
++  updateBehavior: (id: string, data: Partial<Behavior>) => Promise<void>;
++  deleteBehavior: (id: string) => Promise<void>;
++
++  // Actions - Logs (Points)
++  addBehaviorLog: (log: Omit<BehaviorLog, 'id' | 'created_at'>) => Promise<void>;
++  batchAddBehaviorLogs: (logs: Omit<BehaviorLog, 'id' | 'created_at'>[]) => Promise<void>;
++
++  // Actions - Attendance
++  saveAttendance: (records: Omit<AttendanceRecord, 'id'>[]) => Promise<void>;
++  fetchAttendance: (classId: string, date: string) => Promise<void>;
++}
++
++export const useClassFunStore = create<ClassFunState>((set, get) => ({
++  groups: [],
++  behaviors: [],
++  logs: [],
++  attendance: [],
++  groupMembers: [],
++  isLoading: false,
++
++  // --- Fetch all data for a class ---
++  fetchClassFunData: async (classId, teacherId) => {
++    set({ isLoading: true });
++    try {
++      // Fetch groups
++      const { data: groups } = await supabase
++        .from('class_groups')
++        .select('*')
++        .eq('class_id', classId)
++        .order('sort_order');
++
++      // Fetch behaviors for this teacher
++      const { data: behaviors } = await supabase
++        .from('behaviors')
++        .select('*')
++        .eq('teacher_id', teacherId);
++
++      // Fetch behavior logs for this class (last 500 entries)
++      const { data: logs } = await supabase
++        .from('behavior_logs')
++        .select('*')
++        .eq('class_id', classId)
++        .order('created_at', { ascending: false })
++        .limit(500);
++
++      // Fetch group members
++      const groupIds = (groups || []).map(g => g.id);
++      let groupMembers: GroupMember[] = [];
++      if (groupIds.length > 0) {
++        const { data: members } = await supabase
++          .from('class_group_members')
++          .select('*')
++          .in('group_id', groupIds);
++        groupMembers = (members || []) as GroupMember[];
++      }
++
++      set({
++        groups: (groups || []) as ClassGroup[],
++        behaviors: (behaviors || []) as Behavior[],
++        logs: (logs || []) as BehaviorLog[],
++        groupMembers,
++      });
++    } catch (e) {
++      console.error('Error fetching ClassFun data:', e);
++    } finally {
++      set({ isLoading: false });
++    }
++  },
++
++  // --- Groups ---
++  addGroup: async (group) => {
++    const newId = `grp_${Date.now()}`;
++    const newGroup = { ...group, id: newId };
++    const { error } = await supabase.from('class_groups').insert(newGroup);
++    if (!error) set(s => ({ groups: [...s.groups, newGroup as ClassGroup] }));
++  },
++
++  updateGroup: async (id, data) => {
++    const { error } = await supabase.from('class_groups').update(data).eq('id', id);
++    if (!error) set(s => ({ groups: s.groups.map(g => g.id === id ? { ...g, ...data } : g) }));
++  },
++
++  deleteGroup: async (id) => {
++    const { error } = await supabase.from('class_groups').delete().eq('id', id);
++    if (!error) set(s => ({
++      groups: s.groups.filter(g => g.id !== id),
++      groupMembers: s.groupMembers.filter(m => m.group_id !== id),
++    }));
++  },
++
++  addStudentToGroup: async (groupId, studentId) => {
++    const { error } = await supabase.from('class_group_members').insert({ group_id: groupId, student_id: studentId });
++    if (!error) set(s => ({ groupMembers: [...s.groupMembers, { group_id: groupId, student_id: studentId }] }));
++  },
++
++  removeStudentFromGroup: async (groupId, studentId) => {
++    const { error } = await supabase.from('class_group_members').delete()
++      .eq('group_id', groupId).eq('student_id', studentId);
++    if (!error) set(s => ({
++      groupMembers: s.groupMembers.filter(m => !(m.group_id === groupId && m.student_id === studentId)),
++    }));
++  },
++
++  // --- Behaviors ---
++  addBehavior: async (behavior) => {
++    const newId = `beh_${Date.now()}`;
++    const newBehavior = { ...behavior, id: newId };
++    const { error } = await supabase.from('behaviors').insert(newBehavior);
++    if (!error) set(s => ({ behaviors: [...s.behaviors, newBehavior as Behavior] }));
++  },
++
++  updateBehavior: async (id, data) => {
++    const { error } = await supabase.from('behaviors').update(data).eq('id', id);
++    if (!error) set(s => ({ behaviors: s.behaviors.map(b => b.id === id ? { ...b, ...data } : b) }));
++  },
++
++  deleteBehavior: async (id) => {
++    const { error } = await supabase.from('behaviors').delete().eq('id', id);
++    if (!error) set(s => ({ behaviors: s.behaviors.filter(b => b.id !== id) }));
++  },
++
++  // --- Logs (Points) ---
++  addBehaviorLog: async (log) => {
++    const newId = `log_${Date.now()}`;
++    const newLog = { ...log, id: newId, created_at: new Date().toISOString() };
++    const { error } = await supabase.from('behavior_logs').insert(newLog);
++    if (!error) set(s => ({ logs: [newLog as BehaviorLog, ...s.logs] }));
++  },
++
++  batchAddBehaviorLogs: async (logs) => {
++    const newLogs = logs.map((log, i) => ({
++      ...log,
++      id: `log_${Date.now()}_${i}`,
++      created_at: new Date().toISOString(),
++    }));
++    const { error } = await supabase.from('behavior_logs').insert(newLogs);
++    if (!error) set(s => ({ logs: [...(newLogs as BehaviorLog[]), ...s.logs] }));
++  },
++
++  // --- Attendance ---
++  saveAttendance: async (records) => {
++    // Upsert: nếu đã tồn tại thì cập nhật, chưa có thì thêm mới
++    const upsertData = records.map(r => ({
++      ...r,
++      id: `att_${r.student_id}_${r.date}`,
++    }));
++    const { error } = await supabase.from('attendance').upsert(upsertData, {
++      onConflict: 'student_id,class_id,date',
++    });
++    if (!error) {
++      // Refresh attendance for the date
++      const date = records[0]?.date;
++      const classId = records[0]?.class_id;
++      if (date && classId) {
++        const { data } = await supabase.from('attendance').select('*')
++          .eq('class_id', classId).eq('date', date);
++        if (data) set({ attendance: data as AttendanceRecord[] });
++      }
++    }
++  },
++
++  fetchAttendance: async (classId, date) => {
++    const { data } = await supabase.from('attendance').select('*')
++      .eq('class_id', classId).eq('date', date);
++    if (data) set({ attendance: data as AttendanceRecord[] });
++  },
++}));

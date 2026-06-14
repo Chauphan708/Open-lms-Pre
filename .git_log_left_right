@@ -1,0 +1,4 @@
+﻿< 74977c5 feat: Add Record, Attendance, Groups pages with routes and sidebar
+< 8173746 refactor: Remove Arena code from class-fun branch (moved to feature/arena)
+> 04de787 feat: Add ClassFun pages - Record Behavior, Attendance, Group Management with routes and sidebar
+< a0fdd4b feat: Add ClassFun (Lop Hoc Vui Ve) integration foundation - SQL schema, Zustand store, Dashboard page, routing, sidebar navigation

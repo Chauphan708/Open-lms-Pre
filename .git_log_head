@@ -1,0 +1,10 @@
+﻿74977c5 feat: Add Record, Attendance, Groups pages with routes and sidebar
+8173746 refactor: Remove Arena code from class-fun branch (moved to feature/arena)
+a0fdd4b feat: Add ClassFun (Lop Hoc Vui Ve) integration foundation - SQL schema, Zustand store, Dashboard page, routing, sidebar navigation
+f564072 Feat: Add Academic Year filter to Dashboard
+ba6658e Fix Build Error: Remove duplicate variable declaration
+613745e Fix Discussion Room UI & Update Dashboard Stats
+9e00461 Fix Resource Library: Improve Embeds, Fix Links, Add Delete Button
+a746ea2 Fix Vercel build: Ensure types.ts and store.ts with 'topic' field are pushed
+30e6cc4 Update Resource Library: Filters, Topics, UX
+d45f749 Enhance Resource Library: Add auto-embed YouTube and schema script

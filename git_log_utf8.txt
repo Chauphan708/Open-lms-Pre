@@ -1,0 +1,50 @@
+﻿25aae79 Refactor: Modularize store, split ExamCreate & Dashboard components, patch Auth security and add SQL migrations
+ecfc67b fix: adjust seating chart layout for high column counts (prevent hiding names)
+0d6e639 feat: add collapsible footer for mobile
+2c594ff style: swap bar and line chart (Bar = Count, Line = Score)
+acb4b41 Fix: Destructure addStudentToGroup in ClassManage.tsx to resolve build error
+50d03ce Fix: groupedStudents memo to respect sort_order and enable DND for ungrouped students
+78f1f83 Fix UI: Add sorting and DND directly to ClassManage main view
+7b18192 Enhance Class Fun: Add A-Z sorting (Name/Surname) and Drag and Drop for groups, including DB update script
+2fc9aa6 Fix evaluation save error: remove manual ID, use .select() on upsert, and improve RLS policy
+6079d8e Refine student list UI: larger name font and 10-student max height per group
+56daace Refine TT27 evaluation: 4-column group layout, split rating scales, and None evaluation option
+b9fa36e Tích hợp công cụ nhận xét thường xuyên theo TT27/2021
+c68ad70 Adjust chart: show daily view for up to 3 months and increase bar size
+4390132 Refine ComboChart: adjust barWidth and minWidth for better display of long time periods
+a48f6a6 Adjust analytics chart: reverse X-axis order and increase daily granularity for monthly view
+36707ac Refine Teacher Analytics: Grid-based student selector, Comparison View enhancements, and Fix build errors
+3e48a20 feat: move menu and implement multi-student comparison and PDF export in Teacher Analytics
+385872f fix: import BarChart3 in Dashboard page to fix build error
+897dfa5 Fix build errors on Vercel: push missing service functions and layout updates
+e82a74b feat: implement Send Comment feature and add missing icons in TeacherAnalytics page
+5b4da6c feat: format decimal with comma and round to 1 decimal place across all pages
+7497313 Phase 3 & 4: Recommendation System for Teacher and Student, UI Refinements and AI Notification
+3e0a571 feat: Add Learning Analytics & Smart Recommendation System (Phase 1+2)
+9cc2aa4 feat: thêm cảnh báo khi tên bài tập/đề thi bị trùng
+45dc959 feat: simplify footer, fix site settings RLS, update user guide
+76de035 feat: simplify footer and make it fixed at bottom
+a6745f8 fix: explicit type cast in SQL RLS policy
+14d22ee feat: isolate dashboard data for each teacher and update realtime logic
+9864c11 Implement User Guide for teachers (GV) with help button in header
+476e6f9 feat(arena): Enable dynamic adding and deleting of tournament rounds
+caa1948 feat(arena): Implement round-based question selection and management
+93e1a74 feat(arena): Add topic/type filters and square checkboxes to question selection modal
+18767a3 fix(arena): Enable LaTeX rendering for math formulas in questions and answers
+79f7b55 feat(arena): Implement manual question selection for Tournaments
+e6625d1 debug(arena): Add error surfacing for tournament creation button
+d3af7a0 feat(arena): Add Tournament Host links to sidebar and Admin page
+c8f1522 fix(arena): Fix shield bug in PvPBattle and floor jumping in TowerMode
+5bfa8d9 Change 'CHƯA GIAO' badge color to pink to match 'Tổ chức KT' style
+6266d20 Optimize UI/UX: QuestionBank header, ExamList status badges, fixed Sidebar, and mobile notifications
+f5fac7a Fix fraction display in Web UI using Katex rendering for options nhe
+70a2324 Emergency fix: Restore labels, fix JSX, and expand sync scope nhe
+cd8c22d Final cleanup: Remove matching dots and apply cleanMath to web UI options nhe
+a2bc8bb Enhance Matching questions: table layout in DOCX and visible options in Web UI nhe
+0eec263 Finalize DOCX: add cleanMath for LaTeX and support all 5 question types nhe
+4fe5095 Fix build error: italics property typo in docx TextRun
+f69a922 Add DOCX download with LaTeX support in Question Bank and finalize data isolation
+60ce0bf Finalize data isolation: re-enable filters after SQL fix and add ultimate database fix script
+b2a6494 Update addExam and updateExam to include teacher_id in payload
+e2bec35 Emergency fix: remove teacher_id filters to restore data visibility and stop 400 errors
+148153e Fix HTTP 400 by moving sorting to client-side and robust fallback for teacherId
