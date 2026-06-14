@@ -1,3 +1,4 @@
+import { supabase } from '../../services/supabaseClient';
 import React, { useEffect, useState, useRef, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useStore } from '../../store';

@@ -1,3 +1,4 @@
+import { supabase } from '../../services/supabaseClient';
 import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useStore } from '../../store';
@@ -50,6 +51,7 @@ const DEFAULT_TOPICS_BY_SUBJECT: Record<string, { topic: string; label: string }
 
 export const TowerMode: React.FC = () => {
   const navigate = useNavigate();
+  const [customTopics, setCustomTopics] = useState<{ id: string; subject: string; topic: string }[]>([]);
   const { 
     user, 
     arenaProfile, 
@@ -118,7 +120,8 @@ export const TowerMode: React.FC = () => {
     if (user) {
       Promise.all([
         fetchArenaProfile(user.id),
-        fetchArenaQuestions()
+        fetchArenaQuestions(),
+        supabase.from('arena_topics').select('*').then(({ data }) => { if (data) setCustomTopics(data); })
       ]).then(() => setLoading(false));
     }
   }, [user]);
@@ -155,6 +158,18 @@ export const TowerMode: React.FC = () => {
             subject: exam.subject || 'math'
           });
         }
+      }
+    });
+
+    // Look in customTopics
+    customTopics.forEach(ct => {
+      const exists = dynamicTopics.some(t => t.topic.toLowerCase() === ct.topic.toLowerCase());
+      if (!exists) {
+        dynamicTopics.push({
+          topic: ct.topic,
+          label: `📋 Chuyên đề: ${ct.topic}`,
+          subject: ct.subject
+        });
       }
     });
 
@@ -366,7 +381,7 @@ export const TowerMode: React.FC = () => {
     if (available.length === 0) {
       setAiGeneratingFallback(true);
       try {
-        const diffLabel = targetDiff === 3 ? 'Vận dụng (Khó)' : targetDiff === 2 ? 'Thông hiểu (Trung bình)' : 'Nhận biết (Dễ)';
+        const diffLabel = targetDiff === 4 ? 'Mức nâng cao' : targetDiff === 3 ? 'Mức 3' : targetDiff === 2 ? 'Mức 2' : 'Mức 1';
         const generated = await generateQuestionsByTopic(
           selectedTopic, 
           '5', 
@@ -459,7 +474,7 @@ export const TowerMode: React.FC = () => {
       else if (newStreak === 3) xpMultiplier = 2.0;
       else if (newStreak >= 4) xpMultiplier = 3.0;
 
-      const baseXP = currentDifficulty === 1 ? 10 : currentDifficulty === 2 ? 15 : 20;
+      const baseXP = currentDifficulty === 1 ? 10 : currentDifficulty === 2 ? 15 : currentDifficulty === 3 ? 20 : 30;
       const xp = Math.round(baseXP * xpMultiplier);
       setXpGained(xp);
 
@@ -468,7 +483,7 @@ export const TowerMode: React.FC = () => {
 
       // Check level up (VioEdu logic: 3 consecutive correct answers)
       if (newConsecutiveCorrect >= 3) {
-        if (currentDifficulty < 3) {
+        if (currentDifficulty < 4) {
           finalDifficulty = currentDifficulty + 1;
           setCurrentDifficulty(finalDifficulty);
           setConsecutiveCorrect(0); // reset streak at new level
@@ -1081,7 +1096,7 @@ export const TowerMode: React.FC = () => {
           <div>
             <p className="text-[9px] text-gray-500 uppercase font-black">Mức độ thích ứng</p>
             <p className="text-xs font-black text-indigo-300">
-              {currentDifficulty === 1 ? 'Mức 1: Nhận biết (Dễ)' : currentDifficulty === 2 ? 'Mức 2: Thông hiểu' : 'Mức 3: Vận dụng (Khó)'}
+              {currentDifficulty === 4 ? 'Mức nâng cao' : currentDifficulty === 3 ? 'Mức 3' : currentDifficulty === 2 ? 'Mức 2' : 'Mức 1'}
             </p>
           </div>
         </div>
