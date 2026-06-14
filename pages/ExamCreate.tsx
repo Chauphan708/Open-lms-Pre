@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useStore } from '../store';
-import { parseQuestionsFromText, generateQuestionsByTopic } from '../services/geminiService';
+import { parseQuestionsFromText, generateQuestionsByTopic, parseQuestionsFromImage } from '../services/geminiService';
 import { parseQuestionsLocal } from '../utils/localParser';
 import { Question, QuestionType, ExamDifficulty } from '../types';
 import { Save, AlertCircle, FileText, Printer, ChevronDown, BarChart3, Sparkles } from 'lucide-react';
@@ -132,6 +132,39 @@ export const ExamCreate: React.FC = () => {
       }
       console.error("[ExamCreate] handleParseAI error:", err);
     } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const handleParseImage = async (file: File) => {
+    if (!file) return;
+    setIsProcessing(true);
+    setError(null);
+    try {
+      const reader = new FileReader();
+      reader.onloadend = async () => {
+        const base64 = reader.result as string;
+        try {
+          const parsed = await parseQuestionsFromImage(base64, file.type);
+          if (parsed.length === 0) {
+            setError("AI không nhận diện được câu hỏi nào từ ảnh. Hãy chụp rõ nét hơn.");
+          } else {
+            setQuestions(prev => [...prev, ...parsed]);
+          }
+        } catch (innerErr: any) {
+          const detail = innerErr?.message || innerErr?.toString() || '';
+          if (detail.includes('API Key') || detail.includes('API_KEY')) {
+            setError("Lỗi API Key: Vui lòng cấu hình Google Gemini API Key trong Cài đặt.");
+          } else {
+            setError(`Lỗi OCR ảnh: ${detail}`);
+          }
+        } finally {
+          setIsProcessing(false);
+        }
+      };
+      reader.readAsDataURL(file);
+    } catch (err: any) {
+      setError(`Lỗi đọc file ảnh: ${err?.message || err}`);
       setIsProcessing(false);
     }
   };
@@ -368,6 +401,7 @@ export const ExamCreate: React.FC = () => {
             handleParseLocal={handleParseLocal}
             handleParseAI={handleParseAI}
             handleGenerate={handleGenerate}
+            handleParseImage={handleParseImage}
           />
         </div>
 

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Wand2, Sparkles, FileText, GraduationCap, MessageSquarePlus } from 'lucide-react';
+import { Wand2, Sparkles, FileText, GraduationCap, MessageSquarePlus, Image as ImageIcon } from 'lucide-react';
 import { QuestionType, ExamDifficulty } from '../../types';
 
 export interface ExamContentInputProps {
@@ -15,13 +15,14 @@ export interface ExamContentInputProps {
   handleParseLocal: () => void;
   handleParseAI: () => void;
   handleGenerate: () => void;
+  handleParseImage?: (file: File) => void;
 }
 
 export const ExamContentInput: React.FC<ExamContentInputProps> = ({
   mode, rawText, setRawText, aiQuestionType, setAiQuestionType,
   aiCount, setAiCount, aiCustomPrompt, setAiCustomPrompt,
   isProcessing, topic, grade, difficulty,
-  handleParseLocal, handleParseAI, handleGenerate
+  handleParseLocal, handleParseAI, handleGenerate, handleParseImage
 }) => {
   return (
     <div className="flex-1 bg-white p-5 rounded-xl border shadow-sm flex flex-col">
@@ -53,6 +54,30 @@ export const ExamContentInput: React.FC<ExamContentInputProps> = ({
                 {isProcessing ? 'AI đang xử lý...' : <><Sparkles className="h-3 w-3" /> AI Tách</>}
               </button>
             </div>
+          </div>
+
+          {/* OCR Image Upload Dropzone */}
+          <div className="border-2 border-dashed border-gray-200 hover:border-indigo-400 rounded-xl p-4 mb-3 text-center bg-gray-50/50 hover:bg-indigo-50/10 transition-all cursor-pointer relative group">
+             <input 
+                type="file" 
+                accept="image/*" 
+                onChange={e => {
+                   const file = e.target.files?.[0];
+                   if (file && handleParseImage) handleParseImage(file);
+                }} 
+                disabled={isProcessing}
+                className="absolute inset-0 opacity-0 cursor-pointer" 
+             />
+             <div className="flex flex-col items-center justify-center gap-1.5">
+                <div className="w-10 h-10 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-600 group-hover:scale-110 transition-transform">
+                   <ImageIcon className="h-5 w-5" />
+                </div>
+                <div>
+                   <span className="text-xs font-bold text-indigo-600 hover:text-indigo-700">Tải ảnh đề thi lên (OCR AI)</span>
+                   <span className="text-xs text-gray-500"> hoặc kéo thả vào đây</span>
+                </div>
+                <span className="text-[10px] text-gray-400">Hỗ trợ JPG, PNG (AI tự động chuyển thành câu hỏi)</span>
+             </div>
           </div>
 
           <div className="bg-blue-50 border border-blue-100 rounded-lg p-3 mb-2 text-xs text-blue-700 space-y-1">

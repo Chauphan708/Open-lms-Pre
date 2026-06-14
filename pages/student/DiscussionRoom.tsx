@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { ChatMessage, MessageVisibility } from '../../types';
 import { supabase } from '../../services/supabaseClient';
+import { Whiteboard } from '../../components/Whiteboard';
 
 export const StudentDiscussionRoom: React.FC = () => {
    const { pin } = useParams();
@@ -28,6 +29,7 @@ export const StudentDiscussionRoom: React.FC = () => {
    const messagesEndRef = useRef<HTMLDivElement>(null);
    const fileInputRef = useRef<HTMLInputElement>(null);
    const [activeTab, setActiveTab] = useState<'CHAT' | 'INFO'>('CHAT'); // Mobile Tabs
+   const [middleMode, setMiddleMode] = useState<'CHAT' | 'WHITEBOARD'>('CHAT');
 
    const session = discussionSessions.find(s => s.id === pin);
 
@@ -161,53 +163,79 @@ export const StudentDiscussionRoom: React.FC = () => {
 
             {/* Chat Area */}
             <div className={`flex-1 flex flex-col bg-white relative ${activeTab === 'INFO' ? 'hidden md:flex' : 'flex'}`}>
-               <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-[#f0f2f5]">
-                  <div className="text-center text-xs text-gray-400 mb-4">Chào mừng {user.name} tham gia thảo luận</div>
-
-                  {visibleMessages.length === 0 && (
-                     <div className="text-center text-gray-400 mt-10">Chưa có tin nhắn nào...</div>
-                  )}
-
-                  {visibleMessages.map(m => (
-                     <div key={m.id} className={`flex ${m.senderId === user.id ? 'justify-end' : 'justify-start'}`}>
-                        {m.type === 'SYSTEM' ? (
-                           <div className="w-full text-center my-2"><span className="bg-black/10 text-gray-600 text-[10px] px-2 py-1 rounded-full">{m.content}</span></div>
-                        ) : (
-                           <div className={`max-w-[80%] md:max-w-[70%] rounded-2xl px-3 py-2 text-sm shadow-sm ${m.senderId === user.id ? 'bg-blue-600 text-white rounded-br-none' : 'bg-white text-gray-800 border border-gray-100 rounded-bl-none'}`}>
-                              {m.senderId !== user.id && <div className="text-[10px] font-bold opacity-75 mb-1 text-indigo-600">{m.senderName}</div>}
-
-                              {m.type === 'STICKER' ? (
-                                 <div className="text-4xl">{m.content}</div>
-                              ) : m.content === '...' ? (
-                                 <div className="italic opacity-50">Tin nhắn bị ẩn</div>
-                              ) : (
-                                 <div className="whitespace-pre-wrap">{m.content}</div>
-                              )}
-                              <div className="text-[9px] opacity-60 text-right mt-1">{new Date(m.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
-                           </div>
-                        )}
-                     </div>
-                  ))}
-                  <div ref={messagesEndRef} />
+               {/* Mode switcher (Chat vs Whiteboard) */}
+               <div className="bg-gray-50 border-b px-4 py-2 flex items-center justify-end">
+                  <div className="flex bg-gray-200/80 p-0.5 rounded-xl border border-gray-300/30 shadow-inner">
+                     <button
+                        onClick={() => setMiddleMode('CHAT')}
+                        className={`px-3 py-1 rounded-lg text-xs font-bold transition-all ${middleMode === 'CHAT' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-900'}`}
+                     >
+                        Trò chuyện
+                     </button>
+                     <button
+                        onClick={() => setMiddleMode('WHITEBOARD')}
+                        className={`px-3 py-1 rounded-lg text-xs font-bold transition-all ${middleMode === 'WHITEBOARD' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-900'}`}
+                     >
+                        Bảng tương tác
+                     </button>
+                  </div>
                </div>
 
-               {/* Chat Input */}
-               {session.status === 'ACTIVE' && (
-                  <div className="p-3 bg-white border-t">
-                     <div className="flex gap-2 mb-2 overflow-x-auto no-scrollbar pb-2">
-                        {STICKERS.map(s => <button key={s} onClick={() => handleSendSticker(s)} className="text-xl p-2 hover:bg-gray-100 rounded-lg">{s}</button>)}
-                     </div>
-                     <div className="flex gap-2 items-center">
-                        <input
-                           value={msgText}
-                           onChange={e => setMsgText(e.target.value)}
-                           onKeyDown={e => e.key === 'Enter' && handleSendMessage()}
-                           placeholder="Nhập tin nhắn..."
-                           className="flex-1 bg-gray-100 border-0 rounded-full px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
-                        />
-                        <button onClick={handleSendMessage} className="p-2.5 bg-blue-600 text-white rounded-full hover:bg-blue-700 disabled:opacity-50"><Send className="h-5 w-5" /></button>
-                     </div>
+               {middleMode === 'WHITEBOARD' ? (
+                  <div className="flex-1 p-4 bg-gray-100/50">
+                     <Whiteboard pin={session.id} roomId={myRoomId} isTeacher={false} />
                   </div>
+               ) : (
+                  <>
+                     <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-[#f0f2f5]">
+                        <div className="text-center text-xs text-gray-400 mb-4">Chào mừng {user.name} tham gia thảo luận</div>
+
+                        {visibleMessages.length === 0 && (
+                           <div className="text-center text-gray-400 mt-10">Chưa có tin nhắn nào...</div>
+                        )}
+
+                        {visibleMessages.map(m => (
+                           <div key={m.id} className={`flex ${m.senderId === user.id ? 'justify-end' : 'justify-start'}`}>
+                              {m.type === 'SYSTEM' ? (
+                                 <div className="w-full text-center my-2"><span className="bg-black/10 text-gray-600 text-[10px] px-2 py-1 rounded-full">{m.content}</span></div>
+                              ) : (
+                                 <div className={`max-w-[80%] md:max-w-[70%] rounded-2xl px-3 py-2 text-sm shadow-sm ${m.senderId === user.id ? 'bg-blue-600 text-white rounded-br-none' : 'bg-white text-gray-800 border border-gray-100 rounded-bl-none'}`}>
+                                    {m.senderId !== user.id && <div className="text-[10px] font-bold opacity-75 mb-1 text-indigo-600">{m.senderName}</div>}
+
+                                    {m.type === 'STICKER' ? (
+                                       <div className="text-4xl">{m.content}</div>
+                                    ) : m.content === '...' ? (
+                                       <div className="italic opacity-50">Tin nhắn bị ẩn</div>
+                                    ) : (
+                                       <div className="whitespace-pre-wrap">{m.content}</div>
+                                    )}
+                                    <div className="text-[9px] opacity-60 text-right mt-1">{new Date(m.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
+                                 </div>
+                              )}
+                           </div>
+                        ))}
+                        <div ref={messagesEndRef} />
+                     </div>
+
+                     {/* Chat Input */}
+                     {session.status === 'ACTIVE' && (
+                        <div className="p-3 bg-white border-t">
+                           <div className="flex gap-2 mb-2 overflow-x-auto no-scrollbar pb-2">
+                              {STICKERS.map(s => <button key={s} onClick={() => handleSendSticker(s)} className="text-xl p-2 hover:bg-gray-100 rounded-lg">{s}</button>)}
+                           </div>
+                           <div className="flex gap-2 items-center">
+                              <input
+                                 value={msgText}
+                                 onChange={e => setMsgText(e.target.value)}
+                                 onKeyDown={e => e.key === 'Enter' && handleSendMessage()}
+                                 placeholder="Nhập tin nhắn..."
+                                 className="flex-1 bg-gray-100 border-0 rounded-full px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                              />
+                              <button onClick={handleSendMessage} className="p-2.5 bg-blue-600 text-white rounded-full hover:bg-blue-700 disabled:opacity-50"><Send className="h-5 w-5" /></button>
+                           </div>
+                        </div>
+                     )}
+                  </>
                )}
             </div>
 

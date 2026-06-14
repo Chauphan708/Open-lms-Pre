@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import { ChatMessage, Poll, MessageVisibility } from '../../types';
 import { supabase } from '../../services/supabaseClient';
+import { Whiteboard } from '../../components/Whiteboard';
 
 export const DiscussionRoom: React.FC = () => {
    const { pin } = useParams();
@@ -34,6 +35,7 @@ export const DiscussionRoom: React.FC = () => {
 
    // Tabs: CHAT, POLLS, PARTICIPANTS, BREAKOUT
    const [activeTab, setActiveTab] = useState<'CHAT' | 'POLLS' | 'PARTICIPANTS' | 'BREAKOUT'>('CHAT');
+   const [middleMode, setMiddleMode] = useState<'CHAT' | 'WHITEBOARD'>('CHAT');
 
    const [isRoundMenuOpen, setIsRoundMenuOpen] = useState(false);
    const [isVisibilityMenuOpen, setIsVisibilityMenuOpen] = useState(false);
@@ -358,85 +360,111 @@ export const DiscussionRoom: React.FC = () => {
          {/* Body */}
          <div className="flex-1 flex overflow-hidden relative">
             <div className="flex-1 flex flex-col bg-white relative">
-               {/* Room Selector */}
-               <div className="bg-gray-50 border-b px-4 py-2 flex gap-2 overflow-x-auto no-scrollbar">
-                  <button
-                     onClick={() => setCurrentViewRoomId('MAIN')}
-                     className={`whitespace-nowrap px-4 py-1.5 rounded-full text-sm font-medium transition-all ${currentViewRoomId === 'MAIN' ? 'bg-indigo-600 text-white shadow-md' : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-100'}`}
-                  >
-                     Phòng chính
-                  </button>
-                  {session.breakoutRooms?.map(r => (
+               {/* Room Selector & Tab Toggle */}
+               <div className="bg-gray-50 border-b px-4 py-2 flex items-center justify-between gap-4 overflow-x-auto no-scrollbar">
+                  <div className="flex gap-2">
                      <button
-                        key={r.id}
-                        onClick={() => setCurrentViewRoomId(r.id)}
-                        className={`whitespace-nowrap px-4 py-1.5 rounded-full text-sm font-medium transition-all ${currentViewRoomId === r.id ? 'bg-indigo-600 text-white shadow-md' : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-100'}`}
+                        onClick={() => setCurrentViewRoomId('MAIN')}
+                        className={`whitespace-nowrap px-4 py-1.5 rounded-full text-xs font-bold transition-all ${currentViewRoomId === 'MAIN' ? 'bg-indigo-600 text-white shadow-md' : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-100'}`}
                      >
-                        {r.name}
+                        Phòng chính
                      </button>
-                  ))}
-               </div>
-
-               {/* Messages */}
-               <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50">
-                  <div className="text-center mb-6">
-                     <span className={`text-xs px-3 py-1.5 rounded-full font-bold border shadow-sm ${currentRoundId === session.activeRoundId ? 'bg-indigo-100 text-indigo-700 border-indigo-200' : 'bg-gray-100 text-gray-600 border-gray-200'}`}>
-                        Đang xem: {viewingRoundData?.name} {currentRoundId !== session.activeRoundId && '(Lịch sử)'}
-                     </span>
-                  </div>
-
-                  {session.visibility !== 'FULL' && (
-                     <div className="bg-yellow-50 border border-yellow-200 p-2 rounded-lg text-xs text-center text-yellow-800 font-medium mb-4 mx-auto max-w-md shadow-sm">
-                        ⚠️ Học sinh đang thấy chế độ: {session.visibility}
-                     </div>
-                  )}
-
-                  {currentMessages.map(m => (
-                     <div key={m.id} className={`flex ${m.senderId === user?.id ? 'justify-end' : 'justify-start'}`}>
-                        {m.type === 'SYSTEM' ? (
-                           <div className="w-full text-center my-2">
-                              <span className="bg-gray-200 text-gray-600 text-xs px-4 py-1.5 rounded-full font-medium">{m.content}</span>
-                           </div>
-                        ) : (
-                           <div className={`max-w-[85%] md:max-w-[70%] rounded-2xl px-4 py-3 shadow-sm ${m.senderId === user?.id ? 'bg-indigo-600 text-white rounded-br-sm' : 'bg-white text-gray-800 border border-gray-100 rounded-bl-sm'}`}>
-                              {m.senderId !== user?.id && <div className="text-xs font-bold opacity-70 mb-1">{m.senderName}</div>}
-                              {m.type === 'STICKER' ? (
-                                 <div className="text-5xl my-1">{m.content}</div>
-                              ) : m.type === 'IMAGE' ? (
-                                 <img src={m.content} alt="Sent" className="max-w-full rounded-lg my-1 border border-white/20" />
-                              ) : (
-                                 <div className="whitespace-pre-wrap text-sm md:text-base">{m.content}</div>
-                              )}
-                              <div className="text-[10px] opacity-60 text-right mt-1">{new Date(m.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
-                           </div>
-                        )}
-                     </div>
-                  ))}
-                  <div ref={messagesEndRef} />
-               </div>
-
-               {/* Input Area */}
-               <div className="p-3 md:p-4 border-t bg-white">
-                  <input type="file" accept="image/*" className="hidden" ref={fileInputRef} onChange={handleImageUpload} />
-                  <div className="flex gap-2 mb-3 overflow-x-auto pb-2 no-scrollbar">
-                     {STICKERS.map(s => (
-                        <button key={s} onClick={() => handleSendSticker(s)} className="text-2xl hover:bg-gray-100 p-2 rounded-xl transition-colors">{s}</button>
+                     {session.breakoutRooms?.map(r => (
+                        <button
+                           key={r.id}
+                           onClick={() => setCurrentViewRoomId(r.id)}
+                           className={`whitespace-nowrap px-4 py-1.5 rounded-full text-xs font-bold transition-all ${currentViewRoomId === r.id ? 'bg-indigo-600 text-white shadow-md' : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-100'}`}
+                        >
+                           {r.name}
+                        </button>
                      ))}
                   </div>
-                  <div className="flex gap-2 md:gap-3">
-                     <button onClick={handleTriggerImageUpload} className="p-3 text-gray-500 hover:bg-indigo-50 hover:text-indigo-600 rounded-full transition-colors flex-shrink-0">
-                        <ImageIcon className="h-6 w-6" />
+                  
+                  {/* Mode switcher (Chat vs Whiteboard) */}
+                  <div className="flex bg-gray-200/80 p-0.5 rounded-xl border border-gray-300/30 flex-shrink-0 shadow-inner">
+                     <button
+                        onClick={() => setMiddleMode('CHAT')}
+                        className={`px-3 py-1 rounded-lg text-xs font-bold transition-all ${middleMode === 'CHAT' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-900'}`}
+                     >
+                        Trò chuyện
                      </button>
-                     <input
-                        value={msgText}
-                        onChange={e => setMsgText(e.target.value)}
-                        onKeyDown={e => e.key === 'Enter' && handleSendMessage()}
-                        placeholder={`Nhập tin nhắn (${currentViewRoomId === 'MAIN' ? 'Chính' : 'Nhóm'})...`}
-                        className="flex-1 border border-gray-300 bg-white text-gray-900 rounded-full px-4 py-3 text-sm focus:ring-2 focus:ring-indigo-500 outline-none shadow-sm transition-shadow"
-                     />
-                     <button onClick={handleSendMessage} className="p-3 bg-indigo-600 text-white rounded-full hover:bg-indigo-700 shadow-md hover:scale-105 transition-all flex-shrink-0"><Send className="h-5 w-5" /></button>
+                     <button
+                        onClick={() => setMiddleMode('WHITEBOARD')}
+                        className={`px-3 py-1 rounded-lg text-xs font-bold transition-all ${middleMode === 'WHITEBOARD' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-900'}`}
+                     >
+                        Bảng tương tác
+                     </button>
                   </div>
                </div>
+
+               {middleMode === 'WHITEBOARD' ? (
+                  <div className="flex-1 p-4 bg-gray-100/50">
+                     <Whiteboard pin={session.id} roomId={currentViewRoomId} isTeacher={true} />
+                  </div>
+               ) : (
+                  <>
+                     {/* Messages */}
+                     <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50">
+                        <div className="text-center mb-6">
+                           <span className={`text-xs px-3 py-1.5 rounded-full font-bold border shadow-sm ${currentRoundId === session.activeRoundId ? 'bg-indigo-100 text-indigo-700 border-indigo-200' : 'bg-gray-100 text-gray-600 border-gray-200'}`}>
+                              Đang xem: {viewingRoundData?.name} {currentRoundId !== session.activeRoundId && '(Lịch sử)'}
+                           </span>
+                        </div>
+
+                        {session.visibility !== 'FULL' && (
+                           <div className="bg-yellow-50 border border-yellow-200 p-2 rounded-lg text-xs text-center text-yellow-800 font-medium mb-4 mx-auto max-w-md shadow-sm">
+                              ⚠️ Học sinh đang thấy chế độ: {session.visibility}
+                           </div>
+                        )}
+
+                        {currentMessages.map(m => (
+                           <div key={m.id} className={`flex ${m.senderId === user?.id ? 'justify-end' : 'justify-start'}`}>
+                              {m.type === 'SYSTEM' ? (
+                                 <div className="w-full text-center my-2">
+                                    <span className="bg-gray-200 text-gray-600 text-xs px-4 py-1.5 rounded-full font-medium">{m.content}</span>
+                                 </div>
+                              ) : (
+                                 <div className={`max-w-[85%] md:max-w-[70%] rounded-2xl px-4 py-3 shadow-sm ${m.senderId === user?.id ? 'bg-indigo-600 text-white rounded-br-sm' : 'bg-white text-gray-800 border border-gray-100 rounded-bl-sm'}`}>
+                                    {m.senderId !== user?.id && <div className="text-xs font-bold opacity-70 mb-1">{m.senderName}</div>}
+                                    {m.type === 'STICKER' ? (
+                                       <div className="text-5xl my-1">{m.content}</div>
+                                    ) : m.type === 'IMAGE' ? (
+                                       <img src={m.content} alt="Sent" className="max-w-full rounded-lg my-1 border border-white/20" />
+                                    ) : (
+                                       <div className="whitespace-pre-wrap text-sm md:text-base">{m.content}</div>
+                                    )}
+                                    <div className="text-[10px] opacity-60 text-right mt-1">{new Date(m.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
+                                 </div>
+                              )}
+                           </div>
+                        ))}
+                        <div ref={messagesEndRef} />
+                     </div>
+
+                     {/* Input Area */}
+                     <div className="p-3 md:p-4 border-t bg-white">
+                        <input type="file" accept="image/*" className="hidden" ref={fileInputRef} onChange={handleImageUpload} />
+                        <div className="flex gap-2 mb-3 overflow-x-auto pb-2 no-scrollbar">
+                           {STICKERS.map(s => (
+                              <button key={s} onClick={() => handleSendSticker(s)} className="text-2xl hover:bg-gray-100 p-2 rounded-xl transition-colors">{s}</button>
+                           ))}
+                        </div>
+                        <div className="flex gap-2 md:gap-3">
+                           <button onClick={handleTriggerImageUpload} className="p-3 text-gray-500 hover:bg-indigo-50 hover:text-indigo-600 rounded-full transition-colors flex-shrink-0">
+                              <ImageIcon className="h-6 w-6" />
+                           </button>
+                           <input
+                              value={msgText}
+                              onChange={e => setMsgText(e.target.value)}
+                              onKeyDown={e => e.key === 'Enter' && handleSendMessage()}
+                              placeholder={`Nhập tin nhắn (${currentViewRoomId === 'MAIN' ? 'Chính' : 'Nhóm'})...`}
+                              className="flex-1 border border-gray-300 bg-white text-gray-900 rounded-full px-4 py-3 text-sm focus:ring-2 focus:ring-indigo-500 outline-none shadow-sm transition-shadow"
+                           />
+                           <button onClick={handleSendMessage} className="p-3 bg-indigo-600 text-white rounded-full hover:bg-indigo-700 shadow-md hover:scale-105 transition-all flex-shrink-0"><Send className="h-5 w-5" /></button>
+                        </div>
+                     </div>
+                  </>
+               )}
             </div>
 
             {/* Sidebar */}

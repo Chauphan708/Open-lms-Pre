@@ -1144,3 +1144,103 @@ CẤU TRÚC JSON YÊU CẦU:
   }
 };
 
+/**
+ * Trích xuất danh sách câu hỏi từ hình ảnh đề thi (OCR) bằng Gemini 2.0.
+ */
+export const parseQuestionsFromImage = async (base64Image: string, mimeType: string): Promise<Question[]> => {
+  const ai = getAiClient();
+
+  const prompt = `
+    Bạn là một trợ lý AI OCR chuyên trích xuất đề thi từ hình ảnh cho hệ thống LMS.
+    Hãy phân tích hình ảnh đính kèm có chứa đề thi hoặc danh sách câu hỏi.
+    Nhận diện chữ viết và toán học trong ảnh, sau đó chuyển toàn bộ các câu hỏi tìm thấy thành cấu trúc JSON array.
+    
+    Quy tắc trích xuất:
+    1. Nhận diện phần câu hỏi và các lựa chọn đáp án (A, B, C, D) cho các câu hỏi trắc nghiệm (MCQ).
+    2. Chuyển đổi công thức toán học thành định dạng LaTeX nằm giữa dấu $ đơn, ví dụ: $y = x^2 + 2x$.
+    3. Nếu là câu hỏi tự luận ngắn hoặc điền từ, thiết lập questionType là SHORT_ANSWER hoặc DRAG_DROP thích hợp và lưu trữ đáp án đúng vào mảng 'options'.
+    4. Trích xuất hoặc tự suy luận lời giải 'solution' và gợi ý gợi mở 'hint'.
+    5. Đặt độ khó level tương ứng (NHAN_BIET, KET_NOI, VAN_DUNG).
+    6. Trả về đúng định dạng JSON Array chứa các câu hỏi.
+  `;
+
+  // Base64 string must not contain headers like "data:image/jpeg;base64,"
+  const cleanBase64 = base64Image.includes(';base64,') 
+    ? base64Image.split(';base64,')[1] 
+    : base64Image;
+
+  const inlineDataPart = {
+    inlineData: {
+      data: cleanBase64,
+      mimeType: mimeType
+    }
+  };
+
+  const parseResponse = (text: string): Question[] => {
+    const cleanedText = cleanJsonString(text || "[]");
+    const parsedData = JSON.parse(cleanedText);
+    return parsedData.map((item: any, index: number) => ({
+      id: `gen_ocr_${Date.now()}_${index}`,
+      type: (item.questionType || 'MCQ') as any,
+      content: item.content || '',
+      imageUrl: item.imageUrl,
+      options: item.options || [],
+      correctOptionIndex: item.correctOptionIndex === -1 ? undefined : item.correctOptionIndex,
+      solution: item.solution || '',
+      hint: item.hint || '',
+      level: item.level || undefined,
+      topic: item.topic || undefined
+    }));
+  };
+
+  let lastError: any = null;
+
+  for (const modelId of AI_MODELS) {
+    try {
+      console.log(`[OCR Parse] Trying ${modelId} with schema...`);
+      const response = await ai.models.generateContent({
+        model: modelId,
+        contents: [
+          prompt,
+          inlineDataPart
+        ],
+        config: {
+          responseMimeType: "application/json",
+          responseSchema: QUESTION_SCHEMA
+        }
+      });
+      const result = parseResponse(response.text || "[]");
+      console.log(`[OCR Parse] Success with ${modelId}! Got ${result.length} questions.`);
+      return result;
+    } catch (schemaError: any) {
+      console.warn(`[OCR Parse] ${modelId} failed:`, schemaError?.message || schemaError);
+      lastError = schemaError;
+      const errMsg = schemaError?.message || '';
+      if (errMsg.includes('429') || errMsg.includes('quota') || errMsg.includes('RESOURCE_EXHAUSTED')) {
+        continue;
+      }
+      
+      try {
+        console.log(`[OCR Parse] Retrying ${modelId} without schema...`);
+        const response = await ai.models.generateContent({
+          model: modelId,
+          contents: [
+            prompt + "\n\nIMPORTANT: Return ONLY a valid JSON array matching the schema.",
+            inlineDataPart
+          ],
+          config: {
+            responseMimeType: "application/json"
+          }
+        });
+        const result = parseResponse(response.text || "[]");
+        return result;
+      } catch (err) {
+        lastError = err;
+      }
+    }
+  }
+
+  throw new Error(lastError?.message || "Không thể OCR hình ảnh đề thi bằng AI.");
+};
+
+
