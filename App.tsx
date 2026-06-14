@@ -501,32 +501,32 @@ function App() {
 
         {/* ARENA ROUTES */}
         <Route path="/arena" element={
-          <ProtectedRoute roles={['STUDENT']}>
+          <ProtectedRoute roles={['STUDENT', 'TEACHER', 'ADMIN']}>
             <ArenaHome />
           </ProtectedRoute>
         } />
         <Route path="/arena/dashboard" element={
-          <ProtectedRoute roles={['STUDENT']}>
+          <ProtectedRoute roles={['STUDENT', 'TEACHER', 'ADMIN']}>
             <ArenaDashboard />
           </ProtectedRoute>
         } />
         <Route path="/arena/tower" element={
-          <ProtectedRoute roles={['STUDENT']}>
+          <ProtectedRoute roles={['STUDENT', 'TEACHER', 'ADMIN']}>
             <TowerMode />
           </ProtectedRoute>
         } />
         <Route path="/arena/pvp" element={
-          <ProtectedRoute roles={['STUDENT']}>
+          <ProtectedRoute roles={['STUDENT', 'TEACHER', 'ADMIN']}>
             <PvPLobby />
           </ProtectedRoute>
         } />
         <Route path="/arena/battle/:id" element={
-          <ProtectedRoute roles={['STUDENT']}>
+          <ProtectedRoute roles={['STUDENT', 'TEACHER', 'ADMIN']}>
             <PvPBattle />
           </ProtectedRoute>
         } />
         <Route path="/arena/result/:id" element={
-          <ProtectedRoute roles={['STUDENT']}>
+          <ProtectedRoute roles={['STUDENT', 'TEACHER', 'ADMIN']}>
             <MatchResult />
           </ProtectedRoute>
         } />
