@@ -46,6 +46,20 @@ const DEFAULT_TOPICS_BY_SUBJECT: Record<string, { topic: string; label: string }
     { topic: 'Phần cứng', label: '💻 Thiết bị máy tính' },
     { topic: 'Phần mềm', label: '💻 Phần mềm soạn thảo & Trình chiếu' },
     { topic: 'Internet', label: '💻 Mạng máy tính thế giới' },
+  ],
+  vietnamese: [
+    { topic: 'Luyện từ và câu', label: '📝 Luyện từ và câu' },
+    { topic: 'Tập làm văn', label: '📝 Tập làm văn' },
+    { topic: 'Chính tả', label: '📝 Quy tắc chính tả' }
+  ],
+  english: [
+    { topic: 'Vocabulary', label: '🌐 English Vocabulary' },
+    { topic: 'Grammar', label: '🌐 Grammar & Tenses' }
+  ],
+  history_geography: [
+    { topic: 'Địa lí Việt Nam', label: '⏳ Địa lí tự nhiên & Dân cư' },
+    { topic: 'Lịch sử thế kỉ XX', label: '⏳ Lịch sử Việt Nam hiện đại' },
+    { topic: 'Triều Nguyễn', label: '⏳ Lịch sử triều Nguyễn' }
   ]
 };
 
@@ -313,7 +327,7 @@ export const TowerMode: React.FC = () => {
           'MCQ', 
           'Nhận biết (Dễ)', 
           3, 
-          `Môn học ${selectedSubject === 'math' ? 'Toán' : selectedSubject === 'science' ? 'Khoa học' : 'Công nghệ'}. Hãy đặt các phương án A, B, C, D rõ ràng.`
+          `Môn học ${selectedSubject === 'math' ? 'Toán' : selectedSubject === 'science' ? 'Khoa học' : selectedSubject === 'technology' ? 'Công nghệ' : selectedSubject === 'vietnamese' ? 'Tiếng Việt' : selectedSubject === 'english' ? 'Tiếng Anh' : 'Lịch sử và Địa lí'}. Hãy đặt các phương án A, B, C, D rõ ràng.`
         );
         
         const mappedGenerated = generated.map((q, idx) => ({
@@ -835,6 +849,36 @@ export const TowerMode: React.FC = () => {
                 className={`py-2 rounded-xl text-xs font-black transition-all ${selectedSubject === 'technology' ? 'bg-emerald-600 text-white shadow-md' : 'bg-white/5 text-gray-400 hover:bg-white/10'}`}
               >
                 💻 Công nghệ
+              </button>
+              <button 
+                onClick={() => {
+                  setSelectedSubject('vietnamese');
+                  const list = availableTopics.filter(t => t.subject === 'vietnamese');
+                  if (list.length > 0) setSelectedTopic(list[0].topic);
+                }}
+                className={`py-2 rounded-xl text-xs font-black transition-all ${selectedSubject === 'vietnamese' ? 'bg-rose-600 text-white shadow-md' : 'bg-white/5 text-gray-400 hover:bg-white/10'}`}
+              >
+                📝 Tiếng Việt
+              </button>
+              <button 
+                onClick={() => {
+                  setSelectedSubject('english');
+                  const list = availableTopics.filter(t => t.subject === 'english');
+                  if (list.length > 0) setSelectedTopic(list[0].topic);
+                }}
+                className={`py-2 rounded-xl text-xs font-black transition-all ${selectedSubject === 'english' ? 'bg-teal-600 text-white shadow-md' : 'bg-white/5 text-gray-400 hover:bg-white/10'}`}
+              >
+                🌐 Tiếng Anh
+              </button>
+              <button 
+                onClick={() => {
+                  setSelectedSubject('history_geography');
+                  const list = availableTopics.filter(t => t.subject === 'history_geography');
+                  if (list.length > 0) setSelectedTopic(list[0].topic);
+                }}
+                className={`py-2 rounded-xl text-xs font-black transition-all ${selectedSubject === 'history_geography' ? 'bg-amber-600 text-white shadow-md' : 'bg-white/5 text-gray-400 hover:bg-white/10'}`}
+              >
+                ⏳ Lịch sử & Địa lí
               </button>
             </div>
 
