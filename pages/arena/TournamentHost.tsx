@@ -312,9 +312,10 @@ export const TournamentHost: React.FC = () => {
                                         className="flex-1 bg-gray-50 border rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-purple-500"
                                     >
                                         <option value="">Tất cả độ khó</option>
-                                        <option value="1">Dễ</option>
-                                        <option value="2">Trung bình</option>
-                                        <option value="3">Khó</option>
+                                        <option value="1">Mức 1</option>
+                                        <option value="2">Mức 2</option>
+                                        <option value="3">Mức 3</option>
+                                        <option value="4">Mức nâng cao</option>
                                     </select>
                                 </div>
 

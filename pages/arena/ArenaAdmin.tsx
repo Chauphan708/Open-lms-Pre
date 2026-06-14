@@ -16,9 +16,10 @@ const SUBJECTS = [
 ];
 
 const DIFFICULTIES = [
-    { value: 1, label: 'Dễ' },
-    { value: 2, label: 'Trung bình' },
-    { value: 3, label: 'Khó' },
+    { value: 1, label: 'Mức 1' },
+    { value: 2, label: 'Mức 2' },
+    { value: 3, label: 'Mức 3' },
+    { value: 4, label: 'Mức nâng cao' },
 ];
 
 export const ArenaAdmin: React.FC = () => {
@@ -585,15 +586,15 @@ export const ArenaAdmin: React.FC = () => {
             </div>
 
             {/* B2: Thống kê nhanh */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
+            <div className="grid grid-cols-2 sm:grid-cols-5 gap-4 mb-6">
                 <div className="bg-white rounded-2xl border p-4 shadow-sm text-center">
                     <div className="text-3xl font-black text-indigo-600">{arenaQuestions.length}</div>
                     <div className="text-xs text-gray-500 font-bold uppercase tracking-wider mt-1">Tổng câu hỏi</div>
                 </div>
                 {DIFFICULTIES.map(d => {
                     const count = arenaQuestions.filter(q => q.difficulty === d.value).length;
-                    const colors = ['', 'text-emerald-600', 'text-amber-600', 'text-red-600'];
-                    const bgColors = ['', 'bg-emerald-50/55', 'bg-amber-50/55', 'bg-red-50/55'];
+                    const colors = ['', 'text-emerald-600', 'text-amber-600', 'text-orange-600', 'text-red-600'];
+                    const bgColors = ['', 'bg-emerald-50/55', 'bg-amber-50/55', 'bg-orange-50/55', 'bg-red-50/55'];
                     return (
                         <div key={d.value} className={`bg-white rounded-2xl border p-4 shadow-sm text-center transition-all ${bgColors[d.value]}`}>
                             <div className={`text-3xl font-black ${colors[d.value]}`}>{count}</div>
