@@ -1,5 +1,5 @@
 -- ============================================
--- SQL MIGRATION: KHẮC PHỤC CẢNH BÁO BẢO MẬT RLS TRÊN SUPABASE (Đã sửa lỗi kiểu dữ liệu text = uuid)
+-- SQL MIGRATION: KHẮC PHỤC CẢNH BÁO BẢO MẬT RLS TRÊN SUPABASE (Sửa lỗi cột student_id ở ai_grading_reviews)
 -- Chạy đoạn mã này trong Supabase SQL Editor
 -- ============================================
 
@@ -105,7 +105,11 @@ CREATE POLICY "Read reviews"
   ON public.ai_grading_reviews FOR SELECT 
   TO authenticated 
   USING (
-    auth.uid()::text = student_id::text 
+    EXISTS (
+      SELECT 1 FROM public.ai_submissions 
+      WHERE ai_submissions.id = ai_grading_reviews.submission_id 
+      AND ai_submissions.student_id::text = auth.uid()::text
+    )
     OR (SELECT role FROM public.profiles WHERE id::text = auth.uid()::text) IN ('ADMIN', 'TEACHER')
   );
 
