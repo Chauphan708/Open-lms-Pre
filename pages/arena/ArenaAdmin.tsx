@@ -13,6 +13,7 @@ const SUBJECTS = [
     { value: 'technology', label: '💻 Công nghệ' },
     { value: 'vietnamese', label: '📝 Tiếng Việt' },
     { value: 'english', label: '🌐 Tiếng Anh' },
+    { value: 'history_geography', label: '⏳ Lịch sử và Địa lí' },
 ];
 
 const DIFFICULTIES = [
@@ -131,7 +132,7 @@ export const ArenaAdmin: React.FC = () => {
     const subjectMap: Record<string, string> = {
         'Toán': 'math', 'Khoa học': 'science', 'Công nghệ': 'technology',
         'Tiếng Việt': 'vietnamese', 'Tiếng Anh': 'english', 'Tin học': 'technology',
-        'Lịch sử và Địa lí': 'science'
+        'Lịch sử và Địa lí': 'history_geography'
     };
 
     const levelToDifficulty = (level?: string) => {
@@ -473,8 +474,8 @@ export const ArenaAdmin: React.FC = () => {
             }
 
             const difficulty = parseInt(diffStr?.trim());
-            if (isNaN(difficulty) || difficulty < 1 || difficulty > 3) {
-                errors.push(`Dòng ${i + 1}: Độ khó phải là 1-3 (nhận "${diffStr}")`);
+            if (isNaN(difficulty) || difficulty < 1 || difficulty > 4) {
+                errors.push(`Dòng ${i + 1}: Độ khó phải là 1-4 (nhận "${diffStr}")`);
                 continue;
             }
 
@@ -1034,6 +1035,9 @@ export const ArenaAdmin: React.FC = () => {
                                             <option value="Tiếng Việt">Tiếng Việt</option>
                                             <option value="Khoa học">Khoa học</option>
                                             <option value="Tiếng Anh">Tiếng Anh</option>
+                                            <option value="Lịch sử và Địa lí">Lịch sử và Địa lí</option>
+                                            <option value="Công nghệ">Công nghệ</option>
+                                            <option value="Tin học">Tin học</option>
                                         </select>
                                         <button onClick={selectAllBank} className="text-xs text-purple-600 font-bold hover:underline">
                                             {bankSelectedIds.size === bankMCQs.length && bankMCQs.length > 0 ? 'Bỏ chọn tất cả' : `Chọn tất cả (${bankMCQs.length})`}

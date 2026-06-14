@@ -16,6 +16,7 @@ const SUBJECTS = [
     { value: 'technology', label: '💻 Công nghệ' },
     { value: 'vietnamese', label: '📝 Tiếng Việt' },
     { value: 'english', label: '🌐 Tiếng Anh' },
+    { value: 'history_geography', label: '⏳ Lịch sử và Địa lí' },
 ];
 
 export const PvPLobby: React.FC = () => {
