@@ -284,6 +284,10 @@ export interface ArenaProfile {
   wins: number;
   losses: number;
   tower_floor: number;
+  daily_quests?: any[];
+  unlocked_badges?: string[];
+  active_title?: string;
+  topic_mastery?: Record<string, number>;
 }
 
 export interface ArenaQuestion {

@@ -32,11 +32,34 @@ export const createArenaSlice: StateCreator<AppState, [], [], ArenaSliceState> =
   },
 
   createArenaProfile: async (userId, avatarClass) => {
-    const profile = { id: userId, avatar_class: avatarClass, elo_rating: 1000, total_xp: 0, wins: 0, losses: 0, tower_floor: 1 };
+    const profile = { 
+      id: userId, 
+      avatar_class: avatarClass, 
+      elo_rating: 1000, 
+      total_xp: 0, 
+      wins: 0, 
+      losses: 0, 
+      tower_floor: 1,
+      daily_quests: [
+        { id: 'q1', text: 'Vượt tháp thích ứng: Trả lời đúng 5 câu liên tiếp', target: 5, current: 0, reward_xp: 30, completed: false, type: 'correct_streak' },
+        { id: 'q2', text: 'Tích lũy tri thức: Đạt 100% Mastery ở chuyên đề bất kỳ', target: 1, current: 0, reward_xp: 50, completed: false, type: 'mastery_100' },
+        { id: 'q3', text: 'Quyết chiến võ đài: Tham gia 1 trận PvP 1v1', target: 1, current: 0, reward_xp: 30, completed: false, type: 'pvp_match' }
+      ],
+      unlocked_badges: [],
+      active_title: 'Học Giả Tập Sự',
+      topic_mastery: {}
+    };
     const { error } = await supabase.from('arena_profiles').insert(profile);
     if (error) {
-      console.error('Lỗi tạo Arena Profile:', error);
-      alert(`Lỗi tạo hồ sơ Arena: ${error.message}\n\nHãy chạy script MIGRATION trong Supabase SQL Editor để cập nhật CHECK constraint.`);
+      console.warn('Lỗi tạo Arena Profile với cột mới, đang thử lại với các cột tối giản...', error.message);
+      const minProfile = { id: userId, avatar_class: avatarClass, elo_rating: 1000, total_xp: 0, wins: 0, losses: 0, tower_floor: 1 };
+      const { error: err2 } = await supabase.from('arena_profiles').insert(minProfile);
+      if (err2) {
+        console.error('Lỗi tạo Arena Profile tối giản:', err2);
+        alert(`Lỗi tạo hồ sơ Arena: ${err2.message}`);
+        return;
+      }
+      set({ arenaProfile: minProfile as any });
       return;
     }
     set({ arenaProfile: profile as any });

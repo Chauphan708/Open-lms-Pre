@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useStore } from '../../store';
 import { AvatarClass } from '../../types';
 import { Brain, Trophy, GraduationCap, BookOpen, Sparkles, Target, Heart, ArrowLeft, Star, Zap, HelpCircle, X } from 'lucide-react';
+import { getLeagueInfo } from './TowerMode';
 
 const AVATAR_CLASSES: { id: AvatarClass; name: string; icon: any; color: string; desc: string; emoji: string; lore: string }[] = [
     { id: 'scholar', name: 'Nhà Thông Thái', icon: BookOpen, color: '#6366f1', desc: 'Trí tuệ uyên bác', emoji: '📖', lore: '"Đọc vạn quyển sách, hiểu vạn lẽ đời"' },
@@ -158,12 +159,17 @@ export const ArenaHome: React.FC = () => {
                         {avatarInfo.emoji}
                     </div>
                     <div className="flex-1">
-                        <p className="text-purple-300 text-sm font-semibold tracking-wider mb-1 uppercase" style={{ color: avatarInfo.color }}>{avatarInfo.name}</p>
+                        <div className="flex items-center gap-2 mb-1">
+                            <p className="text-purple-300 text-sm font-semibold tracking-wider uppercase" style={{ color: avatarInfo.color }}>{avatarInfo.name}</p>
+                            <span className="text-[10px] bg-white/10 px-2.5 py-0.5 rounded border border-white/10 text-purple-300 font-bold uppercase">
+                                {arenaProfile.active_title || 'Học Giả Tập Sự'}
+                            </span>
+                        </div>
                         <h1 className="text-2xl font-black mb-3 text-white tracking-wide">{user?.name}</h1>
                         <div className="flex flex-wrap gap-3 text-sm">
                             <span className="flex items-center gap-1.5 bg-white/5 px-3.5 py-1.5 rounded-full border border-white/5">
-                                <Trophy className="h-4 w-4 text-yellow-400" />
-                                <span className="font-bold text-yellow-400">{arenaProfile.elo_rating}</span> Elo
+                                <span className="text-sm">{getLeagueInfo(arenaProfile.elo_rating).badge}</span>
+                                <span className="font-bold text-yellow-400">{arenaProfile.elo_rating}</span> Elo ({getLeagueInfo(arenaProfile.elo_rating).name})
                             </span>
                             <span className="flex items-center gap-1.5 bg-white/5 px-3.5 py-1.5 rounded-full border border-white/5">
                                 <Star className="h-4 w-4 text-emerald-400" />
@@ -251,6 +257,76 @@ export const ArenaHome: React.FC = () => {
                         <p className="text-xs text-gray-400">Xem Top học giả ELO cao nhất võ đài</p>
                     </div>
                 </button>
+            </div>
+ 
+            {/* Daily Quests & Badge Collection */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8 animate-fade-in" style={{ animationDelay: '0.4s' }}>
+                {/* Column 1: Daily Quests */}
+                <div className="glass-card rounded-2xl p-6 border border-white/5">
+                    <h3 className="text-lg font-black text-white mb-4 flex items-center gap-2">
+                        🎯 Nhiệm Vụ Hàng Ngày
+                    </h3>
+                    <div className="space-y-4">
+                        {(arenaProfile.daily_quests || [
+                            { id: 'q1', text: 'Vượt tháp thích ứng: Trả lời đúng 5 câu liên tiếp', target: 5, current: 0, reward_xp: 30, completed: false, type: 'correct_streak' },
+                            { id: 'q2', text: 'Tích lũy tri thức: Đạt 100% Mastery ở chuyên đề bất kỳ', target: 1, current: 0, reward_xp: 50, completed: false, type: 'mastery_100' },
+                            { id: 'q3', text: 'Quyết chiến võ đài: Tham gia 1 trận PvP 1v1', target: 1, current: 0, reward_xp: 30, completed: false, type: 'pvp_match' }
+                        ]).map((quest: any) => (
+                            <div key={quest.id} className="p-3 bg-[#080d16] rounded-xl border border-white/5 space-y-2">
+                                <div className="flex justify-between items-start gap-2">
+                                    <p className={`text-xs font-bold leading-relaxed ${quest.completed ? 'text-gray-500 line-through' : 'text-gray-200'}`}>
+                                        {quest.text}
+                                    </p>
+                                    <span className={`text-[9px] font-black px-2 py-0.5 rounded whitespace-nowrap ${quest.completed ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'}`}>
+                                        +{quest.reward_xp} XP
+                                    </span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <div className="h-1.5 flex-1 bg-white/5 rounded-full overflow-hidden">
+                                        <div className="h-full bg-gradient-to-r from-purple-500 to-indigo-500" style={{ width: `${(quest.current / quest.target) * 100}%` }}></div>
+                                    </div>
+                                    <span className="text-[10px] font-black text-gray-400 whitespace-nowrap">{quest.current}/{quest.target}</span>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+
+                {/* Column 2: Badge Collection */}
+                <div className="glass-card rounded-2xl p-6 border border-white/5">
+                    <h3 className="text-lg font-black text-white mb-4 flex items-center gap-2">
+                        🏆 Bộ Sưu Tập Huy Hiệu
+                    </h3>
+                    <div className="grid grid-cols-2 gap-3">
+                        {[
+                            { id: 'math_genius', name: 'Thiên Tài Trí Tuệ', desc: 'Đúng 10 câu liên tiếp', emoji: '🌟' },
+                            { id: 'tower_master', name: 'Bậc Thầy Chinh Phục', desc: 'Làm chủ 100% chuyên đề', emoji: '🏆' },
+                            { id: 'elo_champion', name: 'Nhà Thông Thái Vô Song', desc: 'Đạt thứ hạng Elo >= 1500', emoji: '👑' },
+                            { id: 'pvp_conqueror', name: 'Chiến Thần Võ Đài', desc: 'Thắng 5 trận PvP 1v1', emoji: '⚔️' }
+                        ].map(badge => {
+                            const isUnlocked = arenaProfile.unlocked_badges?.includes(badge.id);
+                            return (
+                                <div 
+                                    key={badge.id}
+                                    className={`p-3 rounded-xl border flex flex-col items-center text-center transition-all ${
+                                        isUnlocked 
+                                            ? 'border-purple-500/30 bg-purple-950/10 text-white shadow-md shadow-purple-950/20' 
+                                            : 'border-white/5 bg-white/5 text-gray-500 opacity-40'
+                                    }`}
+                                >
+                                    <span className={`text-3xl mb-1.5 ${isUnlocked ? 'animate-pulse' : 'filter grayscale'}`}>{badge.emoji}</span>
+                                    <h4 className="text-xs font-black truncate w-full">{badge.name}</h4>
+                                    <p className="text-[9px] text-gray-400 mt-1 leading-tight">{badge.desc}</p>
+                                    {isUnlocked ? (
+                                        <span className="text-[8px] bg-purple-500/20 text-purple-400 px-1.5 py-0.5 rounded mt-1.5 font-bold uppercase">Đã mở khóa</span>
+                                    ) : (
+                                        <span className="text-[8px] bg-white/5 text-gray-500 px-1.5 py-0.5 rounded mt-1.5 font-bold uppercase">Chưa mở khóa</span>
+                                    )}
+                                </div>
+                            );
+                        })}
+                    </div>
+                </div>
             </div>
 
             {/* Help Modal */}

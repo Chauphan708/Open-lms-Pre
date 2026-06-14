@@ -1243,4 +1243,34 @@ export const parseQuestionsFromImage = async (base64Image: string, mimeType: str
   throw new Error(lastError?.message || "Không thể OCR hình ảnh đề thi bằng AI.");
 };
 
+/**
+ * Giải thích nhanh lỗi sai của học sinh.
+ */
+export const explainQuestionError = async (
+  questionContent: string,
+  studentAnswer: string,
+  correctAnswer: string
+): Promise<string> => {
+  const ai = getAiClient();
+  const modelId = "gemini-2.0-flash";
+  const prompt = `Bạn là Trợ lý Giáo viên AI của OpenLMS. Học sinh vừa làm sai câu hỏi sau:
+  Câu hỏi: "${questionContent}"
+  Đáp án học sinh chọn: "${studentAnswer}"
+  Đáp án đúng: "${correctAnswer}"
+  
+  Hãy giải thích ngắn gọn (2-3 câu, tối đa 100 từ) bằng tiếng Việt lý do tại sao học sinh sai và cách tính/quy trình đúng để giải quyết câu này. Hãy dùng LaTeX ($...$) cho các công thức toán nếu có. Trả lời bằng định dạng Markdown thân thiện.`;
+  
+  try {
+    const response = await ai.models.generateContent({
+      model: modelId,
+      contents: prompt
+    });
+    return response.text || "Không thể tải lời giải lý thuyết lúc này.";
+  } catch (e) {
+    console.error("Error explaining question error:", e);
+    return `Lời giải chi tiết: Đáp án đúng là "${correctAnswer}". Bạn hãy xem lại kiến thức chuyên đề này nhé.`;
+  }
+};
+
+
 
