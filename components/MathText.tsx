@@ -3,6 +3,7 @@ import React from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
+import 'katex/dist/katex.min.css';
 
 interface MathTextProps {
   children: string;
@@ -11,6 +12,17 @@ interface MathTextProps {
 }
 
 const MathText: React.FC<MathTextProps> = ({ children, className, inline = false }) => {
+  // Preprocess text to convert \( ... \) to $ ... $ and \[ ... \] to $$ ... $$
+  const processedText = React.useMemo(() => {
+    if (!children) return '';
+    let text = children;
+    // Replace \[ and \] with $$
+    text = text.replace(/\\\[/g, '$$$$').replace(/\\\]/g, '$$$$');
+    // Replace \( and \) with $
+    text = text.replace(/\\\(/g, '$$').replace(/\\\)/g, '$$');
+    return text;
+  }, [children]);
+
   return (
     <span className={className}>
       <ReactMarkdown
@@ -20,7 +32,7 @@ const MathText: React.FC<MathTextProps> = ({ children, className, inline = false
           p: ({ children }) => inline ? <span>{children}</span> : <p>{children}</p>,
         }}
       >
-        {children}
+        {processedText}
       </ReactMarkdown>
     </span>
   );

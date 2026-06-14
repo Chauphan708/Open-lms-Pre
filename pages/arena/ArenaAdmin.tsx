@@ -419,6 +419,90 @@ export const ArenaAdmin: React.FC = () => {
         });
     };
 
+    const handleDownloadTemplate = () => {
+        const headers = [
+            'Câu hỏi',
+            'Đáp án A',
+            'Đáp án B',
+            'Đáp án C',
+            'Đáp án D',
+            'Đáp án đúng (A/B/C/D)',
+            'Độ khó (1-4)',
+            'Môn (math/science/technology/vietnamese/english/history_geography)',
+            'Chủ đề',
+            'Thời gian làm bài (giây)',
+            'XP thưởng',
+            'Loại (MCQ/MCQ_MULTIPLE/SHORT_ANSWER)',
+            'Các đáp án đúng (tách nhau bằng dấu gạch ngang dọc VD: 0|2 cho A và C)',
+            'Chuỗi đáp án điền từ'
+        ];
+        const sampleRows = [
+            [
+                'Phân số 3/4 viết dưới dạng số thập phân là bao nhiêu?',
+                '0,75',
+                '0,5',
+                '0,25',
+                '0,8',
+                'A',
+                '1',
+                'math',
+                'Phân số & Số thập phân',
+                '30',
+                '10',
+                'MCQ',
+                '',
+                ''
+            ],
+            [
+                'Chọn các số nguyên tố nhỏ hơn 10',
+                '2',
+                '4',
+                '7',
+                '9',
+                '',
+                '2',
+                'math',
+                'Số nguyên tố',
+                '30',
+                '15',
+                'MCQ_MULTIPLE',
+                '0|2',
+                ''
+            ],
+            [
+                'Thủ đô của Việt Nam là thành phố nào?',
+                '',
+                '',
+                '',
+                '',
+                '',
+                '1',
+                'history_geography',
+                'Địa lí Việt Nam',
+                '30',
+                '10',
+                'SHORT_ANSWER',
+                '',
+                'Hà Nội|Thành phố Hà Nội'
+            ]
+        ];
+        
+        const csvContent = [
+            headers.join(','),
+            ...sampleRows.map(row => row.map(val => `"${val.replace(/"/g, '""')}"`).join(','))
+        ].join('\n');
+        
+        const blob = new Blob([new Uint8Array([0xEF, 0xBB, 0xBF]), csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.setAttribute('href', url);
+        link.setAttribute('download', 'arena_questions_template.csv');
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
+
     // CSV Import parsing
     const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -945,13 +1029,22 @@ export const ArenaAdmin: React.FC = () => {
                             ) : (
                                 <>
                                     {/* Instructions */}
-                                    <div className="bg-indigo-50 border border-indigo-100 rounded-xl p-4 text-sm text-indigo-700">
-                                        <p className="font-bold mb-1">📋 Hướng dẫn:</p>
-                                        <ol className="list-decimal pl-5 space-y-1 text-xs">
-                                            <li>Tải file mẫu CSV bằng nút "File mẫu" ở trên</li>
-                                            <li>Điền câu hỏi vào file theo mẫu</li>
-                                            <li>Chọn file dưới đây để import</li>
-                                        </ol>
+                                    <div className="bg-indigo-50 border border-indigo-100 rounded-xl p-4 text-sm text-indigo-700 flex flex-col gap-2.5">
+                                        <div>
+                                            <p className="font-bold mb-1">📋 Hướng dẫn:</p>
+                                            <ol className="list-decimal pl-5 space-y-1 text-xs">
+                                                <li>Nhấn nút "Tải file mẫu CSV" bên dưới để lấy file chuẩn</li>
+                                                <li>Điền câu hỏi vào file theo định dạng mẫu</li>
+                                                <li>Chọn file dưới đây để import vào hệ thống</li>
+                                            </ol>
+                                        </div>
+                                        <button
+                                            type="button"
+                                            onClick={handleDownloadTemplate}
+                                            className="self-start px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm hover:scale-[1.02] active:scale-[0.98]"
+                                        >
+                                            <Download className="h-3.5 w-3.5" /> Tải file mẫu CSV
+                                        </button>
                                     </div>
 
                                     {/* File input */}
