@@ -224,6 +224,63 @@ export const ClassFunRecord: React.FC = () => {
         setTimeout(() => setShowSuccess(null), 2000);
     };
 
+    const applyQuickPoints = async (points: number, reasonText: string) => {
+        if (selectedStudentIds.length === 0) return;
+        const reason = reasonText.trim() || (points > 0 ? 'Khen ngợi nhanh' : 'Nhắc nhở nhanh');
+        const logsToAdd = selectedStudentIds.map(sid => ({
+            student_id: sid,
+            class_id: selectedClassId,
+            behavior_id: null,
+            points: points,
+            reason: reason,
+            recorded_by: user?.id || null,
+        }));
+        await batchAddBehaviorLogs(logsToAdd);
+
+        // Notify students
+        if (selectedClass) {
+            const newScores = new Map<string, number>(studentScores);
+            selectedStudentIds.forEach(sid => {
+                newScores.set(sid, (newScores.get(sid) || 0) + points);
+            });
+
+            const sortedStudents = [...classStudents].sort((a, b) => (newScores.get(b.id) || 0) - (newScores.get(a.id) || 0));
+
+            selectedStudentIds.forEach(async (sid) => {
+                const rank = sortedStudents.findIndex(s => s.id === sid) + 1;
+
+                useStore.getState().addNotification({
+                    id: `notif_beh_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
+                    userId: sid,
+                    type: points > 0 ? 'SUCCESS' : 'WARNING',
+                    title: points > 0 ? 'Tích cực' : 'Cần cố gắng',
+                    message: `Bạn vừa được ${points > 0 ? 'cộng' : 'trừ'} ${Math.abs(points)} điểm. Lý do: ${reason}.`,
+                    link: '/',
+                    isRead: false,
+                    createdAt: new Date().toISOString()
+                });
+
+                if (rank > 0 && rank <= 10) {
+                    useStore.getState().addNotification({
+                        id: `notif_top10_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
+                        userId: sid,
+                        type: 'INFO',
+                        title: 'Bảng Vàng Đấu Trí',
+                        message: `Chúc mừng bạn! Bạn đang xếp thứ ${rank} toàn lớp với ${(newScores.get(sid) || 0)} điểm tích luỹ. Hãy duy trì nhé!`,
+                        link: '/',
+                        isRead: false,
+                        createdAt: new Date().toISOString()
+                    });
+                }
+            });
+        }
+
+        setShowSuccess({ points, count: selectedStudentIds.length });
+        setSelectedStudentIds([]);
+        setCustomReason('');
+        setTimeout(() => setShowSuccess(null), 2000);
+    };
+
     // Add custom behavior
     const handleAddBehavior = async () => {
         if (!newBehavior.description.trim() || !user?.id) return;
@@ -587,12 +644,72 @@ export const ClassFunRecord: React.FC = () => {
 
                 {/* Behavior Selection Panel */}
                 <div className="lg:col-span-3 space-y-5">
-                    {/* Custom reason */}
+                    {/* Cộng/Trừ Điểm Nhanh */}
                     <div className="bg-white rounded-xl shadow-sm border p-5">
-                        <label className="block text-sm font-semibold text-gray-700 mb-2">Ghi chú riêng (không bắt buộc)</label>
-                        <input value={customReason} onChange={e => setCustomReason(e.target.value)}
-                            placeholder="VD: Hăng hái phát biểu tiết Toán"
-                            className="w-full px-4 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none" />
+                        <h2 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+                            <Zap className="h-5 w-5 text-amber-500" /> Cộng / Trừ Điểm Nhanh
+                        </h2>
+                        
+                        <div className="space-y-4">
+                            {/* Positive Points Buttons */}
+                            <div>
+                                <span className="block text-[11px] font-black text-emerald-700 uppercase tracking-wider mb-2">Điểm cộng (+)</span>
+                                <div className="grid grid-cols-4 gap-2">
+                                    {[1, 2, 5, 10].map(pts => (
+                                        <button
+                                            key={`pos-${pts}`}
+                                            onClick={() => applyQuickPoints(pts, customReason)}
+                                            disabled={selectedStudentIds.length === 0}
+                                            className={`py-2 px-3 rounded-lg border-2 text-center font-black transition-all ${
+                                                selectedStudentIds.length > 0
+                                                    ? 'border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 hover:border-emerald-400 active:scale-95'
+                                                    : 'border-gray-100 bg-gray-50 text-gray-400 opacity-60 cursor-not-allowed'
+                                            }`}
+                                        >
+                                            +{pts}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Negative Points Buttons */}
+                            <div>
+                                <span className="block text-[11px] font-black text-red-700 uppercase tracking-wider mb-2">Điểm trừ (-)</span>
+                                <div className="grid grid-cols-4 gap-2">
+                                    {[1, 2, 5, 10].map(pts => (
+                                        <button
+                                            key={`neg-${pts}`}
+                                            onClick={() => applyQuickPoints(-pts, customReason)}
+                                            disabled={selectedStudentIds.length === 0}
+                                            className={`py-2 px-3 rounded-lg border-2 text-center font-black transition-all ${
+                                                selectedStudentIds.length > 0
+                                                    ? 'border-red-200 bg-red-50 text-red-700 hover:bg-red-100 hover:border-red-400 active:scale-95'
+                                                    : 'border-gray-100 bg-gray-50 text-gray-400 opacity-60 cursor-not-allowed'
+                                            }`}
+                                        >
+                                            -{pts}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Note input */}
+                            <div>
+                                <label className="block text-xs font-bold text-gray-500 mb-1">Lý do / Ghi chú (không bắt buộc)</label>
+                                <input 
+                                    value={customReason} 
+                                    onChange={e => setCustomReason(e.target.value)}
+                                    placeholder="VD: Hăng hái phát biểu, Nói chuyện riêng..."
+                                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:border-indigo-500 focus:ring-4 focus:ring-indigo-50/50 outline-none transition-all font-medium" 
+                                />
+                            </div>
+                            
+                            {selectedStudentIds.length === 0 && (
+                                <p className="text-[11px] font-bold text-amber-600 bg-amber-50 border border-amber-100 p-2.5 rounded-lg text-center">
+                                    💡 Chọn học sinh ở danh sách bên trái để mở khoá cộng/trừ điểm nhanh.
+                                </p>
+                            )}
+                        </div>
                     </div>
 
                     {/* Positive behaviors */}
@@ -601,7 +718,15 @@ export const ClassFunRecord: React.FC = () => {
                             <ThumbsUp className="h-5 w-5" /> Hành vi tích cực
                         </h2>
                         {positiveBehaviors.length === 0 ? (
-                            <p className="text-center text-gray-400 text-sm py-6">Chưa có hành vi nào. Nhấn "Quản lý hành vi" để thêm.</p>
+                            <div className="text-center py-6 border border-dashed rounded-xl border-gray-200 bg-gray-50/50">
+                                <p className="text-gray-400 text-sm mb-3">Chưa có tiêu chí hành vi tích cực nào.</p>
+                                <button 
+                                    onClick={seedDefaults}
+                                    className="px-4 py-2 bg-emerald-600 text-white rounded-xl font-bold text-xs hover:bg-emerald-700 transition"
+                                >
+                                    ✨ Khởi tạo nhanh hành vi mẫu
+                                </button>
+                            </div>
                         ) : (
                             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                                 {positiveBehaviors.map(b => (
@@ -625,7 +750,15 @@ export const ClassFunRecord: React.FC = () => {
                             <ThumbsDown className="h-5 w-5" /> Hành vi cần nhắc nhở
                         </h2>
                         {negativeBehaviors.length === 0 ? (
-                            <p className="text-center text-gray-400 text-sm py-6">Chưa có hành vi nào.</p>
+                            <div className="text-center py-6 border border-dashed rounded-xl border-gray-200 bg-gray-50/50">
+                                <p className="text-gray-400 text-sm mb-3">Chưa có tiêu chí hành vi nhắc nhở nào.</p>
+                                <button 
+                                    onClick={seedDefaults}
+                                    className="px-4 py-2 bg-indigo-600 text-white rounded-xl font-bold text-xs hover:bg-indigo-700 transition"
+                                >
+                                    ✨ Khởi tạo nhanh hành vi mẫu
+                                </button>
+                            </div>
                         ) : (
                             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                                 {negativeBehaviors.map(b => (
