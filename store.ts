@@ -53,57 +53,76 @@ export const useStore = create<AppState>((set, get, api) => ({
       set({ isDataLoading: true });
     }
 
-    try {
-      // 1. Chỉ tải Users (Profiles) nếu là Admin/Teacher
-      if (user && (user.role === 'ADMIN' || user.role === 'TEACHER')) {
-        const { data: foundUsers } = await supabase.from('profiles').select('*');
-        if (foundUsers && foundUsers.length > 0) {
-          set({ users: foundUsers as User[] });
-          localStorage.setItem('cache_initial_users', JSON.stringify(foundUsers));
+    // Định nghĩa các promise chạy song song
+    const fetchPromises: PromiseLike<any>[] = [];
+
+    // 1. Tải Profiles (Chỉ tải nếu là Admin/Teacher)
+    let usersPromise: PromiseLike<any> = Promise.resolve(null);
+    if (user && (user.role === 'ADMIN' || user.role === 'TEACHER')) {
+      usersPromise = supabase.from('profiles').select('*').then(({ data }) => {
+        if (data && data.length > 0) {
+          set({ users: data as User[] });
+          localStorage.setItem('cache_initial_users', JSON.stringify(data));
         }
-      } else {
-         set({ users: [] });
+      });
+      fetchPromises.push(usersPromise);
+    } else {
+      set({ users: [] });
+    }
+
+    // 2. Tải Academic Years
+    const yearsPromise = supabase.from('academic_years').select('*').then(({ data }) => {
+      if (data) {
+        set({ academicYears: data as AcademicYear[] });
+        localStorage.setItem('cache_initial_years', JSON.stringify(data));
       }
+    });
+    fetchPromises.push(yearsPromise);
 
-      // 2. Tải Academic Years (Dữ liệu tĩnh, nhẹ)
-      const { data: years } = await supabase.from('academic_years').select('*');
-      if (years) {
-        set({ academicYears: years as AcademicYear[] });
-        localStorage.setItem('cache_initial_years', JSON.stringify(years));
-      }
+    // Nếu chưa đăng nhập, dọn dẹp các state chuyên biệt
+    if (!user) {
+      set({ exams: [], assignments: [], classes: [], questionBank: [], notifications: [], attempts: [], resources: [], discussionSessions: [] });
+      set({ isDataLoading: false });
+      return;
+    }
 
-      // Nếu chưa đăng nhập, dọn dẹp các state chuyên biệt
-      if (!user) {
-        set({ exams: [], assignments: [], classes: [], questionBank: [], notifications: [], attempts: [], resources: [], discussionSessions: [] });
-        set({ isDataLoading: false });
-        return;
-      }
+    const isAdmin = user.role === 'ADMIN';
+    const isTeacher = user.role === 'TEACHER';
+    const isStudent = user.role === 'STUDENT';
 
-      const isAdmin = user.role === 'ADMIN';
-      const isTeacher = user.role === 'TEACHER';
-      const isStudent = user.role === 'STUDENT';
+    // 3. Tải Notifications
+    const notificationsPromise = supabase.from('notifications')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false })
+      .limit(20)
+      .then(({ data }) => {
+        if (data) {
+          set({ notifications: data.map(n => ({
+            id: String(n.id),
+            userId: String(n.user_id),
+            type: n.type || 'INFO',
+            title: n.title,
+            message: n.message,
+            isRead: !!n.is_read,
+            createdAt: n.created_at,
+            link: n.link,
+            payload: n.payload
+          })) });
+        }
+      });
+    fetchPromises.push(notificationsPromise);
 
-      // 3. Tải Notifications (Chỉ lấy unread và giới hạn tối đa 20 thông báo gần nhất)
-      const { data: notificationData } = await supabase.from('notifications')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false })
-        .limit(20);
-      if (notificationData) {
-        set({ notifications: notificationData.map(n => ({
-          id: String(n.id),
-          userId: String(n.user_id),
-          type: n.type || 'INFO',
-          title: n.title,
-          message: n.message,
-          isRead: !!n.is_read,
-          createdAt: n.created_at,
-          link: n.link,
-          payload: n.payload
-        })) });
-      }
+    // 4. Tải Cài Đặt Trang (Site Settings)
+    const settingsPromise = get().fetchSiteSettings();
+    fetchPromises.push(settingsPromise);
 
-      // --- CÀI ĐẶT SUBSCRIPTIONS REALTIME ---
+    // 5. Tải Custom Topics
+    const topicsPromise = get().fetchCustomTopics();
+    fetchPromises.push(topicsPromise);
+
+    // Đăng ký Realtime
+    try {
       // Attempts Realtime
       supabase
         .channel('schema-db-changes')
@@ -161,16 +180,17 @@ export const useStore = create<AppState>((set, get, api) => ({
           }
         )
         .subscribe();
+    } catch (realtimeErr) {
+      console.warn("Realtime channel failed to initialize:", realtimeErr);
+    }
 
-      // 4. Tải Cài Đặt Trang (Site Settings)
-      await get().fetchSiteSettings();
-
+    // Chạy đồng thời toàn bộ các Promises
+    try {
+      await Promise.all(fetchPromises);
     } catch (e) {
-      console.error("Error fetching initial data (Global):", e);
+      console.error("Error fetching initial data (Global Promise.all):", e);
       if (get().users.length === 0) set({ users: SEED_USERS });
     } finally {
-      // 5. Tải Custom Topics (Nhẹ, không gây nghẽn)
-      await get().fetchCustomTopics();
       set({ isDataLoading: false });
     }
   },
