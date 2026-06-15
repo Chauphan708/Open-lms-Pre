@@ -146,16 +146,26 @@ export const useEvaluationStore = create<EvaluationState>((set, get) => ({
     }
   },
 
-  // --- Lưu 1 đánh giá (upsert) ---
+  // --- Lưu 1 đánh giá ---
   saveEvaluation: async (evaluation) => {
     try {
       const now = new Date().toISOString();
+      let query;
       
-      // Chèn/Cập nhật dữ liệu
-      const { data, error } = await supabase
-        .from('daily_evaluations')
-        .upsert(evaluation, { onConflict: 'student_id,teacher_id,evaluation_date' })
-        .select();
+      // Nếu có id, thực hiện cập nhật (upsert), nếu không thì insert mới
+      if ((evaluation as any).id) {
+        query = supabase
+          .from('daily_evaluations')
+          .upsert(evaluation)
+          .select();
+      } else {
+        query = supabase
+          .from('daily_evaluations')
+          .insert(evaluation)
+          .select();
+      }
+
+      const { data, error } = await query;
 
       if (error) {
         console.error('Lỗi chi tiết từ Supabase (DailyEval):', error.message, error.details, error.hint);
@@ -171,7 +181,7 @@ export const useEvaluationStore = create<EvaluationState>((set, get) => ({
 
       // Cập nhật local state
       set(s => {
-        const existingIdx = s.evaluations.findIndex(e => e.student_id === savedEval.student_id && e.evaluation_date === savedEval.evaluation_date);
+        const existingIdx = s.evaluations.findIndex(e => e.id === savedEval.id);
         if (existingIdx >= 0) {
           const updated = [...s.evaluations];
           updated[existingIdx] = savedEval;
@@ -208,9 +218,10 @@ export const useEvaluationStore = create<EvaluationState>((set, get) => ({
         updated_at: now,
       }));
 
+      // Khi chèn hàng loạt cho phép nhiều nhận xét trong ngày, ta insert trực tiếp chứ không upsert đè
       const { data: savedData, error } = await supabase
         .from('daily_evaluations')
-        .upsert(payloads, { onConflict: 'student_id,teacher_id,evaluation_date' })
+        .insert(payloads)
         .select();
 
       if (error) {
@@ -226,7 +237,7 @@ export const useEvaluationStore = create<EvaluationState>((set, get) => ({
       set(s => {
         const newEvalsArr = [...s.evaluations];
         savedEvals.forEach(savedItem => {
-          const idx = newEvalsArr.findIndex(e => e.student_id === savedItem.student_id && e.evaluation_date === savedItem.evaluation_date);
+          const idx = newEvalsArr.findIndex(e => e.id === savedItem.id);
           if (idx >= 0) {
             newEvalsArr[idx] = savedItem;
           } else {

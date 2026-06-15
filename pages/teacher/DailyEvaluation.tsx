@@ -298,6 +298,67 @@ const EvaluationModal: React.FC<{
           </div>
         )}
 
+        {/* Quick Presets Panel */}
+        <div className="px-5 py-3.5 bg-gradient-to-r from-indigo-50 to-purple-50 border-b flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex items-center gap-1.5">
+            <Sparkles className="h-4 w-4 text-indigo-600 animate-pulse" />
+            <span className="text-xs font-black text-indigo-900 uppercase tracking-wider">Đánh giá nhanh 1-chạm:</span>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                const newSubs = { ...subjects };
+                SUBJECT_LIST.forEach(item => { newSubs[item.key] = { rating: 'T', comment: newSubs[item.key]?.comment || '' }; });
+                const newComps = { ...competencies };
+                COMPETENCY_LIST.forEach(item => { newComps[item.key] = { rating: 'T', comment: newComps[item.key]?.comment || '' }; });
+                const newQuas = { ...qualities };
+                QUALITY_LIST.forEach(item => { newQuas[item.key] = { rating: 'T', comment: newQuas[item.key]?.comment || '' }; });
+                
+                setSubjects(newSubs);
+                setCompetencies(newComps);
+                setQualities(newQuas);
+                setGeneralComment("Hoàn thành tốt các nội dung học tập, tích hoạt động phát biểu xây dựng bài, năng động và có phẩm chất tốt.");
+              }}
+              className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-black shadow-sm transition-all"
+            >
+              🌟 Tốt hết (T) + Nhận xét mẫu
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                const newSubs = { ...subjects };
+                SUBJECT_LIST.forEach(item => { newSubs[item.key] = { rating: 'H', comment: newSubs[item.key]?.comment || '' }; });
+                const newComps = { ...competencies };
+                COMPETENCY_LIST.forEach(item => { newComps[item.key] = { rating: 'Đ', comment: newComps[item.key]?.comment || '' }; });
+                const newQuas = { ...qualities };
+                QUALITY_LIST.forEach(item => { newQuas[item.key] = { rating: 'Đ', comment: newQuas[item.key]?.comment || '' }; });
+                
+                setSubjects(newSubs);
+                setCompetencies(newComps);
+                setQualities(newQuas);
+                setGeneralComment("Hoàn thành đầy đủ nội dung các bài học, tiếp thu tốt, cần tự tin phát biểu xây dựng bài hơn.");
+              }}
+              className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-black shadow-sm transition-all"
+            >
+              ⭐ Đạt hết (H/Đ) + Nhận xét mẫu
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                const empty = createEmptyEvaluation();
+                setSubjects(empty.subjects);
+                setCompetencies(empty.competencies);
+                setQualities(empty.qualities);
+                setGeneralComment('');
+              }}
+              className="px-2.5 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-xs font-bold transition-all border"
+            >
+              Xoá sạch
+            </button>
+          </div>
+        </div>
+
         {/* Tabs */}
         <div className="flex border-b bg-gray-50">
           {TABS.map(tab => {
@@ -353,6 +414,28 @@ const EvaluationModal: React.FC<{
               placeholder="Nhận xét tổng quát cho học sinh..."
               suggestions={commentSuggestions}
             />
+            
+            <div className="flex flex-col gap-1.5 mt-2">
+              <span className="text-[10px] font-black text-indigo-500 uppercase">Gợi ý nhận xét nhanh:</span>
+              <div className="flex flex-wrap gap-1.5">
+                {[
+                  "Hoàn thành tốt các nhiệm vụ học tập, có tinh thần tự giác cao.",
+                  "Tiếp thu bài nhanh, làm bài tập đầy đủ, tích cực hợp tác với bạn bè.",
+                  "Có tiến bộ trong học tập, chú ý lắng nghe cô giảng bài.",
+                  "Cần tập trung hơn trong giờ học, tích cực phát biểu xây dựng bài."
+                ].map((sug, idx) => (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={() => setGeneralComment(sug)}
+                    className="text-[11px] text-gray-600 bg-white hover:bg-indigo-50 hover:text-indigo-700 px-2.5 py-1 rounded-md border text-left transition-all truncate max-w-[320px] font-medium"
+                    title={sug}
+                  >
+                    {sug}
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
 
@@ -480,12 +563,98 @@ export const DailyEvaluation: React.FC = () => {
     return classStudents.filter(s => s.name.toLowerCase().includes(lower));
   }, [classStudents, searchQuery]);
 
-  // Map đánh giá theo student_id
-  const evaluationMap = useMemo(() => {
-    const map: Record<string, DailyEvaluationType> = {};
-    evaluations.forEach(e => { map[e.student_id] = e; });
+  // Map danh sách các nhận xét trong ngày của học sinh (một HS có thể có nhiều nhận xét)
+  const studentEvaluationsMap = useMemo(() => {
+    const map: Record<string, DailyEvaluationType[]> = {};
+    evaluations.forEach(e => {
+      if (!map[e.student_id]) {
+        map[e.student_id] = [];
+      }
+      map[e.student_id].push(e);
+    });
     return map;
   }, [evaluations]);
+
+  // Nút Nhận xét siêu tốc trực tiếp trên danh sách
+  const handleQuickEvaluate = async (studentId: string, level: 'T' | 'H_Đ') => {
+    if (!user || !selectedClassId) return;
+    
+    const empty = createEmptyEvaluation();
+    const subjects = { ...empty.subjects };
+    const competencies = { ...empty.competencies };
+    const qualities = { ...empty.qualities };
+    let generalComment = '';
+
+    if (level === 'T') {
+      SUBJECT_LIST.forEach(item => { subjects[item.key] = { rating: 'T', comment: '' }; });
+      COMPETENCY_LIST.forEach(item => { competencies[item.key] = { rating: 'T', comment: '' }; });
+      QUALITY_LIST.forEach(item => { qualities[item.key] = { rating: 'T', comment: '' }; });
+      generalComment = "Hoàn thành tốt các nội dung học tập, tích cực phát biểu xây dựng bài.";
+    } else {
+      SUBJECT_LIST.forEach(item => { subjects[item.key] = { rating: 'H', comment: '' }; });
+      COMPETENCY_LIST.forEach(item => { competencies[item.key] = { rating: 'Đ', comment: '' }; });
+      QUALITY_LIST.forEach(item => { qualities[item.key] = { rating: 'Đ', comment: '' }; });
+      generalComment = "Hoàn thành đầy đủ nội dung bài học, tiếp thu bài tốt.";
+    }
+
+    const { saveEvaluation } = useEvaluationStore.getState();
+    const success = await saveEvaluation({
+      student_id: studentId,
+      teacher_id: user.id,
+      class_id: selectedClassId,
+      evaluation_date: selectedDate,
+      subjects,
+      competencies,
+      qualities,
+      general_comment: generalComment,
+    });
+
+    if (success) {
+      fetchEvaluations(selectedClassId, selectedDate);
+    } else {
+      alert('Gặp lỗi khi tạo nhận xét siêu tốc. Thử lại sau.');
+    }
+  };
+
+  // Đánh giá nhanh hàng loạt không qua Modal
+  const handleBulkQuickEvaluate = async (level: 'T' | 'H_Đ') => {
+    if (selectedStudents.length === 0 || !user || !selectedClassId) return;
+
+    const empty = createEmptyEvaluation();
+    const subjects = { ...empty.subjects };
+    const competencies = { ...empty.competencies };
+    const qualities = { ...empty.qualities };
+    let generalComment = '';
+
+    if (level === 'T') {
+      SUBJECT_LIST.forEach(item => { subjects[item.key] = { rating: 'T', comment: '' }; });
+      COMPETENCY_LIST.forEach(item => { competencies[item.key] = { rating: 'T', comment: '' }; });
+      QUALITY_LIST.forEach(item => { qualities[item.key] = { rating: 'T', comment: '' }; });
+      generalComment = "Hoàn thành tốt các nội dung học tập, tích cực phát biểu xây dựng bài.";
+    } else {
+      SUBJECT_LIST.forEach(item => { subjects[item.key] = { rating: 'H', comment: '' }; });
+      COMPETENCY_LIST.forEach(item => { competencies[item.key] = { rating: 'Đ', comment: '' }; });
+      QUALITY_LIST.forEach(item => { qualities[item.key] = { rating: 'Đ', comment: '' }; });
+      generalComment = "Hoàn thành đầy đủ nội dung bài học, tiếp thu bài tốt.";
+    }
+
+    const { saveBatchEvaluation } = useEvaluationStore.getState();
+    const success = await saveBatchEvaluation(selectedStudents, {
+      teacher_id: user.id,
+      class_id: selectedClassId,
+      evaluation_date: selectedDate,
+      subjects,
+      competencies,
+      qualities,
+      general_comment: generalComment,
+    });
+
+    if (success) {
+      handleSaveComplete();
+    } else {
+      alert('Gặp lỗi khi đánh giá hàng loạt.');
+    }
+  };
 
   // Toggle chọn HS
   const toggleStudent = (id: string) => {
@@ -500,6 +669,20 @@ export const DailyEvaluation: React.FC = () => {
     } else {
       setSelectedStudents(filteredStudents.map(s => s.id));
     }
+  };
+
+  const selectGroupStudents = (groupId: string) => {
+    const groupStudents = studentsByGroup[groupId] || [];
+    const studentIds = groupStudents.map(s => s.id);
+    
+    setSelectedStudents(prev => {
+      const allSelected = studentIds.every(id => prev.includes(id));
+      if (allSelected) {
+        return prev.filter(id => !studentIds.includes(id));
+      } else {
+        return Array.from(new Set([...prev, ...studentIds]));
+      }
+    });
   };
 
   // Mở modal cho 1 HS
@@ -526,9 +709,9 @@ export const DailyEvaluation: React.FC = () => {
   // Thống kê nhanh
   const stats = useMemo(() => {
     const total = classStudents.length;
-    const evaluated = classStudents.filter(s => evaluationMap[s.id]).length;
+    const evaluated = classStudents.filter(s => (studentEvaluationsMap[s.id] || []).length > 0).length;
     return { total, evaluated, remaining: total - evaluated };
-  }, [classStudents, evaluationMap]);
+  }, [classStudents, studentEvaluationsMap]);
 
   return (
     <div className="max-w-6xl mx-auto">
@@ -583,6 +766,17 @@ export const DailyEvaluation: React.FC = () => {
               className="w-full border border-gray-200 rounded-xl pl-9 pr-3 py-2.5 text-sm focus:ring-2 focus:ring-indigo-400 outline-none"
             />
           </div>
+
+          {/* Chọn cả lớp */}
+          {selectedClassId && (
+            <button
+              onClick={toggleAllStudents}
+              className="px-4 py-2.5 text-xs font-bold text-gray-700 hover:text-indigo-600 bg-gray-50 border rounded-xl hover:bg-gray-100 transition-all flex items-center gap-1.5 whitespace-nowrap select-none"
+            >
+              <CheckSquare className="h-4 w-4 text-indigo-600" />
+              {selectedStudents.length === filteredStudents.length ? 'Bỏ chọn cả lớp' : 'Chọn cả lớp'}
+            </button>
+          )}
         </div>
 
         {/* Progress stats */}
@@ -610,17 +804,31 @@ export const DailyEvaluation: React.FC = () => {
 
       {/* Batch Action Bar */}
       {selectedStudents.length > 0 && (
-        <div className="bg-indigo-50 border border-indigo-200 rounded-2xl p-4 mb-4 flex items-center justify-between animate-in slide-in-from-top">
+        <div className="bg-indigo-50 border border-indigo-200 rounded-2xl p-4 mb-4 flex flex-col md:flex-row md:items-center justify-between gap-3 animate-in slide-in-from-top">
           <p className="text-sm font-bold text-indigo-800">
             Đã chọn <span className="bg-indigo-600 text-white px-2 py-0.5 rounded-full text-xs mx-1">{selectedStudents.length}</span> học sinh
           </p>
-          <button
-            onClick={openBatchModal}
-            className="px-5 py-2 text-sm font-bold text-white bg-gradient-to-r from-indigo-600 to-purple-600 rounded-xl hover:from-indigo-700 hover:to-purple-700 transition-all shadow-lg shadow-indigo-200 flex items-center gap-2"
-          >
-            <FileText className="h-4 w-4" />
-            Nhận xét hàng loạt
-          </button>
+          <div className="flex flex-wrap gap-2">
+            <button
+              onClick={() => handleBulkQuickEvaluate('T')}
+              className="px-4 py-2 text-xs font-black text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl shadow transition-all flex items-center gap-1"
+            >
+              🌟 Đánh giá nhanh Tốt
+            </button>
+            <button
+              onClick={() => handleBulkQuickEvaluate('H_Đ')}
+              className="px-4 py-2 text-xs font-black text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow transition-all flex items-center gap-1"
+            >
+              ⭐ Đánh giá nhanh Đạt
+            </button>
+            <button
+              onClick={openBatchModal}
+              className="px-4 py-2 text-xs font-bold text-indigo-700 bg-white border border-indigo-200 hover:bg-indigo-50 rounded-xl transition-all flex items-center gap-1.5"
+            >
+              <FileText className="h-4.5 w-4.5" />
+              Tùy chỉnh nhận xét
+            </button>
+          </div>
         </div>
       )}
 
@@ -653,13 +861,19 @@ export const DailyEvaluation: React.FC = () => {
             return (
               <div key={group.id} className="bg-white rounded-2xl shadow-sm border overflow-hidden flex flex-col max-h-[600px] hover:border-indigo-300 transition-colors">
                 <div className="bg-gray-50 px-4 py-2.5 border-b flex items-center justify-between">
-                  <span className="text-[10px] font-extrabold text-indigo-700 uppercase tracking-wider flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full" style={{ backgroundColor: group.color || '#6366f1' }} />
+                  <button 
+                    onClick={() => selectGroupStudents(group.id)} 
+                    className="text-[10px] font-extrabold text-indigo-700 uppercase tracking-wider flex items-center gap-2 hover:text-indigo-900 select-none text-left"
+                  >
+                    <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: group.color || '#6366f1' }} />
                     {group.name}
-                  </span>
-                  <span className="text-[10px] bg-indigo-100 text-indigo-600 px-1.5 py-0.5 rounded-full font-bold">
-                    {studentsInGroup.length}
-                  </span>
+                  </button>
+                  <button 
+                    onClick={() => selectGroupStudents(group.id)}
+                    className="text-[10px] font-black text-indigo-600 hover:text-indigo-800 bg-indigo-50 border border-indigo-100/60 px-2 py-0.5 rounded-md transition-colors"
+                  >
+                    Chọn cả tổ ({studentsInGroup.length})
+                  </button>
                 </div>
                 
                 <div className="flex-1 divide-y divide-gray-50 overflow-y-auto">
@@ -667,7 +881,8 @@ export const DailyEvaluation: React.FC = () => {
                     <div className="p-8 text-center text-gray-400 text-xs italic">Trống</div>
                   ) : (
                     studentsInGroup.map(student => {
-                      const hasEval = !!evaluationMap[student.id];
+                      const studentEvals = studentEvaluationsMap[student.id] || [];
+                      const hasEval = studentEvals.length > 0;
                       const isChecked = selectedStudents.includes(student.id);
                       return (
                         <div key={student.id} className={`p-3 group transition-colors hover:bg-indigo-50/30 ${isChecked ? 'bg-indigo-50' : ''}`}>
@@ -682,9 +897,10 @@ export const DailyEvaluation: React.FC = () => {
                             <div className="min-w-0 flex-1">
                               <p className="text-sm font-bold text-gray-900 truncate" title={student.name}>{student.name}</p>
                               {hasEval && (
-                                <div className="flex flex-wrap gap-1 mt-1">
-                                  <RatingBadge rating={evaluationMap[student.id].subjects.toan?.rating} isSubject />
-                                  <RatingBadge rating={evaluationMap[student.id].subjects.tieng_viet?.rating} isSubject />
+                                <div className="flex items-center gap-1.5 mt-1">
+                                  <span className="inline-flex bg-indigo-50 border border-indigo-200 text-indigo-700 font-bold px-1.5 py-0.5 rounded text-[10px]">
+                                    {studentEvals.length} nhận xét
+                                  </span>
                                 </div>
                               )}
                             </div>
@@ -695,12 +911,28 @@ export const DailyEvaluation: React.FC = () => {
                             )}
                           </div>
                           
-                          <button
-                            onClick={() => openSingleModal(student.id)}
-                            className="w-full py-1 text-[10px] font-bold text-center text-indigo-600 bg-indigo-50/50 hover:bg-indigo-100 rounded-lg transition-all"
-                          >
-                            {hasEval ? 'Sửa' : '+ Nhận xét'}
-                          </button>
+                          <div className="flex items-center gap-1 mt-1">
+                            <button
+                              onClick={() => openSingleModal(student.id)}
+                              className="flex-1 py-1 text-[10px] font-bold text-center text-indigo-600 bg-indigo-50/50 hover:bg-indigo-100 rounded-lg transition-all border border-indigo-100/50"
+                            >
+                              + Thêm / Sửa
+                            </button>
+                            <button
+                              onClick={() => handleQuickEvaluate(student.id, 'T')}
+                              className="px-2 py-1 text-[9px] font-extrabold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 rounded-lg border border-emerald-100/60"
+                              title="Tạo nhanh 1 đánh giá Tốt kèm nhận xét mẫu"
+                            >
+                              🌟 Tốt
+                            </button>
+                            <button
+                              onClick={() => handleQuickEvaluate(student.id, 'H_Đ')}
+                              className="px-2 py-1 text-[9px] font-extrabold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 rounded-lg border border-indigo-100/60"
+                              title="Tạo nhanh 1 đánh giá Đạt kèm nhận xét mẫu"
+                            >
+                              ⭐ Đạt
+                            </button>
+                          </div>
                         </div>
                       );
                     })
@@ -718,7 +950,8 @@ export const DailyEvaluation: React.FC = () => {
                </div>
                <div className="flex-1 divide-y divide-gray-50 overflow-y-auto">
                  {studentsByGroup['ungrouped'].filter(s => !searchQuery.trim() || s.name.toLowerCase().includes(searchQuery.toLowerCase())).map(student => {
-                   const hasEval = !!evaluationMap[student.id];
+                   const studentEvals = studentEvaluationsMap[student.id] || [];
+                   const hasEval = studentEvals.length > 0;
                    const isChecked = selectedStudents.includes(student.id);
                    return (
                     <div key={student.id} className={`p-3 group ${isChecked ? 'bg-indigo-50' : ''}`}>
@@ -727,10 +960,19 @@ export const DailyEvaluation: React.FC = () => {
                           {isChecked ? <CheckSquare className="h-4 w-4 text-indigo-600" /> : <Square className="h-4 w-4 text-gray-300" />}
                         </button>
                         <p className="text-sm font-bold text-gray-800 truncate flex-1">{student.name}</p>
+                        {hasEval && (
+                          <span className="text-[10px] font-bold text-indigo-600 bg-indigo-50 px-1 rounded">
+                            {studentEvals.length}
+                          </span>
+                        )}
                       </div>
-                      <button onClick={() => openSingleModal(student.id)} className="w-full py-1 text-[10px] font-bold text-indigo-500 bg-gray-50 rounded-lg">
-                        {hasEval ? 'Sửa' : '+ Nhận xét'}
-                      </button>
+                      <div className="flex items-center gap-1">
+                        <button onClick={() => openSingleModal(student.id)} className="flex-1 py-1 text-[10px] font-bold text-indigo-500 bg-gray-50 rounded-lg">
+                          + Thêm
+                        </button>
+                        <button onClick={() => handleQuickEvaluate(student.id, 'T')} className="px-1.5 py-1 text-[9px] font-bold text-emerald-700 bg-emerald-50 rounded-lg">Tốt</button>
+                        <button onClick={() => handleQuickEvaluate(student.id, 'H_Đ')} className="px-1.5 py-1 text-[9px] font-bold text-indigo-700 bg-indigo-50 rounded-lg">Đạt</button>
+                      </div>
                     </div>
                    );
                  })}
@@ -749,7 +991,7 @@ export const DailyEvaluation: React.FC = () => {
         classId={selectedClassId}
         teacherId={user?.id || ''}
         evaluationDate={selectedDate}
-        existingEvaluation={!modalIsBatch && modalStudentIds.length === 1 ? evaluationMap[modalStudentIds[0]] || null : null}
+        existingEvaluation={!modalIsBatch && modalStudentIds.length === 1 ? studentEvaluationsMap[modalStudentIds[0]]?.[studentEvaluationsMap[modalStudentIds[0]].length - 1] || null : null}
         isBatch={modalIsBatch}
         onSave={handleSaveComplete}
       />
