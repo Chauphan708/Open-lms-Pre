@@ -859,7 +859,7 @@ export const DailyEvaluation: React.FC = () => {
             );
 
             return (
-              <div key={group.id} className="bg-white rounded-2xl shadow-sm border overflow-hidden flex flex-col max-h-[600px] hover:border-indigo-300 transition-colors">
+              <div key={group.id} className="bg-white rounded-2xl shadow-sm border overflow-hidden flex flex-col hover:border-indigo-300 transition-colors">
                 <div className="bg-gray-50 px-4 py-2.5 border-b flex items-center justify-between">
                   <button 
                     onClick={() => selectGroupStudents(group.id)} 
@@ -876,7 +876,7 @@ export const DailyEvaluation: React.FC = () => {
                   </button>
                 </div>
                 
-                <div className="flex-1 divide-y divide-gray-50 overflow-y-auto">
+                <div className="flex-1 divide-y divide-gray-50">
                   {studentsInGroup.length === 0 ? (
                     <div className="p-8 text-center text-gray-400 text-xs italic">Trống</div>
                   ) : (
@@ -944,11 +944,11 @@ export const DailyEvaluation: React.FC = () => {
 
           {/* Cột cho HS chưa phân tổ (nếu có) */}
           {studentsByGroup['ungrouped']?.length > 0 && (
-            <div className="bg-white rounded-2xl shadow-sm border border-dashed overflow-hidden flex flex-col max-h-[600px] hover:border-gray-400 transition-colors">
+            <div className="bg-white rounded-2xl shadow-sm border border-dashed overflow-hidden flex flex-col hover:border-gray-400 transition-colors">
                <div className="bg-gray-50 px-4 py-2.5 border-b">
                   <span className="text-[10px] font-extrabold text-gray-500 uppercase">Chưa phân tổ</span>
                </div>
-               <div className="flex-1 divide-y divide-gray-50 overflow-y-auto">
+               <div className="flex-1 divide-y divide-gray-50">
                  {studentsByGroup['ungrouped'].filter(s => !searchQuery.trim() || s.name.toLowerCase().includes(searchQuery.toLowerCase())).map(student => {
                    const studentEvals = studentEvaluationsMap[student.id] || [];
                    const hasEval = studentEvals.length > 0;
