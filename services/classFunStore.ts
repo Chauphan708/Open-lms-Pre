@@ -109,9 +109,30 @@ export const useClassFunStore = create<ClassFunState>((set, get) => ({
   hasMoreLogs: true,
   autoPointThresholds: [],
 
-  // --- Fetch all data for a class ---
+  // --- Fetch all data for a class (Có Caching) ---
   fetchClassFunData: async (classId, teacherId) => {
-    set({ isLoading: true });
+    const cacheKey = `cache_classfun_${classId}_${teacherId}`;
+    
+    // 1. Tải tức thì từ bộ nhớ đệm
+    try {
+      const cached = localStorage.getItem(cacheKey);
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        set({
+          groups: parsed.groups || [],
+          behaviors: parsed.behaviors || [],
+          logs: parsed.logs || [],
+          groupMembers: parsed.groupMembers || [],
+          hasMoreLogs: (parsed.logs || []).length === 100
+        });
+      } else {
+        set({ isLoading: true });
+      }
+    } catch {
+      set({ isLoading: true });
+    }
+
+    // 2. Chạy ngầm cập nhật dữ liệu từ máy chủ
     try {
       // Fetch groups
       const { data: groups } = await supabase
@@ -146,16 +167,23 @@ export const useClassFunStore = create<ClassFunState>((set, get) => ({
         groupMembers = (members || []) as GroupMember[];
       }
 
-      set({
+      const freshData = {
         groups: (groups || []) as ClassGroup[],
         behaviors: (behaviors || []) as Behavior[],
         logs: (logs || []) as BehaviorLog[],
         groupMembers,
+      };
+
+      set({
+        ...freshData,
         hasMoreLogs: (logs || []).length === 100,
+        isLoading: false,
       });
+
+      // Lưu lại cache mới
+      localStorage.setItem(cacheKey, JSON.stringify(freshData));
     } catch (e) {
       console.error('Error fetching ClassFun data:', e);
-    } finally {
       set({ isLoading: false });
     }
   },

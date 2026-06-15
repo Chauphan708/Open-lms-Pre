@@ -33,8 +33,25 @@ export const useStore = create<AppState>((set, get, api) => ({
 
   // --- INITIAL DATA FETCHING (LAZY LOADING STANDARD) ---
   fetchInitialData: async () => {
-    set({ isDataLoading: true });
     const { user } = get();
+    
+    // Tải dữ liệu đệm từ LocalStorage để hiện giao diện ngay lập tức
+    try {
+      const cachedUsers = localStorage.getItem('cache_initial_users');
+      const cachedYears = localStorage.getItem('cache_initial_years');
+      
+      if (cachedUsers) set({ users: JSON.parse(cachedUsers) });
+      if (cachedYears) set({ academicYears: JSON.parse(cachedYears) });
+      
+      // Nếu đã có cache thì không cần màn hình block loading toàn màn hình
+      if (cachedUsers && cachedYears) {
+        set({ isDataLoading: false });
+      } else {
+        set({ isDataLoading: true });
+      }
+    } catch {
+      set({ isDataLoading: true });
+    }
 
     try {
       // 1. Chỉ tải Users (Profiles) nếu là Admin/Teacher
@@ -42,6 +59,7 @@ export const useStore = create<AppState>((set, get, api) => ({
         const { data: foundUsers } = await supabase.from('profiles').select('*');
         if (foundUsers && foundUsers.length > 0) {
           set({ users: foundUsers as User[] });
+          localStorage.setItem('cache_initial_users', JSON.stringify(foundUsers));
         }
       } else {
          set({ users: [] });
@@ -49,11 +67,15 @@ export const useStore = create<AppState>((set, get, api) => ({
 
       // 2. Tải Academic Years (Dữ liệu tĩnh, nhẹ)
       const { data: years } = await supabase.from('academic_years').select('*');
-      if (years) set({ academicYears: years as AcademicYear[] });
+      if (years) {
+        set({ academicYears: years as AcademicYear[] });
+        localStorage.setItem('cache_initial_years', JSON.stringify(years));
+      }
 
       // Nếu chưa đăng nhập, dọn dẹp các state chuyên biệt
       if (!user) {
         set({ exams: [], assignments: [], classes: [], questionBank: [], notifications: [], attempts: [], resources: [], discussionSessions: [] });
+        set({ isDataLoading: false });
         return;
       }
 
