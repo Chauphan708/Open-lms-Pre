@@ -396,7 +396,10 @@ export const ArenaAdmin: React.FC = () => {
         const cleanDivision = (text: string, subject: string): string => {
             if (!text) return '';
             if (subject === 'math') {
-                return text.replace(/÷/g, ':').replace(/\\div/g, ':');
+                let processed = text.replace(/÷/g, ':').replace(/\\div/g, ':');
+                // Replace plain fractions (e.g. 3/4) with LaTeX equivalent ($\frac{3}{4}$)
+                processed = processed.replace(/(?<![\d/])(\d+)\/(\d+)(?![\d/])/g, '$\\frac{$1}{$2}$');
+                return processed;
             }
             return text;
         };
