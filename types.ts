@@ -303,6 +303,7 @@ export interface ArenaQuestion {
   type?: 'MCQ' | 'MCQ_MULTIPLE' | 'SHORT_ANSWER';
   correct_indices?: number[];
   correct_answer_string?: string;
+  grade?: string; // Khối lớp (ví dụ: '1', '2', '3', '4', '5')
 }
 
 export interface ArenaMatch {

@@ -35,6 +35,7 @@ export const ArenaAdmin: React.FC = () => {
     // Filters & Search
     const [filterSubject, setFilterSubject] = useState('');
     const [filterDifficulty, setFilterDifficulty] = useState(0);
+    const [filterGrade, setFilterGrade] = useState('');
     const [searchQuery, setSearchQuery] = useState('');
 
     const [editing, setEditing] = useState<ArenaQuestion | null>(null);
@@ -84,6 +85,7 @@ export const ArenaAdmin: React.FC = () => {
     const [formTopic, setFormTopic] = useState('');
     const [formTimeLimit, setFormTimeLimit] = useState(30);
     const [formXpReward, setFormXpReward] = useState(10);
+    const [formGrade, setFormGrade] = useState('4');
     
     // New types support: MCQ_MULTIPLE and SHORT_ANSWER
     const [formType, setFormType] = useState<'MCQ' | 'MCQ_MULTIPLE' | 'SHORT_ANSWER'>('MCQ');
@@ -98,10 +100,15 @@ export const ArenaAdmin: React.FC = () => {
     const filteredQuestions = arenaQuestions.filter(q => {
         const matchesSubject = !filterSubject || q.subject === filterSubject;
         const matchesDifficulty = !filterDifficulty || q.difficulty === filterDifficulty;
+        const matchesGrade = !filterGrade || q.grade === filterGrade;
+        
+        const qContent = q.content || '';
+        const qTopic = q.topic || '';
         const matchesSearch = !searchQuery.trim() || 
-            q.content.toLowerCase().includes(searchQuery.toLowerCase()) || 
-            (q.topic && q.topic.toLowerCase().includes(searchQuery.toLowerCase()));
-        return matchesSubject && matchesDifficulty && matchesSearch;
+            qContent.toLowerCase().includes(searchQuery.toLowerCase()) || 
+            (qTopic.toLowerCase().includes(searchQuery.toLowerCase()));
+
+        return matchesSubject && matchesDifficulty && matchesGrade && matchesSearch;
     });
 
     // Ngân hàng đề: gộp MCQ, MCQ_MULTIPLE, SHORT_ANSWER từ cả questionBank VÀ exams
@@ -299,7 +306,7 @@ export const ArenaAdmin: React.FC = () => {
                     new Paragraph({
                         children: [
                             new TextRun({
-                                text: "Môn: Toán\nChủ đề: Phân số & Số thập phân\n\n",
+                                text: "Môn: Toán\nLớp: 4\nChủ đề: Phân số & Số thập phân\n\n",
                                 bold: true,
                                 size: 24
                             })
@@ -309,7 +316,7 @@ export const ArenaAdmin: React.FC = () => {
                     new Paragraph({
                         children: [
                             new TextRun({
-                                text: "Câu 1: Phân số 3/4 viết dưới dạng số thập phân là bao nhiêu?\nA. 0,75\nB. 0,5\nC. 0,25\nD. 0,8\nĐáp án: A\nĐộ khó: 1\nThời gian: 30\nXP: 10\n\n",
+                                text: "Câu 1: Phân số 3/4 viết dưới dạng số thập phân là bao nhiêu? (Chú ý: Có thể viết phân số kiểu thường '3/4' hoặc dùng LaTeX '$\\frac{3}{4}$', hệ thống đều tự động hiển thị đẹp dạng dọc)\nA. 0,75\nB. 0,5\nC. 0,25\nD. 0,8\nĐáp án: A\nĐộ khó: 1\nThời gian: 30\nXP: 10\n\n",
                                 size: 22
                             })
                         ]
@@ -378,6 +385,7 @@ export const ArenaAdmin: React.FC = () => {
 
         let currentSubject = 'math';
         let currentTopic = 'general';
+        let currentGrade = filterGrade || '4';
         let currentQuestion: any = null;
         let questionCounter = 0;
 
@@ -464,6 +472,15 @@ export const ArenaAdmin: React.FC = () => {
                 continue;
             }
 
+            if (line.toLowerCase().startsWith('lớp:') || line.toLowerCase().startsWith('khối lớp:')) {
+                const prefixLength = line.toLowerCase().startsWith('lớp:') ? 4 : 9;
+                const gradeVal = line.substring(prefixLength).replace(/[^0-9]/g, '').trim();
+                if (gradeVal) {
+                    currentGrade = gradeVal;
+                }
+                continue;
+            }
+
             const matchQuestion = line.match(/^Câu\s+(\d+)\s*[:.-]?\s*(.*)$/i);
             if (matchQuestion) {
                 if (currentQuestion) {
@@ -481,6 +498,7 @@ export const ArenaAdmin: React.FC = () => {
                     difficulty: 1,
                     subject: currentSubject,
                     topic: currentTopic || 'general',
+                    grade: currentGrade,
                     time_limit_seconds: 30,
                     xp_reward: 10,
                     type: 'MCQ'
@@ -648,6 +666,7 @@ export const ArenaAdmin: React.FC = () => {
         setFormTopic('');
         setFormTimeLimit(30);
         setFormXpReward(10);
+        setFormGrade(filterGrade || '4');
         setEditing({} as ArenaQuestion);
     };
 
@@ -664,6 +683,7 @@ export const ArenaAdmin: React.FC = () => {
         setFormTopic(q.topic || '');
         setFormTimeLimit(q.time_limit_seconds || 30);
         setFormXpReward(q.xp_reward || 10);
+        setFormGrade(q.grade || '4');
         setEditing(q);
     };
 
@@ -677,6 +697,7 @@ export const ArenaAdmin: React.FC = () => {
             difficulty: formDifficulty,
             subject: formSubject,
             topic: formTopic.trim() || 'general',
+            grade: formGrade,
             time_limit_seconds: formTimeLimit,
             xp_reward: formXpReward,
             type: formType,
@@ -1049,6 +1070,14 @@ export const ArenaAdmin: React.FC = () => {
                         {DIFFICULTIES.map(d => <option key={d.value} value={d.value}>{d.label}</option>)}
                     </select>
 
+                    <div className="flex items-center gap-1.5 bg-gray-50 px-3 py-2 rounded-xl border border-gray-100 text-gray-500 text-xs font-bold">
+                        <Filter className="h-3.5 w-3.5 text-gray-400" /> Khối lớp:
+                    </div>
+                    <select value={filterGrade} onChange={e => setFilterGrade(e.target.value)} className="border rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500 bg-white font-medium text-gray-700 cursor-pointer">
+                        <option value="">Tất cả lớp</option>
+                        {['1', '2', '3', '4', '5'].map(g => <option key={g} value={g}>Lớp {g}</option>)}
+                    </select>
+
                     <label className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 px-4 py-2 rounded-xl border transition-colors bg-white">
                         <input
                             type="checkbox"
@@ -1266,7 +1295,7 @@ export const ArenaAdmin: React.FC = () => {
                                 </>
                             )}
 
-                            <div className="grid grid-cols-3 gap-3">
+                            <div className="grid grid-cols-4 gap-3">
                                 <div>
                                     <label className="block text-xs font-bold text-gray-500 mb-1">Độ khó</label>
                                     <select value={formDifficulty} onChange={e => setFormDifficulty(Number(e.target.value))} className="w-full border rounded-xl px-3 py-2 text-sm font-bold text-gray-700 bg-white">
@@ -1282,6 +1311,12 @@ export const ArenaAdmin: React.FC = () => {
                                 <div>
                                     <label className="block text-xs font-bold text-gray-500 mb-1">Chủ đề</label>
                                     <input value={formTopic} onChange={e => setFormTopic(e.target.value)} className="w-full border rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500 font-medium" placeholder="VD: Phân số, Hình học..." />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-bold text-gray-500 mb-1">Lớp</label>
+                                    <select value={formGrade} onChange={e => setFormGrade(e.target.value)} className="w-full border rounded-xl px-3 py-2 text-sm font-bold text-gray-700 bg-white">
+                                        {['1', '2', '3', '4', '5'].map(g => <option key={g} value={g}>Lớp {g}</option>)}
+                                    </select>
                                 </div>
                             </div>
                             
@@ -1786,7 +1821,7 @@ export const ArenaAdmin: React.FC = () => {
                                 </>
                             )}
 
-                            <div className="grid grid-cols-3 gap-3">
+                            <div className="grid grid-cols-4 gap-3">
                                 <div>
                                     <label className="block text-xs font-bold text-gray-500 mb-1">Độ khó</label>
                                     <select value={formDifficulty} onChange={e => setFormDifficulty(Number(e.target.value))} className="w-full border rounded-xl px-3 py-2 text-sm font-bold text-gray-700 bg-white">
@@ -1802,6 +1837,12 @@ export const ArenaAdmin: React.FC = () => {
                                 <div>
                                     <label className="block text-xs font-bold text-gray-500 mb-1">Chủ đề</label>
                                     <input value={formTopic} onChange={e => setFormTopic(e.target.value)} className="w-full border rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500 font-medium" />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-bold text-gray-500 mb-1">Lớp</label>
+                                    <select value={formGrade} onChange={e => setFormGrade(e.target.value)} className="w-full border rounded-xl px-3 py-2 text-sm font-bold text-gray-700 bg-white">
+                                        {['1', '2', '3', '4', '5'].map(g => <option key={g} value={g}>Lớp {g}</option>)}
+                                    </select>
                                 </div>
                             </div>
                             
