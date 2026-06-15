@@ -1036,59 +1036,65 @@ export const ArenaAdmin: React.FC = () => {
             </div>
 
             {/* Filters & Keyword Search Bar */}
-            <div className="flex flex-col md:flex-row items-stretch md:items-center gap-3 mb-6 bg-white rounded-2xl border p-4 shadow-sm">
-                <div className="relative flex-1 min-w-0">
-                    <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <div className="flex flex-col gap-4 mb-6 bg-white rounded-2xl border p-5 shadow-sm">
+                {/* Search Input - Full Width */}
+                <div className="relative w-full">
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
                     <input 
                         type="text"
                         placeholder="Tìm kiếm theo từ khoá câu hỏi hoặc chủ đề..."
                         value={searchQuery}
                         onChange={e => setSearchQuery(e.target.value)}
-                        className="w-full pl-10 pr-4 py-2 border rounded-xl text-sm outline-none focus:ring-2 focus:ring-indigo-500 bg-gray-50/50 hover:bg-gray-50/80 transition-all font-medium"
+                        className="w-full pl-12 pr-10 py-3 border border-gray-200 rounded-xl text-sm outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-50/50 bg-gray-50/30 hover:bg-gray-50/60 transition-all font-medium"
                     />
                     {searchQuery && (
-                        <button onClick={() => setSearchQuery('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 p-0.5 rounded-full hover:bg-gray-200">
-                            <X className="h-3.5 w-3.5" />
+                        <button onClick={() => setSearchQuery('')} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 p-0.5 rounded-full hover:bg-gray-200 transition-colors">
+                            <X className="h-4 w-4" />
                         </button>
                     )}
                 </div>
 
-                <div className="flex items-center gap-2 flex-wrap">
-                    <div className="flex items-center gap-1.5 bg-gray-50 px-3 py-2 rounded-xl border border-gray-100 text-gray-500 text-xs font-bold">
+                {/* Filters Row */}
+                <div className="flex flex-wrap items-center gap-3 border-t pt-4 border-gray-100">
+                    <div className="flex items-center gap-1 bg-gray-50 px-2.5 py-1.5 rounded-lg border border-gray-200/50 text-gray-500 text-[11px] font-black uppercase tracking-wider">
+                        Bộ lọc
+                    </div>
+
+                    <div className="flex items-center gap-1.5 bg-gray-50 px-3 py-1.5 rounded-lg border border-gray-200/50 text-gray-600 text-xs font-bold">
                         <Filter className="h-3.5 w-3.5 text-gray-400" /> Môn:
                     </div>
-                    <select value={filterSubject} onChange={e => setFilterSubject(e.target.value)} className="border rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500 bg-white font-medium text-gray-700 cursor-pointer">
+                    <select value={filterSubject} onChange={e => setFilterSubject(e.target.value)} className="border border-gray-200 rounded-lg px-3 py-1.5 text-xs outline-none focus:ring-2 focus:ring-indigo-500 bg-white font-bold text-gray-700 cursor-pointer hover:border-gray-300">
                         <option value="">Tất cả môn</option>
                         {SUBJECTS.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
                     </select>
 
-                    <div className="flex items-center gap-1.5 bg-gray-50 px-3 py-2 rounded-xl border border-gray-100 text-gray-500 text-xs font-bold">
+                    <div className="flex items-center gap-1.5 bg-gray-50 px-3 py-1.5 rounded-lg border border-gray-200/50 text-gray-600 text-xs font-bold">
                         <Filter className="h-3.5 w-3.5 text-gray-400" /> Độ khó:
                     </div>
-                    <select value={filterDifficulty} onChange={e => setFilterDifficulty(Number(e.target.value))} className="border rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500 bg-white font-medium text-gray-700 cursor-pointer">
+                    <select value={filterDifficulty} onChange={e => setFilterDifficulty(Number(e.target.value))} className="border border-gray-200 rounded-lg px-3 py-1.5 text-xs outline-none focus:ring-2 focus:ring-indigo-500 bg-white font-bold text-gray-700 cursor-pointer hover:border-gray-300">
                         <option value={0}>Tất cả độ khó</option>
                         {DIFFICULTIES.map(d => <option key={d.value} value={d.value}>{d.label}</option>)}
                     </select>
 
-                    <div className="flex items-center gap-1.5 bg-gray-50 px-3 py-2 rounded-xl border border-gray-100 text-gray-500 text-xs font-bold">
+                    <div className="flex items-center gap-1.5 bg-gray-50 px-3 py-1.5 rounded-lg border border-gray-200/50 text-gray-600 text-xs font-bold">
                         <Filter className="h-3.5 w-3.5 text-gray-400" /> Khối lớp:
                     </div>
-                    <select value={filterGrade} onChange={e => setFilterGrade(e.target.value)} className="border rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500 bg-white font-medium text-gray-700 cursor-pointer">
+                    <select value={filterGrade} onChange={e => setFilterGrade(e.target.value)} className="border border-gray-200 rounded-lg px-3 py-1.5 text-xs outline-none focus:ring-2 focus:ring-indigo-500 bg-white font-bold text-gray-700 cursor-pointer hover:border-gray-300">
                         <option value="">Tất cả lớp</option>
                         {['1', '2', '3', '4', '5'].map(g => <option key={g} value={g}>Lớp {g}</option>)}
                     </select>
 
-                    <label className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 px-4 py-2 rounded-xl border transition-colors bg-white">
+                    <label className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 px-3.5 py-1.5 rounded-lg border border-gray-200 transition-colors bg-white text-xs font-bold text-gray-600 select-none">
                         <input
                             type="checkbox"
-                            className="w-4 h-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
+                            className="w-3.5 h-3.5 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
                             checked={selectedIds.size === filteredQuestions.length && filteredQuestions.length > 0}
                             onChange={() => handleSelectAll(filteredQuestions)}
                         />
-                        <span className="text-xs font-bold text-gray-600">Chọn tất cả</span>
+                        <span>Chọn tất cả</span>
                     </label>
 
-                    <span className="text-xs font-bold text-indigo-600 bg-indigo-50 border border-indigo-100 px-3 py-2 rounded-xl ml-auto">
+                    <span className="text-xs font-black text-indigo-600 bg-indigo-50/80 border border-indigo-100/50 px-3.5 py-1.5 rounded-lg ml-auto">
                         {filteredQuestions.length} kết quả
                     </span>
                 </div>
