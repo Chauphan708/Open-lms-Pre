@@ -95,10 +95,24 @@ export const useEvaluationStore = create<EvaluationState>((set, get) => ({
   evaluations: [],
   isLoading: false,
   commentSuggestions: [],
-
-  // --- Fetch evaluations cho 1 lớp, 1 ngày ---
+  // --- Fetch evaluations cho 1 lớp, 1 ngày (Có Caching) ---
   fetchEvaluations: async (classId, date) => {
-    set({ isLoading: true });
+    const cacheKey = `cache_evals_${classId}_${date}`;
+    
+    // 1. Tải tức thì từ Cache trước
+    try {
+      const cached = localStorage.getItem(cacheKey);
+      if (cached) {
+        set({ evaluations: JSON.parse(cached) });
+      } else {
+        set({ isLoading: true });
+      }
+    } catch (e) {
+      console.warn('Không đọc được cache nhận xét:', e);
+      set({ isLoading: true });
+    }
+
+    // 2. Chạy ngầm gọi mạng để làm mới dữ liệu
     try {
       const { data, error } = await supabase
         .from('daily_evaluations')
@@ -107,19 +121,18 @@ export const useEvaluationStore = create<EvaluationState>((set, get) => ({
         .eq('evaluation_date', date);
 
       if (!error && data) {
-        set({ evaluations: data as DailyEvaluation[] });
+        set({ evaluations: data as DailyEvaluation[], isLoading: false });
+        // Cập nhật lại bộ nhớ đệm
+        localStorage.setItem(cacheKey, JSON.stringify(data));
       } else {
-        console.error('Error fetching evaluations:', error);
-        set({ evaluations: [] });
+        if (error) console.error('Lỗi khi fetch evaluations:', error);
+        set({ isLoading: false });
       }
     } catch (e) {
-      console.error('Error fetching evaluations:', e);
-      set({ evaluations: [] });
-    } finally {
+      console.error('Lỗi kết nối khi fetch evaluations:', e);
       set({ isLoading: false });
     }
   },
-
   // --- Fetch evaluations theo khoảng thời gian ---
   fetchEvaluationsByRange: async (classId, fromDate, toDate) => {
     set({ isLoading: true });

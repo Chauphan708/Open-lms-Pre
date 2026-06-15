@@ -2,22 +2,15 @@ import fs from 'fs';
 import pg from 'pg';
 
 const runMigration = async () => {
-  const env = fs.readFileSync('.env', 'utf-8');
-  // Lấy connection string từ biến môi trường
-  const dbUrlMatch = env.match(/DATABASE_URL=(.+)/);
-  if (!dbUrlMatch) {
-    console.error('Không tìm thấy DATABASE_URL trong file .env');
-    process.exit(1);
-  }
-  
-  const connectionString = dbUrlMatch[1].trim();
+  // Lấy connection string trực tiếp từ biến môi trường
+  const connectionString = process.env.DATABASE_URL || "postgresql://postgres:Chauphan708@db.qukuafjaqkcmcegksovp.supabase.co:5432/postgres";
   const pool = new pg.Pool({ connectionString });
   
   try {
-    const migrationSql = fs.readFileSync('sql_migrations/allow_multiple_daily_evaluations.sql', 'utf-8');
-    console.log('Đang thực hiện migration SQL...');
+    const migrationSql = fs.readFileSync('sql_migrations/optimize_evaluation_indexes.sql', 'utf-8');
+    console.log('Đang thực hiện tối ưu hóa Index...');
     await pool.query(migrationSql);
-    console.log('Thực hiện migration thành công! Đã xóa bỏ constraint unique_record.');
+    console.log('Tạo Composite Index thành công!');
   } catch (error) {
     console.error('Lỗi khi chạy migration:', error);
   } finally {
