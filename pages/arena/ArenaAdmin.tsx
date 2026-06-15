@@ -2,6 +2,7 @@ import { supabase } from '../../services/supabaseClient';
 import React, { useEffect, useState, useRef, useMemo } from 'react';
 import mammoth from 'mammoth';
 import { useNavigate } from 'react-router-dom';
+import { Document, Packer, Paragraph, TextRun, AlignmentType } from 'docx';
 import { useStore } from '../../store';
 import { ArenaQuestion } from '../../types';
 import { generateQuestionsByTopic, parseArenaQuestionsFromText } from '../../services/geminiService';
@@ -278,6 +279,73 @@ export const ArenaAdmin: React.FC = () => {
         await fetchArenaQuestions();
     };
 
+    const handleDownloadDocxTemplate = () => {
+        const doc = new Document({
+            sections: [{
+                properties: {},
+                children: [
+                    new Paragraph({
+                        children: [
+                            new TextRun({
+                                text: "FILE MẪU SOẠN ĐỀ ĐẤU TRÍ (.DOCX)",
+                                bold: true,
+                                size: 28,
+                                color: "4F46E5"
+                            })
+                        ],
+                        alignment: AlignmentType.CENTER,
+                        spacing: { after: 300 }
+                    }),
+                    new Paragraph({
+                        children: [
+                            new TextRun({
+                                text: "Môn: Toán\nChủ đề: Phân số & Số thập phân\n\n",
+                                bold: true,
+                                size: 24
+                            })
+                        ],
+                        spacing: { after: 200 }
+                    }),
+                    new Paragraph({
+                        children: [
+                            new TextRun({
+                                text: "Câu 1: Phân số 3/4 viết dưới dạng số thập phân là bao nhiêu?\nA. 0,75\nB. 0,5\nC. 0,25\nD. 0,8\nĐáp án: A\nĐộ khó: 1\nThời gian: 30\nXP: 10\n\n",
+                                size: 22
+                            })
+                        ]
+                    }),
+                    new Paragraph({
+                        children: [
+                            new TextRun({
+                                text: "Câu 2: Chọn các số nguyên tố nhỏ hơn 10.\nA. 2\nB. 4\nC. 7\nD. 9\nĐáp án: A, C\nĐộ khó: 2\nThời gian: 30\nXP: 15\nLoại: MCQ_MULTIPLE\n\n",
+                                size: 22
+                            })
+                        ]
+                    }),
+                    new Paragraph({
+                        children: [
+                            new TextRun({
+                                text: "Câu 3: Thủ đô của Việt Nam là thành phố nào?\nĐáp án: Hà Nội|Thành phố Hà Nội\nĐộ khó: 1\nThời gian: 30\nXP: 10\nLoại: SHORT_ANSWER\n",
+                                size: 22
+                            })
+                        ]
+                    })
+                ]
+            }]
+        });
+
+        Packer.toBlob(doc).then(blob => {
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.setAttribute('href', url);
+            link.setAttribute('download', 'arena_questions_template.docx');
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        });
+    };
+
     const handleWordFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
@@ -303,25 +371,220 @@ export const ArenaAdmin: React.FC = () => {
         }
     };
 
-    const handleStartAiScan = async () => {
+    const parseQuestionsFromRawText = (rawText: string) => {
+        const lines = rawText.split('\n').map(l => l.trim());
+        const questions: Omit<ArenaQuestion, 'id'>[] = [];
+        const errors: string[] = [];
+
+        let currentSubject = 'math';
+        let currentTopic = 'general';
+        let currentQuestion: any = null;
+        let questionCounter = 0;
+
+        const subjectMapping: Record<string, string> = {
+            'toán': 'math',
+            'khoa học': 'science',
+            'công nghệ': 'technology',
+            'tiếng việt': 'vietnamese',
+            'tiếng anh': 'english',
+            'lịch sử và địa lí': 'history_geography',
+            'lịch sử & địa lí': 'history_geography',
+            'lịch sử': 'history_geography',
+            'địa lí': 'history_geography'
+        };
+
+        const cleanDivision = (text: string, subject: string): string => {
+            if (!text) return '';
+            if (subject === 'math') {
+                return text.replace(/÷/g, ':').replace(/\\div/g, ':');
+            }
+            return text;
+        };
+
+        const validateAndPushQuestionLocal = (
+            q: any,
+            index: number,
+            questionsList: Omit<ArenaQuestion, 'id'>[],
+            errorsList: string[]
+        ) => {
+            if (q.answers.length > 0 && q.type === 'MCQ' && q.correct_indices && q.correct_indices.length > 1) {
+                q.type = 'MCQ_MULTIPLE';
+            }
+            if (q.answers.length === 0 && q.correct_answer_string) {
+                q.type = 'SHORT_ANSWER';
+            }
+
+            if (!q.content.trim()) {
+                errorsList.push(`Câu ${index}: Thân câu hỏi không được trống.`);
+                return;
+            }
+
+            if (q.type === 'SHORT_ANSWER') {
+                if (!q.correct_answer_string.trim()) {
+                    errorsList.push(`Câu ${index}: Dạng Điền từ (SHORT_ANSWER) yêu cầu nhập đáp án đúng.`);
+                }
+            } else {
+                if (q.answers.length < 4) {
+                    errorsList.push(`Câu ${index}: Dạng Trắc nghiệm yêu cầu nhập đầy đủ 4 tùy chọn A, B, C, D.`);
+                }
+                if (q.type === 'MCQ') {
+                    if (q.correct_index === undefined || q.correct_index < 0 || q.correct_index > 3) {
+                        errorsList.push(`Câu ${index}: Dạng Trắc nghiệm 1 đáp án yêu cầu chỉ định đáp án đúng hợp lệ (A, B, C hoặc D).`);
+                    }
+                } else {
+                    if (!q.correct_indices || q.correct_indices.length === 0) {
+                        errorsList.push(`Câu ${index}: Dạng Trắc nghiệm nhiều đáp án yêu cầu chỉ định ít nhất 1 đáp án đúng (ví dụ: A, C).`);
+                    }
+                }
+            }
+
+            questionsList.push(q);
+        };
+
+        for (let i = 0; i < lines.length; i++) {
+            const line = lines[i];
+            if (!line) continue;
+
+            if (line.toLowerCase().startsWith('môn:')) {
+                const subStr = line.substring(4).trim();
+                const matched = subjectMapping[subStr.toLowerCase()];
+                if (matched) {
+                    currentSubject = matched;
+                } else {
+                    errors.push(`Dòng ${i + 1}: Không nhận diện được môn "${subStr}". Hệ thống tự động đặt là Toán.`);
+                }
+                continue;
+            }
+
+            if (line.toLowerCase().startsWith('chủ đề:')) {
+                currentTopic = line.substring(7).trim();
+                continue;
+            }
+
+            const matchQuestion = line.match(/^Câu\s+(\d+)\s*[:.-]?\s*(.*)$/i);
+            if (matchQuestion) {
+                if (currentQuestion) {
+                    validateAndPushQuestionLocal(currentQuestion, questionCounter, questions, errors);
+                }
+
+                questionCounter++;
+                const questionContent = matchQuestion[2].trim();
+                currentQuestion = {
+                    content: cleanDivision(questionContent, currentSubject),
+                    answers: [],
+                    correct_index: 0,
+                    correct_indices: [],
+                    correct_answer_string: '',
+                    difficulty: 1,
+                    subject: currentSubject,
+                    topic: currentTopic || 'general',
+                    time_limit_seconds: 30,
+                    xp_reward: 10,
+                    type: 'MCQ'
+                };
+                continue;
+            }
+
+            if (!currentQuestion) continue;
+
+            const matchOption = line.match(/^([A-D])\s*[:.-]\s*(.*)$/i);
+            if (matchOption) {
+                const optionIndex = matchOption[1].toUpperCase().charCodeAt(0) - 65;
+                const optionText = cleanDivision(matchOption[2].trim(), currentQuestion.subject);
+                currentQuestion.answers[optionIndex] = optionText;
+                continue;
+            }
+
+            if (line.toLowerCase().startsWith('đáp án đúng:') || line.toLowerCase().startsWith('đáp án:')) {
+                const prefixLength = line.toLowerCase().startsWith('đáp án đúng:') ? 12 : 7;
+                const ansVal = cleanDivision(line.substring(prefixLength).trim(), currentQuestion.subject);
+                
+                if (currentQuestion.type === 'SHORT_ANSWER') {
+                    currentQuestion.correct_answer_string = ansVal;
+                } else {
+                    const chars = ansVal.toUpperCase().replace(/[^A-D]/g, '').split('');
+                    if (chars.length > 1) {
+                        currentQuestion.type = 'MCQ_MULTIPLE';
+                        currentQuestion.correct_indices = chars.map(c => c.charCodeAt(0) - 65).sort();
+                    } else if (chars.length === 1) {
+                        currentQuestion.correct_index = chars[0].charCodeAt(0) - 65;
+                    } else {
+                        currentQuestion.correct_answer_string = ansVal;
+                    }
+                }
+                continue;
+            }
+
+            if (line.toLowerCase().startsWith('độ khó:')) {
+                const val = parseInt(line.substring(7).replace(/[^0-9]/g, ''));
+                if (!isNaN(val) && val >= 1 && val <= 4) {
+                    currentQuestion.difficulty = val;
+                } else {
+                    errors.push(`Câu ${questionCounter}: Độ khó "${line.substring(7)}" không hợp lệ. Phải là số từ 1 đến 4.`);
+                }
+                continue;
+            }
+
+            if (line.toLowerCase().startsWith('thời gian:')) {
+                const val = parseInt(line.substring(10).replace(/[^0-9]/g, ''));
+                if (!isNaN(val)) {
+                    currentQuestion.time_limit_seconds = val;
+                }
+                continue;
+            }
+
+            if (line.toLowerCase().startsWith('xp:')) {
+                const val = parseInt(line.substring(3).replace(/[^0-9]/g, ''));
+                if (!isNaN(val)) {
+                    currentQuestion.xp_reward = val;
+                }
+                continue;
+            }
+
+            if (line.toLowerCase().startsWith('loại:')) {
+                const val = line.substring(5).trim().toUpperCase();
+                if (['MCQ', 'MCQ_MULTIPLE', 'SHORT_ANSWER'].includes(val)) {
+                    currentQuestion.type = val;
+                }
+                continue;
+            }
+
+            if (!line.match(/^[A-D]\s*[:.-]/i) && !line.includes(':')) {
+                currentQuestion.content += '\n' + cleanDivision(line, currentQuestion.subject);
+            }
+        }
+
+        if (currentQuestion) {
+            validateAndPushQuestionLocal(currentQuestion, questionCounter, questions, errors);
+        }
+
+        return { questions, errors };
+    };
+
+    const handleStartDeterministicScan = () => {
         if (!aiScanText.trim()) {
             alert("Vui lòng nhập văn bản đề thi hoặc chọn file Word trước.");
             return;
         }
         setAiScanning(true);
         try {
-            const parsed = await parseArenaQuestionsFromText(aiScanText);
-            if (!parsed || parsed.length === 0) {
-                alert("AI không tìm thấy câu hỏi hợp lệ trong nội dung của bạn. Vui lòng kiểm tra cấu trúc đề.");
-                return;
+            const { questions, errors } = parseQuestionsFromRawText(aiScanText);
+            if (errors.length > 0) {
+                setImportErrors(errors);
+                setImportPreview([]);
+                alert(`⚠️ Phát hiện ${errors.length} lỗi định dạng cú pháp câu hỏi. Vui lòng kéo xuống xem chi tiết lỗi và sửa lại.`);
+            } else if (questions.length === 0) {
+                alert("Không phát hiện câu hỏi nào đúng định dạng (Câu 1: ...) trong tài liệu của bạn.");
+            } else {
+                setImportErrors([]);
+                setAiPreviewList(questions);
+                setShowAiScan(false);
+                setShowAiPreviewModal(true);
+                setAiScanText('');
             }
-            setAiPreviewList(parsed);
-            setShowAiScan(false);
-            setShowAiPreviewModal(true);
-            setAiScanText('');
         } catch (error: any) {
-            console.error("Lỗi AI Đọc Đề:", error);
-            alert("Đã xảy ra lỗi trong quá trình quét đề bằng AI: " + (error?.message || "Không xác định"));
+            console.error("Lỗi bóc tách đề:", error);
+            alert("Đã xảy ra lỗi không xác định khi bóc tách đề.");
         } finally {
             setAiScanning(false);
         }
@@ -701,7 +964,7 @@ export const ArenaAdmin: React.FC = () => {
                         <Sparkles className="h-4 w-4" /> AI Tạo
                     </button>
                     <button onClick={() => { setShowAiScan(true); setAiScanText(''); }} className="px-4 py-2 bg-gradient-to-r from-purple-500 to-indigo-600 text-white rounded-xl font-bold text-sm hover:shadow-lg flex items-center gap-2 transition-all hover:scale-105 active:scale-95">
-                        <FileText className="h-4 w-4" /> AI Đọc Đề
+                        <FileText className="h-4 w-4" /> Nhập từ Word / Văn bản
                     </button>
                     <button onClick={() => { setShowBankImport(true); setImportResult(null); }} className="px-4 py-2 bg-indigo-50 text-indigo-700 rounded-xl font-bold text-sm hover:bg-indigo-100 flex items-center gap-2 transition-colors">
                         <BookOpen className="h-4 w-4" /> Lấy từ Ngân hàng đề
@@ -1158,23 +1421,30 @@ export const ArenaAdmin: React.FC = () => {
                 </div>
             )}
 
-            {/* AI Scan Modal */}
+            {/* Word / Text Import Modal (Deterministic Parser) */}
             {showAiScan && (
                 <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4" onClick={() => { if (!aiScanning) setShowAiScan(false); }}>
                     <div className="bg-white rounded-3xl shadow-xl w-full max-w-2xl max-h-[90vh] flex flex-col" onClick={e => e.stopPropagation()}>
                         <div className="p-5 border-b flex items-center justify-between bg-purple-50/50 rounded-t-3xl">
                             <h3 className="font-black text-lg text-purple-950 flex items-center gap-2">
-                                <FileText className="h-5 w-5 text-purple-600" /> Soạn Đấu Trí Bằng AI (Văn bản / File Word)
+                                <FileText className="h-5 w-5 text-purple-600" /> Nhập từ file Word (.docx) / Văn bản
                             </h3>
                             <button disabled={aiScanning} onClick={() => setShowAiScan(false)} className="text-gray-400 hover:text-gray-600 disabled:opacity-50"><X className="h-5 w-5" /></button>
                         </div>
                         <div className="p-5 flex-1 overflow-y-auto space-y-4">
-                            <div className="bg-purple-50 border border-purple-100 rounded-xl p-4 text-xs text-purple-800 space-y-1.5">
-                                <p className="font-bold">💡 Hướng dẫn nhanh:</p>
-                                <p>1. Sao chép và dán toàn bộ nội dung đề thi, câu hỏi trắc nghiệm hoặc bài tập cũ vào ô dưới.</p>
-                                <p>2. Hoặc bạn có thể tải lên trực tiếp file Word (.docx) chứa đề thi bằng nút bên dưới.</p>
-                                <p>3. AI sẽ tự động phân tích câu hỏi, các đáp án lựa chọn, đáp án đúng, tự thiết lập môn học và phân chia độ khó (Mức 1 - 4).</p>
-                                <p className="font-bold text-indigo-700">📌 Chú ý: Dấu chia đối với cấp tiểu học trong công thức Toán học sẽ được AI tự động định dạng thành dấu hai chấm ":" thay vì "÷".</p>
+                            <div className="bg-purple-50 border border-purple-100 rounded-xl p-4 text-xs text-purple-800 space-y-2">
+                                <p className="font-bold">📋 Hướng dẫn soạn đề chuẩn:</p>
+                                <p>1. Tải file Word (.docx) mẫu về máy để tham khảo cấu trúc soạn đề.</p>
+                                <p>2. Dán đề hoặc tải file Word lên, hệ thống sẽ tự động kiểm tra cú pháp tự động và không dùng AI.</p>
+                                <p className="font-bold text-indigo-700">📌 Chú ý: Toàn bộ dấu chia trong môn Toán sẽ được tự động chuẩn hóa thành dấu ":" theo chuẩn sư phạm tiểu học.</p>
+                                
+                                <button
+                                    type="button"
+                                    onClick={handleDownloadDocxTemplate}
+                                    className="mt-1 px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-bold flex items-center gap-1.5 w-fit shadow-xs transition-all text-[11px]"
+                                >
+                                    <Download className="h-3.5 w-3.5" /> Tải file mẫu Word (.docx)
+                                </button>
                             </div>
 
                             <div className="flex gap-2 items-center">
@@ -1182,38 +1452,52 @@ export const ArenaAdmin: React.FC = () => {
                                     <input type="file" accept=".docx" onChange={handleWordFileSelect} className="hidden" />
                                     {aiScanFileLoading ? '⏳ Đang đọc file...' : <><FileText className="h-4 w-4" /> Tải lên File Word (.docx)</>}
                                 </label>
-                                <span className="text-[10px] text-gray-400">Hỗ trợ file .docx có sẵn câu hỏi</span>
+                                <span className="text-[10px] text-gray-400">Đọc nội dung và dán trực tiếp vào ô nhập bên dưới</span>
                             </div>
 
                             <div className="flex flex-col gap-1.5">
-                                <label className="text-xs font-bold text-gray-500">Nội dung đề thi/câu hỏi:</label>
+                                <label className="text-xs font-bold text-gray-500">Nội dung câu hỏi soạn thảo:</label>
                                 <textarea
                                     disabled={aiScanning}
                                     value={aiScanText}
                                     onChange={e => setAiScanText(e.target.value)}
-                                    placeholder="Ví dụ:&#10;Câu 1: Phân số 1/2 bằng bao nhiêu?&#10;A. 0.5&#10;B. 0.2&#10;C. 0.3&#10;D. 0.4&#10;Đáp án đúng: A&#10;&#10;Hoặc dán bất kỳ văn bản thô nào..."
-                                    className="w-full h-64 border rounded-2xl p-4 text-sm font-medium outline-none focus:ring-2 focus:ring-purple-500 bg-gray-50/50 resize-none"
+                                    placeholder="Soạn theo mẫu:&#10;Môn: Toán&#10;Chủ đề: Phân số & Số thập phân&#10;&#10;Câu 1: Phân số 3/4 viết dưới dạng số thập phân là bao nhiêu?&#10;A. 0,75&#10;B. 0,5&#10;C. 0,25&#10;D. 0,8&#10;Đáp án: A&#10;Độ khó: 1"
+                                    className="w-full h-64 border rounded-2xl p-4 text-sm font-medium outline-none focus:ring-2 focus:ring-purple-500 bg-gray-50/50 resize-none font-mono"
                                 />
                             </div>
+
+                            {/* Errors list for direct correction */}
+                            {importErrors.length > 0 && (
+                                <div className="bg-red-50 border border-red-200 rounded-xl p-3.5 max-h-40 overflow-y-auto">
+                                    <p className="text-xs font-bold text-red-700 mb-1 flex items-center gap-1">
+                                        <AlertTriangle className="h-3.5 w-3.5" /> Phát hiện lỗi định dạng ({importErrors.length}):
+                                    </p>
+                                    <div className="space-y-1">
+                                        {importErrors.map((e, i) => (
+                                            <p key={i} className="text-xs text-red-600 font-medium font-mono">- {e}</p>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
                         </div>
 
                         <div className="p-4 border-t bg-gray-50/50 flex justify-end gap-2 rounded-b-3xl">
                             <button
                                 disabled={aiScanning}
-                                onClick={() => setShowAiScan(false)}
+                                onClick={() => { setShowAiScan(false); setImportErrors([]); }}
                                 className="px-5 py-2 bg-white border text-gray-700 rounded-xl font-bold hover:bg-gray-50 text-sm active:scale-95 transition-all"
                             >
-                                Hủy bộ
+                                Hủy bỏ
                             </button>
                             <button
                                 disabled={aiScanning || !aiScanText.trim()}
-                                onClick={handleStartAiScan}
+                                onClick={handleStartDeterministicScan}
                                 className="px-6 py-2 bg-gradient-to-r from-purple-500 to-indigo-600 text-white rounded-xl font-bold hover:shadow-md disabled:opacity-50 flex items-center gap-2 text-sm active:scale-95 transition-all"
                             >
                                 {aiScanning ? (
-                                    <>⏳ Đang phân tích đề...</>
+                                    <>⏳ Đang kiểm tra...</>
                                 ) : (
-                                    <><Sparkles className="h-4.5 w-4.5" /> Bắt đầu AI phân tích đề</>
+                                    <><CheckCircle className="h-4.5 w-4.5" /> Bắt đầu đọc & kiểm tra đề</>
                                 )}
                             </button>
                         </div>
