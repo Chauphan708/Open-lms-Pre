@@ -8,6 +8,7 @@ import {
 import { ChatMessage, MessageVisibility } from '../../types';
 import { supabase } from '../../services/supabaseClient';
 import { Whiteboard } from '../../components/Whiteboard';
+import { uploadDiscussionImage } from '../../services/discussionImageHelper';
 
 export const StudentDiscussionRoom: React.FC = () => {
    const { pin } = useParams();
@@ -132,6 +133,33 @@ export const StudentDiscussionRoom: React.FC = () => {
       sendDiscussionMessage(session.id, msg);
    };
 
+   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+      if (session.status !== 'ACTIVE') return;
+      const file = e.target.files?.[0];
+      if (!file) return;
+
+      const publicUrl = await uploadDiscussionImage(file, session.id);
+      if (!publicUrl) {
+         alert("Không thể tải hoặc nén ảnh. Vui lòng thử lại.");
+         return;
+      }
+
+      const msg: ChatMessage = {
+         id: `img_${Date.now()}`,
+         senderId: user.id,
+         senderName: user.name,
+         content: publicUrl,
+         type: 'IMAGE',
+         timestamp: new Date().toISOString(),
+         roomId: myRoomId,
+         roundId: session.activeRoundId
+      };
+      sendDiscussionMessage(session.id, msg);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+   };
+
+   const handleTriggerImageUpload = () => fileInputRef.current?.click();
+
    return (
       <div className="flex flex-col h-screen bg-gray-100">
          {/* Header */}
@@ -204,6 +232,8 @@ export const StudentDiscussionRoom: React.FC = () => {
 
                                     {m.type === 'STICKER' ? (
                                        <div className="text-4xl">{m.content}</div>
+                                    ) : m.type === 'IMAGE' ? (
+                                       <img src={m.content} alt="Sent" className="max-w-full rounded-lg my-1 border border-white/20" />
                                     ) : m.content === '...' ? (
                                        <div className="italic opacity-50">Tin nhắn bị ẩn</div>
                                     ) : (
@@ -220,10 +250,14 @@ export const StudentDiscussionRoom: React.FC = () => {
                      {/* Chat Input */}
                      {session.status === 'ACTIVE' && (
                         <div className="p-3 bg-white border-t">
+                           <input type="file" accept="image/*" className="hidden" ref={fileInputRef} onChange={handleImageUpload} />
                            <div className="flex gap-2 mb-2 overflow-x-auto no-scrollbar pb-2">
                               {STICKERS.map(s => <button key={s} onClick={() => handleSendSticker(s)} className="text-xl p-2 hover:bg-gray-100 rounded-lg">{s}</button>)}
                            </div>
                            <div className="flex gap-2 items-center">
+                              <button onClick={handleTriggerImageUpload} className="p-2 text-gray-500 hover:bg-gray-100 rounded-full transition-colors flex-shrink-0">
+                                 <ImageIcon className="h-5 w-5" />
+                              </button>
                               <input
                                  value={msgText}
                                  onChange={e => setMsgText(e.target.value)}

@@ -4,11 +4,13 @@ import { useStore } from '../../store';
 import {
    Users, MessageSquare, Hand, PieChart, Layers,
    Send, Plus, ArrowLeft, Image as ImageIcon,
-   Eye, EyeOff, User, Check, Power, ChevronDown, X, Menu
+   Eye, EyeOff, User, Check, Power, ChevronDown, X, Menu,
+   FileDown, Trash2
 } from 'lucide-react';
 import { ChatMessage, Poll, MessageVisibility } from '../../types';
 import { supabase } from '../../services/supabaseClient';
 import { Whiteboard } from '../../components/Whiteboard';
+import { uploadDiscussionImage } from '../../services/discussionImageHelper';
 
 export const DiscussionRoom: React.FC = () => {
    const { pin } = useParams();
@@ -26,6 +28,7 @@ export const DiscussionRoom: React.FC = () => {
       createDiscussionRound,
       setActiveRound,
       endDiscussionSession,
+      deleteDiscussionSession,
       fetchInitialData,
       fetchDiscussionMessages,
       fetchDiscussions
@@ -40,6 +43,7 @@ export const DiscussionRoom: React.FC = () => {
    const [isRoundMenuOpen, setIsRoundMenuOpen] = useState(false);
    const [isVisibilityMenuOpen, setIsVisibilityMenuOpen] = useState(false);
    const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+   const [isExportingPDF, setIsExportingPDF] = useState(false);
 
    const roundMenuRef = useRef<HTMLDivElement>(null);
    const visibilityMenuRef = useRef<HTMLDivElement>(null);
@@ -150,32 +154,87 @@ export const DiscussionRoom: React.FC = () => {
       sendDiscussionMessage(session.id, msg);
    };
 
-   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
       if (!canChat) return;
       const file = e.target.files?.[0];
       if (!file) return;
 
-      // TODO: Upload to Supabase Storage in real app. For now Base64 (limited size).
-      const reader = new FileReader();
-      reader.onloadend = () => {
-         const base64 = reader.result as string;
-         const msg: ChatMessage = {
-            id: `img_${Date.now()}`,
-            senderId: user?.id || 'teacher',
-            senderName: user?.name || 'Giáo viên',
-            content: base64, // Caution: Large string
-            type: 'IMAGE',
-            timestamp: new Date().toISOString(),
-            roomId: currentViewRoomId,
-            roundId: session.activeRoundId
-         };
-         sendDiscussionMessage(session.id, msg);
+      const publicUrl = await uploadDiscussionImage(file, session.id);
+      if (!publicUrl) {
+         alert("Không thể tải hoặc nén ảnh. Vui lòng thử lại.");
+         return;
+      }
+
+      const msg: ChatMessage = {
+         id: `img_${Date.now()}`,
+         senderId: user?.id || 'teacher',
+         senderName: user?.name || 'Giáo viên',
+         content: publicUrl,
+         type: 'IMAGE',
+         timestamp: new Date().toISOString(),
+         roomId: currentViewRoomId,
+         roundId: session.activeRoundId
       };
-      reader.readAsDataURL(file);
+      sendDiscussionMessage(session.id, msg);
       if (fileInputRef.current) fileInputRef.current.value = '';
    };
 
    const handleTriggerImageUpload = () => fileInputRef.current?.click();
+
+   const handleExportPDF = async () => {
+      setIsExportingPDF(true);
+      try {
+         const { jsPDF } = await import('jspdf');
+         const html2canvas = (await import('html2canvas')).default;
+
+         const element = document.getElementById('discussion-report-pdf');
+         if (!element) return;
+
+         const canvas = await html2canvas(element, {
+            scale: 2,
+            useCORS: true,
+            logging: false,
+            backgroundColor: '#ffffff'
+         });
+
+         const imgData = canvas.toDataURL('image/png');
+         const pdf = new jsPDF('p', 'mm', 'a4');
+         const imgWidth = 210;
+         const pageHeight = 295;
+         const imgHeight = (canvas.height * imgWidth) / canvas.width;
+         let heightLeft = imgHeight;
+         let position = 0;
+
+         pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+         heightLeft -= pageHeight;
+
+         while (heightLeft >= 0) {
+            position = heightLeft - imgHeight;
+            pdf.addPage();
+            pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+            heightLeft -= pageHeight;
+         }
+
+         pdf.save(`Bao_cao_thao_luan_${session.title.replace(/\s+/g, '_')}_${session.id}.pdf`);
+      } catch (err) {
+         console.error("PDF Export Error:", err);
+         alert("Lỗi khi xuất báo cáo PDF.");
+      } finally {
+         setIsExportingPDF(false);
+      }
+   };
+
+   const handleDeleteSession = async () => {
+      if (confirm("Bạn có chắc chắn muốn xóa vĩnh viễn phiên thảo luận này cùng tất cả dữ liệu liên quan? Hành động này không thể hoàn tác.")) {
+         const success = await deleteDiscussionSession(session.id);
+         if (success) {
+            alert("Đã xóa phiên thảo luận thành công.");
+            navigate('/teacher/discussions');
+         } else {
+            alert("Có lỗi xảy ra khi xóa phiên thảo luận.");
+         }
+      }
+   };
 
    const handleCreatePoll = () => {
       if (!pollQuestion.trim()) return;
@@ -608,6 +667,23 @@ export const DiscussionRoom: React.FC = () => {
                   )}
                   {session.status === 'ACTIVE' && <button onClick={handleEndSession} className="w-full bg-red-100 text-red-600 border border-red-200 px-4 py-3 rounded-lg text-sm font-bold flex items-center justify-center gap-2"><Power className="h-4 w-4" /> Kết thúc phiên</button>}
                </div>
+
+               {/* Common Sidebar Actions */}
+               <div className="p-4 border-t bg-gray-50 space-y-2">
+                  <button
+                     onClick={handleExportPDF}
+                     disabled={isExportingPDF}
+                     className="w-full bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-lg text-sm font-bold flex items-center justify-center gap-2 transition-all shadow-sm disabled:opacity-50"
+                  >
+                     <FileDown className="h-4 w-4" /> {isExportingPDF ? 'Đang tạo PDF...' : 'Xuất báo cáo PDF'}
+                  </button>
+                  <button
+                     onClick={handleDeleteSession}
+                     className="w-full bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 px-4 py-2.5 rounded-lg text-sm font-bold flex items-center justify-center gap-2 transition-all"
+                  >
+                     <Trash2 className="h-4 w-4" /> Xóa phiên thảo luận
+                  </button>
+               </div>
             </div>
          </div>
 
@@ -623,6 +699,94 @@ export const DiscussionRoom: React.FC = () => {
                </div>
             </div>
          )}
+
+         {/* Hidden Report Container for PDF Generation */}
+         <div style={{ position: 'absolute', left: '-9999px', top: '-9999px' }}>
+            <div id="discussion-report-pdf" className="w-[800px] bg-white p-8 text-gray-900 border" style={{ fontFamily: 'sans-serif' }}>
+               <div className="border-b-2 border-indigo-600 pb-4 mb-6">
+                  <h1 className="text-2xl font-bold text-indigo-900 mb-2">BÁO CÁO PHIÊN THẢO LUẬN</h1>
+                  <p className="text-sm text-gray-600">Hệ thống Open LMS - Pre</p>
+               </div>
+               
+               <div className="grid grid-cols-2 gap-4 mb-6 text-sm">
+                  <div>
+                     <p className="mb-1"><strong>Tên phiên:</strong> {session.title}</p>
+                     <p className="mb-1"><strong>Mã PIN:</strong> {session.id}</p>
+                     <p className="mb-1"><strong>Trạng thái:</strong> {session.status === 'ACTIVE' ? 'Đang hoạt động' : 'Đã kết thúc'}</p>
+                  </div>
+                  <div>
+                     <p className="mb-1"><strong>Tổng số học sinh tham gia:</strong> {session.participants.length}</p>
+                     <p className="mb-1"><strong>Thời gian xuất báo cáo:</strong> {new Date().toLocaleString('vi-VN')}</p>
+                  </div>
+               </div>
+
+               <div className="mb-6">
+                  <h2 className="text-base font-bold text-gray-800 border-b pb-2 mb-3">Danh sách thành viên tham gia</h2>
+                  <div className="grid grid-cols-3 gap-2">
+                     {session.participants.map((p, idx) => (
+                        <div key={p.studentId} className="text-xs bg-gray-50 p-2 rounded border truncate">
+                           {idx + 1}. {p.name}
+                        </div>
+                     ))}
+                  </div>
+               </div>
+
+               {session.polls && session.polls.length > 0 && (
+                  <div className="mb-6">
+                     <h2 className="text-base font-bold text-gray-800 border-b pb-2 mb-3">Kết quả các cuộc bình chọn</h2>
+                     <div className="space-y-4">
+                        {session.polls.map((poll, idx) => (
+                           <div key={poll.id} className="p-3 bg-indigo-50/50 rounded-lg border">
+                              <h3 className="font-bold text-xs text-indigo-900 mb-2">{idx + 1}. {poll.question}</h3>
+                              <div className="space-y-2">
+                                 {poll.options.map(opt => {
+                                    const totalVotes = poll.options.reduce((a, b) => a + b.voteCount, 0);
+                                    const percent = totalVotes > 0 ? Math.round((opt.voteCount / totalVotes) * 100) : 0;
+                                    return (
+                                       <div key={opt.id} className="text-[11px]">
+                                          <div className="flex justify-between font-medium text-gray-700">
+                                             <span>{opt.text}</span>
+                                             <span>{opt.voteCount} lượt ({percent}%)</span>
+                                          </div>
+                                          <div className="w-full bg-gray-200 h-1.5 rounded-full overflow-hidden mt-1">
+                                             <div className="bg-indigo-600 h-full" style={{ width: `${percent}%` }}></div>
+                                          </div>
+                                       </div>
+                                    );
+                                 })}
+                              </div>
+                           </div>
+                        ))}
+                     </div>
+                  </div>
+               )}
+
+               <div className="mb-6">
+                  <h2 className="text-base font-bold text-gray-800 border-b pb-2 mb-3">Lịch sử trò chuyện</h2>
+                  <div className="space-y-3">
+                     {session.messages.map(m => {
+                        const roundName = session.rounds.find(r => r.id === m.roundId)?.name || 'Vòng chung';
+                        const roomName = m.roomId === 'MAIN' ? 'Phòng chính' : session.breakoutRooms?.find(r => r.id === m.roomId)?.name || 'Nhóm';
+                        return (
+                           <div key={m.id} className="text-xs border-b pb-2">
+                              <div className="flex justify-between text-gray-500 mb-1">
+                                 <span className="font-bold text-indigo-700">{m.senderName} ({roomName} - {roundName})</span>
+                                 <span>{new Date(m.timestamp).toLocaleTimeString('vi-VN')}</span>
+                              </div>
+                              {m.type === 'IMAGE' ? (
+                                 <div className="mt-1">
+                                    <img src={m.content} alt="Attachment" className="max-w-[200px] rounded border" />
+                                 </div>
+                              ) : (
+                                 <p className="whitespace-pre-wrap text-gray-800 mt-1">{m.content}</p>
+                              )}
+                           </div>
+                        );
+                     })}
+                  </div>
+               </div>
+            </div>
+         </div>
       </div>
    );
 };
