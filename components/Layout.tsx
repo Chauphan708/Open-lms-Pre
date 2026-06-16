@@ -323,10 +323,12 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
                               {visibleItems.map(item => {
                                 const Icon = item.icon;
                                 const active = isActive(item.path);
+                                const isExternalRedirect = item.path === '/edu-games';
                                 return (
                                   <Link
                                     key={item.path}
                                     to={item.path}
+                                    target={isExternalRedirect ? "_blank" : undefined}
                                     onClick={() => setIsMobileMenuOpen(false)}
                                     className={`
                                         flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all duration-300 group relative overflow-hidden
@@ -351,10 +353,12 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
                       {visibleItems.map(item => {
                         const Icon = item.icon;
                         const active = isActive(item.path);
+                        const isExternalRedirect = item.path === '/edu-games';
                         return (
                           <Link
                             key={item.path}
                             to={item.path}
+                            target={isExternalRedirect ? "_blank" : undefined}
                             onClick={() => setIsMobileMenuOpen(false)}
                             title={isSidebarCollapsed ? item.label : undefined}
                             className={`
