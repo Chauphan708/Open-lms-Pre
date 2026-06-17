@@ -66,8 +66,12 @@ CREATE POLICY "User update own profile" ON public.arena_profiles FOR ALL TO auth
 
 ALTER TABLE public.arena_questions ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Arena questions public access" ON public.arena_questions;
+DROP POLICY IF EXISTS "Authenticated read access" ON public.arena_questions;
+DROP POLICY IF EXISTS "Teacher full access" ON public.arena_questions;
 CREATE POLICY "Authenticated read access" ON public.arena_questions FOR SELECT TO authenticated USING (true);
-CREATE POLICY "Teacher full access" ON public.arena_questions FOR ALL TO authenticated USING (true) WITH CHECK (true);
+CREATE POLICY "Teacher full access" ON public.arena_questions FOR ALL TO authenticated 
+  USING ((SELECT role FROM public.profiles WHERE id = auth.uid()::text) IN ('ADMIN', 'TEACHER'))
+  WITH CHECK ((SELECT role FROM public.profiles WHERE id = auth.uid()::text) IN ('ADMIN', 'TEACHER'));
 
 ALTER TABLE public.arena_matches ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Arena matches public access" ON public.arena_matches;
