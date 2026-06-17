@@ -304,6 +304,8 @@ export interface ArenaQuestion {
   correct_indices?: number[];
   correct_answer_string?: string;
   grade?: string; // Khối lớp (ví dụ: '1', '2', '3', '4', '5')
+  guide?: string; // Hướng dẫn (gợi ý cách làm, không nêu đáp án)
+  explanation?: string; // Lời giải chi tiết (chi tiết các bước và đáp án)
 }
 
 export interface ArenaMatch {

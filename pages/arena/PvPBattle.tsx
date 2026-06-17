@@ -529,6 +529,18 @@ export const PvPBattle: React.FC = () => {
                         <div className="text-lg font-bold text-gray-900 leading-relaxed">
                             <MathText>{currentQuestion.content}</MathText>
                         </div>
+                        {currentQuestion.guide && !showResult && (
+                            <div className="mt-4 border-t pt-3">
+                                <details className="group cursor-pointer select-none">
+                                    <summary className="text-xs font-bold text-indigo-600 hover:text-indigo-700 flex items-center gap-1 outline-none">
+                                        <span>💡 Xem gợi ý cách làm</span>
+                                    </summary>
+                                    <p className="text-xs text-gray-500 mt-2 pl-4 border-l-2 border-indigo-500 leading-relaxed">
+                                        {currentQuestion.guide}
+                                    </p>
+                                </details>
+                            </div>
+                        )}
                     </div>
 
                     {/* RENDER MCQ */}
@@ -667,6 +679,14 @@ export const PvPBattle: React.FC = () => {
                                     Nộp câu trả lời
                                 </button>
                             )}
+                        </div>
+                    )}
+
+                    {/* Detailed solution */}
+                    {showResult && currentQuestion.explanation && (
+                        <div className="mt-4 bg-indigo-50 border border-indigo-150 p-4 rounded-xl text-xs text-gray-700" style={{ animation: 'fadeIn 0.3s ease-out' }}>
+                            <p className="font-bold text-indigo-900 flex items-center gap-1.5 mb-1.5">📖 Lời giải chi tiết:</p>
+                            <p className="leading-relaxed whitespace-pre-wrap"><MathText>{currentQuestion.explanation}</MathText></p>
                         </div>
                     )}
 

@@ -1247,6 +1247,18 @@ export const TowerMode: React.FC = () => {
             <div className="text-lg font-bold text-white leading-relaxed">
               <MathText>{currentQ.content}</MathText>
             </div>
+            {currentQ.guide && !showResult && (
+              <div className="mt-4 border-t border-white/5 pt-3">
+                <details className="group cursor-pointer select-none">
+                  <summary className="text-xs font-black text-indigo-400 hover:text-indigo-300 flex items-center gap-1 outline-none">
+                    <span>💡 Xem gợi ý cách làm</span>
+                  </summary>
+                  <p className="text-xs text-gray-400 mt-2 pl-4 border-l border-indigo-500/30 leading-relaxed">
+                    {currentQ.guide}
+                  </p>
+                </details>
+              </div>
+            )}
           </div>
 
           {/* Options List */}
@@ -1327,12 +1339,19 @@ export const TowerMode: React.FC = () => {
                 </div>
               )}
 
-              {/* Solution from DB */}
-              {!isCorrect && currentQ.correct_index !== undefined && (
-                <div className="bg-white/5 border border-white/5 rounded-xl p-4 text-xs text-gray-400">
-                  <p className="font-black text-gray-300">Lời giải tham chiếu:</p>
-                  <p className="mt-1 leading-relaxed"><MathText>{currentQ.answers[currentQ.correct_index]}</MathText></p>
+              {/* Solution/Explanation */}
+              {currentQ.explanation ? (
+                <div className="bg-indigo-950/20 border border-indigo-500/20 rounded-xl p-4 text-xs">
+                  <p className="font-black text-indigo-400">📖 Lời giải chi tiết:</p>
+                  <p className="mt-1.5 text-gray-300 leading-relaxed whitespace-pre-wrap"><MathText>{currentQ.explanation}</MathText></p>
                 </div>
+              ) : (
+                !isCorrect && currentQ.correct_index !== undefined && (
+                  <div className="bg-white/5 border border-white/5 rounded-xl p-4 text-xs text-gray-400">
+                    <p className="font-black text-gray-300">Lời giải tham chiếu:</p>
+                    <p className="mt-1 leading-relaxed"><MathText>{currentQ.answers[currentQ.correct_index]}</MathText></p>
+                  </div>
+                )
               )}
 
               <button

@@ -91,6 +91,8 @@ export const ArenaAdmin: React.FC = () => {
     const [formType, setFormType] = useState<'MCQ' | 'MCQ_MULTIPLE' | 'SHORT_ANSWER'>('MCQ');
     const [formCorrectIndices, setFormCorrectIndices] = useState<number[]>([]);
     const [formCorrectAnswerString, setFormCorrectAnswerString] = useState('');
+    const [formGuide, setFormGuide] = useState('');
+    const [formExplanation, setFormExplanation] = useState('');
 
     useEffect(() => {
         fetchArenaQuestions().then(() => setLoading(false));
@@ -501,7 +503,9 @@ export const ArenaAdmin: React.FC = () => {
                     grade: currentGrade,
                     time_limit_seconds: 30,
                     xp_reward: 10,
-                    type: 'MCQ'
+                    type: 'MCQ',
+                    guide: '',
+                    explanation: ''
                 };
                 continue;
             }
@@ -570,6 +574,17 @@ export const ArenaAdmin: React.FC = () => {
                 continue;
             }
 
+            if (line.toLowerCase().startsWith('hướng dẫn:')) {
+                currentQuestion.guide = line.substring(10).trim();
+                continue;
+            }
+
+            if (line.toLowerCase().startsWith('lời giải chi tiết:') || line.toLowerCase().startsWith('lời giải:')) {
+                const prefixLength = line.toLowerCase().startsWith('lời giải chi tiết:') ? 18 : 9;
+                currentQuestion.explanation = line.substring(prefixLength).trim();
+                continue;
+            }
+
             if (!line.match(/^[A-D]\s*[:.-]/i) && !line.includes(':')) {
                 currentQuestion.content += '\n' + cleanDivision(line, currentQuestion.subject);
             }
@@ -628,6 +643,8 @@ export const ArenaAdmin: React.FC = () => {
         setFormTopic(item.topic || '');
         setFormTimeLimit(item.time_limit_seconds || 30);
         setFormXpReward(item.xp_reward || 10);
+        setFormGuide(item.guide || '');
+        setFormExplanation(item.explanation || '');
         setEditingPreviewIndex(index);
     };
 
@@ -646,7 +663,9 @@ export const ArenaAdmin: React.FC = () => {
                 topic: formTopic.trim() || 'general',
                 time_limit_seconds: formTimeLimit,
                 xp_reward: formXpReward,
-                type: formType
+                type: formType,
+                guide: formGuide.trim(),
+                explanation: formExplanation.trim()
             };
             return next;
         });
@@ -667,6 +686,8 @@ export const ArenaAdmin: React.FC = () => {
         setFormTimeLimit(30);
         setFormXpReward(10);
         setFormGrade(filterGrade || '4');
+        setFormGuide('');
+        setFormExplanation('');
         setEditing({} as ArenaQuestion);
     };
 
@@ -684,6 +705,8 @@ export const ArenaAdmin: React.FC = () => {
         setFormTimeLimit(q.time_limit_seconds || 30);
         setFormXpReward(q.xp_reward || 10);
         setFormGrade(q.grade || '4');
+        setFormGuide(q.guide || '');
+        setFormExplanation(q.explanation || '');
         setEditing(q);
     };
 
@@ -704,7 +727,9 @@ export const ArenaAdmin: React.FC = () => {
             correct_index: formType === 'MCQ' ? formCorrect : 0,
             correct_indices: formType === 'MCQ_MULTIPLE' ? formCorrectIndices : null,
             correct_answer_string: formType === 'SHORT_ANSWER' ? formCorrectAnswerString.trim() : null,
-            answers: formType !== 'SHORT_ANSWER' ? formAnswers : []
+            answers: formType !== 'SHORT_ANSWER' ? formAnswers : [],
+            guide: formGuide.trim(),
+            explanation: formExplanation.trim()
         };
 
         if (isNew) {
@@ -777,7 +802,9 @@ export const ArenaAdmin: React.FC = () => {
             'XP thưởng',
             'Loại (MCQ/MCQ_MULTIPLE/SHORT_ANSWER)',
             'Các đáp án đúng (tách nhau bằng dấu gạch ngang dọc VD: 0|2 cho A và C)',
-            'Chuỗi đáp án điền từ'
+            'Chuỗi đáp án điền từ',
+            'Hướng dẫn',
+            'Lời giải chi tiết'
         ];
         const sampleRows = [
             [
@@ -794,7 +821,9 @@ export const ArenaAdmin: React.FC = () => {
                 '10',
                 'MCQ',
                 '',
-                ''
+                '',
+                'Ta lấy tử số chia cho mẫu số.',
+                'Bước 1: Thực hiện phép chia 3 : 4.\nBước 2: Kết quả thu được là 0,75.\nChọn đáp án A.'
             ],
             [
                 'Chọn các số nguyên tố nhỏ hơn 10',
@@ -810,7 +839,9 @@ export const ArenaAdmin: React.FC = () => {
                 '15',
                 'MCQ_MULTIPLE',
                 '0|2',
-                ''
+                '',
+                'Số nguyên tố chỉ chia hết cho 1 và chính nó.',
+                'Kiểm tra: 2 và 7 là số nguyên tố; 4 chia hết cho 2; 9 chia hết cho 3.\nChọn đáp án A và C.'
             ],
             [
                 'Thủ đô của Việt Nam là thành phố nào?',
@@ -826,7 +857,9 @@ export const ArenaAdmin: React.FC = () => {
                 '10',
                 'SHORT_ANSWER',
                 '',
-                'Hà Nội|Thành phố Hà Nội'
+                'Hà Nội|Thành phố Hà Nội',
+                'Thành phố nằm ở đồng bằng sông Hồng có lịch sử ngàn năm văn hiến.',
+                'Thủ đô chính thức của Việt Nam là Hà Nội.'
             ]
         ];
         
@@ -876,7 +909,7 @@ export const ArenaAdmin: React.FC = () => {
                 continue;
             }
 
-            const [content, ansA, ansB, ansC, ansD, correctStr, diffStr, subject, topic, timeLimitStr, xpRewardStr, typeStr, correctIndicesStr, shortAnswerStr] = cols;
+            const [content, ansA, ansB, ansC, ansD, correctStr, diffStr, subject, topic, timeLimitStr, xpRewardStr, typeStr, correctIndicesStr, shortAnswerStr, guide, explanation] = cols;
 
             if (!content?.trim()) { errors.push(`Dòng ${i + 1}: Thiếu nội dung câu hỏi`); continue; }
             
@@ -920,7 +953,9 @@ export const ArenaAdmin: React.FC = () => {
                 topic: topic?.trim() || 'general',
                 time_limit_seconds: isNaN(timeLimit) ? 30 : timeLimit,
                 xp_reward: isNaN(xpReward) ? 10 : xpReward,
-                type
+                type,
+                guide: guide?.trim() || '',
+                explanation: explanation?.trim() || ''
             });
         }
 
@@ -1178,6 +1213,24 @@ export const ArenaAdmin: React.FC = () => {
                                     ))}
                                 </div>
                             )}
+
+                            {/* Render Guide and Explanation if available */}
+                            {(q.guide || q.explanation) && (
+                                <div className="mt-3 bg-indigo-50/20 border border-indigo-100/30 p-3 rounded-xl space-y-2 text-xs">
+                                    {q.guide && (
+                                        <div className="text-gray-700">
+                                            <span className="font-bold text-indigo-750">💡 Hướng dẫn: </span>
+                                            {q.guide}
+                                        </div>
+                                    )}
+                                    {q.explanation && (
+                                        <div className="text-gray-700">
+                                            <span className="font-bold text-indigo-750">📖 Lời giải chi tiết: </span>
+                                            {q.explanation}
+                                        </div>
+                                    )}
+                                </div>
+                            )}
                         </div>
                     </div>
                 ))}
@@ -1347,6 +1400,29 @@ export const ArenaAdmin: React.FC = () => {
                                         value={formXpReward} 
                                         onChange={e => setFormXpReward(Number(e.target.value))}
                                         className="w-full border rounded-xl px-3 py-2 text-sm font-bold text-gray-700 bg-white"
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="space-y-3 border p-3 rounded-xl bg-gray-50/50">
+                                <div>
+                                    <label className="block text-xs font-bold text-gray-700 mb-1">💡 Hướng dẫn (Chỉ gợi ý cách tính, cách làm, không nêu đáp án)</label>
+                                    <textarea 
+                                        value={formGuide} 
+                                        onChange={e => setFormGuide(e.target.value)} 
+                                        rows={2} 
+                                        className="w-full border rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500 font-medium bg-white" 
+                                        placeholder="Nhập gợi ý cách giải..." 
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-bold text-gray-700 mb-1">📖 Lời giải chi tiết (Ghi ra từng bước kèm đáp án)</label>
+                                    <textarea 
+                                        value={formExplanation} 
+                                        onChange={e => setFormExplanation(e.target.value)} 
+                                        rows={3} 
+                                        className="w-full border rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500 font-medium bg-white" 
+                                        placeholder="Nhập lời giải chi tiết..." 
                                     />
                                 </div>
                             </div>
@@ -1873,6 +1949,29 @@ export const ArenaAdmin: React.FC = () => {
                                         value={formXpReward} 
                                         onChange={e => setFormXpReward(Number(e.target.value))}
                                         className="w-full border rounded-xl px-3 py-2 text-sm font-bold text-gray-700"
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="space-y-3 border p-3 rounded-xl bg-gray-50/50">
+                                <div>
+                                    <label className="block text-xs font-bold text-gray-700 mb-1">💡 Hướng dẫn (Chỉ gợi ý cách tính, cách làm, không nêu đáp án)</label>
+                                    <textarea 
+                                        value={formGuide} 
+                                        onChange={e => setFormGuide(e.target.value)} 
+                                        rows={2} 
+                                        className="w-full border rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500 font-medium bg-white text-gray-900" 
+                                        placeholder="Nhập gợi ý cách giải..." 
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-bold text-gray-700 mb-1">📖 Lời giải chi tiết (Ghi ra từng bước kèm đáp án)</label>
+                                    <textarea 
+                                        value={formExplanation} 
+                                        onChange={e => setFormExplanation(e.target.value)} 
+                                        rows={3} 
+                                        className="w-full border rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500 font-medium bg-white text-gray-900" 
+                                        placeholder="Nhập lời giải chi tiết..." 
                                     />
                                 </div>
                             </div>

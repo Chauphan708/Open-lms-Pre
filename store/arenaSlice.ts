@@ -124,7 +124,9 @@ export const createArenaSlice: StateCreator<AppState, [], [], ArenaSliceState> =
       xp_reward: q.xp_reward || 10,
       type: q.type || 'MCQ',
       correct_indices: q.correct_indices || null,
-      correct_answer_string: q.correct_answer_string || null
+      correct_answer_string: q.correct_answer_string || null,
+      guide: q.guide || null,
+      explanation: q.explanation || null
     };
     
     let { error } = await supabase.from('arena_questions').insert(rowFull);
@@ -152,7 +154,9 @@ export const createArenaSlice: StateCreator<AppState, [], [], ArenaSliceState> =
       xp_reward: q.xp_reward || 10,
       type: q.type || 'MCQ',
       correct_indices: q.correct_indices || null,
-      correct_answer_string: q.correct_answer_string || null
+      correct_answer_string: q.correct_answer_string || null,
+      guide: q.guide || null,
+      explanation: q.explanation || null
     };
     let { error } = await supabase.from('arena_questions').update(payloadFull).eq('id', q.id);
     if (error) {
@@ -423,7 +427,9 @@ export const createArenaSlice: StateCreator<AppState, [], [], ArenaSliceState> =
       xp_reward: q.xp_reward || 10,
       type: q.type || 'MCQ',
       correct_indices: q.correct_indices || null,
-      correct_answer_string: q.correct_answer_string || null
+      correct_answer_string: q.correct_answer_string || null,
+      guide: q.guide || null,
+      explanation: q.explanation || null
     }));
     
     let { error } = await supabase.from('arena_questions').insert(rowsFull);
