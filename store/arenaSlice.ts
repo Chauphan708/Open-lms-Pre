@@ -131,10 +131,14 @@ export const createArenaSlice: StateCreator<AppState, [], [], ArenaSliceState> =
     
     let { error } = await supabase.from('arena_questions').insert(rowFull);
     if (error) {
-      console.warn("Retrying insert without custom time, xp, and new type columns...");
+      console.warn("Retrying insert without custom time, xp, and new type columns...", error.message);
       const rowMin = { id, content: q.content, answers: q.answers || [], correct_index: q.correct_index ?? 0, difficulty: q.difficulty, subject: q.subject, topic: q.topic || 'general' };
       const { error: err2 } = await supabase.from('arena_questions').insert(rowMin);
-      if (err2) return false;
+      if (err2) {
+        console.error("Supabase insert error:", err2);
+        alert(`Không thể chèn câu hỏi: ${err2.message}`);
+        return false;
+      }
       set(state => ({ arenaQuestions: [...state.arenaQuestions, { ...rowMin, answers: typeof rowMin.answers === 'string' ? JSON.parse(rowMin.answers as any) : rowMin.answers } as any] }));
       return true;
     }
@@ -447,6 +451,7 @@ export const createArenaSlice: StateCreator<AppState, [], [], ArenaSliceState> =
       const { error: err2 } = await supabase.from('arena_questions').insert(rowsMin);
       if (err2) {
         console.error('Bulk insert error:', err2);
+        alert(`Không thể chèn loạt câu hỏi: ${err2.message}`);
         return 0;
       }
       const parsed = rowsMin.map(r => ({ ...r, answers: typeof r.answers === 'string' ? JSON.parse(r.answers as any) : r.answers }));
