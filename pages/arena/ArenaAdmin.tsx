@@ -318,7 +318,7 @@ export const ArenaAdmin: React.FC = () => {
                     new Paragraph({
                         children: [
                             new TextRun({
-                                text: "Câu 1: Phân số 3/4 viết dưới dạng số thập phân là bao nhiêu? (Chú ý: Có thể viết phân số kiểu thường '3/4' hoặc dùng LaTeX '$\\frac{3}{4}$', hệ thống đều tự động hiển thị đẹp dạng dọc)\nA. 0,75\nB. 0,5\nC. 0,25\nD. 0,8\nĐáp án: A\nĐộ khó: 1\nThời gian: 30\nXP: 10\n\n",
+                                text: "Câu 1: Phân số 3/4 viết dưới dạng số thập phân là bao nhiêu? (Chú ý: Có thể viết phân số kiểu thường '3/4' hoặc dùng LaTeX '$\\frac{3}{4}$', hệ thống đều tự động hiển thị đẹp dạng dọc)\nA. 0,75\nB. 0,5\nC. 0,25\nD. 0,8\nĐáp án: A\nĐộ khó: 1\nThời gian: 30\nXP: 10\nHướng dẫn: Ta lấy tử số chia cho mẫu số.\nLời giải chi tiết: Bước 1: Thực hiện phép chia 3 : 4.\nBước 2: Kết quả thu được là 0,75.\nChọn đáp án A.\n\n",
                                 size: 22
                             })
                         ]
@@ -326,7 +326,7 @@ export const ArenaAdmin: React.FC = () => {
                     new Paragraph({
                         children: [
                             new TextRun({
-                                text: "Câu 2: Chọn các số nguyên tố nhỏ hơn 10.\nA. 2\nB. 4\nC. 7\nD. 9\nĐáp án: A, C\nĐộ khó: 2\nThời gian: 30\nXP: 15\nLoại: MCQ_MULTIPLE\n\n",
+                                text: "Câu 2: Chọn các số nguyên tố nhỏ hơn 10.\nA. 2\nB. 4\nC. 7\nD. 9\nĐáp án: A, C\nĐộ khó: 2\nThời gian: 30\nXP: 15\nLoại: MCQ_MULTIPLE\nHướng dẫn: Số nguyên tố chỉ chia hết cho 1 và chính nó.\nLời giải chi tiết: Các số 2 và 7 chỉ chia hết cho 1 và chính nó nên là số nguyên tố. Số 4 chia hết cho 2; số 9 chia hết cho 3 nên không phải.\nChọn đáp án A và C.\n\n",
                                 size: 22
                             })
                         ]
@@ -334,7 +334,7 @@ export const ArenaAdmin: React.FC = () => {
                     new Paragraph({
                         children: [
                             new TextRun({
-                                text: "Câu 3: Thủ đô của Việt Nam là thành phố nào?\nĐáp án: Hà Nội|Thành phố Hà Nội\nĐộ khó: 1\nThời gian: 30\nXP: 10\nLoại: SHORT_ANSWER\n",
+                                text: "Câu 3: Thủ đô của Việt Nam là thành phố nào?\nĐáp án: Hà Nội|Thành phố Hà Nội\nĐộ khó: 1\nThời gian: 30\nXP: 10\nLoại: SHORT_ANSWER\nHướng dẫn: Đây là thành phố nằm ở đồng bằng sông Hồng, có bề dày lịch sử ngàn năm văn hiến.\nLời giải chi tiết: Thủ đô chính thức của Việt Nam là thành phố Hà Nội.\n",
                                 size: 22
                             })
                         ]
