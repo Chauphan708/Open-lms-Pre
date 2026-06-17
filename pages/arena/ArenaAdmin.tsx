@@ -1220,13 +1220,13 @@ export const ArenaAdmin: React.FC = () => {
                                     {q.guide && (
                                         <div className="text-gray-700">
                                             <span className="font-bold text-indigo-750">💡 Hướng dẫn: </span>
-                                            {q.guide}
+                                            <MathText inline>{q.guide}</MathText>
                                         </div>
                                     )}
                                     {q.explanation && (
                                         <div className="text-gray-700">
                                             <span className="font-bold text-indigo-750">📖 Lời giải chi tiết: </span>
-                                            {q.explanation}
+                                            <MathText inline>{q.explanation}</MathText>
                                         </div>
                                     )}
                                 </div>
