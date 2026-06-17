@@ -21,7 +21,7 @@ CREATE TABLE IF NOT EXISTS public.arena_questions (
   content TEXT NOT NULL,
   answers JSONB NOT NULL, -- ["Đáp án A", "Đáp án B", "Đáp án C", "Đáp án D"]
   correct_index INT NOT NULL CHECK (correct_index >= 0 AND correct_index <= 3),
-  difficulty INT DEFAULT 1 CHECK (difficulty >= 1 AND difficulty <= 3),
+  difficulty INT DEFAULT 1 CHECK (difficulty >= 1 AND difficulty <= 4),
   subject TEXT DEFAULT 'math',
   topic TEXT DEFAULT 'general', -- Chủ đề (VD: 'Phân số', 'Hình học')
   created_at TIMESTAMPTZ DEFAULT now()
