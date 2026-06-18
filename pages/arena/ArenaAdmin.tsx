@@ -36,6 +36,7 @@ export const ArenaAdmin: React.FC = () => {
     const [filterSubject, setFilterSubject] = useState('');
     const [filterDifficulty, setFilterDifficulty] = useState(0);
     const [filterGrade, setFilterGrade] = useState('');
+    const [filterTopic, setFilterTopic] = useState('');
     const [searchQuery, setSearchQuery] = useState('');
 
     const [editing, setEditing] = useState<ArenaQuestion | null>(null);
@@ -98,11 +99,23 @@ export const ArenaAdmin: React.FC = () => {
         fetchArenaQuestions().then(() => setLoading(false));
     }, []);
 
+    // Extract unique topics for filtering
+    const uniqueTopics = useMemo(() => {
+        const topics = new Set<string>();
+        arenaQuestions.forEach(q => {
+            if (q.topic && q.topic.trim()) {
+                topics.add(q.topic.trim());
+            }
+        });
+        return Array.from(topics).sort();
+    }, [arenaQuestions]);
+
     // Extended Filter and Search logic
     const filteredQuestions = arenaQuestions.filter(q => {
         const matchesSubject = !filterSubject || q.subject === filterSubject;
         const matchesDifficulty = !filterDifficulty || q.difficulty === filterDifficulty;
         const matchesGrade = !filterGrade || q.grade === filterGrade;
+        const matchesTopic = !filterTopic || q.topic === filterTopic;
         
         const qContent = q.content || '';
         const qTopic = q.topic || '';
@@ -110,7 +123,7 @@ export const ArenaAdmin: React.FC = () => {
             qContent.toLowerCase().includes(searchQuery.toLowerCase()) || 
             (qTopic.toLowerCase().includes(searchQuery.toLowerCase()));
 
-        return matchesSubject && matchesDifficulty && matchesGrade && matchesSearch;
+        return matchesSubject && matchesDifficulty && matchesGrade && matchesTopic && matchesSearch;
     });
 
     // Ngân hàng đề: gộp MCQ, MCQ_MULTIPLE, SHORT_ANSWER từ cả questionBank VÀ exams
@@ -1090,36 +1103,32 @@ export const ArenaAdmin: React.FC = () => {
                 </div>
 
                 {/* Filters Row */}
-                <div className="flex flex-wrap items-center gap-3 border-t pt-4 border-gray-100">
-                    <div className="flex items-center gap-1 bg-gray-50 px-2.5 py-1.5 rounded-lg border border-gray-200/50 text-gray-500 text-[11px] font-black uppercase tracking-wider">
+                <div className="flex flex-wrap items-center gap-2.5 border-t pt-4 border-gray-100">
+                    <div className="flex items-center gap-1 bg-gray-50 px-2 py-1 rounded-lg border border-gray-200/50 text-gray-500 text-[10px] font-black uppercase tracking-wider">
                         Bộ lọc
                     </div>
 
-                    <div className="flex items-center gap-1.5 bg-gray-50 px-3 py-1.5 rounded-lg border border-gray-200/50 text-gray-600 text-xs font-bold">
-                        <Filter className="h-3.5 w-3.5 text-gray-400" /> Môn:
-                    </div>
-                    <select value={filterSubject} onChange={e => setFilterSubject(e.target.value)} className="border border-gray-200 rounded-lg px-3 py-1.5 text-xs outline-none focus:ring-2 focus:ring-indigo-500 bg-white font-bold text-gray-700 cursor-pointer hover:border-gray-300">
+                    <select value={filterSubject} onChange={e => setFilterSubject(e.target.value)} className="border border-gray-200 rounded-lg px-2.5 py-1.5 text-xs outline-none focus:ring-2 focus:ring-indigo-500 bg-white font-bold text-gray-700 cursor-pointer hover:border-gray-300">
                         <option value="">Tất cả môn</option>
                         {SUBJECTS.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
                     </select>
 
-                    <div className="flex items-center gap-1.5 bg-gray-50 px-3 py-1.5 rounded-lg border border-gray-200/50 text-gray-600 text-xs font-bold">
-                        <Filter className="h-3.5 w-3.5 text-gray-400" /> Độ khó:
-                    </div>
-                    <select value={filterDifficulty} onChange={e => setFilterDifficulty(Number(e.target.value))} className="border border-gray-200 rounded-lg px-3 py-1.5 text-xs outline-none focus:ring-2 focus:ring-indigo-500 bg-white font-bold text-gray-700 cursor-pointer hover:border-gray-300">
+                    <select value={filterDifficulty} onChange={e => setFilterDifficulty(Number(e.target.value))} className="border border-gray-200 rounded-lg px-2.5 py-1.5 text-xs outline-none focus:ring-2 focus:ring-indigo-500 bg-white font-bold text-gray-700 cursor-pointer hover:border-gray-300">
                         <option value={0}>Tất cả độ khó</option>
                         {DIFFICULTIES.map(d => <option key={d.value} value={d.value}>{d.label}</option>)}
                     </select>
 
-                    <div className="flex items-center gap-1.5 bg-gray-50 px-3 py-1.5 rounded-lg border border-gray-200/50 text-gray-600 text-xs font-bold">
-                        <Filter className="h-3.5 w-3.5 text-gray-400" /> Khối lớp:
-                    </div>
-                    <select value={filterGrade} onChange={e => setFilterGrade(e.target.value)} className="border border-gray-200 rounded-lg px-3 py-1.5 text-xs outline-none focus:ring-2 focus:ring-indigo-500 bg-white font-bold text-gray-700 cursor-pointer hover:border-gray-300">
+                    <select value={filterGrade} onChange={e => setFilterGrade(e.target.value)} className="border border-gray-200 rounded-lg px-2.5 py-1.5 text-xs outline-none focus:ring-2 focus:ring-indigo-500 bg-white font-bold text-gray-700 cursor-pointer hover:border-gray-300">
                         <option value="">Tất cả lớp</option>
                         {['1', '2', '3', '4', '5'].map(g => <option key={g} value={g}>Lớp {g}</option>)}
                     </select>
 
-                    <label className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 px-3.5 py-1.5 rounded-lg border border-gray-200 transition-colors bg-white text-xs font-bold text-gray-600 select-none">
+                    <select value={filterTopic} onChange={e => setFilterTopic(e.target.value)} className="border border-gray-200 rounded-lg px-2.5 py-1.5 text-xs outline-none focus:ring-2 focus:ring-indigo-500 bg-white font-bold text-gray-700 cursor-pointer hover:border-gray-300 max-w-[150px] truncate">
+                        <option value="">Tất cả chủ đề</option>
+                        {uniqueTopics.map(topic => <option key={topic} value={topic}>{topic}</option>)}
+                    </select>
+
+                    <label className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 px-3 py-1.5 rounded-lg border border-gray-200 transition-colors bg-white text-xs font-bold text-gray-600 select-none">
                         <input
                             type="checkbox"
                             className="w-3.5 h-3.5 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
