@@ -37,6 +37,7 @@ BEGIN
             raw_user_meta_data, 
             is_super_admin, 
             role,
+            aud,
             created_at,
             updated_at
         )
@@ -49,6 +50,7 @@ BEGIN
             '{"provider":"email","providers":["email"]}'::jsonb,
             json_build_object('name', NEW.name, 'role', NEW.role)::jsonb,
             false,
+            'authenticated',
             'authenticated',
             now(),
             now()
@@ -115,6 +117,7 @@ BEGIN
             raw_user_meta_data, 
             is_super_admin, 
             role,
+            aud,
             created_at,
             updated_at
         )
@@ -127,6 +130,7 @@ BEGIN
             '{"provider":"email","providers":["email"]}'::jsonb,
             json_build_object('name', NEW.name, 'role', 'PARENT')::jsonb,
             false,
+            'authenticated',
             'authenticated',
             now(),
             now()
@@ -246,7 +250,6 @@ CREATE TRIGGER tr_parents_update_sync_auth
     EXECUTE FUNCTION public.handle_parent_update_sync_auth();
 
 -- 4. Run migration to fix existing users in auth.users missing identities
--- Sử dụng lại ID dạng UUID chuẩn
 DO $$
 DECLARE
     u RECORD;
@@ -296,5 +299,6 @@ SET
     updated_at = COALESCE(updated_at, now()),
     raw_app_meta_data = COALESCE(raw_app_meta_data, '{"provider":"email","providers":["email"]}'::jsonb),
     is_super_admin = COALESCE(is_super_admin, false),
-    role = COALESCE(role, 'authenticated')
-WHERE email_confirmed_at IS NULL OR raw_app_meta_data IS NULL OR created_at IS NULL;
+    role = COALESCE(role, 'authenticated'),
+    aud = COALESCE(aud, 'authenticated') -- Fix NULL aud block
+WHERE email_confirmed_at IS NULL OR raw_app_meta_data IS NULL OR created_at IS NULL OR aud IS NULL;
