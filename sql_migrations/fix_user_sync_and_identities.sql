@@ -300,5 +300,10 @@ SET
     raw_app_meta_data = COALESCE(raw_app_meta_data, '{"provider":"email","providers":["email"]}'::jsonb),
     is_super_admin = COALESCE(is_super_admin, false),
     role = COALESCE(role, 'authenticated'),
-    aud = COALESCE(aud, 'authenticated') -- Fix NULL aud block
+    aud = COALESCE(aud, 'authenticated')
 WHERE email_confirmed_at IS NULL OR raw_app_meta_data IS NULL OR created_at IS NULL OR aud IS NULL;
+
+-- 7. Unconditionally guarantee aud is 'authenticated' for all users (Prevents GoTrue rejection)
+UPDATE auth.users
+SET aud = 'authenticated'
+WHERE aud IS NULL OR aud = '';
