@@ -592,13 +592,44 @@ export const ArenaAdmin: React.FC = () => {
                 continue;
             }
 
-            if (line.toLowerCase().startsWith('lời giải chi tiết:') || line.toLowerCase().startsWith('lời giải:')) {
-                const prefixLength = line.toLowerCase().startsWith('lời giải chi tiết:') ? 18 : 9;
-                currentQuestion.explanation = line.substring(prefixLength).trim();
+            if (line.toLowerCase().startsWith('lời giải chi tiết:')) {
+                currentQuestion.explanation = line.substring(18).trim();
                 continue;
             }
 
-            if (!line.match(/^[A-D]\s*[:.-]/i) && !line.includes(':')) {
+            if (line.toLowerCase().startsWith('lời giải:')) {
+                currentQuestion.explanation = line.substring(9).trim();
+                continue;
+            }
+
+            // If it's a normal line that starts with 'lời giải chi tiết:' or 'lời giải:' case-insensitively, we process it.
+            // Some docx text lines might contain special Unicode formatting or non-breaking spaces, so we check using substring.
+            const cleanLine = line.toLowerCase();
+            if (cleanLine.startsWith('lời giải chi tiết:')) {
+                currentQuestion.explanation = line.substring(18).trim();
+                continue;
+            }
+            if (cleanLine.startsWith('lời giải:')) {
+                currentQuestion.explanation = line.substring(9).trim();
+                continue;
+            }
+
+            const isKeywordLine = 
+                line.toLowerCase().startsWith('môn:') ||
+                line.toLowerCase().startsWith('chủ đề:') ||
+                line.toLowerCase().startsWith('lớp:') ||
+                line.toLowerCase().startsWith('khối lớp:') ||
+                line.toLowerCase().startsWith('đáp án đúng:') ||
+                line.toLowerCase().startsWith('đáp án:') ||
+                line.toLowerCase().startsWith('độ khó:') ||
+                line.toLowerCase().startsWith('thời gian:') ||
+                line.toLowerCase().startsWith('xp:') ||
+                line.toLowerCase().startsWith('loại:') ||
+                line.toLowerCase().startsWith('hướng dẫn:') ||
+                line.toLowerCase().startsWith('lời giải chi tiết:') ||
+                line.toLowerCase().startsWith('lời giải:');
+
+            if (!line.match(/^[A-D]\s*[:.-]/i) && !isKeywordLine) {
                 currentQuestion.content += '\n' + cleanDivision(line, currentQuestion.subject);
             }
         }
