@@ -16,6 +16,8 @@ const MathText: React.FC<MathTextProps> = ({ children, className, inline = false
   const processedText = React.useMemo(() => {
     if (!children) return '';
     let text = children;
+    // Strip "Mức độ: ..." lines/metadata from rendering
+    text = text.replace(/(?:Mức\s*độ|Độ\s*khó)\s*[:.-]?\s*(?:Nhận\s*biết|Kết\s*nối|Thông\s*hiểu|Vận\s*dụng(?: cao)?|NB|KN|TH|VD(?:C)?)/gi, '');
     // Replace \[ and \] with $$
     text = text.replace(/\\\[/g, '$$$$').replace(/\\\]/g, '$$$$');
     // Replace \( and \) with $

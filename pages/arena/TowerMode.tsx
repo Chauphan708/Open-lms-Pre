@@ -142,6 +142,7 @@ export const TowerMode: React.FC = () => {
   const [eloGained, setEloGained] = useState(0);
   const [timer, setTimer] = useState(30);
   const [baseTimerLimit, setBaseTimerLimit] = useState(30);
+  const [shortAnswerText, setShortAnswerText] = useState('');
 
   // Gamification Active Perks
   const [skillUsed, setSkillUsed] = useState(false);
@@ -417,6 +418,7 @@ export const TowerMode: React.FC = () => {
     used: Set<string>
   ) => {
     setSelectedOption(null);
+    setShortAnswerText('');
     setShowResult(false);
     setShowAiExplanation(false);
     setAiExplanation('');
@@ -487,10 +489,21 @@ export const TowerMode: React.FC = () => {
   };
 
   // Submit Answer
-  const handleAnswer = async (idx: number) => {
+  const handleAnswer = async (payload: number | string) => {
     if (showResult || !currentQ || !arenaProfile) return;
-    setSelectedOption(idx);
-    const correct = idx === currentQ.correct_index;
+    
+    let correct = false;
+    if (currentQ.type === 'SHORT_ANSWER') {
+      const ansStr = typeof payload === 'string' ? payload : '';
+      const cleanUser = ansStr.trim().toLowerCase().replace(/\s+/g, '');
+      const cleanCorrect = (currentQ.correct_answer_string || '').trim().toLowerCase().replace(/\s+/g, '');
+      correct = cleanUser === cleanCorrect;
+    } else {
+      const idx = typeof payload === 'number' ? payload : -1;
+      setSelectedOption(idx);
+      correct = idx === currentQ.correct_index;
+    }
+    
     setIsCorrect(correct);
     setShowResult(true);
 
@@ -1300,37 +1313,85 @@ export const TowerMode: React.FC = () => {
             )}
           </div>
 
-          {/* Options List */}
-          <div className="space-y-3">
-            {currentQ.answers.map((answer, idx) => {
-              const isEliminated = eliminatedOptions.includes(idx);
-              let btnStyle = 'border-white/5 bg-white/5 text-gray-300 hover:border-indigo-500/30 hover:bg-indigo-950/10';
-              
-              if (showResult) {
-                if (idx === currentQ.correct_index) {
-                  btnStyle = 'border-emerald-500/50 bg-emerald-950/30 text-emerald-300';
-                } else if (idx === selectedOption && !isCorrect) {
-                  btnStyle = 'border-rose-500/50 bg-rose-950/30 text-rose-300';
-                } else {
-                  btnStyle = 'border-white/5 bg-white/5 text-gray-600 opacity-40';
-                }
-              }
+          {/* Options / Input Field */}
+          {currentQ.type === 'SHORT_ANSWER' ? (
+            <div className="bg-[#080d16] border border-white/5 rounded-2xl p-6 mb-5">
+              <div className="mb-4">
+                <label className="block text-sm font-semibold text-gray-400 mb-2">Nhập đáp án của bạn:</label>
+                <input
+                  type="text"
+                  value={shortAnswerText}
+                  onChange={(e) => setShortAnswerText(e.target.value)}
+                  disabled={showResult}
+                  placeholder="Điền từ, số hoặc cụm từ đáp án chính xác..."
+                  className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all font-semibold"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && shortAnswerText.trim() && !showResult) {
+                      handleAnswer(shortAnswerText);
+                    }
+                  }}
+                />
+              </div>
 
-              return (
+              {showResult && (
+                <div className="p-4 rounded-xl mb-4 bg-white/5 border border-white/5 flex flex-col gap-2">
+                  <div className="flex justify-between items-center text-sm">
+                    <span className="text-gray-400">Đáp án của bạn:</span>
+                    <span className={`font-bold ${isCorrect ? 'text-emerald-400' : 'text-rose-400'}`}>
+                      {shortAnswerText || '(Không trả lời)'}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center text-sm">
+                    <span className="text-gray-400">Đáp án đúng:</span>
+                    <span className="font-bold text-emerald-400">
+                      {currentQ.correct_answer_string}
+                    </span>
+                  </div>
+                </div>
+              )}
+
+              {!showResult && (
                 <button
-                  key={idx}
-                  onClick={() => handleAnswer(idx)}
-                  disabled={showResult || isEliminated}
-                  className={`w-full p-4 rounded-xl border text-left font-semibold transition-all flex items-center gap-3 ${btnStyle} ${isEliminated ? 'opacity-20 cursor-not-allowed line-through' : ''}`}
+                  onClick={() => handleAnswer(shortAnswerText)}
+                  disabled={!shortAnswerText.trim()}
+                  className="w-full py-3 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-bold rounded-xl transition-all shadow-md active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  <span className={`w-8 h-8 rounded-lg flex items-center justify-center text-sm font-black flex-shrink-0 ${showResult && idx === currentQ.correct_index ? 'bg-emerald-500 text-white shadow-md' : showResult && idx === selectedOption && !isCorrect ? 'bg-rose-500 text-white shadow-md' : 'bg-white/10 text-gray-400'}`}>
-                    {showResult && idx === currentQ.correct_index ? <CheckCircle className="h-4.5 w-4.5" /> : showResult && idx === selectedOption && !isCorrect ? <XCircle className="h-4.5 w-4.5" /> : String.fromCharCode(65 + idx)}
-                  </span>
-                  <MathText>{answer}</MathText>
+                  Nộp câu trả lời
                 </button>
-              );
-            })}
-          </div>
+              )}
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {currentQ.answers.map((answer, idx) => {
+                const isEliminated = eliminatedOptions.includes(idx);
+                let btnStyle = 'border-white/5 bg-white/5 text-gray-300 hover:border-indigo-500/30 hover:bg-indigo-950/10';
+                
+                if (showResult) {
+                  if (idx === currentQ.correct_index) {
+                    btnStyle = 'border-emerald-500/50 bg-emerald-950/30 text-emerald-300';
+                  } else if (idx === selectedOption && !isCorrect) {
+                    btnStyle = 'border-rose-500/50 bg-rose-950/30 text-rose-300';
+                  } else {
+                    btnStyle = 'border-white/5 bg-white/5 text-gray-600 opacity-40';
+                  }
+                }
+
+                return (
+                  <button
+                    key={idx}
+                    onClick={() => handleAnswer(idx)}
+                    disabled={showResult || isEliminated}
+                    className={`w-full p-4 rounded-xl border text-left font-semibold transition-all flex items-center gap-3 ${btnStyle} ${isEliminated ? 'opacity-20 cursor-not-allowed line-through' : ''}`}
+                  >
+                    <span className={`w-8 h-8 rounded-lg flex items-center justify-center text-sm font-black flex-shrink-0 ${showResult && idx === currentQ.correct_index ? 'bg-emerald-500 text-white shadow-md' : showResult && idx === selectedOption && !isCorrect ? 'bg-rose-500 text-white shadow-md' : 'bg-white/10 text-gray-400'}`}>
+                      {showResult && idx === currentQ.correct_index ? <CheckCircle className="h-4.5 w-4.5" /> : showResult && idx === selectedOption && !isCorrect ? <XCircle className="h-4.5 w-4.5" /> : String.fromCharCode(65 + idx)}
+                    </span>
+                    <MathText>{answer}</MathText>
+                  </button>
+                );
+              })}
+            </div>
+          )}
 
           {/* Result card & Next trigger */}
           {showResult && (
