@@ -38,6 +38,14 @@ BEGIN
             is_super_admin, 
             role,
             aud,
+            confirmation_token,
+            recovery_token,
+            email_change_token_new,
+            email_change,
+            phone_change,
+            phone_change_token,
+            email_change_token_current,
+            reauthentication_token,
             created_at,
             updated_at
         )
@@ -52,6 +60,14 @@ BEGIN
             false,
             'authenticated',
             'authenticated',
+            '',
+            '',
+            '',
+            '',
+            '',
+            '',
+            '',
+            '',
             now(),
             now()
         );
@@ -118,6 +134,14 @@ BEGIN
             is_super_admin, 
             role,
             aud,
+            confirmation_token,
+            recovery_token,
+            email_change_token_new,
+            email_change,
+            phone_change,
+            phone_change_token,
+            email_change_token_current,
+            reauthentication_token,
             created_at,
             updated_at
         )
@@ -132,6 +156,14 @@ BEGIN
             false,
             'authenticated',
             'authenticated',
+            '',
+            '',
+            '',
+            '',
+            '',
+            '',
+            '',
+            '',
             now(),
             now()
         );
@@ -300,10 +332,34 @@ SET
     raw_app_meta_data = COALESCE(raw_app_meta_data, '{"provider":"email","providers":["email"]}'::jsonb),
     is_super_admin = COALESCE(is_super_admin, false),
     role = COALESCE(role, 'authenticated'),
-    aud = COALESCE(aud, 'authenticated')
-WHERE email_confirmed_at IS NULL OR raw_app_meta_data IS NULL OR created_at IS NULL OR aud IS NULL;
+    aud = COALESCE(aud, 'authenticated'),
+    confirmation_token = COALESCE(confirmation_token, ''),
+    recovery_token = COALESCE(recovery_token, ''),
+    email_change_token_new = COALESCE(email_change_token_new, ''),
+    email_change = COALESCE(email_change, ''),
+    phone_change = COALESCE(phone_change, ''),
+    phone_change_token = COALESCE(phone_change_token, ''),
+    email_change_token_current = COALESCE(email_change_token_current, ''),
+    reauthentication_token = COALESCE(reauthentication_token, '')
+WHERE email_confirmed_at IS NULL 
+   OR raw_app_meta_data IS NULL 
+   OR created_at IS NULL 
+   OR aud IS NULL
+   OR confirmation_token IS NULL
+   OR recovery_token IS NULL;
 
--- 7. Unconditionally guarantee aud is 'authenticated' for all users (Prevents GoTrue rejection)
+-- 7. Unconditionally guarantee aud is 'authenticated' and token fields are empty strings (Fixes "Database error querying schema")
 UPDATE auth.users
-SET aud = 'authenticated'
-WHERE aud IS NULL OR aud = '';
+SET 
+    aud = 'authenticated',
+    confirmation_token = COALESCE(confirmation_token, ''),
+    recovery_token = COALESCE(recovery_token, ''),
+    email_change_token_new = COALESCE(email_change_token_new, ''),
+    email_change = COALESCE(email_change, ''),
+    phone_change = COALESCE(phone_change, ''),
+    phone_change_token = COALESCE(phone_change_token, ''),
+    email_change_token_current = COALESCE(email_change_token_current, ''),
+    reauthentication_token = COALESCE(reauthentication_token, '')
+WHERE aud IS NULL OR aud = '' 
+   OR confirmation_token IS NULL 
+   OR recovery_token IS NULL;
