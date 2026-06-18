@@ -399,6 +399,44 @@ export const PvPBattle: React.FC = () => {
     }
 
     const currentQuestion = questions[currentQIdx];
+    const { hint, explanation } = React.useMemo(() => {
+        if (!currentQuestion) return { hint: '', explanation: '' };
+        const guideText = currentQuestion.guide;
+        const explanationText = currentQuestion.explanation;
+        if (!guideText) return { hint: '', explanation: explanationText || '' };
+        
+        const keywords = [
+            'lời giải chi tiết:',
+            'lời giải:',
+            'giải thích:',
+            'hướng dẫn giải:'
+        ];
+        
+        const lowerText = guideText.toLowerCase();
+        let splitIndex = -1;
+        let matchedKeywordLength = 0;
+        
+        for (const kw of keywords) {
+            const idx = lowerText.indexOf(kw);
+            if (idx !== -1 && (splitIndex === -1 || idx < splitIndex)) {
+                splitIndex = idx;
+                matchedKeywordLength = kw.length;
+            }
+        }
+        
+        if (splitIndex !== -1) {
+            const parsedHint = guideText.substring(0, splitIndex).trim();
+            const parsedExpl = guideText.substring(splitIndex + matchedKeywordLength).trim();
+            
+            const finalExplanation = explanationText 
+                ? explanationText.trim() + '\n\n' + parsedExpl
+                : parsedExpl;
+                
+            return { hint: parsedHint, explanation: finalExplanation };
+        }
+        
+        return { hint: guideText.trim(), explanation: explanationText || '' };
+    }, [currentQuestion]);
 
     return (
         <div className="max-w-3xl mx-auto">
@@ -529,15 +567,15 @@ export const PvPBattle: React.FC = () => {
                         <div className="text-lg font-bold text-gray-900 leading-relaxed">
                             <MathText>{currentQuestion.content}</MathText>
                         </div>
-                        {currentQuestion.guide && !showResult && (
+                        {hint && !showResult && (
                             <div className="mt-4 border-t pt-3">
                                 <details className="group cursor-pointer select-none">
                                     <summary className="text-xs font-bold text-indigo-600 hover:text-indigo-700 flex items-center gap-1 outline-none">
                                         <span>💡 Xem gợi ý cách làm</span>
                                     </summary>
-                                    <p className="text-xs text-gray-500 mt-2 pl-4 border-l-2 border-indigo-500 leading-relaxed">
-                                        {currentQuestion.guide}
-                                    </p>
+                                    <div className="text-xs text-gray-500 mt-2 pl-4 border-l-2 border-indigo-500 leading-relaxed">
+                                        <MathText>{hint}</MathText>
+                                    </div>
                                 </details>
                             </div>
                         )}
@@ -683,10 +721,10 @@ export const PvPBattle: React.FC = () => {
                     )}
 
                     {/* Detailed solution */}
-                    {showResult && currentQuestion.explanation && (
+                    {showResult && explanation && (
                         <div className="mt-4 bg-indigo-50 border border-indigo-150 p-4 rounded-xl text-xs text-gray-700" style={{ animation: 'fadeIn 0.3s ease-out' }}>
                             <p className="font-bold text-indigo-900 flex items-center gap-1.5 mb-1.5">📖 Lời giải chi tiết:</p>
-                            <p className="leading-relaxed whitespace-pre-wrap"><MathText>{currentQuestion.explanation}</MathText></p>
+                            <p className="leading-relaxed whitespace-pre-wrap"><MathText>{explanation}</MathText></p>
                         </div>
                     )}
 

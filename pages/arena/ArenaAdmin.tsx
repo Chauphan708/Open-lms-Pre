@@ -587,8 +587,9 @@ export const ArenaAdmin: React.FC = () => {
                 continue;
             }
 
-            if (line.toLowerCase().startsWith('hướng dẫn:')) {
-                currentQuestion.guide = line.substring(10).trim();
+            if (line.toLowerCase().startsWith('hướng dẫn:') || line.toLowerCase().startsWith('gợi ý:') || line.toLowerCase().startsWith('gợi ý:')) {
+                const prefixLength = line.toLowerCase().startsWith('hướng dẫn:') ? 10 : 6;
+                currentQuestion.guide = line.substring(prefixLength).trim();
                 continue;
             }
 
@@ -613,6 +614,10 @@ export const ArenaAdmin: React.FC = () => {
                 currentQuestion.explanation = line.substring(9).trim();
                 continue;
             }
+            if (cleanLine.startsWith('gợi ý:') || cleanLine.startsWith('gợi ý:')) {
+                currentQuestion.guide = line.substring(6).trim();
+                continue;
+            }
 
             const isKeywordLine = 
                 line.toLowerCase().startsWith('môn:') ||
@@ -626,6 +631,8 @@ export const ArenaAdmin: React.FC = () => {
                 line.toLowerCase().startsWith('xp:') ||
                 line.toLowerCase().startsWith('loại:') ||
                 line.toLowerCase().startsWith('hướng dẫn:') ||
+                line.toLowerCase().startsWith('gợi ý:') ||
+                line.toLowerCase().startsWith('gợi ý:') ||
                 line.toLowerCase().startsWith('lời giải chi tiết:') ||
                 line.toLowerCase().startsWith('lời giải:');
 

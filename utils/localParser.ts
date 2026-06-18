@@ -22,8 +22,8 @@ const ANSWER_REGEX = /(?:Đáp\s*án\s*(?:đúng)?\s*[:.]\s*)(.+)/i;
 // Regex for solution/explanation — must handle "Lời giải chi tiết:", "Hướng dẫn giải:", "Giải thích:", etc.
 const SOLUTION_REGEX = /(?:Lời\s*giải(?:\s*chi\s*tiết)?|Giải\s*thích|Hướng\s*dẫn\s*giải|Giải\s*chi\s*tiết|Solution|Explanation)\s*[:.]?\s*([\s\S]*?)$/i;
 
-// Regex for hint — must handle "Gợi ý:", "Gợi ý (Cách làm):", "Hint:", etc.
-const HINT_REGEX = /(?:Gợi\s*ý(?:\s*\([^)]*\))?|Hint)\s*[:.]?\s*([\s\S]*?)$/i;
+// Regex for hint — must handle "Gợi ý:", "Gợi ý (Cách làm):", "Hướng dẫn:", "Hint:", etc.
+const HINT_REGEX = /(?:Gợi\s*ý|Gợi\s*ý(?:\s*\([^)]*\))?|Hướng\s*dẫn|Hint)\s*[:.]?\s*([\s\S]*?)$/i;
 
 // Regex for difficulty level
 const LEVEL_REGEX = /(?:Mức\s*độ|Độ\s*khó)\s*[:.]?\s*(Nhận\s*biết|Kết\s*nối|Thông\s*hiểu|Vận\s*dụng(?: cao)?|NB|KN|TH|VD(?:C)?)/i;
@@ -96,7 +96,9 @@ function parseOneBlock(block: string, index: number): Question | null {
         // Tách Đáp án
         .replace(/(\s+)(Đáp\s*án\s*(?:đúng)?\s*[:.])/gi, '\n$2')
         // Tách Gợi ý
-        .replace(/(\s+)(Gợi\s*ý(?:\s*\([^)]*\))?|Hint)\s*[:.]?/gi, '\n$2:')
+        .replace(/(\s+)(Gợi\s*ý|Gợi\s*ý(?:\s*\([^)]*\))?|Hint)\s*[:.]?/gi, '\n$2:')
+        // Tách Hướng dẫn
+        .replace(/(\s+)(Hướng\s*dẫn)\s*[:.]?/gi, '\n$2:')
         // Tách Lời giải 
         .replace(/(\s+)(Lời\s*giải(?:\s*chi\s*tiết)?|Giải\s*thích|Hướng\s*dẫn\s*giải|Giải\s*chi\s*tiết|Solution|Explanation)\s*[:.]?/gi, '\n$2:')
         // Tách Mức độ

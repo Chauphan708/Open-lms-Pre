@@ -98,6 +98,45 @@ export const TowerMode: React.FC = () => {
   const [currentQ, setCurrentQ] = useState<ArenaQuestion | null>(null);
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
   const [showResult, setShowResult] = useState(false);
+  
+  const { hint, explanation } = React.useMemo(() => {
+    if (!currentQ) return { hint: '', explanation: '' };
+    const guideText = currentQ.guide;
+    const explanationText = currentQ.explanation;
+    if (!guideText) return { hint: '', explanation: explanationText || '' };
+    
+    const keywords = [
+      'lời giải chi tiết:',
+      'lời giải:',
+      'giải thích:',
+      'hướng dẫn giải:'
+    ];
+    
+    const lowerText = guideText.toLowerCase();
+    let splitIndex = -1;
+    let matchedKeywordLength = 0;
+    
+    for (const kw of keywords) {
+      const idx = lowerText.indexOf(kw);
+      if (idx !== -1 && (splitIndex === -1 || idx < splitIndex)) {
+        splitIndex = idx;
+        matchedKeywordLength = kw.length;
+      }
+    }
+    
+    if (splitIndex !== -1) {
+      const parsedHint = guideText.substring(0, splitIndex).trim();
+      const parsedExpl = guideText.substring(splitIndex + matchedKeywordLength).trim();
+      
+      const finalExplanation = explanationText 
+        ? explanationText.trim() + '\n\n' + parsedExpl
+        : parsedExpl;
+        
+      return { hint: parsedHint, explanation: finalExplanation };
+    }
+    
+    return { hint: guideText.trim(), explanation: explanationText || '' };
+  }, [currentQ]);
   const [isCorrect, setIsCorrect] = useState(false);
   const [xpGained, setXpGained] = useState(0);
   const [eloGained, setEloGained] = useState(0);
@@ -1247,15 +1286,15 @@ export const TowerMode: React.FC = () => {
             <div className="text-lg font-bold text-white leading-relaxed">
               <MathText>{currentQ.content}</MathText>
             </div>
-            {currentQ.guide && !showResult && (
+            {hint && !showResult && (
               <div className="mt-4 border-t border-white/5 pt-3">
                 <details className="group cursor-pointer select-none">
                   <summary className="text-xs font-black text-indigo-400 hover:text-indigo-300 flex items-center gap-1 outline-none">
                     <span>💡 Xem gợi ý cách làm</span>
                   </summary>
-                  <p className="text-xs text-gray-400 mt-2 pl-4 border-l border-indigo-500/30 leading-relaxed">
-                    {currentQ.guide}
-                  </p>
+                  <div className="text-xs text-gray-400 mt-2 pl-4 border-l border-indigo-500/30 leading-relaxed">
+                    <MathText>{hint}</MathText>
+                  </div>
                 </details>
               </div>
             )}
@@ -1340,10 +1379,10 @@ export const TowerMode: React.FC = () => {
               )}
 
               {/* Solution/Explanation */}
-              {currentQ.explanation ? (
+              {explanation ? (
                 <div className="bg-indigo-950/20 border border-indigo-500/20 rounded-xl p-4 text-xs">
                   <p className="font-black text-indigo-400">📖 Lời giải chi tiết:</p>
-                  <p className="mt-1.5 text-gray-300 leading-relaxed whitespace-pre-wrap"><MathText>{currentQ.explanation}</MathText></p>
+                  <p className="mt-1.5 text-gray-300 leading-relaxed whitespace-pre-wrap"><MathText>{explanation}</MathText></p>
                 </div>
               ) : (
                 !isCorrect && currentQ.correct_index !== undefined && (

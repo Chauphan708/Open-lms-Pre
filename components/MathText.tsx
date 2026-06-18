@@ -20,6 +20,8 @@ const MathText: React.FC<MathTextProps> = ({ children, className, inline = false
     text = text.replace(/\\\[/g, '$$$$').replace(/\\\]/g, '$$$$');
     // Replace \( and \) with $
     text = text.replace(/\\\(/g, '$$').replace(/\\\)/g, '$$');
+    // Escape markdown blockquote syntax if a line starts with >
+    text = text.replace(/^(>)/gm, '\\>');
     return text;
   }, [children]);
 
