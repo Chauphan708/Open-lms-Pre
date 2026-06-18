@@ -161,8 +161,7 @@ const Login = () => {
                 {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </button>
             </div>
-            <div className="flex justify-between items-center mt-1">
-              <span className="text-xs text-gray-400">Admin mặc định: 123456</span>
+            <div className="flex justify-end items-center mt-1">
               <button 
                 type="button" 
                 onClick={() => setShowForgotPassword(true)}

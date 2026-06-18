@@ -39,8 +39,18 @@ export const useParentStore = create<ParentState>()(
             return { success: false, message: 'Email này đã được đăng ký tài khoản phụ huynh.' };
           }
 
-          // 2. Tạo ID và Link Code ngẫu nhiên
-          const parentId = `par_${Date.now()}`;
+          // 2. Tạo ID và Link Code ngẫu nhiên (sử dụng UUID v4 chuẩn)
+          const generateUUID = () => {
+            if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+              return crypto.randomUUID();
+            }
+            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+              const r = Math.random() * 16 | 0;
+              const v = c === 'x' ? r : (r & 0x3 | 0x8);
+              return v.toString(16);
+            });
+          };
+          const parentId = generateUUID();
           const linkCode = 'P' + Math.floor(10000 + Math.random() * 90000).toString(); // e.g. P18342
 
           // 3. Chèn vào bảng public.parents (trigger tr_parents_insert_sync_auth tự động tạo auth.users)

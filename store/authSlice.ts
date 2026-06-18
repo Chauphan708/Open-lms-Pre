@@ -34,7 +34,17 @@ export const createAuthSlice: StateCreator<AppState, [], [], AuthSliceState> = (
     // Đảm bảo tạo UUID chuẩn ở Client và email định dạng hợp lệ để đồng bộ an toàn với Supabase Auth
     const cleanEmail = user.email.trim().toLowerCase();
     const formattedEmail = cleanEmail.includes('@') ? cleanEmail : `${cleanEmail}@openlms.edu`;
-    const newId = typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : `user_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`;
+    const generateUUID = () => {
+      if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+        return crypto.randomUUID();
+      }
+      return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+        const r = Math.random() * 16 | 0;
+        const v = c === 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+      });
+    };
+    const newId = generateUUID();
 
     const newUser = {
       ...user,
