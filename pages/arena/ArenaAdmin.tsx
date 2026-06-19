@@ -687,17 +687,42 @@ export const ArenaAdmin: React.FC = () => {
 
             if (line.toLowerCase().startsWith('hướng dẫn:') || line.toLowerCase().startsWith('gợi ý:') || line.toLowerCase().startsWith('gợi ý:')) {
                 const prefixLength = line.toLowerCase().startsWith('hướng dẫn:') ? 10 : 6;
-                currentQuestion.guide = line.substring(prefixLength).trim();
+                const text = line.substring(prefixLength).trim();
+                
+                const expIndex = text.toLowerCase().indexOf('lời giải chi tiết:');
+                const expIndex2 = text.toLowerCase().indexOf('lời giải:');
+                
+                if (expIndex !== -1) {
+                    currentQuestion.guide = text.substring(0, expIndex).trim();
+                    const newExp = text.substring(expIndex + 18).trim();
+                    currentQuestion.explanation = currentQuestion.explanation 
+                        ? currentQuestion.explanation + '\n' + newExp 
+                        : newExp;
+                } else if (expIndex2 !== -1) {
+                    currentQuestion.guide = text.substring(0, expIndex2).trim();
+                    const newExp = text.substring(expIndex2 + 9).trim();
+                    currentQuestion.explanation = currentQuestion.explanation 
+                        ? currentQuestion.explanation + '\n' + newExp 
+                        : newExp;
+                } else {
+                    currentQuestion.guide = text;
+                }
                 continue;
             }
 
             if (line.toLowerCase().startsWith('lời giải chi tiết:')) {
-                currentQuestion.explanation = line.substring(18).trim();
+                const newExp = line.substring(18).trim();
+                currentQuestion.explanation = currentQuestion.explanation 
+                    ? currentQuestion.explanation + '\n' + newExp 
+                    : newExp;
                 continue;
             }
 
             if (line.toLowerCase().startsWith('lời giải:')) {
-                currentQuestion.explanation = line.substring(9).trim();
+                const newExp = line.substring(9).trim();
+                currentQuestion.explanation = currentQuestion.explanation 
+                    ? currentQuestion.explanation + '\n' + newExp 
+                    : newExp;
                 continue;
             }
 
@@ -705,15 +730,39 @@ export const ArenaAdmin: React.FC = () => {
             // Some docx text lines might contain special Unicode formatting or non-breaking spaces, so we check using substring.
             const cleanLine = line.toLowerCase();
             if (cleanLine.startsWith('lời giải chi tiết:')) {
-                currentQuestion.explanation = line.substring(18).trim();
+                const newExp = line.substring(18).trim();
+                currentQuestion.explanation = currentQuestion.explanation 
+                    ? currentQuestion.explanation + '\n' + newExp 
+                    : newExp;
                 continue;
             }
             if (cleanLine.startsWith('lời giải:')) {
-                currentQuestion.explanation = line.substring(9).trim();
+                const newExp = line.substring(9).trim();
+                currentQuestion.explanation = currentQuestion.explanation 
+                    ? currentQuestion.explanation + '\n' + newExp 
+                    : newExp;
                 continue;
             }
             if (cleanLine.startsWith('gợi ý:') || cleanLine.startsWith('gợi ý:')) {
-                currentQuestion.guide = line.substring(6).trim();
+                const text = line.substring(6).trim();
+                const expIndex = text.toLowerCase().indexOf('lời giải chi tiết:');
+                const expIndex2 = text.toLowerCase().indexOf('lời giải:');
+                
+                if (expIndex !== -1) {
+                    currentQuestion.guide = text.substring(0, expIndex).trim();
+                    const newExp = text.substring(expIndex + 18).trim();
+                    currentQuestion.explanation = currentQuestion.explanation 
+                        ? currentQuestion.explanation + '\n' + newExp 
+                        : newExp;
+                } else if (expIndex2 !== -1) {
+                    currentQuestion.guide = text.substring(0, expIndex2).trim();
+                    const newExp = text.substring(expIndex2 + 9).trim();
+                    currentQuestion.explanation = currentQuestion.explanation 
+                        ? currentQuestion.explanation + '\n' + newExp 
+                        : newExp;
+                } else {
+                    currentQuestion.guide = text;
+                }
                 continue;
             }
 
