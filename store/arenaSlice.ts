@@ -75,7 +75,7 @@ export const createArenaSlice: StateCreator<AppState, [], [], ArenaSliceState> =
   },
 
   fetchArenaQuestions: async () => {
-    const { data } = await supabase.from('arena_questions').select('*').order('created_at', { ascending: false }).limit(50);
+    const { data } = await supabase.from('arena_questions').select('*').order('created_at', { ascending: false }).limit(1000);
     if (data) {
       set({
         arenaQuestions: data.map((q: any) => ({ 
@@ -83,7 +83,7 @@ export const createArenaSlice: StateCreator<AppState, [], [], ArenaSliceState> =
           answers: typeof q.answers === 'string' ? JSON.parse(q.answers) : q.answers,
           correct_indices: typeof q.correct_indices === 'string' ? JSON.parse(q.correct_indices) : q.correct_indices
         })),
-        arenaQuestionsHasMore: data.length === 50
+        arenaQuestionsHasMore: data.length === 1000
       });
     }
   },
@@ -93,7 +93,7 @@ export const createArenaSlice: StateCreator<AppState, [], [], ArenaSliceState> =
     if (!state.arenaQuestionsHasMore || state.arenaQuestions.length === 0) return;
 
     const currentLength = state.arenaQuestions.length;
-    const { data } = await supabase.from('arena_questions').select('*').order('created_at', { ascending: false }).range(currentLength, currentLength + 49);
+    const { data } = await supabase.from('arena_questions').select('*').order('created_at', { ascending: false }).range(currentLength, currentLength + 999);
 
     if (data && data.length > 0) {
       const parsed = data.map((q: any) => ({ 
@@ -103,7 +103,7 @@ export const createArenaSlice: StateCreator<AppState, [], [], ArenaSliceState> =
       }));
       set({
         arenaQuestions: [...state.arenaQuestions, ...parsed],
-        arenaQuestionsHasMore: data.length === 50
+        arenaQuestionsHasMore: data.length === 1000
       });
     } else {
       set({ arenaQuestionsHasMore: false });
