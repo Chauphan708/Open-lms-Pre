@@ -101,6 +101,29 @@ export const ArenaAdmin: React.FC = () => {
     const [formGuide, setFormGuide] = useState('');
     const [formExplanation, setFormExplanation] = useState('');
 
+    const [dbTopics, setDbTopics] = useState<{ topic: string; subject: string; grade: string }[]>([]);
+
+    const fetchDbTopics = async () => {
+        try {
+            const { data } = await supabase
+                .from('arena_questions')
+                .select('topic, subject, grade');
+            if (data) {
+                const filtered = data
+                    .filter(q => q.topic && q.topic.trim() && q.topic !== 'general')
+                    .map(q => ({
+                        topic: q.topic.trim(),
+                        subject: q.subject || 'math',
+                        grade: q.grade || '4'
+                    }));
+                const unique = Array.from(new Set(filtered.map(x => JSON.stringify(x)))).map(s => JSON.parse(s) as { topic: string; subject: string; grade: string });
+                setDbTopics(unique);
+            }
+        } catch (err) {
+            console.error("Error fetching db topics:", err);
+        }
+    };
+
     const fetchCustomTopics = async () => {
         const { data } = await supabase.from('arena_topics').select('*').order('created_at', { ascending: false });
         if (data) setCustomTopics(data);
@@ -147,25 +170,38 @@ export const ArenaAdmin: React.FC = () => {
 
     useEffect(() => {
         fetchCustomTopics();
+        fetchDbTopics();
     }, []);
+
+    useEffect(() => {
+        fetchDbTopics();
+    }, [arenaQuestions]);
 
     // Extract unique topics for filtering
     const uniqueTopics = useMemo(() => {
         const topics = new Set<string>();
-        arenaQuestions.forEach(q => {
-            if (q.topic && q.topic.trim()) {
-                if (filterGrade && q.grade !== filterGrade) return;
-                if (filterSubject && q.subject !== filterSubject) return;
-                topics.add(q.topic.trim());
-            }
+        
+        // 1. Add from custom topics
+        customTopics.forEach(t => {
+            if (filterSubject && t.subject !== filterSubject) return;
+            topics.add(t.topic.trim());
         });
+
+        // 2. Add from all questions in DB (unpaginated)
+        dbTopics.forEach(q => {
+            if (filterGrade && q.grade !== filterGrade) return;
+            if (filterSubject && q.subject !== filterSubject) return;
+            topics.add(q.topic.trim());
+        });
+
         return Array.from(topics).sort();
-    }, [arenaQuestions, filterGrade, filterSubject]);
+    }, [dbTopics, customTopics, filterGrade, filterSubject]);
 
     const handleGradeChange = (grade: string) => {
         setFilterGrade(grade);
         if (filterTopic && grade) {
-            const hasTopicInGrade = arenaQuestions.some(q => q.grade === grade && q.topic === filterTopic);
+            const hasTopicInGrade = dbTopics.some(q => q.grade === grade && q.topic === filterTopic) ||
+                                     customTopics.some(t => t.topic === filterTopic);
             if (!hasTopicInGrade) {
                 setFilterTopic('');
             }
@@ -175,7 +211,8 @@ export const ArenaAdmin: React.FC = () => {
     const handleSubjectChange = (subject: string) => {
         setFilterSubject(subject);
         if (filterTopic && subject) {
-            const hasTopicInSubject = arenaQuestions.some(q => q.subject === subject && q.topic === filterTopic);
+            const hasTopicInSubject = dbTopics.some(q => q.subject === subject && q.topic === filterTopic) ||
+                                       customTopics.some(t => t.subject === subject && t.topic === filterTopic);
             if (!hasTopicInSubject) {
                 setFilterTopic('');
             }

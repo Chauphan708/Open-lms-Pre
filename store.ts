@@ -33,6 +33,30 @@ export const useStore = create<AppState>((set, get, api) => ({
 
   // --- INITIAL DATA FETCHING (LAZY LOADING STANDARD) ---
   fetchInitialData: async () => {
+    let currentUser = get().user;
+
+    // Refresh logged-in user profile from Supabase to keep it fresh and ensure className is mapped correctly
+    if (currentUser?.id) {
+      try {
+        const { data: freshProfile } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', currentUser.id)
+          .maybeSingle();
+        if (freshProfile) {
+          currentUser = {
+            ...currentUser,
+            ...freshProfile,
+            className: freshProfile.class_name || freshProfile.className
+          };
+          set({ user: currentUser });
+          localStorage.setItem('user_session', JSON.stringify(currentUser));
+        }
+      } catch (e) {
+        console.error("Error refreshing current user profile:", e);
+      }
+    }
+
     const { user } = get();
     
     // Tải dữ liệu đệm từ LocalStorage để hiện giao diện ngay lập tức
@@ -246,7 +270,8 @@ export const useStore = create<AppState>((set, get, api) => ({
     
     let classQuery = supabase.from('classes').select('*');
     if (isTeacher) classQuery = classQuery.eq('teacher_id', user.id);
-    if (isStudent && user.className) classQuery = classQuery.eq('name', user.className);
+    const studentClass = user.class_name || user.className;
+    if (isStudent && studentClass) classQuery = classQuery.eq('name', studentClass);
 
     let { data: rawClasses, error: classErr } = await classQuery;
     if (isTeacher && (classErr || !rawClasses || rawClasses.length === 0)) {

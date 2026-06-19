@@ -82,6 +82,7 @@ export const TowerMode: React.FC = () => {
   const [selectedTopic, setSelectedTopic] = useState<string>('');
   const [selectedSubject, setSelectedSubject] = useState<string>('math');
   const [availableTopics, setAvailableTopics] = useState<{ topic: string; label: string; subject: string }[]>([]);
+  const [dbTopics, setDbTopics] = useState<{ topic: string; subject: string; grade: string }[]>([]);
 
   // Adaptive gameplay states
   const [lives, setLives] = useState(3);
@@ -172,10 +173,33 @@ export const TowerMode: React.FC = () => {
   // Load questions and profiles on start
   useEffect(() => {
     if (user) {
+      // Determine student grade early to filter starting questions
+      let studentGrade = '';
+      const className = user.class_name || user.className || '';
+      if (className) {
+        const match = className.match(/(\d+)/);
+        if (match) {
+          studentGrade = match[1];
+        }
+      }
+
       Promise.all([
         fetchArenaProfile(user.id),
-        fetchArenaQuestions(),
-        supabase.from('arena_topics').select('*').then(({ data }) => { if (data) setCustomTopics(data); })
+        fetchArenaQuestions(studentGrade ? { grade: studentGrade } : undefined),
+        supabase.from('arena_topics').select('*').then(({ data }) => { if (data) setCustomTopics(data); }),
+        supabase.from('arena_questions').select('topic, subject, grade').then(({ data }) => {
+          if (data) {
+            const filtered = data
+              .filter(q => q.topic && q.topic.trim() && q.topic !== 'general')
+              .map(q => ({
+                topic: q.topic.trim(),
+                subject: q.subject || 'math',
+                grade: q.grade || '4'
+              }));
+            const unique = Array.from(new Set(filtered.map(x => JSON.stringify(x)))).map(s => JSON.parse(s) as { topic: string; subject: string; grade: string });
+            setDbTopics(unique);
+          }
+        })
       ]).then(() => setLoading(false));
     }
   }, [user]);
@@ -184,10 +208,11 @@ export const TowerMode: React.FC = () => {
   useEffect(() => {
     if (loading) return;
 
-    // Determine student grade from user.className (e.g., 'Bom lớp 4A' -> '4', 'duyen5a2' -> '5')
+    // Determine student grade from user.class_name or user.className (e.g., 'Bom lớp 4A' -> '4', 'duyen5a2' -> '5')
     let studentGrade = '';
-    if (user?.className) {
-      const match = user.className.match(/(\d+)/);
+    const className = user?.class_name || user?.className || '';
+    if (className) {
+      const match = className.match(/(\d+)/);
       if (match) {
         studentGrade = match[1];
       }
@@ -196,18 +221,16 @@ export const TowerMode: React.FC = () => {
     // Combine preset topics and dynamically found topics
     const dynamicTopics: { topic: string; label: string; subject: string }[] = [];
     
-    // Look in arenaQuestions
-    arenaQuestions.forEach(q => {
-      if (q.topic && q.topic !== 'general') {
-        if (studentGrade && q.grade && q.grade !== studentGrade) return;
-        const exists = dynamicTopics.some(t => t.topic.toLowerCase() === q.topic!.toLowerCase());
-        if (!exists) {
-          dynamicTopics.push({
-            topic: q.topic,
-            label: `📋 Chuyên đề: ${q.topic}`,
-            subject: q.subject || 'math'
-          });
-        }
+    // Look in dbTopics (unpaginated)
+    dbTopics.forEach(q => {
+      if (studentGrade && q.grade && q.grade !== studentGrade) return;
+      const exists = dynamicTopics.some(t => t.topic.toLowerCase() === q.topic.toLowerCase());
+      if (!exists) {
+        dynamicTopics.push({
+          topic: q.topic,
+          label: `📋 Chuyên đề: ${q.topic}`,
+          subject: q.subject || 'math'
+        });
       }
     });
 
@@ -228,8 +251,8 @@ export const TowerMode: React.FC = () => {
 
     // Look in customTopics
     customTopics.forEach(ct => {
-      const hasQuestionsOfDifferentGrade = arenaQuestions.some(q => q.topic?.toLowerCase() === ct.topic.toLowerCase() && q.grade && q.grade !== studentGrade);
-      const hasQuestionsOfSameGrade = arenaQuestions.some(q => q.topic?.toLowerCase() === ct.topic.toLowerCase() && q.grade === studentGrade);
+      const hasQuestionsOfDifferentGrade = dbTopics.some(q => q.topic?.toLowerCase() === ct.topic.toLowerCase() && q.grade && q.grade !== studentGrade);
+      const hasQuestionsOfSameGrade = dbTopics.some(q => q.topic?.toLowerCase() === ct.topic.toLowerCase() && q.grade === studentGrade);
       
       if (studentGrade && hasQuestionsOfDifferentGrade && !hasQuestionsOfSameGrade) {
         return; // Skip if it belongs to another grade
