@@ -839,6 +839,7 @@ export const ArenaAdmin: React.FC = () => {
         setFormDifficulty(item.difficulty);
         setFormSubject(item.subject);
         setFormTopic(item.topic || '');
+        setFormGrade(item.grade || '4');
         setFormTimeLimit(item.time_limit_seconds || 30);
         setFormXpReward(item.xp_reward || 10);
         setFormGuide(item.guide || '');
@@ -859,6 +860,7 @@ export const ArenaAdmin: React.FC = () => {
                 difficulty: formDifficulty,
                 subject: formSubject,
                 topic: formTopic.trim() || 'general',
+                grade: formGrade,
                 time_limit_seconds: formTimeLimit,
                 xp_reward: formXpReward,
                 type: formType,
@@ -1975,6 +1977,9 @@ export const ArenaAdmin: React.FC = () => {
                                             <span className="bg-pink-50 text-pink-700 px-2 py-0.5 rounded-lg text-[10px] font-black uppercase tracking-wider">{item.type || 'MCQ'}</span>
                                             <span className="bg-blue-50 text-blue-600 px-2 py-0.5 rounded-lg text-[10px] font-bold">⏱️ {item.time_limit_seconds || 30}s</span>
                                             <span className="bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-lg text-[10px] font-bold">⚡ +{item.xp_reward || 10} XP</span>
+                                            {item.grade && (
+                                                <span className="bg-amber-50 text-amber-700 px-2 py-0.5 rounded-lg text-[10px] font-bold">🏫 Lớp {item.grade}</span>
+                                            )}
                                         </div>
                                         <div className="flex gap-1">
                                             <button onClick={() => handleStartEditPreviewItem(index)} className="px-2.5 py-1 text-xs font-bold text-indigo-600 bg-indigo-50 rounded-lg hover:bg-indigo-100 transition-all flex items-center gap-1">
