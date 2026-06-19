@@ -74,8 +74,18 @@ export const createArenaSlice: StateCreator<AppState, [], [], ArenaSliceState> =
     }
   },
 
-  fetchArenaQuestions: async () => {
-    const { data } = await supabase.from('arena_questions').select('*').order('created_at', { ascending: false }).limit(1000);
+  fetchArenaQuestions: async (filters) => {
+    let query = supabase.from('arena_questions').select('*');
+    
+    if (filters?.subject) query = query.eq('subject', filters.subject);
+    if (filters?.difficulty) query = query.eq('difficulty', filters.difficulty);
+    if (filters?.grade) query = query.eq('grade', filters.grade);
+    if (filters?.topic) query = query.eq('topic', filters.topic);
+    if (filters?.search?.trim()) {
+      query = query.ilike('content', `%${filters.search.trim()}%`);
+    }
+
+    const { data } = await query.order('created_at', { ascending: false }).limit(50);
     if (data) {
       set({
         arenaQuestions: data.map((q: any) => ({ 
@@ -83,17 +93,27 @@ export const createArenaSlice: StateCreator<AppState, [], [], ArenaSliceState> =
           answers: typeof q.answers === 'string' ? JSON.parse(q.answers) : q.answers,
           correct_indices: typeof q.correct_indices === 'string' ? JSON.parse(q.correct_indices) : q.correct_indices
         })),
-        arenaQuestionsHasMore: data.length === 1000
+        arenaQuestionsHasMore: data.length === 50
       });
     }
   },
 
-  loadMoreArenaQuestions: async () => {
+  loadMoreArenaQuestions: async (filters) => {
     const state = get();
     if (!state.arenaQuestionsHasMore || state.arenaQuestions.length === 0) return;
 
     const currentLength = state.arenaQuestions.length;
-    const { data } = await supabase.from('arena_questions').select('*').order('created_at', { ascending: false }).range(currentLength, currentLength + 999);
+    let query = supabase.from('arena_questions').select('*');
+    
+    if (filters?.subject) query = query.eq('subject', filters.subject);
+    if (filters?.difficulty) query = query.eq('difficulty', filters.difficulty);
+    if (filters?.grade) query = query.eq('grade', filters.grade);
+    if (filters?.topic) query = query.eq('topic', filters.topic);
+    if (filters?.search?.trim()) {
+      query = query.ilike('content', `%${filters.search.trim()}%`);
+    }
+
+    const { data } = await query.order('created_at', { ascending: false }).range(currentLength, currentLength + 49);
 
     if (data && data.length > 0) {
       const parsed = data.map((q: any) => ({ 
@@ -103,7 +123,7 @@ export const createArenaSlice: StateCreator<AppState, [], [], ArenaSliceState> =
       }));
       set({
         arenaQuestions: [...state.arenaQuestions, ...parsed],
-        arenaQuestionsHasMore: data.length === 1000
+        arenaQuestionsHasMore: data.length === 50
       });
     } else {
       set({ arenaQuestionsHasMore: false });

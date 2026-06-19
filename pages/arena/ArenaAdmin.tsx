@@ -130,8 +130,22 @@ export const ArenaAdmin: React.FC = () => {
         }
     };
 
+    // Load questions on start and when filters/search changes
     useEffect(() => {
-        fetchArenaQuestions().then(() => setLoading(false));
+        const delayDebounceFn = setTimeout(() => {
+            fetchArenaQuestions({
+                subject: filterSubject || undefined,
+                difficulty: filterDifficulty || undefined,
+                grade: filterGrade || undefined,
+                topic: filterTopic || undefined,
+                search: searchQuery || undefined
+            }).then(() => setLoading(false));
+        }, 300); // 300ms debounce to avoid spamming database on text typing
+
+        return () => clearTimeout(delayDebounceFn);
+    }, [filterSubject, filterDifficulty, filterGrade, filterTopic, searchQuery]);
+
+    useEffect(() => {
         fetchCustomTopics();
     }, []);
 
@@ -1383,7 +1397,13 @@ export const ArenaAdmin: React.FC = () => {
                     <button
                         onClick={async () => {
                             setLoadingMore(true);
-                            await loadMoreArenaQuestions();
+                            await loadMoreArenaQuestions({
+                                subject: filterSubject || undefined,
+                                difficulty: filterDifficulty || undefined,
+                                grade: filterGrade || undefined,
+                                topic: filterTopic || undefined,
+                                search: searchQuery || undefined
+                            });
                             setLoadingMore(false);
                         }}
                         disabled={loadingMore}
