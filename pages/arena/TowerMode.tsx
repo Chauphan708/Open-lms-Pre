@@ -522,8 +522,11 @@ export const TowerMode: React.FC = () => {
       setConsecutiveCorrect(newConsecutiveCorrect);
       setConsecutiveWrong(0);
 
-      // Mastery Reward: Level 1 -> +15, Level 2 -> +20, Level 3 -> +25
-      let masteryGain = currentDifficulty === 1 ? 15 : currentDifficulty === 2 ? 20 : 25;
+      // Mastery Reward: Level 1 -> +15%, Level 2 -> +10%, Level 3 -> +7%, Level 4 -> +5%
+      let masteryGain = currentDifficulty === 1 ? 15 
+                      : currentDifficulty === 2 ? 10 
+                      : currentDifficulty === 3 ? 7 
+                      : 5;
       
       // Artist Passive Perk: +15% XP/Mastery reward on Level 3 questions
       if (arenaProfile.avatar_class === 'artist' && currentDifficulty === 3) {
@@ -576,10 +579,16 @@ export const TowerMode: React.FC = () => {
       setConsecutiveCorrect(0);
       setConsecutiveWrong(newConsecutiveWrong);
 
-      // Deduct mastery points slightly (punishment)
-      const newMastery = Math.max(0, masteryScore - 5);
+      // Deduct half of the gained percentage at current difficulty level when incorrect
+      // Level 1: 15 / 2 = 7.5 (round to 8 or 7.5), let's use Math.round(masteryGain / 2)
+      const baseGain = currentDifficulty === 1 ? 15 
+                     : currentDifficulty === 2 ? 10 
+                     : currentDifficulty === 3 ? 7 
+                     : 5;
+      const masteryLoss = Math.round(baseGain / 2);
+      const newMastery = Math.max(0, masteryScore - masteryLoss);
       setMasteryScore(newMastery);
-      masteryChange = -5;
+      masteryChange = -masteryLoss;
       setXpGained(0);
       setEloGained(-3);
 
