@@ -126,13 +126,14 @@ export const createArenaSlice: StateCreator<AppState, [], [], ArenaSliceState> =
       correct_indices: q.correct_indices || null,
       correct_answer_string: q.correct_answer_string || null,
       guide: q.guide || null,
-      explanation: q.explanation || null
+      explanation: q.explanation || null,
+      grade: q.grade || null
     };
     
     let { error } = await supabase.from('arena_questions').insert(rowFull);
     if (error) {
       console.warn("Retrying insert without custom time, xp, and new type columns...", error.message);
-      const rowMin = { id, content: q.content, answers: q.answers || [], correct_index: q.correct_index ?? 0, difficulty: q.difficulty, subject: q.subject, topic: q.topic || 'general' };
+      const rowMin = { id, content: q.content, answers: q.answers || [], correct_index: q.correct_index ?? 0, difficulty: q.difficulty, subject: q.subject, topic: q.topic || 'general', grade: q.grade || null };
       const { error: err2 } = await supabase.from('arena_questions').insert(rowMin);
       if (err2) {
         console.error("Supabase insert error:", err2);
@@ -160,12 +161,13 @@ export const createArenaSlice: StateCreator<AppState, [], [], ArenaSliceState> =
       correct_indices: q.correct_indices || null,
       correct_answer_string: q.correct_answer_string || null,
       guide: q.guide || null,
-      explanation: q.explanation || null
+      explanation: q.explanation || null,
+      grade: q.grade || null
     };
     let { error } = await supabase.from('arena_questions').update(payloadFull).eq('id', q.id);
     if (error) {
       console.warn("Retrying update without custom columns...");
-      const payloadMin = { content: q.content, answers: q.answers || [], correct_index: q.correct_index ?? 0, difficulty: q.difficulty, subject: q.subject, topic: q.topic || 'general' };
+      const payloadMin = { content: q.content, answers: q.answers || [], correct_index: q.correct_index ?? 0, difficulty: q.difficulty, subject: q.subject, topic: q.topic || 'general', grade: q.grade || null };
       const { error: err2 } = await supabase.from('arena_questions').update(payloadMin).eq('id', q.id);
       if (err2) return false;
       set(state => ({ arenaQuestions: state.arenaQuestions.map(x => x.id === q.id ? { ...x, ...payloadMin } : x) }));
@@ -433,7 +435,8 @@ export const createArenaSlice: StateCreator<AppState, [], [], ArenaSliceState> =
       correct_indices: q.correct_indices || null,
       correct_answer_string: q.correct_answer_string || null,
       guide: q.guide || null,
-      explanation: q.explanation || null
+      explanation: q.explanation || null,
+      grade: q.grade || null
     }));
     
     let { error } = await supabase.from('arena_questions').insert(rowsFull);
@@ -446,7 +449,8 @@ export const createArenaSlice: StateCreator<AppState, [], [], ArenaSliceState> =
         correct_index: q.correct_index ?? 0,
         difficulty: q.difficulty,
         subject: q.subject,
-        topic: q.topic || 'general'
+        topic: q.topic || 'general',
+        grade: q.grade || null
       }));
       const { error: err2 } = await supabase.from('arena_questions').insert(rowsMin);
       if (err2) {
