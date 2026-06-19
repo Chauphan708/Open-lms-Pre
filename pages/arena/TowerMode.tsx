@@ -31,16 +31,16 @@ export const getLeagueInfo = (elo: number) => {
 // Preset list of standard subjects and fallback topics if database is empty
 const DEFAULT_TOPICS_BY_SUBJECT: Record<string, { topic: string; label: string }[]> = {
   math: [
-    { topic: 'Phân số & Số thập phân', label: '📐 Phân số & Số thập phân' },
+    { topic: 'Phân số & Số thập phân', label: '📐 Phân số & Số thập phân lớp 5' },
     { topic: 'Hình học', label: '📐 Hình học lớp 5' },
-    { topic: 'Tỉ số phần trăm', label: '📐 Tỉ số phần trăm' },
-    { topic: 'Vận tốc', label: '📐 Vận tốc & Chuyển động' },
+    { topic: 'Tỉ số phần trăm', label: '📐 Tỉ số phần trăm lớp 5' },
+    { topic: 'Vận tốc', label: '📐 Vận tốc & Chuyển động lớp 5' },
   ],
   science: [
-    { topic: 'Sự sinh sản', label: '🔬 Sự sinh sản & Phát triển' },
-    { topic: 'Năng lượng', label: '🔬 Năng lượng tái tạo' },
-    { topic: 'Môi trường', label: '🔬 Ô nhiễm môi trường' },
-    { topic: 'Biến đổi chất', label: '🔬 Biến đổi lý hóa' },
+    { topic: 'Sự sinh sản', label: '🔬 Sự sinh sản & Phát triển lớp 5' },
+    { topic: 'Năng lượng', label: '🔬 Năng lượng tái tạo lớp 5' },
+    { topic: 'Môi trường', label: '🔬 Ô nhiễm môi trường lớp 5' },
+    { topic: 'Biến đổi chất', label: '🔬 Biến đổi lý hóa lớp 5' },
   ],
   technology: [
     { topic: 'Phần cứng', label: '💻 Thiết bị máy tính' },
@@ -184,12 +184,22 @@ export const TowerMode: React.FC = () => {
   useEffect(() => {
     if (loading) return;
 
+    // Determine student grade from user.className (e.g., 'Bom lớp 4A' -> '4', 'duyen5a2' -> '5')
+    let studentGrade = '';
+    if (user?.className) {
+      const match = user.className.match(/(\d+)/);
+      if (match) {
+        studentGrade = match[1];
+      }
+    }
+
     // Combine preset topics and dynamically found topics
     const dynamicTopics: { topic: string; label: string; subject: string }[] = [];
     
     // Look in arenaQuestions
     arenaQuestions.forEach(q => {
       if (q.topic && q.topic !== 'general') {
+        if (studentGrade && q.grade && q.grade !== studentGrade) return;
         const exists = dynamicTopics.some(t => t.topic.toLowerCase() === q.topic!.toLowerCase());
         if (!exists) {
           dynamicTopics.push({
@@ -204,6 +214,7 @@ export const TowerMode: React.FC = () => {
     // Look in exams
     exams.forEach(exam => {
       if (exam.status === 'PUBLISHED' && exam.topic) {
+        if (studentGrade && exam.grade && exam.grade !== studentGrade) return;
         const exists = dynamicTopics.some(t => t.topic.toLowerCase() === exam.topic!.toLowerCase());
         if (!exists) {
           dynamicTopics.push({
@@ -217,6 +228,13 @@ export const TowerMode: React.FC = () => {
 
     // Look in customTopics
     customTopics.forEach(ct => {
+      const hasQuestionsOfDifferentGrade = arenaQuestions.some(q => q.topic?.toLowerCase() === ct.topic.toLowerCase() && q.grade && q.grade !== studentGrade);
+      const hasQuestionsOfSameGrade = arenaQuestions.some(q => q.topic?.toLowerCase() === ct.topic.toLowerCase() && q.grade === studentGrade);
+      
+      if (studentGrade && hasQuestionsOfDifferentGrade && !hasQuestionsOfSameGrade) {
+        return; // Skip if it belongs to another grade
+      }
+
       const exists = dynamicTopics.some(t => t.topic.toLowerCase() === ct.topic.toLowerCase());
       if (!exists) {
         dynamicTopics.push({
@@ -227,14 +245,7 @@ export const TowerMode: React.FC = () => {
       }
     });
 
-    // Determine student grade from user.className (e.g., 'Bom lớp 4A' -> '4', 'duyen5a2' -> '5')
-    let studentGrade = '';
-    if (user?.className) {
-      const match = user.className.match(/(\d+)/);
-      if (match) {
-        studentGrade = match[1];
-      }
-    }
+
 
     // Merge default presets and dynamic ones, filtering by student grade if available
     const merged: { topic: string; label: string; subject: string }[] = [];
