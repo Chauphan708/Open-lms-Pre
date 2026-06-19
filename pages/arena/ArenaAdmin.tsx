@@ -31,6 +31,12 @@ export const ArenaAdmin: React.FC = () => {
 
     const [loading, setLoading] = useState(true);
     const [loadingMore, setLoadingMore] = useState(false);
+
+    // Custom Topics States
+    const [showTopicManager, setShowTopicManager] = useState(false);
+    const [customTopics, setCustomTopics] = useState<{ id: string; subject: string; topic: string }[]>([]);
+    const [newTopicName, setNewTopicName] = useState('');
+    const [newTopicSubject, setNewTopicSubject] = useState('math');
     
     // Filters & Search
     const [filterSubject, setFilterSubject] = useState('');
@@ -95,8 +101,38 @@ export const ArenaAdmin: React.FC = () => {
     const [formGuide, setFormGuide] = useState('');
     const [formExplanation, setFormExplanation] = useState('');
 
+    const fetchCustomTopics = async () => {
+        const { data } = await supabase.from('arena_topics').select('*').order('created_at', { ascending: false });
+        if (data) setCustomTopics(data);
+    };
+
+    const handleAddTopic = async () => {
+        if (!newTopicName.trim()) return;
+        const { error } = await supabase.from('arena_topics').insert({
+            subject: newTopicSubject,
+            topic: newTopicName.trim()
+        });
+        if (error) {
+            alert("Lỗi khi thêm chuyên đề: " + error.message);
+        } else {
+            setNewTopicName('');
+            fetchCustomTopics();
+        }
+    };
+
+    const handleDeleteTopic = async (id: string) => {
+        if (!confirm("Bạn có chắc chắn muốn xóa chuyên đề này?")) return;
+        const { error } = await supabase.from('arena_topics').delete().eq('id', id);
+        if (error) {
+            alert("Lỗi khi xóa chuyên đề: " + error.message);
+        } else {
+            fetchCustomTopics();
+        }
+    };
+
     useEffect(() => {
         fetchArenaQuestions().then(() => setLoading(false));
+        fetchCustomTopics();
     }, []);
 
     // Extract unique topics for filtering
@@ -473,7 +509,21 @@ export const ArenaAdmin: React.FC = () => {
 
             if (line.toLowerCase().startsWith('môn:')) {
                 const subStr = line.substring(4).trim();
-                const matched = subjectMapping[subStr.toLowerCase()];
+                const normalizedSubStr = subStr.toLowerCase();
+                
+                // Extract grade number if present (e.g. "Toán 3", "Toán lớp 3", "Khoa học khối 4")
+                const gradeMatch = normalizedSubStr.match(/(?:lớp|khối)?\s*([1-5])/);
+                if (gradeMatch) {
+                    currentGrade = gradeMatch[1];
+                }
+                
+                // Clean grade details out to get the base subject name (e.g. "toán 3" -> "toán")
+                const baseSubStr = normalizedSubStr
+                    .replace(/(?:lớp|khối)?\s*[1-5]/g, '')
+                    .replace(/\s+/g, ' ')
+                    .trim();
+                
+                const matched = subjectMapping[baseSubStr];
                 if (matched) {
                     currentSubject = matched;
                 } else {
@@ -1090,6 +1140,9 @@ export const ArenaAdmin: React.FC = () => {
                     </button>
                     <button onClick={() => navigate('/arena/tournament/host')} className="px-4 py-2 bg-amber-500 text-white rounded-xl font-bold text-sm hover:bg-amber-600 flex items-center gap-2 shadow-md transition-all hover:scale-105">
                         <Trophy className="h-4 w-4" /> Tổ chức Giải đấu
+                    </button>
+                    <button onClick={() => setShowTopicManager(true)} className="px-4 py-2 bg-purple-50 text-purple-700 rounded-xl font-bold text-sm hover:bg-purple-100 flex items-center gap-2 transition-colors">
+                        <BookOpen className="h-4 w-4" /> Quản lý chuyên đề
                     </button>
                     {selectedIds.size > 0 && (
                         <button
@@ -2029,6 +2082,66 @@ export const ArenaAdmin: React.FC = () => {
                             <button onClick={handleSavePreviewItem} className="flex-1 py-3 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 flex items-center justify-center gap-2 shadow-md shadow-indigo-100">
                                 <CheckCircle className="h-4.5 w-4.5" /> Áp dụng thay đổi
                             </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+            {/* Topic Manager Modal */}
+            {showTopicManager && (
+                <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4" onClick={() => setShowTopicManager(false)}>
+                    <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+                        <div className="p-5 border-b flex items-center justify-between">
+                            <h3 className="font-bold text-lg flex items-center gap-2">
+                                <BookOpen className="h-5 w-5 text-purple-500" /> Quản lý chuyên đề tùy chỉnh
+                            </h3>
+                            <button onClick={() => setShowTopicManager(false)} className="text-gray-400 hover:text-gray-600">
+                                <X className="h-5 w-5" />
+                            </button>
+                        </div>
+                        <div className="p-5 space-y-4">
+                            {/* Add Topic Form */}
+                            <div className="bg-purple-50 border border-purple-100 rounded-xl p-4 space-y-3">
+                                <h4 className="font-bold text-xs text-purple-800 uppercase tracking-wider">Thêm chuyên đề mới</h4>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                    <div>
+                                        <label className="block text-xs text-gray-500 mb-1 font-bold">Môn học</label>
+                                        <select value={newTopicSubject} onChange={e => setNewTopicSubject(e.target.value)} className="w-full border rounded-xl px-3 py-2 text-sm font-bold bg-white">
+                                            {SUBJECTS.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs text-gray-500 mb-1 font-bold">Tên chuyên đề</label>
+                                        <input type="text" value={newTopicName} onChange={e => setNewTopicName(e.target.value)} placeholder="VD: Phân số, Từ vựng..." className="w-full border rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-purple-500 font-medium" />
+                                    </div>
+                                </div>
+                                <button onClick={handleAddTopic} className="w-full py-2.5 bg-purple-600 text-white rounded-xl font-bold text-sm hover:bg-purple-700 transition-colors shadow-md shadow-purple-100 flex items-center justify-center gap-1.5">
+                                    <Plus className="h-4 w-4" /> Thêm vào danh sách
+                                </button>
+                            </div>
+
+                            {/* Topics List */}
+                            <div className="space-y-2">
+                                <h4 className="font-bold text-xs text-gray-500 uppercase tracking-wider">Danh sách chuyên đề tùy chỉnh ({customTopics.length})</h4>
+                                {customTopics.length === 0 ? (
+                                    <p className="text-sm text-gray-400 text-center py-6">Chưa có chuyên đề tùy chỉnh nào được tạo.</p>
+                                ) : (
+                                    <div className="divide-y max-h-[40vh] overflow-y-auto border rounded-xl pr-1">
+                                        {customTopics.map(t => (
+                                            <div key={t.id} className="p-3 flex items-center justify-between hover:bg-gray-50 transition-colors">
+                                                <div>
+                                                    <span className="text-[10px] bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded-full font-bold uppercase mr-2">
+                                                        {SUBJECTS.find(s => s.value === t.subject)?.label || t.subject}
+                                                    </span>
+                                                    <span className="text-sm font-semibold text-gray-800">{t.topic}</span>
+                                                </div>
+                                                <button onClick={() => handleDeleteTopic(t.id)} className="p-1 text-red-500 hover:bg-red-50 rounded-lg transition-colors">
+                                                    <Trash2 className="h-4 w-4" />
+                                                </button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     </div>
                 </div>

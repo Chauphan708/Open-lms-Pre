@@ -238,16 +238,20 @@ export const TowerMode: React.FC = () => {
 
     // Merge default presets and dynamic ones, filtering by student grade if available
     const merged: { topic: string; label: string; subject: string }[] = [];
-    Object.entries(DEFAULT_TOPICS_BY_SUBJECT).forEach(([sub, list]) => {
-      list.forEach(item => {
-        // If topic contains a grade label (e.g. 'Hình học lớp 5'), check if it matches studentGrade
-        const topicGradeMatch = item.label.match(/lớp\s*(\d+)/i);
-        if (topicGradeMatch && studentGrade) {
-          if (topicGradeMatch[1] !== studentGrade) return; // Skip this topic if it doesn't match
-        }
-        merged.push({ topic: item.topic, label: item.label, subject: sub });
+    
+    // Only load system default topics if no custom topics have been created by the teacher
+    if (customTopics.length === 0) {
+      Object.entries(DEFAULT_TOPICS_BY_SUBJECT).forEach(([sub, list]) => {
+        list.forEach(item => {
+          // If topic contains a grade label (e.g. 'Hình học lớp 5'), check if it matches studentGrade
+          const topicGradeMatch = item.label.match(/lớp\s*(\d+)/i);
+          if (topicGradeMatch && studentGrade) {
+            if (topicGradeMatch[1] !== studentGrade) return; // Skip this topic if it doesn't match
+          }
+          merged.push({ topic: item.topic, label: item.label, subject: sub });
+        });
       });
-    });
+    }
 
     dynamicTopics.forEach(dt => {
       // For dynamic topics from exams or bank, check if their source matches studentGrade
