@@ -26,7 +26,7 @@ const DIFFICULTIES = [
 ];
 
 export const ArenaAdmin: React.FC = () => {
-    const { arenaQuestions, arenaQuestionsHasMore, fetchArenaQuestions, loadMoreArenaQuestions, addArenaQuestion, updateArenaQuestion, deleteArenaQuestion, bulkDeleteArenaQuestions, bulkAddArenaQuestions, questionBank, exams } = useStore();
+    const { arenaQuestions, arenaQuestionsHasMore, fetchArenaQuestions, loadMoreArenaQuestions, addArenaQuestion, updateArenaQuestion, deleteArenaQuestion, bulkDeleteArenaQuestions, bulkAddArenaQuestions, questionBank, exams, arenaTotalCount, arenaDifficultyCounts, arenaFilteredCount } = useStore();
     const navigate = useNavigate();
 
     const [loading, setLoading] = useState(true);
@@ -1206,11 +1206,11 @@ export const ArenaAdmin: React.FC = () => {
             {/* B2: Thống kê nhanh */}
             <div className="grid grid-cols-2 sm:grid-cols-5 gap-4 mb-6">
                 <div className="bg-white rounded-2xl border p-4 shadow-sm text-center">
-                    <div className="text-3xl font-black text-indigo-600">{arenaQuestions.length}</div>
+                    <div className="text-3xl font-black text-indigo-600">{arenaTotalCount}</div>
                     <div className="text-xs text-gray-500 font-bold uppercase tracking-wider mt-1">Tổng câu hỏi</div>
                 </div>
                 {DIFFICULTIES.map(d => {
-                    const count = arenaQuestions.filter(q => q.difficulty === d.value).length;
+                    const count = arenaDifficultyCounts[d.value] || 0;
                     const colors = ['', 'text-emerald-600', 'text-amber-600', 'text-orange-600', 'text-red-600'];
                     const bgColors = ['', 'bg-emerald-50/55', 'bg-amber-50/55', 'bg-orange-50/55', 'bg-red-50/55'];
                     return (
@@ -1278,7 +1278,7 @@ export const ArenaAdmin: React.FC = () => {
                     </label>
 
                     <span className="text-xs font-black text-indigo-600 bg-indigo-50/80 border border-indigo-100/50 px-3.5 py-1.5 rounded-lg ml-auto">
-                        {filteredQuestions.length} kết quả
+                        Đang hiển thị {filteredQuestions.length} / {arenaFilteredCount} kết quả
                     </span>
                 </div>
             </div>

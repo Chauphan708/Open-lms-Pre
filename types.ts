@@ -503,6 +503,9 @@ export interface AppState {
   arenaQuestions: ArenaQuestion[];
   arenaQuestionsHasMore: boolean;
   arenaMatches: ArenaMatch[];
+  arenaTotalCount: number;
+  arenaDifficultyCounts: Record<number, number>;
+  arenaFilteredCount: number;
 
   fetchArenaProfile: (userId: string) => Promise<void>;
   createArenaProfile: (userId: string, avatarClass: AvatarClass) => Promise<void>;

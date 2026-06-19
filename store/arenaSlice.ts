@@ -4,6 +4,7 @@ import { supabase } from '../services/supabaseClient';
 
 type ArenaSliceState = Pick<AppState, 
   | 'arenaProfile' | 'arenaQuestions' | 'arenaQuestionsHasMore' | 'arenaMatches'
+  | 'arenaTotalCount' | 'arenaDifficultyCounts' | 'arenaFilteredCount'
   | 'fetchArenaProfile' | 'createArenaProfile' | 'updateArenaProfile'
   | 'fetchArenaQuestions' | 'loadMoreArenaQuestions' | 'addArenaQuestion'
   | 'updateArenaQuestion' | 'deleteArenaQuestion' | 'bulkDeleteArenaQuestions'
@@ -21,6 +22,9 @@ export const createArenaSlice: StateCreator<AppState, [], [], ArenaSliceState> =
   arenaQuestions: [],
   arenaQuestionsHasMore: false,
   arenaMatches: [],
+  arenaTotalCount: 0,
+  arenaDifficultyCounts: { 1: 0, 2: 0, 3: 0, 4: 0 },
+  arenaFilteredCount: 0,
 
   fetchArenaProfile: async (userId) => {
     const { data, error } = await supabase.from('arena_profiles').select('*').eq('id', userId).single();
@@ -75,7 +79,7 @@ export const createArenaSlice: StateCreator<AppState, [], [], ArenaSliceState> =
   },
 
   fetchArenaQuestions: async (filters) => {
-    let query = supabase.from('arena_questions').select('*');
+    let query = supabase.from('arena_questions').select('*', { count: 'exact' });
     
     if (filters?.subject) query = query.eq('subject', filters.subject);
     if (filters?.difficulty) query = query.eq('difficulty', filters.difficulty);
@@ -85,7 +89,22 @@ export const createArenaSlice: StateCreator<AppState, [], [], ArenaSliceState> =
       query = query.ilike('content', `%${filters.search.trim()}%`);
     }
 
-    const { data } = await query.order('created_at', { ascending: false }).limit(50);
+    const [
+      { data, count },
+      { count: totalCount },
+      { count: diff1 },
+      { count: diff2 },
+      { count: diff3 },
+      { count: diff4 }
+    ] = await Promise.all([
+      query.order('created_at', { ascending: false }).limit(50),
+      supabase.from('arena_questions').select('*', { count: 'exact', head: true }),
+      supabase.from('arena_questions').select('*', { count: 'exact', head: true }).eq('difficulty', 1),
+      supabase.from('arena_questions').select('*', { count: 'exact', head: true }).eq('difficulty', 2),
+      supabase.from('arena_questions').select('*', { count: 'exact', head: true }).eq('difficulty', 3),
+      supabase.from('arena_questions').select('*', { count: 'exact', head: true }).eq('difficulty', 4)
+    ]);
+
     if (data) {
       set({
         arenaQuestions: data.map((q: any) => ({ 
@@ -93,7 +112,15 @@ export const createArenaSlice: StateCreator<AppState, [], [], ArenaSliceState> =
           answers: typeof q.answers === 'string' ? JSON.parse(q.answers) : q.answers,
           correct_indices: typeof q.correct_indices === 'string' ? JSON.parse(q.correct_indices) : q.correct_indices
         })),
-        arenaQuestionsHasMore: data.length === 50
+        arenaQuestionsHasMore: data.length === 50,
+        arenaFilteredCount: count || 0,
+        arenaTotalCount: totalCount || 0,
+        arenaDifficultyCounts: {
+          1: diff1 || 0,
+          2: diff2 || 0,
+          3: diff3 || 0,
+          4: diff4 || 0
+        }
       });
     }
   },
