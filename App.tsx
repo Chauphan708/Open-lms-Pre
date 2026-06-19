@@ -107,7 +107,11 @@ const Login = () => {
           .maybeSingle();
 
         if (realProfile) {
-          setUser(realProfile);
+          const mappedProfile = {
+            ...realProfile,
+            className: realProfile.class_name || realProfile.className
+          };
+          setUser(mappedProfile);
           return;
         }
       }

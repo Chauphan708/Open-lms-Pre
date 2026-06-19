@@ -227,15 +227,34 @@ export const TowerMode: React.FC = () => {
       }
     });
 
-    // Merge default presets and dynamic ones
+    // Determine student grade from user.className (e.g., 'Bom lớp 4A' -> '4', 'duyen5a2' -> '5')
+    let studentGrade = '';
+    if (user?.className) {
+      const match = user.className.match(/(\d+)/);
+      if (match) {
+        studentGrade = match[1];
+      }
+    }
+
+    // Merge default presets and dynamic ones, filtering by student grade if available
     const merged: { topic: string; label: string; subject: string }[] = [];
     Object.entries(DEFAULT_TOPICS_BY_SUBJECT).forEach(([sub, list]) => {
       list.forEach(item => {
+        // If topic contains a grade label (e.g. 'Hình học lớp 5'), check if it matches studentGrade
+        const topicGradeMatch = item.label.match(/lớp\s*(\d+)/i);
+        if (topicGradeMatch && studentGrade) {
+          if (topicGradeMatch[1] !== studentGrade) return; // Skip this topic if it doesn't match
+        }
         merged.push({ topic: item.topic, label: item.label, subject: sub });
       });
     });
 
     dynamicTopics.forEach(dt => {
+      // For dynamic topics from exams or bank, check if their source matches studentGrade
+      const topicGradeMatch = dt.label.match(/lớp\s*(\d+)/i);
+      if (topicGradeMatch && studentGrade) {
+        if (topicGradeMatch[1] !== studentGrade) return;
+      }
       const exists = merged.some(m => m.topic.toLowerCase() === dt.topic.toLowerCase());
       if (!exists) {
         merged.push(dt);
@@ -247,7 +266,7 @@ export const TowerMode: React.FC = () => {
     // Default select first topic for math
     const firstMath = merged.find(t => t.subject === 'math');
     if (firstMath) setSelectedTopic(firstMath.topic);
-  }, [loading, arenaQuestions, exams]);
+  }, [loading, arenaQuestions, exams, user]);
 
   // Timer loop
   useEffect(() => {

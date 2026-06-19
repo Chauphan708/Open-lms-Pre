@@ -61,8 +61,12 @@ export const useStore = create<AppState>((set, get, api) => ({
     if (user && (user.role === 'ADMIN' || user.role === 'TEACHER')) {
       usersPromise = supabase.from('profiles').select('*').then(({ data }) => {
         if (data && data.length > 0) {
-          set({ users: data as User[] });
-          localStorage.setItem('cache_initial_users', JSON.stringify(data));
+          const mappedUsers = data.map((u: any) => ({
+            ...u,
+            className: u.class_name || u.className
+          }));
+          set({ users: mappedUsers as User[] });
+          localStorage.setItem('cache_initial_users', JSON.stringify(mappedUsers));
         }
       });
       fetchPromises.push(usersPromise);
