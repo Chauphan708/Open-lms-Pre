@@ -140,11 +140,33 @@ export const ArenaAdmin: React.FC = () => {
         const topics = new Set<string>();
         arenaQuestions.forEach(q => {
             if (q.topic && q.topic.trim()) {
+                if (filterGrade && q.grade !== filterGrade) return;
+                if (filterSubject && q.subject !== filterSubject) return;
                 topics.add(q.topic.trim());
             }
         });
         return Array.from(topics).sort();
-    }, [arenaQuestions]);
+    }, [arenaQuestions, filterGrade, filterSubject]);
+
+    const handleGradeChange = (grade: string) => {
+        setFilterGrade(grade);
+        if (filterTopic && grade) {
+            const hasTopicInGrade = arenaQuestions.some(q => q.grade === grade && q.topic === filterTopic);
+            if (!hasTopicInGrade) {
+                setFilterTopic('');
+            }
+        }
+    };
+
+    const handleSubjectChange = (subject: string) => {
+        setFilterSubject(subject);
+        if (filterTopic && subject) {
+            const hasTopicInSubject = arenaQuestions.some(q => q.subject === subject && q.topic === filterTopic);
+            if (!hasTopicInSubject) {
+                setFilterTopic('');
+            }
+        }
+    };
 
     // Extended Filter and Search logic
     const filteredQuestions = arenaQuestions.filter(q => {
@@ -515,6 +537,9 @@ export const ArenaAdmin: React.FC = () => {
                 const gradeMatch = normalizedSubStr.match(/(?:lớp|khối)?\s*([1-5])/);
                 if (gradeMatch) {
                     currentGrade = gradeMatch[1];
+                    if (currentQuestion) {
+                        currentQuestion.grade = gradeMatch[1];
+                    }
                 }
                 
                 // Clean grade details out to get the base subject name (e.g. "toán 3" -> "toán")
@@ -526,6 +551,9 @@ export const ArenaAdmin: React.FC = () => {
                 const matched = subjectMapping[baseSubStr];
                 if (matched) {
                     currentSubject = matched;
+                    if (currentQuestion) {
+                        currentQuestion.subject = matched;
+                    }
                 } else {
                     errors.push(`Dòng ${i + 1}: Không nhận diện được môn "${subStr}". Hệ thống tự động đặt là Toán.`);
                 }
@@ -534,6 +562,9 @@ export const ArenaAdmin: React.FC = () => {
 
             if (line.toLowerCase().startsWith('chủ đề:')) {
                 currentTopic = line.substring(7).trim();
+                if (currentQuestion) {
+                    currentQuestion.topic = currentTopic;
+                }
                 continue;
             }
 
@@ -542,6 +573,9 @@ export const ArenaAdmin: React.FC = () => {
                 const gradeVal = line.substring(prefixLength).replace(/[^0-9]/g, '').trim();
                 if (gradeVal) {
                     currentGrade = gradeVal;
+                    if (currentQuestion) {
+                        currentQuestion.grade = gradeVal;
+                    }
                 }
                 continue;
             }
@@ -1199,17 +1233,17 @@ export const ArenaAdmin: React.FC = () => {
                         Bộ lọc
                     </div>
 
-                    <select value={filterSubject} onChange={e => setFilterSubject(e.target.value)} className="border border-gray-200 rounded-lg px-2.5 py-1.5 text-xs outline-none focus:ring-2 focus:ring-indigo-500 bg-white font-bold text-gray-700 cursor-pointer hover:border-gray-300">
+                    <select value={filterSubject} onChange={e => handleSubjectChange(e.target.value)} className="border border-gray-200 rounded-lg px-2.5 py-1.5 text-xs outline-none focus:ring-2 focus:ring-indigo-500 bg-white font-bold text-gray-700 cursor-pointer hover:border-gray-300">
                         <option value="">Tất cả môn</option>
                         {SUBJECTS.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
                     </select>
-
+ 
                     <select value={filterDifficulty} onChange={e => setFilterDifficulty(Number(e.target.value))} className="border border-gray-200 rounded-lg px-2.5 py-1.5 text-xs outline-none focus:ring-2 focus:ring-indigo-500 bg-white font-bold text-gray-700 cursor-pointer hover:border-gray-300">
                         <option value={0}>Tất cả độ khó</option>
                         {DIFFICULTIES.map(d => <option key={d.value} value={d.value}>{d.label}</option>)}
                     </select>
-
-                    <select value={filterGrade} onChange={e => setFilterGrade(e.target.value)} className="border border-gray-200 rounded-lg px-2.5 py-1.5 text-xs outline-none focus:ring-2 focus:ring-indigo-500 bg-white font-bold text-gray-700 cursor-pointer hover:border-gray-300">
+ 
+                    <select value={filterGrade} onChange={e => handleGradeChange(e.target.value)} className="border border-gray-200 rounded-lg px-2.5 py-1.5 text-xs outline-none focus:ring-2 focus:ring-indigo-500 bg-white font-bold text-gray-700 cursor-pointer hover:border-gray-300">
                         <option value="">Tất cả lớp</option>
                         {['1', '2', '3', '4', '5'].map(g => <option key={g} value={g}>Lớp {g}</option>)}
                     </select>
