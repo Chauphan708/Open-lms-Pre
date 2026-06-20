@@ -251,6 +251,38 @@ const ArenaClassAnalytics: React.FC<{
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
   const [expandedStudentId, setExpandedStudentId] = useState<string | null>(null);
 
+  // Average Topic Mastery
+  const topicMasterySummary = useMemo(() => {
+    const topicsMap: Record<string, { total: number; count: number }> = {};
+    profiles.forEach(p => {
+      if (p && p.topic_mastery) {
+        let masteryObj = p.topic_mastery;
+        if (typeof masteryObj === 'string') {
+          try {
+            masteryObj = JSON.parse(masteryObj);
+          } catch {
+            masteryObj = {};
+          }
+        }
+        if (masteryObj && typeof masteryObj === 'object') {
+          Object.entries(masteryObj).forEach(([topic, pct]) => {
+            if (!topicsMap[topic]) {
+              topicsMap[topic] = { total: 0, count: 0 };
+            }
+            topicsMap[topic].total += Number(pct || 0);
+            topicsMap[topic].count += 1;
+          });
+        }
+      }
+    });
+
+    return Object.entries(topicsMap).map(([topic, data]) => ({
+      topic,
+      avg: Math.round(data.total / data.count),
+      count: data.count
+    })).sort((a, b) => a.avg - b.avg); // Show weakest topics first
+  }, [profiles]);
+
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center p-16 bg-white rounded-2xl border border-gray-100 shadow-sm animate-pulse">
@@ -317,38 +349,6 @@ const ArenaClassAnalytics: React.FC<{
     intermediate: studentsStats.filter(s => s.elo >= 950 && s.elo < 1050).length,
     beginner: studentsStats.filter(s => s.elo < 950).length
   };
-
-  // Average Topic Mastery
-  const topicMasterySummary = useMemo(() => {
-    const topicsMap: Record<string, { total: number; count: number }> = {};
-    profiles.forEach(p => {
-      if (p && p.topic_mastery) {
-        let masteryObj = p.topic_mastery;
-        if (typeof masteryObj === 'string') {
-          try {
-            masteryObj = JSON.parse(masteryObj);
-          } catch {
-            masteryObj = {};
-          }
-        }
-        if (masteryObj && typeof masteryObj === 'object') {
-          Object.entries(masteryObj).forEach(([topic, pct]) => {
-            if (!topicsMap[topic]) {
-              topicsMap[topic] = { total: 0, count: 0 };
-            }
-            topicsMap[topic].total += Number(pct || 0);
-            topicsMap[topic].count += 1;
-          });
-        }
-      }
-    });
-
-    return Object.entries(topicsMap).map(([topic, data]) => ({
-      topic,
-      avg: Math.round(data.total / data.count),
-      count: data.count
-    })).sort((a, b) => a.avg - b.avg); // Show weakest topics first
-  }, [profiles]);
 
   const handleSort = (field: typeof sortField) => {
     if (sortField === field) {
