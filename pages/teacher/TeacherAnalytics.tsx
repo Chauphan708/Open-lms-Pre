@@ -241,11 +241,11 @@ const ComparisonView: React.FC<{
 };
 
 const ArenaClassAnalytics: React.FC<{
-  students: any[];
-  profiles: any[];
-  matches: any[];
+  students?: any[];
+  profiles?: any[];
+  matches?: any[];
   loading: boolean;
-}> = ({ students, profiles, matches, loading }) => {
+}> = ({ students = [], profiles = [], matches = [], loading }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [sortField, setSortField] = useState<'elo' | 'games' | 'winrate' | 'floor' | 'xp'>('elo');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
@@ -270,9 +270,10 @@ const ArenaClassAnalytics: React.FC<{
     );
   }
 
-  // Pre-calculate stats
+  // Pre-calculate stats safely
   const studentsStats = students.map(s => {
-    const p = profiles.find(profile => profile.id === s.id);
+    if (!s) return null;
+    const p = profiles.find(profile => profile && profile.id === s.id);
     const elo = p?.elo_rating || 1000;
     const wins = p?.wins || 0;
     const losses = p?.losses || 0;
@@ -280,7 +281,15 @@ const ArenaClassAnalytics: React.FC<{
     const winrate = games > 0 ? Math.round((wins / games) * 100) : 0;
     const floor = p?.tower_floor || 1;
     const xp = p?.total_xp || 0;
-    const mastery = p?.topic_mastery || {};
+    
+    let mastery = p?.topic_mastery || {};
+    if (typeof mastery === 'string') {
+      try {
+        mastery = JSON.parse(mastery);
+      } catch {
+        mastery = {};
+      }
+    }
     
     return {
       student: s,
@@ -293,12 +302,12 @@ const ArenaClassAnalytics: React.FC<{
       xp,
       mastery
     };
-  });
+  }).filter((item): item is NonNullable<typeof item> => item !== null);
 
-  const activeCount = profiles.length;
-  const avgElo = activeCount > 0 ? Math.round(profiles.reduce((acc, p) => acc + (p.elo_rating || 1000), 0) / activeCount) : 1000;
-  const avgFloor = activeCount > 0 ? Number((profiles.reduce((acc, p) => acc + (p.tower_floor || 1), 0) / activeCount).toFixed(1)) : 1;
-  const totalGames = profiles.reduce((acc, p) => acc + ((p.wins || 0) + (p.losses || 0)), 0);
+  const activeCount = profiles.filter(Boolean).length;
+  const avgElo = activeCount > 0 ? Math.round(profiles.reduce((acc, p) => acc + (p?.elo_rating || 1000), 0) / activeCount) : 1000;
+  const avgFloor = activeCount > 0 ? Number((profiles.reduce((acc, p) => acc + (p?.tower_floor || 1), 0) / activeCount).toFixed(1)) : 1;
+  const totalGames = profiles.reduce((acc, p) => acc + ((p?.wins || 0) + (p?.losses || 0)), 0);
   const avgWinRate = activeCount > 0 ? Math.round(studentsStats.reduce((acc, s) => acc + s.winrate, 0) / activeCount) : 0;
 
   // Elo Distribution counts
@@ -313,14 +322,24 @@ const ArenaClassAnalytics: React.FC<{
   const topicMasterySummary = useMemo(() => {
     const topicsMap: Record<string, { total: number; count: number }> = {};
     profiles.forEach(p => {
-      if (p.topic_mastery) {
-        Object.entries(p.topic_mastery).forEach(([topic, pct]) => {
-          if (!topicsMap[topic]) {
-            topicsMap[topic] = { total: 0, count: 0 };
+      if (p && p.topic_mastery) {
+        let masteryObj = p.topic_mastery;
+        if (typeof masteryObj === 'string') {
+          try {
+            masteryObj = JSON.parse(masteryObj);
+          } catch {
+            masteryObj = {};
           }
-          topicsMap[topic].total += Number(pct || 0);
-          topicsMap[topic].count += 1;
-        });
+        }
+        if (masteryObj && typeof masteryObj === 'object') {
+          Object.entries(masteryObj).forEach(([topic, pct]) => {
+            if (!topicsMap[topic]) {
+              topicsMap[topic] = { total: 0, count: 0 };
+            }
+            topicsMap[topic].total += Number(pct || 0);
+            topicsMap[topic].count += 1;
+          });
+        }
       }
     });
 
@@ -341,7 +360,7 @@ const ArenaClassAnalytics: React.FC<{
   };
 
   const filteredList = studentsStats.filter(item => 
-    item.student.name.toLowerCase().includes(searchTerm.toLowerCase())
+    item.student && item.student.name && item.student.name.toLowerCase().includes(searchTerm.toLowerCase())
   ).sort((a, b) => {
     let cmp = 0;
     if (sortField === 'elo') cmp = a.elo - b.elo;
@@ -361,7 +380,7 @@ const ArenaClassAnalytics: React.FC<{
         .map(([topic]) => topic)
         .join('; ');
       return [
-        s.student.name,
+        s.student?.name || 'N/A',
         s.elo,
         s.floor,
         s.wins,
@@ -678,9 +697,11 @@ export const TeacherAnalytics: React.FC = () => {
 
   // Fetch Class Arena Analytics data
   useEffect(() => {
+    // Clear previous data immediately when switching class to avoid rendering mismatch
+    setArenaProfiles([]);
+    setArenaMatches([]);
+
     if (!selectedClassId) {
-      setArenaProfiles([]);
-      setArenaMatches([]);
       return;
     }
     
@@ -688,9 +709,12 @@ export const TeacherAnalytics: React.FC = () => {
       setLoadingArena(true);
       try {
         const cls = classes.find(c => c.id === selectedClassId);
-        if (!cls || cls.studentIds.length === 0) {
-          setArenaProfiles([]);
-          setArenaMatches([]);
+        if (!cls || !cls.studentIds) {
+          return;
+        }
+
+        const validStudentIds = cls.studentIds.filter((id: any) => id && String(id).trim() !== '');
+        if (validStudentIds.length === 0) {
           return;
         }
 
@@ -698,13 +722,13 @@ export const TeacherAnalytics: React.FC = () => {
         const { data: profilesData } = await supabase
           .from('arena_profiles')
           .select('*')
-          .in('id', cls.studentIds);
+          .in('id', validStudentIds);
 
         // Fetch matches involving class students
         const { data: matchesData } = await supabase
           .from('arena_matches')
           .select('*')
-          .or(`player1_id.in.(${cls.studentIds.join(',')}),player2_id.in.(${cls.studentIds.join(',')})`)
+          .or(`player1_id.in.(${validStudentIds.join(',')}),player2_id.in.(${validStudentIds.join(',')})`)
           .order('created_at', { ascending: false })
           .limit(150);
 
