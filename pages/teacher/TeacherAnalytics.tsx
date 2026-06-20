@@ -638,8 +638,26 @@ const ArenaClassAnalytics: React.FC<{
 };
 
 export const TeacherAnalytics: React.FC = () => {
-  const { user: currentUser, classes, users, attempts, exams, questionBank } = useStore();
-  
+  const { 
+    user: currentUser, 
+    classes, 
+    users, 
+    attempts, 
+    exams, 
+    questionBank,
+    fetchClasses,
+    fetchAttempts,
+    fetchExams
+  } = useStore();
+
+  useEffect(() => {
+    if (currentUser) {
+      fetchClasses();
+      fetchAttempts();
+      fetchExams();
+    }
+  }, [currentUser, fetchClasses, fetchAttempts, fetchExams]);
+
   const [selectedClassId, setSelectedClassId] = useState<string>('');
   const [selectedStudentIds, setSelectedStudentIds] = useState<string[]>([]);
   const [selectedPeriod, setSelectedPeriod] = useState<TimePeriod>(TIME_PERIODS[1]);
@@ -716,8 +734,11 @@ export const TeacherAnalytics: React.FC = () => {
     };
   }, [isStudentDropdownOpen]);
 
-  // Filter classes taught by this teacher
-  const myClasses = useMemo(() => classes.filter(c => c.teacherId === currentUser?.id), [classes, currentUser]);
+  // Filter classes taught by this teacher (or all classes for admin)
+  const myClasses = useMemo(() => {
+    if (currentUser?.role === 'ADMIN') return classes;
+    return classes.filter(c => c.teacherId === currentUser?.id);
+  }, [classes, currentUser]);
 
   // Students in selected class
   const studentsInClass = useMemo(() => {
@@ -1013,8 +1034,8 @@ export const TeacherAnalytics: React.FC = () => {
     return null;
   };
 
-  if (!currentUser || currentUser.role !== 'TEACHER') {
-    return <div className="p-8 text-center text-gray-500">Trang này dành cho giáo viên.</div>;
+  if (!currentUser || (currentUser.role !== 'TEACHER' && currentUser.role !== 'ADMIN')) {
+    return <div className="p-8 text-center text-gray-500">Trang này dành cho giáo viên và quản trị viên.</div>;
   }
 
   return (
