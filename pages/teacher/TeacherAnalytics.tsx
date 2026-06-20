@@ -2,7 +2,7 @@ import React, { useMemo, useState, useCallback, useEffect, useRef } from 'react'
 import { useStore } from '../../store';
 import {
   TrendingUp, TrendingDown, Minus, BookOpen, Brain, Target, AlertTriangle,
-  Star, Zap, Clock, ChevronDown, Sparkles, RefreshCw, Award, BarChart3, Printer, Users, School, ArrowLeft, MessageSquare, Trophy
+  Star, Zap, Clock, ChevronDown, Sparkles, RefreshCw, Award, BarChart3, Printer, Users, School, ArrowLeft, MessageSquare, Trophy, Search
 } from 'lucide-react';
 import { computeStudentAnalytics, TIME_PERIODS, TimePeriod, StudentAnalytics } from '../../utils/analyticsEngine';
 import { getRecommendations, getRecentExamIds } from '../../utils/recommendationEngine';
