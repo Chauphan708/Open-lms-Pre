@@ -206,6 +206,28 @@ export const TeacherDashboard: React.FC = () => {
     return 'Chào buổi tối 🌙';
   };
 
+  const getDailyInspirationalQuote = () => {
+    const quotes = [
+      "Chúc bạn một ngày làm việc tràn ngập năng lượng tích cực và gieo mầm nhiều tri thức quý giá!",
+      "Chúc bạn một ngày giảng dạy tràn ngập niềm vui, sáng tạo và có sự kết nối sâu sắc với từng học sinh!",
+      "Mỗi bài giảng hôm nay là một viên gạch xây đắp nên tương lai tươi sáng của thế hệ trẻ. Chúc bạn ngày mới tốt lành!",
+      "Sự kiên nhẫn và tận tụy của bạn hôm nay chính là kim chỉ nam cho sự thành công của học trò ngày mai!",
+      "Chúc bạn có một ngày làm việc trọn vẹn, ngập tràn cảm hứng sư phạm và niềm vui đứng lớp!",
+      "Nghề dạy học là nghệ thuật thắp sáng ước mơ và đánh thức tiềm năng trong mỗi đứa trẻ. Chúc bạn một ngày rực rỡ!",
+      "Mỗi học sinh là một tài năng đặc biệt đang đợi bạn khơi mở. Chúc bạn có một ngày giảng dạy thật ý nghĩa!",
+      "Chúc bạn ngày mới tràn đầy nhiệt huyết giảng dạy, gặt hái thêm nhiều niềm vui và hạnh phúc bên học trò!",
+      "Sự đồng hành của bạn chính là điểm tựa vững chắc nhất để học trò vững bước vào đời. Chúc bạn ngày mới an lành!",
+      "Chúc bạn ngày mới tràn đầy ý tưởng bài giảng độc đáo và những giờ học sinh động đầy ắp tiếng cười!",
+      "Học trò không chỉ nhớ những kiến thức bạn truyền đạt, mà sẽ nhớ mãi tình yêu thương và sự quan tâm của bạn. Ngày mới tràn ngập yêu thương nhé!",
+      "Chúc bạn một ngày giảng dạy thật nhẹ nhàng nhưng mang lại giá trị to lớn và lan tỏa nguồn năng lượng tuyệt vời!",
+      "Mỗi ngày đứng trên bục giảng là một ngày thay đổi tương lai. Chúc bạn có một ngày làm việc đầy cảm hứng!",
+      "Sự tiến bộ từng ngày của học sinh là món quà quý giá nhất dành cho thầy cô. Chúc bạn một ngày hạnh phúc!",
+      "Chúc bạn một ngày làm việc hiệu quả, luôn giữ vững ngọn lửa đam mê và niềm tự hào với sứ mệnh trồng người!"
+    ];
+    const day = new Date().getDate();
+    return quotes[day % quotes.length];
+  };
+
   return (
     <div className="space-y-8 pb-10">
       
@@ -223,7 +245,7 @@ export const TeacherDashboard: React.FC = () => {
               {getGreeting()}, {user?.name}
             </h1>
             <p className="text-indigo-100 text-sm md:text-base max-w-xl leading-relaxed">
-              Hôm nay là ngày {new Date().toLocaleDateString('vi-VN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}. Chúc bạn có một ngày làm việc hiệu quả và đầy năng lượng giảng dạy!
+              Hôm nay là ngày {new Date().toLocaleDateString('vi-VN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}. {getDailyInspirationalQuote()}
             </p>
           </div>
 
