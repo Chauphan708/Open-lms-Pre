@@ -244,8 +244,9 @@ const ArenaClassAnalytics: React.FC<{
   students?: any[];
   profiles?: any[];
   matches?: any[];
+  tournaments?: any[];
   loading: boolean;
-}> = ({ students = [], profiles = [], matches = [], loading }) => {
+}> = ({ students = [], profiles = [], matches = [], tournaments = [], loading }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [sortField, setSortField] = useState<'elo' | 'games' | 'winrate' | 'floor' | 'xp'>('elo');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
@@ -409,41 +410,60 @@ const ArenaClassAnalytics: React.FC<{
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
       {/* 1. TOP CARDS SUMMARY */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white p-5 rounded-2xl border shadow-xs">
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
+        {/* Card 1 */}
+        <div className="bg-gradient-to-br from-amber-50 to-white p-5 rounded-2xl border border-amber-100 shadow-xs relative overflow-hidden group hover:shadow-md transition-all duration-300">
+          <div className="absolute top-0 right-0 w-16 h-16 bg-amber-500/5 rounded-bl-full group-hover:scale-110 transition-transform duration-300" />
           <div className="flex justify-between items-start mb-2">
-            <span className="text-xs font-bold text-gray-400 uppercase">Elo Trung Bình</span>
-            <Trophy className="h-5 w-5 text-amber-500" />
+            <span className="text-xs font-bold text-amber-700 uppercase tracking-wider">Elo Trung Bình</span>
+            <Trophy className="h-5 w-5 text-amber-500 group-hover:rotate-12 transition-transform" />
           </div>
-          <div className="text-2xl font-black text-gray-800">{avgElo}</div>
-          <div className="text-[10px] text-gray-400 mt-1">Tổng xếp hạng học lực cả lớp</div>
+          <div className="text-2xl font-black text-amber-950">{avgElo}</div>
+          <div className="text-[10px] text-amber-600/80 font-medium mt-1">Tổng điểm học lực cả lớp</div>
         </div>
 
-        <div className="bg-white p-5 rounded-2xl border shadow-xs">
+        {/* Card 2 */}
+        <div className="bg-gradient-to-br from-emerald-50 to-white p-5 rounded-2xl border border-emerald-100 shadow-xs relative overflow-hidden group hover:shadow-md transition-all duration-300">
+          <div className="absolute top-0 right-0 w-16 h-16 bg-emerald-500/5 rounded-bl-full group-hover:scale-110 transition-transform duration-300" />
           <div className="flex justify-between items-start mb-2">
-            <span className="text-xs font-bold text-gray-400 uppercase">Tỷ Lệ Thắng Lớp</span>
-            <Award className="h-5 w-5 text-emerald-500" />
+            <span className="text-xs font-bold text-emerald-700 uppercase tracking-wider">Tỷ Lệ Thắng Lớp</span>
+            <Award className="h-5 w-5 text-emerald-500 group-hover:rotate-12 transition-transform" />
           </div>
-          <div className="text-2xl font-black text-gray-800">{avgWinRate}%</div>
-          <div className="text-[10px] text-emerald-600 font-semibold mt-1">Trung bình tỉ lệ thắng PvP</div>
+          <div className="text-2xl font-black text-emerald-950">{avgWinRate}%</div>
+          <div className="text-[10px] text-emerald-600/80 font-medium mt-1">Trung bình tỉ lệ thắng PvP</div>
         </div>
 
-        <div className="bg-white p-5 rounded-2xl border shadow-xs">
+        {/* Card 3 */}
+        <div className="bg-gradient-to-br from-indigo-50 to-white p-5 rounded-2xl border border-indigo-100 shadow-xs relative overflow-hidden group hover:shadow-md transition-all duration-300">
+          <div className="absolute top-0 right-0 w-16 h-16 bg-indigo-500/5 rounded-bl-full group-hover:scale-110 transition-transform duration-300" />
           <div className="flex justify-between items-start mb-2">
-            <span className="text-xs font-bold text-gray-400 uppercase">Tầng Tháp Trung Bình</span>
-            <TrendingUp className="h-5 w-5 text-indigo-500" />
+            <span className="text-xs font-bold text-indigo-700 uppercase tracking-wider">Tầng Vượt Tháp</span>
+            <TrendingUp className="h-5 w-5 text-indigo-500 group-hover:rotate-12 transition-transform" />
           </div>
-          <div className="text-2xl font-black text-gray-800">Tầng {avgFloor}</div>
-          <div className="text-[10px] text-gray-400 mt-1">Độ cao trung bình Vượt tháp</div>
+          <div className="text-2xl font-black text-indigo-950">Tầng {avgFloor}</div>
+          <div className="text-[10px] text-indigo-600/80 font-medium mt-1">Độ cao trung bình Vượt tháp</div>
         </div>
 
-        <div className="bg-white p-5 rounded-2xl border shadow-xs">
+        {/* Card 4 */}
+        <div className="bg-gradient-to-br from-purple-50 to-white p-5 rounded-2xl border border-purple-100 shadow-xs relative overflow-hidden group hover:shadow-md transition-all duration-300">
+          <div className="absolute top-0 right-0 w-16 h-16 bg-purple-500/5 rounded-bl-full group-hover:scale-110 transition-transform duration-300" />
           <div className="flex justify-between items-start mb-2">
-            <span className="text-xs font-bold text-gray-400 uppercase">Tổng Trận Đấu Lớp</span>
-            <Zap className="h-5 w-5 text-purple-500" />
+            <span className="text-xs font-bold text-purple-700 uppercase tracking-wider">Tổng Trận PvP</span>
+            <Zap className="h-5 w-5 text-purple-500 group-hover:rotate-12 transition-transform" />
           </div>
-          <div className="text-2xl font-black text-gray-800">{totalGames}</div>
-          <div className="text-[10px] text-purple-600 font-semibold mt-1">Tổng lượt thi đấu PvP tích lũy</div>
+          <div className="text-2xl font-black text-purple-950">{totalGames}</div>
+          <div className="text-[10px] text-purple-600/80 font-medium mt-1">Tổng lượt thi đấu PvP tích lũy</div>
+        </div>
+
+        {/* Card 5 */}
+        <div className="bg-gradient-to-br from-rose-50 to-white p-5 rounded-2xl border border-rose-100 shadow-xs relative overflow-hidden group hover:shadow-md transition-all duration-300">
+          <div className="absolute top-0 right-0 w-16 h-16 bg-rose-500/5 rounded-bl-full group-hover:scale-110 transition-transform duration-300" />
+          <div className="flex justify-between items-start mb-2">
+            <span className="text-xs font-bold text-rose-700 uppercase tracking-wider">Giải Đấu Đã Tạo</span>
+            <Trophy className="h-5 w-5 text-rose-500 group-hover:rotate-12 transition-transform" />
+          </div>
+          <div className="text-2xl font-black text-rose-950">{tournaments.length}</div>
+          <div className="text-[10px] text-rose-600/80 font-medium mt-1">Tổng số giải đấu Arena tổ chức</div>
         </div>
       </div>
 
@@ -652,6 +672,57 @@ const ArenaClassAnalytics: React.FC<{
           </table>
         </div>
       </div>
+
+      {/* 4. ARENA TOURNAMENTS HISTORY */}
+      <div className="bg-white rounded-2xl border shadow-sm overflow-hidden">
+        <div className="p-5 border-b flex justify-between items-center bg-gray-50/50">
+          <h3 className="font-bold text-gray-800 text-sm flex items-center gap-2">
+            <Trophy className="h-4 w-4 text-purple-500 animate-pulse" /> Lịch sử Giải đấu Đấu Trường (Arena Tournaments)
+          </h3>
+          <span className="text-xs bg-purple-100 text-purple-700 font-bold px-2.5 py-1 rounded-full">
+            {tournaments.length} giải đấu
+          </span>
+        </div>
+        <div className="p-5">
+          {tournaments.length === 0 ? (
+            <div className="text-center py-8 text-gray-400 text-xs italic">
+              Chưa tổ chức giải đấu nào cho lớp học này.
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {tournaments.map((t: any) => {
+                const statusColors = 
+                  t.status === 'finished' ? 'bg-gray-100 text-gray-600 border-gray-200' :
+                  t.status === 'active' ? 'bg-emerald-50 text-emerald-700 border-emerald-200 animate-pulse' : 
+                  'bg-amber-50 text-amber-700 border-amber-200';
+                const statusLabels = 
+                  t.status === 'finished' ? 'Đã kết thúc' :
+                  t.status === 'active' ? 'Đang thi đấu' : 
+                  'Đang chờ';
+                
+                return (
+                  <div key={t.id} className="p-4 border rounded-xl bg-gray-50/30 hover:border-purple-200 hover:shadow-xs transition-all flex flex-col justify-between space-y-3">
+                    <div className="flex justify-between items-start gap-2">
+                      <div className="font-bold text-sm text-gray-800 line-clamp-1">{t.title}</div>
+                      <span className={`text-[9px] font-black px-2 py-0.5 rounded-md border uppercase ${statusColors}`}>
+                        {statusLabels}
+                      </span>
+                    </div>
+                    <div className="text-[11px] text-gray-500 space-y-1">
+                      <div>Môn học: <span className="font-semibold text-gray-700">{t.filter_subject || 'Tất cả'}</span></div>
+                      <div>Khối lớp: <span className="font-semibold text-gray-700">{t.filter_grade ? `Khối ${t.filter_grade}` : 'Tất cả'}</span></div>
+                      <div>Thể thức: <span className="font-semibold text-gray-700">{t.questions_per_match} câu/trận • {t.time_per_question} giây/câu</span></div>
+                      <div className="pt-1.5 border-t border-dashed text-[10px] text-gray-400">
+                        Tạo lúc: {new Date(t.created_at || Date.now()).toLocaleDateString('vi-VN')} {new Date(t.created_at || Date.now()).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 };
@@ -701,9 +772,11 @@ export const TeacherAnalytics: React.FC = () => {
     attempts, 
     exams, 
     questionBank,
+    tournaments,
     fetchClasses,
     fetchAttempts,
-    fetchExams
+    fetchExams,
+    fetchTournaments
   } = useStore();
 
   useEffect(() => {
@@ -711,8 +784,9 @@ export const TeacherAnalytics: React.FC = () => {
       fetchClasses();
       fetchAttempts();
       fetchExams();
+      fetchTournaments();
     }
-  }, [currentUser, fetchClasses, fetchAttempts, fetchExams]);
+  }, [currentUser, fetchClasses, fetchAttempts, fetchExams, fetchTournaments]);
 
   const [selectedClassId, setSelectedClassId] = useState<string>('');
   const [selectedStudentIds, setSelectedStudentIds] = useState<string[]>([]);
@@ -800,6 +874,12 @@ export const TeacherAnalytics: React.FC = () => {
     if (currentUser?.role === 'ADMIN') return classes;
     return classes.filter(c => c.teacherId === currentUser?.id);
   }, [classes, currentUser]);
+
+  // Filter tournaments hosted by this teacher (or all for admin)
+  const myTournaments = useMemo(() => {
+    if (currentUser?.role === 'ADMIN') return tournaments;
+    return tournaments.filter((t: any) => t.teacher_id === currentUser?.id || t.teacherId === currentUser?.id);
+  }, [tournaments, currentUser]);
 
   // Students in selected class
   const studentsInClass = useMemo(() => {
@@ -901,6 +981,7 @@ export const TeacherAnalytics: React.FC = () => {
             students={studentsInClass}
             profiles={arenaProfiles}
             matches={arenaMatches}
+            tournaments={myTournaments}
             loading={loadingArena}
           />
         </ErrorBoundary>
