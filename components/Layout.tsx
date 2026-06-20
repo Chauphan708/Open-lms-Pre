@@ -35,7 +35,8 @@ import {
   PanelLeftOpen,
   Database,
   Layers,
-  HelpCircle
+  HelpCircle,
+  StickyNote
 } from 'lucide-react';
 import { useStore } from '../store';
 import { UserRole, CustomToolMenu } from '../types';
@@ -117,6 +118,7 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
     {
       items: [
         { label: 'Dashboard', path: '/', icon: LayoutDashboard, roles: ['ADMIN', 'TEACHER', 'STUDENT'] },
+        { label: 'Sổ tay Giáo viên', path: '/teacher/notes', icon: StickyNote, roles: ['TEACHER', 'ADMIN'] },
       ]
     },
     {

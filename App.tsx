@@ -32,6 +32,7 @@ import { ExamResults } from './pages/teacher/ExamResults';
 import { AssignmentManage } from './pages/teacher/AssignmentManage';
 import { StudentXPStats } from './pages/teacher/StudentXPStats';
 import { TeacherAnalytics } from './pages/teacher/TeacherAnalytics';
+import { TeacherNotes } from './pages/teacher/TeacherNotes';
 // Student History
 import { StudentHistory } from './pages/student/StudentHistory';
 // Student Analytics
@@ -386,6 +387,11 @@ function App() {
         <Route path="/teacher/analytics" element={
           <ProtectedRoute roles={['TEACHER']}>
             <TeacherAnalytics />
+          </ProtectedRoute>
+        } />
+        <Route path="/teacher/notes" element={
+          <ProtectedRoute roles={['TEACHER', 'ADMIN']}>
+            <TeacherNotes />
           </ProtectedRoute>
         } />
 
