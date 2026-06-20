@@ -390,34 +390,48 @@ export const TeacherDashboard: React.FC = () => {
             </div>
           </div>
 
-          {/* Timeline Nodes */}
-          <div className="relative pl-6 border-l-2 border-indigo-50 space-y-6">
+          {/* Grid Layout of Activities */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {recentActivities.map(act => {
               const isExam = act.type === 'NEW_EXAM';
               return (
-                <div key={act.id} className="relative group">
-                  {/* Timeline Dot */}
-                  <div className={`absolute -left-[31px] top-1 h-4 w-4 rounded-full border-2 border-white shadow-sm transition-all group-hover:scale-125
-                    ${isExam ? 'bg-blue-500' : 'bg-emerald-500'}`} 
-                  />
-                  
-                  <div className="p-3 bg-gray-50/50 hover:bg-indigo-50/15 border border-transparent hover:border-indigo-50 rounded-2xl transition-all">
-                    <p className="text-sm font-semibold text-gray-800">{act.title}</p>
-                    <div className="flex items-center gap-3 mt-1.5">
-                      <span className={`text-[9px] px-2 py-0.5 rounded-md font-black uppercase tracking-wider
-                        ${isExam ? 'bg-blue-50 text-blue-600 border border-blue-100' : 'bg-emerald-50 text-emerald-600 border border-emerald-100'}`}>
+                <div 
+                  key={act.id} 
+                  className={`p-4 rounded-2xl border transition-all duration-300 hover:shadow-md flex flex-col justify-between
+                    ${isExam 
+                      ? 'bg-gradient-to-br from-blue-50/30 to-white border-blue-100/60 hover:border-blue-200' 
+                      : 'bg-gradient-to-br from-emerald-50/30 to-white border-emerald-100/60 hover:border-emerald-200'
+                    }`}
+                >
+                  <div className="flex gap-3 items-start">
+                    <div className={`p-2 rounded-xl shrink-0
+                      ${isExam ? 'bg-blue-100/80 text-blue-600' : 'bg-emerald-100/80 text-emerald-600'}`}>
+                      {isExam ? <BookOpen className="h-4.5 w-4.5" /> : <CheckCircle className="h-4.5 w-4.5" />}
+                    </div>
+                    <div className="space-y-1">
+                      <span className={`text-[9px] px-2 py-0.5 rounded-md font-extrabold uppercase tracking-wider
+                        ${isExam ? 'bg-blue-100/50 text-blue-700' : 'bg-emerald-100/50 text-emerald-700'}`}>
                         {isExam ? 'Bài tập mới' : 'Nộp bài'}
                       </span>
-                      <span className="text-[10px] text-gray-400 flex items-center gap-1 font-medium">
-                        <Clock className="h-3 w-3" /> {getTimeAgo(act.time)}
-                      </span>
+                      <h4 className="text-sm font-bold text-gray-800 line-clamp-2 leading-snug pt-1">
+                        {act.title}
+                      </h4>
                     </div>
+                  </div>
+
+                  <div className="flex items-center justify-between mt-3 pt-2.5 border-t border-gray-100/60 text-gray-400 text-[10px] font-medium">
+                    <span className="flex items-center gap-1">
+                      <Clock className="h-3 w-3" /> {getTimeAgo(act.time)}
+                    </span>
+                    <span className="text-indigo-500 font-bold hover:underline cursor-pointer">Chi tiết</span>
                   </div>
                 </div>
               );
             })}
             {recentActivities.length === 0 && (
-              <p className="text-gray-500 text-sm italic py-4 pl-2">Hệ thống chưa phát sinh hoạt động nào trong khoảng thời gian đã chọn.</p>
+              <div className="col-span-full text-center py-8 text-gray-400 italic text-sm">
+                Hệ thống chưa phát sinh hoạt động nào trong khoảng thời gian đã chọn.
+              </div>
             )}
           </div>
         </div>
