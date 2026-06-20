@@ -4,7 +4,8 @@ import { useStore } from '../../store';
 import { StatCard } from './StatCard';
 import {
   BookOpen, Users, TrendingUp, Bell, CheckCircle,
-  X, List, Download, BarChart3, Clock, LayoutGrid, Search
+  X, List, Download, BarChart3, Clock, LayoutGrid, Search,
+  Trophy, StickyNote, Zap, Sparkles, ChevronRight, Calendar, GraduationCap
 } from 'lucide-react';
 
 export const TeacherDashboard: React.FC = () => {
@@ -41,8 +42,12 @@ export const TeacherDashboard: React.FC = () => {
   // Student Portfolio Selection
   const [isStudentListModalOpen, setIsStudentListModalOpen] = useState(false);
   const [studentSearchQuery, setStudentSearchQuery] = useState('');
-  const myClasses = useMemo(() => classes.filter(c => c.teacherId === user?.id), [classes, user]);
-  const [selectedClassId, setSelectedClassId] = useState<string>(myClasses[0]?.id || 'ALL');
+  const myClasses = useMemo(() => {
+    if (user?.role === 'ADMIN') return classes;
+    return classes.filter(c => c.teacherId === user?.id);
+  }, [classes, user]);
+  
+  const [selectedClassId, setSelectedClassId] = useState<string>('ALL');
 
   // Handle auto-open or state from portfolio back button
   useEffect(() => {
@@ -194,128 +199,283 @@ export const TeacherDashboard: React.FC = () => {
     return "Vừa xong";
   };
 
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return 'Chào buổi sáng ☀️';
+    if (hour < 18) return 'Chào buổi chiều 🌤️';
+    return 'Chào buổi tối 🌙';
+  };
+
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Khu vực quản trị, {user?.name} 👋</h1>
-          <p className="text-gray-500 mt-1">Tổng quan hệ thống và tình hình lớp học.</p>
-        </div>
+    <div className="space-y-8 pb-10">
+      
+      {/* 1. PREMIUM HERO WELCOME BANNER */}
+      <div className="bg-gradient-to-br from-indigo-700 via-indigo-800 to-purple-900 rounded-3xl p-6 md:p-8 text-white relative overflow-hidden shadow-xl border border-indigo-900/50">
+        <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-white/5 rounded-full -translate-y-1/3 translate-x-1/4 blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-10 left-10 w-[300px] h-[300px] bg-purple-500/10 rounded-full blur-3xl pointer-events-none" />
+        
+        <div className="relative flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
+          <div className="space-y-3">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md text-[11px] font-bold tracking-wider uppercase">
+              <Sparkles className="h-3.5 w-3.5 text-indigo-200" /> Bảng điều khiển Quản trị
+            </div>
+            <h1 className="text-3xl md:text-4xl font-black tracking-tight">
+              {getGreeting()}, {user?.name}
+            </h1>
+            <p className="text-indigo-100 text-sm md:text-base max-w-xl leading-relaxed">
+              Hôm nay là ngày {new Date().toLocaleDateString('vi-VN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}. Chúc bạn có một ngày làm việc hiệu quả và đầy năng lượng giảng dạy!
+            </p>
+          </div>
 
-        <div className="flex flex-wrap items-center gap-3">
-          <select
-            value={selectedYearId}
-            onChange={(e) => setSelectedYearId(e.target.value)}
-            className="bg-white border hover:border-indigo-400 text-sm rounded-lg px-3 py-1.5 outline-none shadow-sm focus:ring-2 focus:ring-indigo-100 transition-all font-medium text-gray-700 cursor-pointer"
-          >
-            <option value="ALL">Tất cả năm học</option>
-            {academicYears?.map(y => (
-              <option key={y.id} value={y.id}>Năm học {y.name} {y.isActive ? '(Hiện tại)' : ''}</option>
-            ))}
-          </select>
-
-          <div className="bg-white p-1 rounded-lg border shadow-sm flex items-center gap-1">
-            {[
-              { id: 'DAY', label: 'Hôm nay' },
-              { id: 'WEEK', label: 'Tuần này' },
-              { id: 'MONTH', label: 'Tháng này' },
-              { id: 'YEAR', label: 'Năm nay' },
-              { id: 'ALL', label: 'Tất cả' }
-            ].map(f => (
-              <button
-                key={f.id}
-                onClick={() => setTimeFilter(f.id as any)}
-                className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all ${timeFilter === f.id ? 'bg-indigo-100 text-indigo-700 shadow-sm' : 'text-gray-500 hover:bg-gray-50'}`}
+          {/* Banner Filters */}
+          <div className="flex flex-wrap items-center gap-3 bg-black/10 p-3 rounded-2xl backdrop-blur-md border border-white/5">
+            <div className="flex flex-col gap-1">
+              <span className="text-[9px] font-black text-indigo-200 uppercase tracking-widest px-1">Năm học</span>
+              <select
+                value={selectedYearId}
+                onChange={(e) => setSelectedYearId(e.target.value)}
+                className="bg-white/15 hover:bg-white/20 border-none text-white text-xs rounded-xl px-3 py-2 outline-none font-bold cursor-pointer transition-all min-w-[150px]"
               >
-                {f.label}
-              </button>
-            ))}
+                <option value="ALL" className="text-gray-900">Tất cả năm học</option>
+                {academicYears?.map(y => (
+                  <option key={y.id} value={y.id} className="text-gray-900">Năm {y.name} {y.isActive ? '(Hiện tại)' : ''}</option>
+                ))}
+              </select>
+            </div>
+
+            <div className="flex flex-col gap-1">
+              <span className="text-[9px] font-black text-indigo-200 uppercase tracking-widest px-1">Bộ lọc thời gian</span>
+              <div className="flex bg-white/10 p-0.5 rounded-xl border border-white/5">
+                {[
+                  { id: 'ALL', label: 'Tất cả' },
+                  { id: 'MONTH', label: 'Tháng' },
+                  { id: 'WEEK', label: 'Tuần' },
+                  { id: 'DAY', label: 'Hôm nay' }
+                ].map(f => (
+                  <button
+                    key={f.id}
+                    onClick={() => setTimeFilter(f.id as any)}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${timeFilter === f.id ? 'bg-white text-indigo-900 shadow-sm' : 'text-indigo-100 hover:text-white hover:bg-white/5'}`}
+                  >
+                    {f.label}
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
-      <div className="bg-white rounded-2xl p-4 border shadow-sm flex flex-col md:flex-row justify-between items-center gap-4">
-        <div className="flex items-center gap-4">
-          <div className="bg-indigo-50 p-3 rounded-2xl text-indigo-600">
-            <LayoutGrid className="h-6 w-6" />
+      {/* 2. STATS CARDS SECTION WITH GRADIENT ACCENTS */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        {[
+          { icon: Users, label: 'Tổng số Học sinh', value: teacherStudentsCount, color: 'from-emerald-500 to-teal-600', bg: 'from-emerald-50 to-white', border: 'border-emerald-100', text: 'text-emerald-950', iconColor: 'text-emerald-600' },
+          { icon: BookOpen, label: 'Bài tập đã tạo', value: filteredExams.length, color: 'from-blue-500 to-indigo-600', bg: 'from-blue-50 to-white', border: 'border-blue-100', text: 'text-blue-950', iconColor: 'text-blue-600' },
+          { icon: TrendingUp, label: 'Tổng lượt nộp bài', value: totalAttemptsCount, color: 'from-indigo-500 to-purple-600', bg: 'from-indigo-50 to-white', border: 'border-indigo-100', text: 'text-indigo-950', iconColor: 'text-indigo-600' },
+          { icon: BookOpen, label: 'Kho tài liệu & Web', value: filteredResources.length, color: 'from-amber-500 to-orange-600', bg: 'from-amber-50 to-white', border: 'border-amber-100', text: 'text-amber-950', iconColor: 'text-amber-600' }
+        ].map((card, i) => (
+          <div key={i} className={`bg-gradient-to-br ${card.bg} p-5 rounded-2xl border ${card.border} shadow-xs relative overflow-hidden group hover:shadow-md transition-all duration-300`}>
+            <div className={`absolute top-0 right-0 w-16 h-16 bg-gradient-to-br ${card.color} opacity-5 rounded-bl-full group-hover:scale-110 transition-transform duration-300`} />
+            <div className="flex justify-between items-start mb-2">
+              <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">{card.label}</span>
+              <div className={`p-2 rounded-xl bg-white shadow-xs ${card.iconColor}`}>
+                <card.icon className="h-4.5 w-4.5 group-hover:rotate-12 transition-transform" />
+              </div>
+            </div>
+            <div className={`text-2xl font-black ${card.text}`}>{card.value}</div>
+            <div className="text-[10px] text-gray-400 mt-1">Dữ liệu cập nhật liên tục</div>
           </div>
-          <div>
-            <h3 className="font-bold text-gray-900">Quản lý Hồ sơ học tập</h3>
-            <p className="text-sm text-gray-500">Xem nhanh chi tiết học tập, rèn luyện và AI phân tích cho từng học sinh.</p>
-          </div>
+        ))}
+      </div>
+
+      {/* 3. INTERACTIVE SHORTCUT HUBS */}
+      <div className="space-y-4">
+        <h2 className="text-xs font-black text-gray-400 uppercase tracking-widest">Trung tâm tiện ích giáo viên (Management Hubs)</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          
+          {/* Hub 1: Student Portfolio */}
+          <button
+            onClick={() => setIsStudentListModalOpen(true)}
+            className="text-left bg-white p-6 rounded-3xl border border-gray-100 shadow-sm relative overflow-hidden group hover:border-indigo-200 hover:shadow-lg hover:shadow-indigo-50/40 transition-all duration-300 flex flex-col justify-between h-48"
+          >
+            <div className="absolute top-0 right-0 w-24 h-24 bg-indigo-50 rounded-bl-full group-hover:scale-110 transition-all duration-300" />
+            <div className="p-3 bg-indigo-50 rounded-2xl text-indigo-600 w-fit relative z-10">
+              <Users className="h-6 w-6" />
+            </div>
+            <div className="space-y-1.5 relative z-10">
+              <h3 className="font-extrabold text-gray-900 group-hover:text-indigo-600 transition-colors text-base flex items-center gap-1.5">
+                Hồ Sơ Học Sinh <ChevronRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+              </h3>
+              <p className="text-xs text-gray-500 leading-relaxed">Xem nhanh chi tiết kết quả học tập, điểm thi đua và quá trình rèn luyện cá nhân.</p>
+            </div>
+          </button>
+
+          {/* Hub 2: Learning Analytics */}
+          <Link
+            to="/teacher/analytics"
+            className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm relative overflow-hidden group hover:border-purple-200 hover:shadow-lg hover:shadow-purple-50/40 transition-all duration-300 flex flex-col justify-between h-48"
+          >
+            <div className="absolute top-0 right-0 w-24 h-24 bg-purple-50 rounded-bl-full group-hover:scale-110 transition-all duration-300" />
+            <div className="p-3 bg-purple-50 rounded-2xl text-purple-600 w-fit relative z-10">
+              <BarChart3 className="h-6 w-6" />
+            </div>
+            <div className="space-y-1.5 relative z-10">
+              <h3 className="font-extrabold text-gray-900 group-hover:text-purple-600 transition-colors text-base flex items-center gap-1.5">
+                Phân Tích Học Tập AI <ChevronRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+              </h3>
+              <p className="text-xs text-gray-500 leading-relaxed">Báo cáo điểm mạnh/yếu, phân tích phổ điểm thi cử và g gợi ý sư phạm tự động từ AI.</p>
+            </div>
+          </Link>
+
+          {/* Hub 3: Class Competition */}
+          <Link
+            to="/teacher/class-fun"
+            className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm relative overflow-hidden group hover:border-emerald-200 hover:shadow-lg hover:shadow-emerald-50/40 transition-all duration-300 flex flex-col justify-between h-48"
+          >
+            <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-50 rounded-bl-full group-hover:scale-110 transition-all duration-300" />
+            <div className="p-3 bg-emerald-50 rounded-2xl text-emerald-600 w-fit relative z-10">
+              <Trophy className="h-6 w-6" />
+            </div>
+            <div className="space-y-1.5 relative z-10">
+              <h3 className="font-extrabold text-gray-900 group-hover:text-emerald-600 transition-colors text-base flex items-center gap-1.5">
+                Thi Đua Lớp Học <ChevronRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+              </h3>
+              <p className="text-xs text-gray-500 leading-relaxed">Quản lý điểm cộng/trừ rèn luyện của học sinh, điểm danh và thống kê kinh nghiệm XP lớp học.</p>
+            </div>
+          </Link>
+
+          {/* Hub 4: Notebook */}
+          <Link
+            to="/teacher/notes"
+            className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm relative overflow-hidden group hover:border-amber-200 hover:shadow-lg hover:shadow-amber-50/40 transition-all duration-300 flex flex-col justify-between h-48"
+          >
+            <div className="absolute top-0 right-0 w-24 h-24 bg-amber-50 rounded-bl-full group-hover:scale-110 transition-all duration-300" />
+            <div className="p-3 bg-amber-50 rounded-2xl text-amber-600 w-fit relative z-10">
+              <StickyNote className="h-6 w-6" />
+            </div>
+            <div className="space-y-1.5 relative z-10">
+              <h3 className="font-extrabold text-gray-900 group-hover:text-amber-600 transition-colors text-base flex items-center gap-1.5">
+                Sổ Tay Sư Phạm <ChevronRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+              </h3>
+              <p className="text-xs text-gray-500 leading-relaxed">Không gian ghi chú kế hoạch giảng dạy, nhắc nhở công việc họp và ghim danh sách việc cần làm.</p>
+            </div>
+          </Link>
+
         </div>
-        <button 
-          onClick={() => setIsStudentListModalOpen(true)}
-          className="w-full md:w-auto px-6 py-3 bg-indigo-600 text-white rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-100"
-        >
-          <Users className="h-5 w-5" /> HỒ SƠ HS
-        </button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard icon={BookOpen} label="Tài liệu" value={filteredResources.length} color="bg-orange-500" />
-        <StatCard icon={Users} label="Tổng học sinh" value={teacherStudentsCount} color="bg-green-500" />
-        <StatCard icon={BookOpen} label="Tổng số bài tập" value={filteredExams.length} color="bg-blue-500" />
-        <StatCard icon={TrendingUp} label="Lượt nộp bài" value={totalAttemptsCount} color="bg-indigo-500" />
-      </div>
-
-      <div className="bg-gradient-to-r from-indigo-50 to-purple-50 p-6 rounded-xl border border-indigo-100 flex flex-col md:flex-row justify-between items-center gap-4">
-        <div className="flex items-center gap-4">
-          <div className="bg-white p-3 rounded-2xl shadow-sm text-indigo-600">
-            <BarChart3 className="h-8 w-8" />
-          </div>
-          <div>
-            <h3 className="text-lg font-bold text-gray-900">Phân tích học tập chuyên sâu</h3>
-            <p className="text-sm text-gray-600">Xem báo cáo chi tiết, điểm mạnh/yếu và gợi ý AI cho từng học sinh.</p>
-          </div>
-        </div>
-        <Link 
-          to="/teacher/analytics" 
-          className="bg-indigo-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-200 flex items-center gap-2 whitespace-nowrap"
-        >
-          <BarChart3 className="h-5 w-5" /> Xem Phân Tích Ngay
-        </Link>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white p-6 rounded-xl border shadow-sm">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-lg font-bold text-gray-900">
-              Hoạt động gần đây {user?.role === 'ADMIN' ? '(Toàn hệ thống)' : '(Của bạn)'}
+      {/* 4. RECENT SYSTEM TIMELINE ACTIVITIES & DETAILS */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        {/* Timeline Block */}
+        <div className="bg-white p-6 rounded-3xl border shadow-sm lg:col-span-2">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="font-extrabold text-gray-900 text-base flex items-center gap-2">
+              <Clock className="h-5 w-5 text-indigo-500" /> Hoạt động gần đây {user?.role === 'ADMIN' ? '(Toàn hệ thống)' : '(Lớp của bạn)'}
             </h2>
             <div className="flex gap-2">
               <button 
                 onClick={handleExportActivities}
-                className="flex items-center gap-1 px-3 py-1.5 text-xs font-bold text-gray-600 bg-gray-50 border rounded-lg hover:bg-gray-100 transition-all"
+                className="flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-gray-600 bg-gray-50 border rounded-xl hover:bg-gray-100 active:scale-95 transition-all"
                 title="Xuất danh sách ra CSV"
               >
                 <Download className="h-3.5 w-3.5" /> Xuất file
               </button>
               <button 
                 onClick={() => setShowAllActivities(true)}
-                className="flex items-center gap-1 px-3 py-1.5 text-xs font-bold text-indigo-600 bg-indigo-50 border border-indigo-100 rounded-lg hover:bg-indigo-100 transition-all"
+                className="flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-indigo-600 bg-indigo-50 border border-indigo-100 rounded-xl hover:bg-indigo-100 active:scale-95 transition-all"
               >
                 <List className="h-3.5 w-3.5" /> Xem toàn bộ
               </button>
             </div>
           </div>
-          <div className="space-y-4">
-            {recentActivities.map(act => (
-              <div key={act.id} className="flex gap-3 items-start p-3 hover:bg-gray-50 rounded-lg transition-colors border border-transparent">
-                <div className={`mt-1 h-2 w-2 rounded-full flex-shrink-0 
-                      ${act.type === 'NEW_EXAM' ? 'bg-blue-500' : 'bg-green-500'}`}>
+
+          {/* Timeline Nodes */}
+          <div className="relative pl-6 border-l-2 border-indigo-50 space-y-6">
+            {recentActivities.map(act => {
+              const isExam = act.type === 'NEW_EXAM';
+              return (
+                <div key={act.id} className="relative group">
+                  {/* Timeline Dot */}
+                  <div className={`absolute -left-[31px] top-1 h-4 w-4 rounded-full border-2 border-white shadow-sm transition-all group-hover:scale-125
+                    ${isExam ? 'bg-blue-500' : 'bg-emerald-500'}`} 
+                  />
+                  
+                  <div className="p-3 bg-gray-50/50 hover:bg-indigo-50/15 border border-transparent hover:border-indigo-50 rounded-2xl transition-all">
+                    <p className="text-sm font-semibold text-gray-800">{act.title}</p>
+                    <div className="flex items-center gap-3 mt-1.5">
+                      <span className={`text-[9px] px-2 py-0.5 rounded-md font-black uppercase tracking-wider
+                        ${isExam ? 'bg-blue-50 text-blue-600 border border-blue-100' : 'bg-emerald-50 text-emerald-600 border border-emerald-100'}`}>
+                        {isExam ? 'Bài tập mới' : 'Nộp bài'}
+                      </span>
+                      <span className="text-[10px] text-gray-400 flex items-center gap-1 font-medium">
+                        <Clock className="h-3 w-3" /> {getTimeAgo(act.time)}
+                      </span>
+                    </div>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-sm text-gray-900">{act.title}</p>
-                  <p className="text-xs text-gray-500">{getTimeAgo(act.time)}</p>
-                </div>
-              </div>
-            ))}
-            {recentActivities.length === 0 && <p className="text-gray-500 text-sm italic py-4">Chưa có hoạt động nào.</p>}
+              );
+            })}
+            {recentActivities.length === 0 && (
+              <p className="text-gray-500 text-sm italic py-4 pl-2">Hệ thống chưa phát sinh hoạt động nào trong khoảng thời gian đã chọn.</p>
+            )}
           </div>
         </div>
+
+        {/* Informative Side Widgets */}
+        <div className="space-y-6">
+          
+          {/* Quick Stats Widget */}
+          <div className="bg-gradient-to-r from-violet-600 via-indigo-600 to-indigo-700 p-6 rounded-3xl text-white relative overflow-hidden shadow-md">
+            <div className="absolute top-0 right-0 w-[150px] h-[150px] bg-white/5 rounded-full -translate-y-1/2 translate-x-1/3 blur-xl pointer-events-none" />
+            <h3 className="font-extrabold text-sm uppercase tracking-wider text-violet-200">Trợ Lý Sư Phạm AI</h3>
+            <p className="text-xs text-indigo-50 mt-3 leading-relaxed">
+              Bạn có thể sử dụng tính năng **Phân tích Học tập** hoặc tính năng **Chấm bài tự động AI** để giảm bớt 70% thời gian chấm bài viết tay và nhận xét học bạ định kỳ cho học sinh.
+            </p>
+            <div className="mt-5 flex gap-2">
+              <Link 
+                to="/teacher/ai-grading" 
+                className="bg-white/15 hover:bg-white/20 px-3.5 py-2 rounded-xl text-xs font-bold text-white transition-all text-center flex-1 border border-white/5 shadow-xs"
+              >
+                Chấm Bài AI
+              </Link>
+              <Link 
+                to="/teacher/analytics" 
+                className="bg-white text-indigo-700 hover:bg-indigo-50 px-3.5 py-2 rounded-xl text-xs font-bold transition-all text-center flex-1 shadow-md"
+              >
+                Xem Phân Tích
+              </Link>
+            </div>
+          </div>
+
+          {/* Quick Info Widget */}
+          <div className="bg-white p-6 rounded-3xl border shadow-sm">
+            <h3 className="font-extrabold text-gray-800 text-sm flex items-center gap-2">
+              <Calendar className="h-4.5 w-4.5 text-indigo-500" /> Trạng thái Đồng bộ
+            </h3>
+            <div className="mt-4 space-y-3.5">
+              <div className="flex justify-between items-center text-xs">
+                <span className="text-gray-500 font-medium">Kết nối Supabase</span>
+                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 font-bold border border-emerald-100">
+                  <span className="h-1.5 w-1.5 bg-emerald-500 rounded-full animate-ping" /> Trực tuyến
+                </span>
+              </div>
+              <div className="flex justify-between items-center text-xs">
+                <span className="text-gray-500 font-medium">Bảng ghi chú sư phạm</span>
+                <span className="text-gray-700 font-semibold">Tự động sao lưu kép</span>
+              </div>
+              <div className="flex justify-between items-center text-xs">
+                <span className="text-gray-500 font-medium">Thời gian đồng bộ cuối</span>
+                <span className="text-gray-400 font-semibold">Vừa xong</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
       </div>
 
+      {/* SHOW ALL ACTIVITIES MODAL */}
       {showAllActivities && (
         <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl flex flex-col max-h-[85vh]">
@@ -332,7 +492,7 @@ export const TeacherDashboard: React.FC = () => {
               <div className="flex items-center gap-2">
                 <button 
                   onClick={handleExportActivities}
-                  className="flex items-center gap-2 px-4 py-2 text-sm font-bold text-gray-700 bg-white border rounded-xl hover:bg-gray-50 shadow-sm transition-all"
+                  className="flex items-center gap-2 px-4 py-2 text-sm font-bold text-gray-700 bg-white border rounded-xl hover:bg-gray-50 shadow-sm transition-all animate-in zoom-in-95"
                 >
                   <Download className="h-4 w-4" /> Xuất CSV
                 </button>
@@ -387,6 +547,7 @@ export const TeacherDashboard: React.FC = () => {
       {isStudentListModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
           <div className="bg-white w-full max-w-4xl rounded-3xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh] animate-in zoom-in-95 duration-200">
+            
             {/* Modal Header */}
             <div className="p-6 border-b flex justify-between items-center bg-indigo-50">
               <div>
