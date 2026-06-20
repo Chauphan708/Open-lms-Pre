@@ -403,7 +403,7 @@ const ArenaClassAnalytics: React.FC<{
 
   // Get recent matches for a student
   const getStudentMatches = (studentId: string) => {
-    return matches.filter(m => m.player1_id === studentId || m.player2_id === studentId).slice(0, 5);
+    return matches.filter(m => m && (m.player1_id === studentId || m.player2_id === studentId)).slice(0, 5);
   };
 
   return (
@@ -618,7 +618,7 @@ const ArenaClassAnalytics: React.FC<{
                                   const isP1 = m.player1_id === item.student.id;
                                   const isWinner = m.winner_id === item.student.id;
                                   const oppId = isP1 ? m.player2_id : m.player1_id;
-                                  const oppName = oppId ? (students.find(s => s.id === oppId)?.name || 'Học sinh khác') : 'Robot AI';
+                                  const oppName = oppId ? (students.find(s => s && s.id === oppId)?.name || 'Học sinh khác') : 'Robot AI';
                                   const myScore = isP1 ? m.player1_score : m.player2_score;
                                   const oppScore = isP1 ? m.player2_score : m.player1_score;
 
@@ -655,6 +655,43 @@ const ArenaClassAnalytics: React.FC<{
     </div>
   );
 };
+
+class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { hasError: boolean; error: Error | null }> {
+  constructor(props: any) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+
+  static getDerivedStateFromError(error: Error) {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error: Error, errorInfo: any) {
+    console.error("ErrorBoundary caught an error:", error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="p-8 bg-red-50 border border-red-200 rounded-2xl text-center space-y-4">
+          <AlertTriangle className="h-12 w-12 text-red-500 mx-auto" />
+          <h3 className="text-lg font-bold text-red-800">Đã xảy ra lỗi khi hiển thị phân tích Đấu Trường</h3>
+          <p className="text-sm text-red-600 max-w-md mx-auto">
+            {this.state.error?.message || "Không thể tải dữ liệu phân tích học tập. Vui lòng chọn lớp học khác hoặc tải lại trang."}
+          </p>
+          <button 
+            onClick={() => this.setState({ hasError: false, error: null })}
+            className="px-4 py-2 bg-red-600 text-white font-bold text-xs rounded-xl hover:bg-red-700"
+          >
+            Thử lại
+          </button>
+        </div>
+      );
+    }
+
+    return this.props.children;
+  }
+}
 
 export const TeacherAnalytics: React.FC = () => {
   const { 
@@ -859,12 +896,14 @@ export const TeacherAnalytics: React.FC = () => {
 
     if (activeTab === 'arena') {
       return (
-        <ArenaClassAnalytics 
-          students={studentsInClass}
-          profiles={arenaProfiles}
-          matches={arenaMatches}
-          loading={loadingArena}
-        />
+        <ErrorBoundary>
+          <ArenaClassAnalytics 
+            students={studentsInClass}
+            profiles={arenaProfiles}
+            matches={arenaMatches}
+            loading={loadingArena}
+          />
+        </ErrorBoundary>
       );
     }
 
