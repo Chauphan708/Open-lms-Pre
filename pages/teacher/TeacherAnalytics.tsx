@@ -2,11 +2,12 @@ import React, { useMemo, useState, useCallback, useEffect, useRef } from 'react'
 import { useStore } from '../../store';
 import {
   TrendingUp, TrendingDown, Minus, BookOpen, Brain, Target, AlertTriangle,
-  Star, Zap, Clock, ChevronDown, Sparkles, RefreshCw, Award, BarChart3, Printer, Users, School, ArrowLeft, MessageSquare
+  Star, Zap, Clock, ChevronDown, Sparkles, RefreshCw, Award, BarChart3, Printer, Users, School, ArrowLeft, MessageSquare, Trophy
 } from 'lucide-react';
 import { computeStudentAnalytics, TIME_PERIODS, TimePeriod, StudentAnalytics } from '../../utils/analyticsEngine';
 import { getRecommendations, getRecentExamIds } from '../../utils/recommendationEngine';
 import { generateTeacherStudentAnalysis } from '../../services/geminiService';
+import { supabase } from '../../services/supabaseClient';
 
 // ============================================================
 // SUB COMPONENTS (Reused from LearningAnalytics or adapted)
@@ -239,9 +240,402 @@ const ComparisonView: React.FC<{
   );
 };
 
-// ============================================================
-// MAIN PAGE
-// ============================================================
+const ArenaClassAnalytics: React.FC<{
+  students: any[];
+  profiles: any[];
+  matches: any[];
+  loading: boolean;
+}> = ({ students, profiles, matches, loading }) => {
+  const [searchTerm, setSearchTerm] = useState('');
+  const [sortField, setSortField] = useState<'elo' | 'games' | 'winrate' | 'floor' | 'xp'>('elo');
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
+  const [expandedStudentId, setExpandedStudentId] = useState<string | null>(null);
+
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center p-16 bg-white rounded-2xl border border-gray-100 shadow-sm animate-pulse">
+        <RefreshCw className="h-10 w-10 text-indigo-600 animate-spin mb-4" />
+        <p className="text-gray-500 font-medium">Đang tổng hợp dữ liệu Đấu Trường từ Cloud...</p>
+      </div>
+    );
+  }
+
+  if (students.length === 0) {
+    return (
+      <div className="bg-gray-50 rounded-2xl border border-dashed p-16 text-center">
+        <Trophy className="h-16 w-16 mx-auto text-gray-300 mb-4" />
+        <h3 className="text-xl font-bold text-gray-600">Đấu Trường Arena</h3>
+        <p className="text-gray-400">Không có học sinh nào trong lớp để hiển thị báo cáo.</p>
+      </div>
+    );
+  }
+
+  // Pre-calculate stats
+  const studentsStats = students.map(s => {
+    const p = profiles.find(profile => profile.id === s.id);
+    const elo = p?.elo_rating || 1000;
+    const wins = p?.wins || 0;
+    const losses = p?.losses || 0;
+    const games = wins + losses;
+    const winrate = games > 0 ? Math.round((wins / games) * 100) : 0;
+    const floor = p?.tower_floor || 1;
+    const xp = p?.total_xp || 0;
+    const mastery = p?.topic_mastery || {};
+    
+    return {
+      student: s,
+      elo,
+      wins,
+      losses,
+      games,
+      winrate,
+      floor,
+      xp,
+      mastery
+    };
+  });
+
+  const activeCount = profiles.length;
+  const avgElo = activeCount > 0 ? Math.round(profiles.reduce((acc, p) => acc + (p.elo_rating || 1000), 0) / activeCount) : 1000;
+  const avgFloor = activeCount > 0 ? Number((profiles.reduce((acc, p) => acc + (p.tower_floor || 1), 0) / activeCount).toFixed(1)) : 1;
+  const totalGames = profiles.reduce((acc, p) => acc + ((p.wins || 0) + (p.losses || 0)), 0);
+  const avgWinRate = activeCount > 0 ? Math.round(studentsStats.reduce((acc, s) => acc + s.winrate, 0) / activeCount) : 0;
+
+  // Elo Distribution counts
+  const dist = {
+    elite: studentsStats.filter(s => s.elo > 1200).length,
+    advanced: studentsStats.filter(s => s.elo >= 1050 && s.elo <= 1200).length,
+    intermediate: studentsStats.filter(s => s.elo >= 950 && s.elo < 1050).length,
+    beginner: studentsStats.filter(s => s.elo < 950).length
+  };
+
+  // Average Topic Mastery
+  const topicMasterySummary = useMemo(() => {
+    const topicsMap: Record<string, { total: number; count: number }> = {};
+    profiles.forEach(p => {
+      if (p.topic_mastery) {
+        Object.entries(p.topic_mastery).forEach(([topic, pct]) => {
+          if (!topicsMap[topic]) {
+            topicsMap[topic] = { total: 0, count: 0 };
+          }
+          topicsMap[topic].total += Number(pct || 0);
+          topicsMap[topic].count += 1;
+        });
+      }
+    });
+
+    return Object.entries(topicsMap).map(([topic, data]) => ({
+      topic,
+      avg: Math.round(data.total / data.count),
+      count: data.count
+    })).sort((a, b) => a.avg - b.avg); // Show weakest topics first
+  }, [profiles]);
+
+  const handleSort = (field: typeof sortField) => {
+    if (sortField === field) {
+      setSortDir(sortDir === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortField(field);
+      setSortDir('desc');
+    }
+  };
+
+  const filteredList = studentsStats.filter(item => 
+    item.student.name.toLowerCase().includes(searchTerm.toLowerCase())
+  ).sort((a, b) => {
+    let cmp = 0;
+    if (sortField === 'elo') cmp = a.elo - b.elo;
+    else if (sortField === 'games') cmp = a.games - b.games;
+    else if (sortField === 'winrate') cmp = a.winrate - b.winrate;
+    else if (sortField === 'floor') cmp = a.floor - b.floor;
+    else if (sortField === 'xp') cmp = a.xp - b.xp;
+
+    return sortDir === 'desc' ? -cmp : cmp;
+  });
+
+  const handleExportCSV = () => {
+    const headers = ['Hoc sinh', 'Elo Rating', 'Tang Thap', 'So tran Thang', 'So tran Thua', 'Ti le Thang %', 'Tong XP Arena', 'Chuyen de da lam chu'];
+    const rows = studentsStats.map(s => {
+      const mastered = Object.entries(s.mastery)
+        .filter(([_, pct]) => Number(pct) >= 100)
+        .map(([topic]) => topic)
+        .join('; ');
+      return [
+        s.student.name,
+        s.elo,
+        s.floor,
+        s.wins,
+        s.losses,
+        `${s.winrate}%`,
+        s.xp,
+        `"${mastered}"`
+      ];
+    });
+
+    const csvContent = "\uFEFF" + [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.setAttribute('download', `arena_analytics_class.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  // Get recent matches for a student
+  const getStudentMatches = (studentId: string) => {
+    return matches.filter(m => m.player1_id === studentId || m.player2_id === studentId).slice(0, 5);
+  };
+
+  return (
+    <div className="space-y-6 animate-in fade-in duration-500">
+      {/* 1. TOP CARDS SUMMARY */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="bg-white p-5 rounded-2xl border shadow-xs">
+          <div className="flex justify-between items-start mb-2">
+            <span className="text-xs font-bold text-gray-400 uppercase">Elo Trung Bình</span>
+            <Trophy className="h-5 w-5 text-amber-500" />
+          </div>
+          <div className="text-2xl font-black text-gray-800">{avgElo}</div>
+          <div className="text-[10px] text-gray-400 mt-1">Tổng xếp hạng học lực cả lớp</div>
+        </div>
+
+        <div className="bg-white p-5 rounded-2xl border shadow-xs">
+          <div className="flex justify-between items-start mb-2">
+            <span className="text-xs font-bold text-gray-400 uppercase">Tỷ Lệ Thắng Lớp</span>
+            <Award className="h-5 w-5 text-emerald-500" />
+          </div>
+          <div className="text-2xl font-black text-gray-800">{avgWinRate}%</div>
+          <div className="text-[10px] text-emerald-600 font-semibold mt-1">Trung bình tỉ lệ thắng PvP</div>
+        </div>
+
+        <div className="bg-white p-5 rounded-2xl border shadow-xs">
+          <div className="flex justify-between items-start mb-2">
+            <span className="text-xs font-bold text-gray-400 uppercase">Tầng Tháp Trung Bình</span>
+            <TrendingUp className="h-5 w-5 text-indigo-500" />
+          </div>
+          <div className="text-2xl font-black text-gray-800">Tầng {avgFloor}</div>
+          <div className="text-[10px] text-gray-400 mt-1">Độ cao trung bình Vượt tháp</div>
+        </div>
+
+        <div className="bg-white p-5 rounded-2xl border shadow-xs">
+          <div className="flex justify-between items-start mb-2">
+            <span className="text-xs font-bold text-gray-400 uppercase">Tổng Trận Đấu Lớp</span>
+            <Zap className="h-5 w-5 text-purple-500" />
+          </div>
+          <div className="text-2xl font-black text-gray-800">{totalGames}</div>
+          <div className="text-[10px] text-purple-600 font-semibold mt-1">Tổng lượt thi đấu PvP tích lũy</div>
+        </div>
+      </div>
+
+      {/* 2. CHARTS SECTION */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Elo Distribution Chart */}
+        <div className="bg-white p-6 rounded-2xl border shadow-xs flex flex-col justify-between">
+          <div>
+            <h3 className="font-bold text-gray-800 text-sm mb-4 flex items-center gap-1.5">
+              <Users className="h-4 w-4 text-indigo-500" /> Phân phối thứ hạng Elo cả lớp
+            </h3>
+            <div className="space-y-3">
+              <div>
+                <div className="flex justify-between text-xs font-bold text-gray-500 mb-1">
+                  <span>Siêu Cấp (Elo &gt; 1200)</span>
+                  <span>{dist.elite} HS</span>
+                </div>
+                <div className="w-full bg-gray-100 h-2.5 rounded-full overflow-hidden">
+                  <div className="bg-amber-500 h-full rounded-full" style={{ width: `${students.length > 0 ? (dist.elite / students.length) * 100 : 0}%` }} />
+                </div>
+              </div>
+              <div>
+                <div className="flex justify-between text-xs font-bold text-gray-500 mb-1">
+                  <span>Cao Cấp (Elo 1050 - 1200)</span>
+                  <span>{dist.advanced} HS</span>
+                </div>
+                <div className="w-full bg-gray-100 h-2.5 rounded-full overflow-hidden">
+                  <div className="bg-indigo-500 h-full rounded-full" style={{ width: `${students.length > 0 ? (dist.advanced / students.length) * 100 : 0}%` }} />
+                </div>
+              </div>
+              <div>
+                <div className="flex justify-between text-xs font-bold text-gray-500 mb-1">
+                  <span>Trung Cấp (Elo 950 - 1050)</span>
+                  <span>{dist.intermediate} HS</span>
+                </div>
+                <div className="w-full bg-gray-100 h-2.5 rounded-full overflow-hidden">
+                  <div className="bg-emerald-500 h-full rounded-full" style={{ width: `${students.length > 0 ? (dist.intermediate / students.length) * 100 : 0}%` }} />
+                </div>
+              </div>
+              <div>
+                <div className="flex justify-between text-xs font-bold text-gray-500 mb-1">
+                  <span>Tập Sự (Elo &lt; 950)</span>
+                  <span>{dist.beginner} HS</span>
+                </div>
+                <div className="w-full bg-gray-100 h-2.5 rounded-full overflow-hidden">
+                  <div className="bg-gray-400 h-full rounded-full" style={{ width: `${students.length > 0 ? (dist.beginner / students.length) * 100 : 0}%` }} />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Topic Mastery Chart */}
+        <div className="bg-white p-6 rounded-2xl border shadow-xs">
+          <h3 className="font-bold text-gray-800 text-sm mb-4 flex items-center gap-1.5">
+            <BookOpen className="h-4 w-4 text-purple-500" /> Tỉ lệ Thành thạo Chuyên đề trung bình
+          </h3>
+          <div className="space-y-3 max-h-[190px] overflow-y-auto pr-1 custom-scrollbar">
+            {topicMasterySummary.length === 0 ? (
+              <div className="text-center text-xs text-gray-400 italic py-8">Lớp chưa tích lũy độ thành thạo chuyên đề nào.</div>
+            ) : (
+              topicMasterySummary.map(item => {
+                const isWeak = item.avg < 70;
+                return (
+                  <div key={item.topic}>
+                    <div className="flex justify-between text-[11px] font-bold text-gray-600 mb-0.5">
+                      <span className="truncate max-w-[70%]">{item.topic}</span>
+                      <span className={isWeak ? "text-red-500" : "text-emerald-600"}>{item.avg}% Mastery</span>
+                    </div>
+                    <div className="w-full bg-gray-100 h-2 rounded-full overflow-hidden">
+                      <div className={`h-full rounded-full ${isWeak ? 'bg-red-500' : 'bg-emerald-500'}`} style={{ width: `${item.avg}%` }} />
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* 3. TABLE LEADERBOARD */}
+      <div className="bg-white rounded-2xl border shadow-sm overflow-hidden">
+        <div className="p-5 border-b flex flex-col sm:flex-row justify-between items-center gap-4 bg-gray-50/50">
+          <h3 className="font-bold text-gray-800 text-sm flex items-center gap-2">
+            <Trophy className="h-4 w-4 text-amber-500 animate-bounce" /> Bảng xếp hạng Đấu Trường của Lớp
+          </h3>
+          <div className="flex gap-2 w-full sm:w-auto">
+            <div className="relative flex-1 sm:w-64">
+              <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
+              <input 
+                type="text" 
+                placeholder="Tìm tên học sinh..."
+                value={searchTerm} 
+                onChange={e => setSearchTerm(e.target.value)} 
+                className="w-full pl-9 pr-4 py-2 border rounded-xl text-xs outline-none focus:ring-2 focus:ring-indigo-500"
+              />
+            </div>
+            <button onClick={handleExportCSV} className="px-3.5 py-2 border text-gray-600 bg-white rounded-xl text-xs font-bold hover:bg-gray-50 active:scale-95 transition-all flex items-center gap-1.5">
+              Xuất CSV
+            </button>
+          </div>
+        </div>
+
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-xs">
+            <thead>
+              <tr className="bg-gray-50 text-gray-500 font-bold uppercase border-b select-none">
+                <th className="px-5 py-4 w-12 text-center">Hạng</th>
+                <th className="px-5 py-4">Học sinh</th>
+                <th className="px-5 py-4 text-center cursor-pointer hover:bg-gray-100" onClick={() => handleSort('elo')}>
+                  Elo Xếp Hạng {sortField === 'elo' && (sortDir === 'asc' ? '▲' : '▼')}
+                </th>
+                <th className="px-5 py-4 text-center cursor-pointer hover:bg-gray-100" onClick={() => handleSort('floor')}>
+                  Tầng Tháp {sortField === 'floor' && (sortDir === 'asc' ? '▲' : '▼')}
+                </th>
+                <th className="px-5 py-4 text-center cursor-pointer hover:bg-gray-100" onClick={() => handleSort('games')}>
+                  Số Trận {sortField === 'games' && (sortDir === 'asc' ? '▲' : '▼')}
+                </th>
+                <th className="px-5 py-4 text-center cursor-pointer hover:bg-gray-100" onClick={() => handleSort('winrate')}>
+                  Tỉ lệ Thắng {sortField === 'winrate' && (sortDir === 'asc' ? '▲' : '▼')}
+                </th>
+                <th className="px-5 py-4 text-center cursor-pointer hover:bg-gray-100" onClick={() => handleSort('xp')}>
+                  Tổng XP {sortField === 'xp' && (sortDir === 'asc' ? '▲' : '▼')}
+                </th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-100">
+              {filteredList.map((item, i) => {
+                const isExpanded = expandedStudentId === item.student.id;
+                const studentMatches = getStudentMatches(item.student.id);
+
+                return (
+                  <React.Fragment key={item.student.id}>
+                    <tr 
+                      onClick={() => setExpandedStudentId(isExpanded ? null : item.student.id)} 
+                      className={`hover:bg-indigo-50/20 cursor-pointer transition-colors ${isExpanded ? 'bg-indigo-50/10' : ''}`}
+                    >
+                      <td className="px-5 py-4 text-center font-bold text-gray-500">
+                        {i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `#${i + 1}`}
+                      </td>
+                      <td className="px-5 py-4">
+                        <div className="flex items-center gap-2.5">
+                          <img src={item.student.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(item.student.name)}`} alt="" className="w-7 h-7 rounded-full border shadow-xs" />
+                          <div className="font-bold text-gray-800 text-[13px]">{item.student.name}</div>
+                        </div>
+                      </td>
+                      <td className="px-5 py-4 text-center font-black text-yellow-600 text-sm">{item.elo} ELO</td>
+                      <td className="px-5 py-4 text-center font-bold text-purple-600">Tầng {item.floor}</td>
+                      <td className="px-5 py-4 text-center font-semibold text-gray-600">{item.games} trận</td>
+                      <td className="px-5 py-4 text-center">
+                        <span className={`px-2 py-0.5 rounded-md font-bold text-[10px] ${
+                          item.winrate >= 60 ? 'bg-emerald-100 text-emerald-800' :
+                          item.winrate >= 40 ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800'
+                        }`}>
+                          {item.winrate}%
+                        </span>
+                      </td>
+                      <td className="px-5 py-4 text-center font-bold text-emerald-600">+{item.xp} XP</td>
+                    </tr>
+
+                    {/* Expandable Match History Row */}
+                    {isExpanded && (
+                      <tr>
+                        <td colSpan={7} className="px-8 py-4 bg-gray-50/50 border-y">
+                          <div className="space-y-3 animate-in slide-in-from-top-1 duration-200">
+                            <h4 className="font-black text-gray-700 text-[11px] uppercase tracking-wider">Lịch sử thi đấu gần nhất</h4>
+                            {studentMatches.length === 0 ? (
+                              <p className="text-xs text-gray-400 italic">Chưa phát sinh trận đấu nào gần đây trong Đấu Trường.</p>
+                            ) : (
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                {studentMatches.map((m: any) => {
+                                  const isP1 = m.player1_id === item.student.id;
+                                  const isWinner = m.winner_id === item.student.id;
+                                  const oppId = isP1 ? m.player2_id : m.player1_id;
+                                  const oppName = oppId ? (students.find(s => s.id === oppId)?.name || 'Học sinh khác') : 'Robot AI';
+                                  const myScore = isP1 ? m.player1_score : m.player2_score;
+                                  const oppScore = isP1 ? m.player2_score : m.player1_score;
+
+                                  return (
+                                    <div key={m.id} className="p-3 bg-white border rounded-xl flex items-center justify-between shadow-xs">
+                                      <div>
+                                        <div className="text-[10px] text-gray-400 font-medium">Đối đầu với:</div>
+                                        <div className="text-xs font-bold text-gray-700">{oppName}</div>
+                                      </div>
+                                      <div className="text-right">
+                                        <span className={`inline-block px-1.5 py-0.5 rounded text-[9px] font-black uppercase ${
+                                          isWinner ? 'bg-emerald-500 text-white' : 'bg-red-500 text-white'
+                                        }`}>
+                                          {isWinner ? 'Thắng' : 'Thua'}
+                                        </span>
+                                        <div className="text-xs font-extrabold text-gray-900 mt-0.5">{myScore} - {oppScore} HP</div>
+                                      </div>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </React.Fragment>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 export const TeacherAnalytics: React.FC = () => {
   const { user: currentUser, classes, users, attempts, exams, questionBank } = useStore();
@@ -254,9 +648,59 @@ export const TeacherAnalytics: React.FC = () => {
   const [isLoadingAI, setIsLoadingAI] = useState(false);
   const [isSending, setIsSending] = useState(false);
   const [isStudentDropdownOpen, setIsStudentDropdownOpen] = useState(false);
+  
+  // New Arena management states
+  const [activeTab, setActiveTab] = useState<'exams' | 'arena'>('exams');
+  const [arenaProfiles, setArenaProfiles] = useState<any[]>([]);
+  const [arenaMatches, setArenaMatches] = useState<any[]>([]);
+  const [loadingArena, setLoadingArena] = useState(false);
 
   const dropdownRef = useRef<HTMLDivElement>(null);
   const { addNotification } = useStore();
+
+  // Fetch Class Arena Analytics data
+  useEffect(() => {
+    if (!selectedClassId) {
+      setArenaProfiles([]);
+      setArenaMatches([]);
+      return;
+    }
+    
+    const fetchArenaData = async () => {
+      setLoadingArena(true);
+      try {
+        const cls = classes.find(c => c.id === selectedClassId);
+        if (!cls || cls.studentIds.length === 0) {
+          setArenaProfiles([]);
+          setArenaMatches([]);
+          return;
+        }
+
+        // Fetch arena profiles for all students in the class
+        const { data: profilesData } = await supabase
+          .from('arena_profiles')
+          .select('*')
+          .in('id', cls.studentIds);
+
+        // Fetch matches involving class students
+        const { data: matchesData } = await supabase
+          .from('arena_matches')
+          .select('*')
+          .or(`player1_id.in.(${cls.studentIds.join(',')}),player2_id.in.(${cls.studentIds.join(',')})`)
+          .order('created_at', { ascending: false })
+          .limit(150);
+
+        setArenaProfiles(profilesData || []);
+        setArenaMatches(matchesData || []);
+      } catch (err) {
+        console.error("Error loading Arena Analytics:", err);
+      } finally {
+        setLoadingArena(false);
+      }
+    };
+
+    fetchArenaData();
+  }, [selectedClassId, classes]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -358,12 +802,33 @@ export const TeacherAnalytics: React.FC = () => {
   }, [selectedStudentIds, teacherComment, addNotification]);
 
   const renderMainContent = () => {
+    if (!selectedClassId) {
+      return (
+        <div className="bg-gray-50 rounded-2xl border border-dashed p-16 text-center no-print">
+          <School className="h-16 w-16 mx-auto text-gray-300 mb-4" />
+          <h3 className="text-xl font-bold text-gray-600">Phân tích học tập lớp học</h3>
+          <p className="text-gray-400">Vui lòng chọn lớp học ở phía trên để bắt đầu xem báo cáo phân tích.</p>
+        </div>
+      );
+    }
+
+    if (activeTab === 'arena') {
+      return (
+        <ArenaClassAnalytics 
+          students={studentsInClass}
+          profiles={arenaProfiles}
+          matches={arenaMatches}
+          loading={loadingArena}
+        />
+      );
+    }
+
     if (selectedStudentIds.length === 0) {
       return (
         <div className="bg-gray-50 rounded-2xl border border-dashed p-16 text-center no-print">
           <BarChart3 className="h-16 w-16 mx-auto text-gray-300 mb-4" />
           <h3 className="text-xl font-bold text-gray-600">Phân tích học tập chi tiết</h3>
-          <p className="text-gray-400">Vui lòng chọn lớp và ít nhất một học sinh để bắt đầu xem báo cáo.</p>
+          <p className="text-gray-400">Vui lòng chọn ít nhất một học sinh để xem báo cáo hoặc chuyển sang tab Đấu Trường.</p>
         </div>
       );
     }
@@ -595,110 +1060,139 @@ export const TeacherAnalytics: React.FC = () => {
             </select>
           </div>
 
-          <div className="flex-1 space-y-2">
-            <label className="text-sm font-bold text-gray-700 flex items-center gap-2">
-              <Users className="h-4 w-4" /> Chọn Học sinh
-            </label>
-            <div className="relative" ref={dropdownRef}>
-              <button
-                disabled={!selectedClassId}
-                onClick={() => setIsStudentDropdownOpen(!isStudentDropdownOpen)}
-                className="w-full flex items-center justify-between p-2.5 border border-gray-300 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500 bg-white disabled:bg-gray-50 text-sm h-[46px]"
-              >
-                <div className="flex flex-wrap gap-1 max-w-[90%] overflow-hidden">
-                  {selectedStudentIds.length === 0 ? (
-                    <span className="text-gray-400">-- Chọn học sinh (dạng lưới) --</span>
-                  ) : (
-                    <span className="font-bold text-indigo-600 truncate">Đã chọn {selectedStudentIds.length} học sinh</span>
+          {activeTab === 'exams' && (
+            <>
+              <div className="flex-1 space-y-2">
+                <label className="text-sm font-bold text-gray-700 flex items-center gap-2">
+                  <Users className="h-4 w-4" /> Chọn Học sinh
+                </label>
+                <div className="relative" ref={dropdownRef}>
+                  <button
+                    disabled={!selectedClassId}
+                    onClick={() => setIsStudentDropdownOpen(!isStudentDropdownOpen)}
+                    className="w-full flex items-center justify-between p-2.5 border border-gray-300 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500 bg-white disabled:bg-gray-50 text-sm h-[46px]"
+                  >
+                    <div className="flex flex-wrap gap-1 max-w-[90%] overflow-hidden">
+                      {selectedStudentIds.length === 0 ? (
+                        <span className="text-gray-400">-- Chọn học sinh (dạng lưới) --</span>
+                      ) : (
+                        <span className="font-bold text-indigo-600 truncate">Đã chọn {selectedStudentIds.length} học sinh</span>
+                      )}
+                    </div>
+                    <ChevronDown className={`h-4 w-4 text-gray-400 transition-transform ${isStudentDropdownOpen ? 'rotate-180' : ''}`} />
+                  </button>
+                  
+                  {isStudentDropdownOpen && (
+                    <div className="absolute z-50 mt-2 w-[300px] md:w-[600px] right-0 md:left-0 bg-white border rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+                      <div className="flex justify-between items-center p-4 bg-gray-50 border-b">
+                        <h4 className="font-bold text-gray-700 text-sm">Danh sách học sinh</h4>
+                        <div className="flex gap-4">
+                          <button 
+                            onClick={() => setSelectedStudentIds(studentsInClass.map(s => s.id))}
+                            className="text-xs text-indigo-600 font-bold hover:underline"
+                          >
+                            Chọn tất cả
+                          </button>
+                          <button 
+                            onClick={() => setSelectedStudentIds([])}
+                            className="text-xs text-red-600 font-bold hover:underline"
+                          >
+                            Bỏ chọn hết
+                          </button>
+                        </div>
+                      </div>
+                      <div className="max-h-[400px] overflow-y-auto p-4 custom-scrollbar">
+                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2">
+                          {studentsInClass.map(s => (
+                            <label 
+                              key={s.id} 
+                              className={`flex items-center gap-2 p-2 rounded-xl cursor-pointer border transition-all duration-200 ${
+                                selectedStudentIds.includes(s.id) 
+                                  ? 'bg-indigo-50 border-indigo-200 shadow-sm ring-1 ring-indigo-200' 
+                                  : 'bg-white border-gray-100 hover:border-indigo-100 hover:bg-gray-50'
+                              }`}
+                            >
+                              <input
+                                type="checkbox"
+                                checked={selectedStudentIds.includes(s.id)}
+                                onChange={(e) => {
+                                  if (e.target.checked) {
+                                    setSelectedStudentIds([...selectedStudentIds, s.id]);
+                                  } else {
+                                    setSelectedStudentIds(selectedStudentIds.filter(id => id !== s.id));
+                                  }
+                                }}
+                                className="h-3.5 w-3.5 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                              />
+                              <span className="text-xs font-semibold text-gray-700 truncate" title={s.name}>{s.name}</span>
+                            </label>
+                          ))}
+                        </div>
+                      </div>
+                      {selectedStudentIds.length > 0 && (
+                        <div className="p-3 bg-indigo-600 text-white text-center text-xs font-bold">
+                           ĐÃ CHỌN {selectedStudentIds.length} HỌC SINH
+                        </div>
+                      )}
+                    </div>
                   )}
                 </div>
-                <ChevronDown className={`h-4 w-4 text-gray-400 transition-transform ${isStudentDropdownOpen ? 'rotate-180' : ''}`} />
-              </button>
-              
-              {isStudentDropdownOpen && (
-                <div className="absolute z-50 mt-2 w-[300px] md:w-[600px] right-0 md:left-0 bg-white border rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-                  <div className="flex justify-between items-center p-4 bg-gray-50 border-b">
-                    <h4 className="font-bold text-gray-700 text-sm">Danh sách học sinh</h4>
-                    <div className="flex gap-4">
-                      <button 
-                        onClick={() => setSelectedStudentIds(studentsInClass.map(s => s.id))}
-                        className="text-xs text-indigo-600 font-bold hover:underline"
-                      >
-                        Chọn tất cả
-                      </button>
-                      <button 
-                        onClick={() => setSelectedStudentIds([])}
-                        className="text-xs text-red-600 font-bold hover:underline"
-                      >
-                        Bỏ chọn hết
-                      </button>
-                    </div>
-                  </div>
-                  <div className="max-h-[400px] overflow-y-auto p-4 custom-scrollbar">
-                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2">
-                      {studentsInClass.map(s => (
-                        <label 
-                          key={s.id} 
-                          className={`flex items-center gap-2 p-2 rounded-xl cursor-pointer border transition-all duration-200 ${
-                            selectedStudentIds.includes(s.id) 
-                              ? 'bg-indigo-50 border-indigo-200 shadow-sm ring-1 ring-indigo-200' 
-                              : 'bg-white border-gray-100 hover:border-indigo-100 hover:bg-gray-50'
-                          }`}
-                        >
-                          <input
-                            type="checkbox"
-                            checked={selectedStudentIds.includes(s.id)}
-                            onChange={(e) => {
-                              if (e.target.checked) {
-                                setSelectedStudentIds([...selectedStudentIds, s.id]);
-                              } else {
-                                setSelectedStudentIds(selectedStudentIds.filter(id => id !== s.id));
-                              }
-                            }}
-                            className="h-3.5 w-3.5 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
-                          />
-                          <span className="text-xs font-semibold text-gray-700 truncate" title={s.name}>{s.name}</span>
-                        </label>
-                      ))}
-                    </div>
-                  </div>
-                  {selectedStudentIds.length > 0 && (
-                    <div className="p-3 bg-indigo-600 text-white text-center text-xs font-bold">
-                       ĐÃ CHỌN {selectedStudentIds.length} HỌC SINH
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-          </div>
+              </div>
 
-          <div className="flex-shrink-0 space-y-2 min-w-[150px]">
-            <label className="text-sm font-bold text-gray-700 flex items-center gap-2">
-              <Clock className="h-4 w-4" /> Thời gian
-            </label>
-            <div className="flex gap-2">
-              <select
-                value={selectedPeriod.days}
-                onChange={e => {
-                  const p = TIME_PERIODS.find(t => t.days === Number(e.target.value));
-                  if (p) setSelectedPeriod(p);
-                }}
-                className="w-full p-2.5 border border-gray-300 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500 bg-white h-[46px]"
-              >
-                {TIME_PERIODS.map(p => <option key={p.days} value={p.days}>{p.label}</option>)}
-              </select>
-              <button 
-                onClick={() => window.print()}
-                disabled={selectedStudentIds.length === 0}
-                className="bg-indigo-600 text-white p-2.5 rounded-xl hover:bg-indigo-700 disabled:opacity-50 disabled:bg-gray-400 no-print transition-all"
-                title="In báo cáo (PDF)"
-              >
-                <Printer className="h-5 w-5" />
-              </button>
-            </div>
-          </div>
+              <div className="flex-shrink-0 space-y-2 min-w-[150px]">
+                <label className="text-sm font-bold text-gray-700 flex items-center gap-2">
+                  <Clock className="h-4 w-4" /> Thời gian
+                </label>
+                <div className="flex gap-2">
+                  <select
+                    value={selectedPeriod.days}
+                    onChange={e => {
+                      const p = TIME_PERIODS.find(t => t.days === Number(e.target.value));
+                      if (p) setSelectedPeriod(p);
+                    }}
+                    className="w-full p-2.5 border border-gray-300 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500 bg-white h-[46px]"
+                  >
+                    {TIME_PERIODS.map(p => <option key={p.days} value={p.days}>{p.label}</option>)}
+                  </select>
+                  <button 
+                    onClick={() => window.print()}
+                    disabled={selectedStudentIds.length === 0}
+                    className="bg-indigo-600 text-white p-2.5 rounded-xl hover:bg-indigo-700 disabled:opacity-50 disabled:bg-gray-400 no-print transition-all"
+                    title="In báo cáo (PDF)"
+                  >
+                    <Printer className="h-5 w-5" />
+                  </button>
+                </div>
+              </div>
+            </>
+          )}
         </div>
       </div>
+
+      {selectedClassId && (
+        <div className="flex border-b border-gray-200 no-print">
+          <button
+            onClick={() => setActiveTab('exams')}
+            className={`px-6 py-3 font-bold text-sm border-b-2 transition-all flex items-center gap-2 ${
+              activeTab === 'exams'
+                ? 'border-indigo-600 text-indigo-600'
+                : 'border-transparent text-gray-400 hover:text-gray-600'
+            }`}
+          >
+            <BarChart3 className="h-4.5 w-4.5" /> Phân tích Khảo thí
+          </button>
+          <button
+            onClick={() => setActiveTab('arena')}
+            className={`px-6 py-3 font-bold text-sm border-b-2 transition-all flex items-center gap-2 ${
+              activeTab === 'arena'
+                ? 'border-indigo-600 text-indigo-600'
+                : 'border-transparent text-gray-400 hover:text-gray-600'
+            }`}
+          >
+            <Trophy className="h-4.5 w-4.5" /> Đấu Trường Arena
+          </button>
+        </div>
+      )}
 
       {renderMainContent()}
     </div>
