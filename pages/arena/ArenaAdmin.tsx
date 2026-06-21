@@ -25,6 +25,18 @@ const DIFFICULTIES = [
     { value: 4, label: 'Mức nâng cao' },
 ];
 
+export const normalizeSubject = (sub: string): string => {
+    if (!sub) return '';
+    const s = sub.trim().toLowerCase();
+    if (s === 'vietnamese' || s === 'tiếng việt' || s === 'tieng viet') return 'vietnamese';
+    if (s === 'math' || s === 'toán' || s === 'toan') return 'math';
+    if (s === 'science' || s === 'khoa học' || s === 'khoa hoc') return 'science';
+    if (s === 'technology' || s === 'công nghệ' || s === 'cong nghe' || s === 'tin học' || s === 'tin hoc') return 'technology';
+    if (s === 'english' || s === 'tiếng anh' || s === 'tieng anh') return 'english';
+    if (s === 'history_geography' || s === 'lịch sử và địa lí' || s === 'lich su va dia li' || s === 'lịch sử & địa lí' || s === 'lịch sử' || s === 'địa lí') return 'history_geography';
+    return s;
+};
+
 export const ArenaAdmin: React.FC = () => {
     const { arenaQuestions, arenaQuestionsHasMore, fetchArenaQuestions, loadMoreArenaQuestions, addArenaQuestion, updateArenaQuestion, deleteArenaQuestion, bulkDeleteArenaQuestions, bulkAddArenaQuestions, questionBank, exams, arenaTotalCount, arenaDifficultyCounts, arenaFilteredCount } = useStore();
     const navigate = useNavigate();
@@ -183,14 +195,14 @@ export const ArenaAdmin: React.FC = () => {
         
         // 1. Add from custom topics
         customTopics.forEach(t => {
-            if (filterSubject && t.subject !== filterSubject) return;
+            if (filterSubject && normalizeSubject(t.subject) !== normalizeSubject(filterSubject)) return;
             topics.add(t.topic.trim());
         });
 
         // 2. Add from all questions in DB (unpaginated)
         dbTopics.forEach(q => {
             if (filterGrade && q.grade !== filterGrade) return;
-            if (filterSubject && q.subject !== filterSubject) return;
+            if (filterSubject && normalizeSubject(q.subject) !== normalizeSubject(filterSubject)) return;
             topics.add(q.topic.trim());
         });
 
@@ -211,8 +223,8 @@ export const ArenaAdmin: React.FC = () => {
     const handleSubjectChange = (subject: string) => {
         setFilterSubject(subject);
         if (filterTopic && subject) {
-            const hasTopicInSubject = dbTopics.some(q => q.subject === subject && q.topic === filterTopic) ||
-                                       customTopics.some(t => t.subject === subject && t.topic === filterTopic);
+            const hasTopicInSubject = dbTopics.some(q => normalizeSubject(q.subject) === normalizeSubject(subject) && q.topic === filterTopic) ||
+                                       customTopics.some(t => normalizeSubject(t.subject) === normalizeSubject(subject) && t.topic === filterTopic);
             if (!hasTopicInSubject) {
                 setFilterTopic('');
             }
@@ -221,7 +233,7 @@ export const ArenaAdmin: React.FC = () => {
 
     // Extended Filter and Search logic
     const filteredQuestions = arenaQuestions.filter(q => {
-        const matchesSubject = !filterSubject || q.subject === filterSubject;
+        const matchesSubject = !filterSubject || normalizeSubject(q.subject) === normalizeSubject(filterSubject);
         const matchesDifficulty = !filterDifficulty || q.difficulty === filterDifficulty;
         const matchesGrade = !filterGrade || q.grade === filterGrade;
         const matchesTopic = !filterTopic || q.topic === filterTopic;
@@ -1195,7 +1207,7 @@ export const ArenaAdmin: React.FC = () => {
                 correct_indices: correctIndices,
                 correct_answer_string: correctShortAnswer,
                 difficulty,
-                subject: (subject?.trim() || 'math').toLowerCase(),
+                subject: normalizeSubject(subject?.trim() || 'math'),
                 topic: topic?.trim() || 'general',
                 time_limit_seconds: isNaN(timeLimit) ? 30 : timeLimit,
                 xp_reward: isNaN(xpReward) ? 10 : xpReward,
@@ -1397,7 +1409,7 @@ export const ArenaAdmin: React.FC = () => {
                                 <div className="flex-1">
                                     <div className="flex gap-1.5 mb-1.5 flex-wrap">
                                         <span className="bg-indigo-50 text-indigo-700 px-2.5 py-0.5 rounded-lg text-xs font-bold">
-                                            {SUBJECTS.find(s => s.value === q.subject)?.label || q.subject}
+                                            {SUBJECTS.find(s => s.value === normalizeSubject(q.subject))?.label || q.subject}
                                         </span>
                                         <span className="bg-gray-100 text-gray-600 px-2.5 py-0.5 rounded-lg text-xs font-bold">
                                             {DIFFICULTIES.find(d => d.value === q.difficulty)?.label || 'N/A'}
@@ -2284,7 +2296,7 @@ export const ArenaAdmin: React.FC = () => {
                                             <div key={t.id} className="p-3 flex items-center justify-between hover:bg-gray-50 transition-colors">
                                                 <div>
                                                     <span className="text-[10px] bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded-full font-bold uppercase mr-2">
-                                                        {SUBJECTS.find(s => s.value === t.subject)?.label || t.subject}
+                                                        {SUBJECTS.find(s => s.value === normalizeSubject(t.subject))?.label || t.subject}
                                                     </span>
                                                     <span className="text-sm font-semibold text-gray-800">{t.topic}</span>
                                                 </div>
