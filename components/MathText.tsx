@@ -34,6 +34,14 @@ const MathText: React.FC<MathTextProps> = ({ children, className, inline = false
         rehypePlugins={[rehypeKatex]}
         components={{
           p: ({ children }) => inline ? <span>{children}</span> : <p>{children}</p>,
+          img: ({ src, alt }) => (
+            <img 
+              src={src} 
+              alt={alt} 
+              className="max-w-full md:max-w-lg h-auto rounded-2xl shadow-md my-4 border border-gray-100 block transition-transform duration-300 hover:scale-[1.01]"
+              loading="lazy"
+            />
+          )
         }}
       >
         {processedText}
