@@ -714,10 +714,19 @@ export const ArenaAdmin: React.FC = () => {
                 continue;
             }
 
-            if (line.toLowerCase().startsWith('loại:')) {
-                const val = line.substring(5).trim().toUpperCase();
-                if (['MCQ', 'MCQ_MULTIPLE', 'SHORT_ANSWER'].includes(val)) {
-                    currentQuestion.type = val;
+            if (line.toLowerCase().startsWith('loại:') || line.toLowerCase().startsWith('dạng câu hỏi:') || line.toLowerCase().startsWith('dạng:')) {
+                let valStr = '';
+                if (line.toLowerCase().startsWith('loại:')) valStr = line.substring(5).trim();
+                else if (line.toLowerCase().startsWith('dạng câu hỏi:')) valStr = line.substring(13).trim();
+                else valStr = line.substring(5).trim();
+
+                const normalizedVal = valStr.toUpperCase();
+                if (normalizedVal === 'SHORT_ANSWER' || normalizedVal.includes('TỰ LUẬN') || normalizedVal.includes('ĐIỀN KHUYẾT')) {
+                    currentQuestion.type = 'SHORT_ANSWER';
+                } else if (normalizedVal === 'MCQ_MULTIPLE' || normalizedVal.includes('NHIỀU ĐÁP ÁN') || normalizedVal.includes('CHỌN NHIỀU')) {
+                    currentQuestion.type = 'MCQ_MULTIPLE';
+                } else if (normalizedVal === 'MCQ' || normalizedVal.includes('TRẮC NGHIỆM') || normalizedVal.includes('1 ĐÁP ÁN')) {
+                    currentQuestion.type = 'MCQ';
                 }
                 continue;
             }
