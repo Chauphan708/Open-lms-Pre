@@ -1177,7 +1177,7 @@ export const TowerMode: React.FC = () => {
             {victory ? '🏆' : '💀'}
           </span>
           <h2 className={`text-2xl font-black tracking-wide ${victory ? 'text-yellow-400' : 'text-rose-500'}`}>
-            {victory ? 'CHINH PHỤC THÀNH CÔNG!' : 'HỎNG MẠNG TẦNG THÁP!'}
+            {victory ? 'CHINH PHỤC THÀNH CÔNG!' : 'GAMEOVER (KẾT THÚC)'}
           </h2>
           <p className="text-gray-400 text-sm mt-1">Chuyên đề: <strong className="text-white">{selectedTopic}</strong></p>
 
