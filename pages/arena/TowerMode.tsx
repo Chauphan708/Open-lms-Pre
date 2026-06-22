@@ -110,6 +110,7 @@ export const TowerMode: React.FC = () => {
   const [usedIds, setUsedIds] = useState<Set<string>>(new Set());
   const [currentQ, setCurrentQ] = useState<ArenaQuestion | null>(null);
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
+  const [selectedOptions, setSelectedOptions] = useState<number[]>([]);
   const [showResult, setShowResult] = useState(false);
   
   const { hint, explanation } = React.useMemo(() => {
@@ -469,7 +470,9 @@ export const TowerMode: React.FC = () => {
             subject: normalizeSubject(q.subject),
             topic: q.topic,
             guide: q.guide,
-            explanation: q.explanation
+            explanation: q.explanation,
+            type: q.type || 'MCQ',
+            time_limit_seconds: q.time_limit_seconds || 30
           }));
         pool = mapped;
       }
@@ -546,6 +549,7 @@ export const TowerMode: React.FC = () => {
     used: Set<string>
   ) => {
     setSelectedOption(null);
+    setSelectedOptions([]);
     setShortAnswerText('');
     setShowResult(false);
     setShowAiExplanation(false);
@@ -617,7 +621,7 @@ export const TowerMode: React.FC = () => {
   };
 
   // Submit Answer
-  const handleAnswer = async (payload: number | string) => {
+  const handleAnswer = async (payload: number | string | number[]) => {
     if (showResult || !currentQ || !arenaProfile) return;
     
     let correct = false;
@@ -626,6 +630,10 @@ export const TowerMode: React.FC = () => {
       const cleanUser = ansStr.trim().toLowerCase().replace(/\s+/g, '');
       const cleanCorrect = (currentQ.correct_answer_string || '').trim().toLowerCase().replace(/\s+/g, '');
       correct = cleanUser === cleanCorrect;
+    } else if (currentQ.type === 'MCQ_MULTIPLE') {
+      const userSelected = Array.isArray(payload) ? payload : [];
+      const correctIndices = currentQ.correct_indices || [];
+      correct = userSelected.length === correctIndices.length && userSelected.every(idx => correctIndices.includes(idx));
     } else {
       const idx = typeof payload === 'number' ? payload : -1;
       setSelectedOption(idx);
@@ -816,12 +824,23 @@ export const TowerMode: React.FC = () => {
 
   // Fetch real-time AI hint for current wrong answer
   const handleAskAi = async () => {
-    if (!currentQ || selectedOption === null) return;
+    if (!currentQ) return;
     setAiLoading(true);
     setShowAiExplanation(true);
     try {
-      const wrongText = currentQ.answers[selectedOption] || "Không trả lời";
-      const correctText = currentQ.answers[currentQ.correct_index || 0];
+      let wrongText = "";
+      let correctText = "";
+      if (currentQ.type === 'SHORT_ANSWER') {
+        wrongText = shortAnswerText || "(Không trả lời)";
+        correctText = currentQ.correct_answer_string || "";
+      } else if (currentQ.type === 'MCQ_MULTIPLE') {
+        wrongText = selectedOptions.map(idx => currentQ.answers[idx]).join(", ") || "(Không chọn)";
+        const correctIndices = currentQ.correct_indices || [];
+        correctText = correctIndices.map(idx => currentQ.answers[idx]).join(", ");
+      } else {
+        wrongText = selectedOption !== null ? currentQ.answers[selectedOption] : "(Không chọn)";
+        correctText = currentQ.correct_index !== undefined ? currentQ.answers[currentQ.correct_index] : "";
+      }
       const explanation = await explainQuestionError(currentQ.content, wrongText, correctText);
       setAiExplanation(explanation);
     } catch (e) {
@@ -834,14 +853,24 @@ export const TowerMode: React.FC = () => {
   // Trigger Class Skill (usable once per run)
   const handleActivateSkill = () => {
     if (skillUsed || !arenaProfile || !currentQ || showResult) return;
-    setSkillUsed(true);
 
     const charClass = arenaProfile.avatar_class;
 
+    if (charClass === 'scholar' && currentQ.type === 'SHORT_ANSWER') {
+      alert("Kỹ năng 50/50 không dùng được cho câu hỏi tự luận!");
+      return;
+    }
+
+    setSkillUsed(true);
+
     if (charClass === 'scholar') {
-      // 50/50: remove 2 wrong answers
-      const correctIdx = currentQ.correct_index || 0;
-      const wrongIndices = [0, 1, 2, 3].filter(i => i !== correctIdx);
+      const correctIndices = currentQ.type === 'MCQ_MULTIPLE'
+        ? (currentQ.correct_indices || [])
+        : [currentQ.correct_index !== undefined ? currentQ.correct_index : 0];
+
+      const wrongIndices = Array.from({ length: currentQ.answers.length }, (_, i) => i)
+        .filter(i => !correctIndices.includes(i));
+
       const toEliminate = wrongIndices.sort(() => Math.random() - 0.5).slice(0, 2);
       setEliminatedOptions(toEliminate);
     } 
@@ -1427,7 +1456,7 @@ export const TowerMode: React.FC = () => {
           <div className="bg-[#080d16] border border-white/5 rounded-2xl p-6 mb-5">
             <div className="flex items-center justify-between mb-4">
               <span className="bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 px-3 py-0.5 rounded-full text-[10px] font-black uppercase">
-                {selectedSubject === 'math' ? '📐 Toán' : selectedSubject === 'science' ? '🔬 Khoa học' : '💻 Công nghệ'}
+                {selectedSubject === 'math' ? '📐 Toán' : selectedSubject === 'science' ? '🔬 Khoa học' : selectedSubject === 'technology' ? '💻 Công nghệ' : selectedSubject === 'vietnamese' ? '📝 Tiếng Việt' : selectedSubject === 'english' ? '🇬🇧 Tiếng Anh' : '🌍 Lịch sử & Địa lí'}
               </span>
               <span className="text-[10px] font-black text-gray-500">
                 Difficulty: {currentQ.difficulty}/3
@@ -1501,32 +1530,69 @@ export const TowerMode: React.FC = () => {
             <div className="space-y-3">
               {currentQ.answers.map((answer, idx) => {
                 const isEliminated = eliminatedOptions.includes(idx);
+                const isMultiple = currentQ.type === 'MCQ_MULTIPLE';
+                const isSelected = isMultiple ? selectedOptions.includes(idx) : idx === selectedOption;
+                const correctIndices = isMultiple ? (currentQ.correct_indices || []) : [currentQ.correct_index];
+                const isCorrectOption = correctIndices.includes(idx);
+
                 let btnStyle = 'border-white/5 bg-white/5 text-gray-300 hover:border-indigo-500/30 hover:bg-indigo-950/10';
-                
+
                 if (showResult) {
-                  if (idx === currentQ.correct_index) {
+                  if (isCorrectOption) {
                     btnStyle = 'border-emerald-500/50 bg-emerald-950/30 text-emerald-300';
-                  } else if (idx === selectedOption && !isCorrect) {
+                  } else if (isSelected && !isCorrectOption) {
                     btnStyle = 'border-rose-500/50 bg-rose-950/30 text-rose-300';
                   } else {
                     btnStyle = 'border-white/5 bg-white/5 text-gray-600 opacity-40';
                   }
+                } else if (isSelected) {
+                  btnStyle = 'border-indigo-500 bg-indigo-950/30 text-white font-bold';
                 }
+
+                const handleOptClick = () => {
+                  if (isMultiple) {
+                    setSelectedOptions(prev => {
+                      if (prev.includes(idx)) {
+                        return prev.filter(i => i !== idx);
+                      } else {
+                        return [...prev, idx];
+                      }
+                    });
+                  } else {
+                    handleAnswer(idx);
+                  }
+                };
 
                 return (
                   <button
                     key={idx}
-                    onClick={() => handleAnswer(idx)}
+                    onClick={handleOptClick}
                     disabled={showResult || isEliminated}
                     className={`w-full p-4 rounded-xl border text-left font-semibold transition-all flex items-center gap-3 ${btnStyle} ${isEliminated ? 'opacity-20 cursor-not-allowed line-through' : ''}`}
                   >
-                    <span className={`w-8 h-8 rounded-lg flex items-center justify-center text-sm font-black flex-shrink-0 ${showResult && idx === currentQ.correct_index ? 'bg-emerald-500 text-white shadow-md' : showResult && idx === selectedOption && !isCorrect ? 'bg-rose-500 text-white shadow-md' : 'bg-white/10 text-gray-400'}`}>
-                      {showResult && idx === currentQ.correct_index ? <CheckCircle className="h-4.5 w-4.5" /> : showResult && idx === selectedOption && !isCorrect ? <XCircle className="h-4.5 w-4.5" /> : String.fromCharCode(65 + idx)}
+                    <span className={`w-8 h-8 rounded-lg flex items-center justify-center text-sm font-black flex-shrink-0 ${showResult && isCorrectOption ? 'bg-emerald-500 text-white shadow-md' : showResult && isSelected && !isCorrectOption ? 'bg-rose-500 text-white shadow-md' : isSelected ? 'bg-indigo-500 text-white shadow-md' : 'bg-white/10 text-gray-400'}`}>
+                      {showResult && isCorrectOption ? (
+                        <CheckCircle className="h-4.5 w-4.5" />
+                      ) : showResult && isSelected && !isCorrectOption ? (
+                        <XCircle className="h-4.5 w-4.5" />
+                      ) : (
+                        String.fromCharCode(65 + idx)
+                      )}
                     </span>
                     <MathText>{answer}</MathText>
                   </button>
                 );
               })}
+
+              {currentQ.type === 'MCQ_MULTIPLE' && !showResult && (
+                <button
+                  onClick={() => handleAnswer(selectedOptions)}
+                  disabled={selectedOptions.length === 0}
+                  className="w-full mt-4 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-bold rounded-xl transition-all shadow-md active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Nộp câu trả lời
+                </button>
+              )}
             </div>
           )}
 
@@ -1583,10 +1649,18 @@ export const TowerMode: React.FC = () => {
                   <p className="mt-1.5 text-gray-300 leading-relaxed whitespace-pre-wrap"><MathText>{explanation}</MathText></p>
                 </div>
               ) : (
-                !isCorrect && currentQ.correct_index !== undefined && (
+                !isCorrect && (
                   <div className="bg-white/5 border border-white/5 rounded-xl p-4 text-xs text-gray-400">
                     <p className="font-black text-gray-300">Lời giải tham chiếu:</p>
-                    <p className="mt-1 leading-relaxed"><MathText>{currentQ.answers[currentQ.correct_index]}</MathText></p>
+                    <div className="mt-1 leading-relaxed">
+                      {currentQ.type === 'SHORT_ANSWER' ? (
+                        <span>Đáp án đúng là: <strong className="text-emerald-400">{currentQ.correct_answer_string}</strong></span>
+                      ) : currentQ.type === 'MCQ_MULTIPLE' ? (
+                        <span>Đáp án đúng là: <strong className="text-emerald-400">{(currentQ.correct_indices || []).map(idx => String.fromCharCode(65 + idx)).join(', ')}</strong></span>
+                      ) : currentQ.correct_index !== undefined ? (
+                        <MathText>{currentQ.answers[currentQ.correct_index]}</MathText>
+                      ) : null}
+                    </div>
                   </div>
                 )
               )}
