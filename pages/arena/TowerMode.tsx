@@ -28,6 +28,18 @@ export const getLeagueInfo = (elo: number) => {
   return { name: 'Kim Cương (Diamond)', badge: '👑', color: '#a855f7', border: 'border-purple-500/30', bg: 'bg-purple-950/20 text-purple-300' };
 };
 
+export const normalizeSubject = (sub: string): string => {
+  if (!sub) return '';
+  const s = sub.trim().toLowerCase();
+  if (s === 'vietnamese' || s === 'tiếng việt' || s === 'tieng viet') return 'vietnamese';
+  if (s === 'math' || s === 'toán' || s === 'toan') return 'math';
+  if (s === 'science' || s === 'khoa học' || s === 'khoa hoc') return 'science';
+  if (s === 'technology' || s === 'công nghệ' || s === 'cong nghe' || s === 'tin học' || s === 'tin hoc') return 'technology';
+  if (s === 'english' || s === 'tiếng anh' || s === 'tieng anh') return 'english';
+  if (s === 'history_geography' || s === 'lịch sử và địa lí' || s === 'lich su va dia li' || s === 'lịch sử & địa lí' || s === 'lịch sử' || s === 'địa lí') return 'history_geography';
+  return s;
+};
+
 // Preset list of standard subjects and fallback topics if database is empty
 const DEFAULT_TOPICS_BY_SUBJECT: Record<string, { topic: string; label: string }[]> = {
   math: [
@@ -193,7 +205,7 @@ export const TowerMode: React.FC = () => {
               .filter(q => q.topic && q.topic.trim() && q.topic !== 'general')
               .map(q => ({
                 topic: q.topic.trim(),
-                subject: q.subject || 'math',
+                subject: normalizeSubject(q.subject) || 'math',
                 grade: q.grade || '4'
               }));
             const unique = Array.from(new Set(filtered.map(x => JSON.stringify(x)))).map(s => JSON.parse(s) as { topic: string; subject: string; grade: string });
@@ -229,7 +241,7 @@ export const TowerMode: React.FC = () => {
         dynamicTopics.push({
           topic: q.topic,
           label: `📋 Chuyên đề: ${q.topic}`,
-          subject: q.subject || 'math'
+          subject: normalizeSubject(q.subject) || 'math'
         });
       }
     });
@@ -243,7 +255,7 @@ export const TowerMode: React.FC = () => {
           dynamicTopics.push({
             topic: exam.topic,
             label: `📋 Chuyên đề: ${exam.topic}`,
-            subject: exam.subject || 'math'
+            subject: normalizeSubject(exam.subject) || 'math'
           });
         }
       }
@@ -263,7 +275,7 @@ export const TowerMode: React.FC = () => {
         dynamicTopics.push({
           topic: ct.topic,
           label: `📋 Chuyên đề: ${ct.topic}`,
-          subject: ct.subject
+          subject: normalizeSubject(ct.subject)
         });
       }
     });
@@ -379,12 +391,12 @@ export const TowerMode: React.FC = () => {
 
     // 1. Pull from arena_questions
     arenaQuestions
-      .filter(q => q.subject === selectedSubject && q.topic?.toLowerCase() === selectedTopic.toLowerCase())
+      .filter(q => normalizeSubject(q.subject) === normalizeSubject(selectedSubject) && q.topic?.toLowerCase() === selectedTopic.toLowerCase())
       .forEach(q => pool.push(q));
 
     // 2. Pull from published exams questions with same topic & subject
     exams
-      .filter(e => e.status === 'PUBLISHED' && e.subject === selectedSubject)
+      .filter(e => e.status === 'PUBLISHED' && normalizeSubject(e.subject) === normalizeSubject(selectedSubject))
       .forEach(exam => {
         exam.questions
           .filter(q => q.type === 'MCQ' && q.options.length >= 4 && q.correctOptionIndex !== undefined && (q.topic?.toLowerCase() === selectedTopic.toLowerCase() || exam.topic?.toLowerCase() === selectedTopic.toLowerCase()))
@@ -399,7 +411,7 @@ export const TowerMode: React.FC = () => {
                 answers: q.options.slice(0, 4),
                 correct_index: q.correctOptionIndex!,
                 difficulty: mappedDiff,
-                subject: selectedSubject,
+                subject: normalizeSubject(selectedSubject),
                 topic: selectedTopic
               });
             }
