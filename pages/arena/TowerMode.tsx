@@ -660,11 +660,11 @@ export const TowerMode: React.FC = () => {
       setConsecutiveCorrect(newConsecutiveCorrect);
       setConsecutiveWrong(0);
 
-      // Mastery Reward: Level 1 -> +15%, Level 2 -> +10%, Level 3 -> +7%, Level 4 -> +5%
-      let masteryGain = currentDifficulty === 1 ? 15 
-                      : currentDifficulty === 2 ? 10 
-                      : currentDifficulty === 3 ? 7 
-                      : 5;
+      // Mastery Reward: Level 1 -> +8%, Level 2 -> +7%, Level 3 -> +6%, Level 4 -> +4%
+      let masteryGain = currentDifficulty === 1 ? 8 
+                      : currentDifficulty === 2 ? 7 
+                      : currentDifficulty === 3 ? 6 
+                      : 4;
       
       // Artist Passive Perk: +15% XP/Mastery reward on Level 3 questions
       if (arenaProfile.avatar_class === 'artist' && currentDifficulty === 3) {
@@ -688,8 +688,13 @@ export const TowerMode: React.FC = () => {
       const elo = currentDifficulty * 5;
       setEloGained(elo);
 
-      // Check level up (VioEdu logic: 3 consecutive correct answers)
-      if (newConsecutiveCorrect >= 3) {
+      // Check level up (Level 1: 4 correct, Level 2: 5 correct, Level 3: 4 correct)
+      const neededCorrect = currentDifficulty === 1 ? 4 
+                          : currentDifficulty === 2 ? 5 
+                          : currentDifficulty === 3 ? 4 
+                          : 999;
+      
+      if (newConsecutiveCorrect >= neededCorrect) {
         if (currentDifficulty < 4) {
           finalDifficulty = currentDifficulty + 1;
           setCurrentDifficulty(finalDifficulty);
@@ -718,11 +723,10 @@ export const TowerMode: React.FC = () => {
       setConsecutiveWrong(newConsecutiveWrong);
 
       // Deduct half of the gained percentage at current difficulty level when incorrect
-      // Level 1: 15 / 2 = 7.5 (round to 8 or 7.5), let's use Math.round(masteryGain / 2)
-      const baseGain = currentDifficulty === 1 ? 15 
-                     : currentDifficulty === 2 ? 10 
-                     : currentDifficulty === 3 ? 7 
-                     : 5;
+      const baseGain = currentDifficulty === 1 ? 8 
+                     : currentDifficulty === 2 ? 7 
+                     : currentDifficulty === 3 ? 6 
+                     : 4;
       const masteryLoss = Math.round(baseGain / 2);
       const newMastery = Math.max(0, masteryScore - masteryLoss);
       setMasteryScore(newMastery);
