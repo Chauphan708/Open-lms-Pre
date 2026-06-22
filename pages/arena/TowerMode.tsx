@@ -427,7 +427,62 @@ export const TowerMode: React.FC = () => {
 
   // Start the adaptive tower run
   const handleStart = async () => {
-    let pool = buildQuestionPool();
+    setLoading(true);
+    let pool: ArenaQuestion[] = [];
+
+    // Determine student grade
+    let studentGrade = '';
+    const className = user?.class_name || user?.className || '';
+    if (className) {
+      const match = className.match(/(\d+)/);
+      if (match) {
+        studentGrade = match[1];
+      }
+    }
+
+    try {
+      // Query all matching questions for this topic directly from Supabase (bypassing the 50-limit store pagination)
+      let query = supabase
+        .from('arena_questions')
+        .select('*')
+        .eq('topic', selectedTopic);
+      
+      if (studentGrade) {
+        query = query.eq('grade', studentGrade);
+      }
+      
+      const { data, error } = await query;
+      
+      if (error) {
+        console.error("Supabase query error:", error);
+      } else if (data && data.length > 0) {
+        const mapped = data
+          .filter((q: any) => normalizeSubject(q.subject) === normalizeSubject(selectedSubject))
+          .map((q: any) => ({
+            id: q.id,
+            content: q.content,
+            answers: typeof q.answers === 'string' ? JSON.parse(q.answers) : q.answers,
+            correct_index: q.correct_index,
+            correct_indices: typeof q.correct_indices === 'string' ? JSON.parse(q.correct_indices) : q.correct_indices,
+            correct_answer_string: q.correct_answer_string,
+            difficulty: q.difficulty || 1,
+            subject: normalizeSubject(q.subject),
+            topic: q.topic,
+            guide: q.guide,
+            explanation: q.explanation
+          }));
+        pool = mapped;
+      }
+    } catch (err) {
+      console.error("Failed to query questions from DB:", err);
+    }
+
+    // Fallback to client-side store filtering (exams, etc.) if DB query returned nothing
+    if (pool.length === 0) {
+      pool = buildQuestionPool();
+    }
+    
+    setLoading(false);
     
     // If pool is empty, trigger AI to generate questions dynamically
     if (pool.length === 0) {
@@ -436,7 +491,7 @@ export const TowerMode: React.FC = () => {
         // Generate 3 basic questions (Level 1) of selected topic via AI
         const generated = await generateQuestionsByTopic(
           selectedTopic, 
-          '5', 
+          studentGrade || '5', 
           'MCQ', 
           'Nhận biết (Dễ)', 
           3, 
