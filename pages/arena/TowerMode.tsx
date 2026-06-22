@@ -1140,7 +1140,7 @@ export const TowerMode: React.FC = () => {
           <div className="bg-gradient-to-r from-indigo-950/20 to-purple-950/20 border border-indigo-500/20 rounded-xl p-4 flex gap-3 text-xs text-indigo-300">
             <Bot className="h-5 w-5 text-indigo-400 flex-shrink-0 animate-bounce" />
             <p className="leading-relaxed">
-              <strong>Gia sư AI gợi ý:</strong> Sau khi bắt đầu, bạn cần trả lời đúng <strong>liên tiếp 3 câu hỏi</strong> cùng độ khó để thăng cấp. Bất kỳ câu sai nào cũng reset chuỗi, hạ cấp độ khó và kích hoạt gợi ý chẩn đoán lý thuyết của AI ngay lập tức!
+              <strong>Gia sư AI gợi ý:</strong> Sau khi bắt đầu, bạn cần trả lời đúng liên tiếp số câu quy định để thăng cấp <strong>(Mức 1: 4 câu, Mức 2: 5 câu, Mức 3: 4 câu)</strong>. Bất kỳ câu sai nào cũng reset chuỗi, hạ cấp độ khó và kích hoạt gợi ý chẩn đoán lý thuyết của AI ngay lập tức!
             </p>
           </div>
 
