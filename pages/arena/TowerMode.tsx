@@ -1561,7 +1561,7 @@ export const TowerMode: React.FC = () => {
                       }
                     });
                   } else {
-                    handleAnswer(idx);
+                    setSelectedOption(idx);
                   }
                 };
 
@@ -1586,10 +1586,16 @@ export const TowerMode: React.FC = () => {
                 );
               })}
 
-              {currentQ.type === 'MCQ_MULTIPLE' && !showResult && (
+              {!showResult && (
                 <button
-                  onClick={() => handleAnswer(selectedOptions)}
-                  disabled={selectedOptions.length === 0}
+                  onClick={() => {
+                    if (currentQ.type === 'MCQ_MULTIPLE') {
+                      handleAnswer(selectedOptions);
+                    } else {
+                      if (selectedOption !== null) handleAnswer(selectedOption);
+                    }
+                  }}
+                  disabled={currentQ.type === 'MCQ_MULTIPLE' ? selectedOptions.length === 0 : selectedOption === null}
                   className="w-full mt-4 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-bold rounded-xl transition-all shadow-md active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Nộp câu trả lời
