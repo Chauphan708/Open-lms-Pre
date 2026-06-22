@@ -288,6 +288,10 @@ export const TowerMode: React.FC = () => {
     // Only load system default topics if no custom topics have been created by the teacher
     if (customTopics.length === 0) {
       Object.entries(DEFAULT_TOPICS_BY_SUBJECT).forEach(([sub, list]) => {
+        // If the database already contains questions for this subject, do not load the default fallback presets
+        const hasQuestionsInDb = dbTopics.some(q => normalizeSubject(q.subject) === normalizeSubject(sub));
+        if (hasQuestionsInDb) return;
+
         list.forEach(item => {
           // If topic contains a grade label (e.g. 'Hình học lớp 5'), check if it matches studentGrade
           const topicGradeMatch = item.label.match(/lớp\s*(\d+)/i);
