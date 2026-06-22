@@ -318,10 +318,12 @@ export const TowerMode: React.FC = () => {
 
     setAvailableTopics(merged);
     
-    // Default select first topic for math
-    const firstMath = merged.find(t => t.subject === 'math');
-    if (firstMath) setSelectedTopic(firstMath.topic);
-  }, [loading, arenaQuestions, exams, user, dbTopics, customTopics]);
+    // Default select first topic for math if none selected yet
+    if (!selectedTopic) {
+      const firstMath = merged.find(t => t.subject === 'math');
+      if (firstMath) setSelectedTopic(firstMath.topic);
+    }
+  }, [loading, arenaQuestions, exams, user, dbTopics, customTopics, selectedTopic]);
 
   // Timer loop
   useEffect(() => {
