@@ -316,7 +316,7 @@ export const TowerMode: React.FC = () => {
     // Default select first topic for math
     const firstMath = merged.find(t => t.subject === 'math');
     if (firstMath) setSelectedTopic(firstMath.topic);
-  }, [loading, arenaQuestions, exams, user]);
+  }, [loading, arenaQuestions, exams, user, dbTopics, customTopics]);
 
   // Timer loop
   useEffect(() => {
