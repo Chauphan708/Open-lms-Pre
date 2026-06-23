@@ -196,7 +196,7 @@ export const Settings: React.FC = () => {
       const { GoogleGenAI } = await import('@google/genai');
       const ai = new GoogleGenAI({ apiKey: apiKeyInput.trim() });
       const response = await ai.models.generateContent({
-        model: 'gemini-3-flash',
+        model: 'gemini-2.5-flash',
         contents: 'Trả lời đúng 1 từ: Xin chào'
       });
       if (response.text) {

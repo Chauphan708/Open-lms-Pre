@@ -120,7 +120,7 @@ const QUESTION_SCHEMA: Schema = {
 };
 
 // Model fallback list: try newer model first, fallback to older if quota exceeded
-const AI_MODELS = ["gemini-3-flash", "gemini-2.5-flash"];
+const AI_MODELS = ["gemini-2.5-flash", "gemini-3.5-flash"];
 
 /**
  * Parses raw text content (from Word/PDF copy-paste) into structured Question objects.
