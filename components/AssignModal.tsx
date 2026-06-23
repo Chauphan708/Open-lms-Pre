@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Calendar, Clock, Eye, Repeat, Lightbulb, CheckCircle, Copy, ShieldAlert, Monitor, CopyX, Expand, Laptop, HelpCircle } from 'lucide-react';
+import { X, Calendar, Clock, Eye, Repeat, Lightbulb, CheckCircle, Copy, ShieldAlert, Monitor, CopyX, Expand, Laptop, HelpCircle, CheckSquare } from 'lucide-react';
 import { useStore } from '../store';
 import { Exam, Assignment } from '../types';
 
@@ -49,6 +49,7 @@ export const AssignModal: React.FC<Props> = ({ exam, isOpen, onClose }) => {
   const [viewSolutionOnLastAttemptOnly, setViewSolutionOnLastAttemptOnly] = useState(false);
   const [viewHint, setViewHint] = useState(true); // New Hint Setting
   const [maxAttempts, setMaxAttempts] = useState(10); // Default 10 attempts
+  const [caseSensitiveShortAnswer, setCaseSensitiveShortAnswer] = useState(false);
 
   // Security Settings
   const [mode, setMode] = useState<'practice' | 'exam'>('practice');
@@ -96,6 +97,7 @@ export const AssignModal: React.FC<Props> = ({ exam, isOpen, onClose }) => {
         viewSolutionOnLastAttemptOnly,
         viewHint,
         maxAttempts,
+        caseSensitiveShortAnswer,
         // Enforce settings if it's exam mode, otherwise take custom state
         requireFullscreen: mode === 'exam' ? true : requireFullscreen,
         preventTabSwitch: mode === 'exam' ? true : preventTabSwitch,
@@ -361,6 +363,27 @@ export const AssignModal: React.FC<Props> = ({ exam, isOpen, onClose }) => {
                   <div className="flex flex-col">
                     <span className="text-sm text-gray-700 group-hover:text-gray-900 font-bold text-indigo-600">Được xem lời giải chi tiết (đáp án) ở lần làm bài áp chót</span>
                     {maxAttempts === 0 && <p className="text-[10px] text-gray-400 italic font-normal">* Chỉ áp dụng khi có giới hạn số lần làm bài</p>}
+                  </div>
+                </label>
+              </div>
+            </div>
+
+            {/* Cấu hình chấm điểm */}
+            <div className="border border-gray-200 rounded-xl p-4 bg-white">
+              <h3 className="text-sm font-bold text-gray-900 mb-3 flex items-center gap-2">
+                <CheckSquare className="h-4 w-4 text-indigo-600" /> Cấu hình chấm điểm
+              </h3>
+              <div className="space-y-3">
+                <label className="flex items-start gap-3 cursor-pointer group">
+                  <input 
+                    type="checkbox" 
+                    checked={caseSensitiveShortAnswer} 
+                    onChange={e => setCaseSensitiveShortAnswer(e.target.checked)} 
+                    className="mt-0.5 w-4 h-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" 
+                  />
+                  <div>
+                    <span className="text-sm text-gray-700 group-hover:text-gray-900 font-medium">Phân biệt viết hoa / viết thường</span>
+                    <p className="text-xs text-gray-500 mt-0.5">Áp dụng cho câu hỏi Tự luận ngắn/Điền khuyết. Yêu cầu học sinh nhập chính xác cả chữ hoa và chữ thường.</p>
                   </div>
                 </label>
               </div>

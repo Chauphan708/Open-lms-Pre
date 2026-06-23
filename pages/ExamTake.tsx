@@ -143,11 +143,21 @@ const MCQMultipleQuestion = React.memo(({ question, answer, isSubmitted, onSetAn
   );
 });
 
-const ShortAnswerQuestion = React.memo(({ question, answer, isSubmitted, onSetAnswer, viewPassFail }: any) => {
-  const sAns = String(answer || '').trim().toLowerCase().replace(/\s+/g, '');
+const ShortAnswerQuestion = React.memo(({ question, answer, isSubmitted, onSetAnswer, viewPassFail, caseSensitive }: any) => {
+  const sAns = caseSensitive
+    ? String(answer || '').trim().replace(/\s+/g, ' ')
+    : String(answer || '').trim().toLowerCase().replace(/\s+/g, '');
+
   const isCorrect = question.options && question.options.length > 0
-    ? question.options.some((opt: any) => String(opt).trim().toLowerCase().replace(/\s+/g, '') === sAns)
-    : sAns === String(question.solution || '').trim().toLowerCase().replace(/\s+/g, '');
+    ? question.options.some((opt: any) => {
+        const optStr = caseSensitive
+          ? String(opt || '').trim().replace(/\s+/g, ' ')
+          : String(opt || '').trim().toLowerCase().replace(/\s+/g, '');
+        return optStr === sAns;
+      })
+    : sAns === (caseSensitive
+        ? String(question.solution || '').trim().replace(/\s+/g, ' ')
+        : String(question.solution || '').trim().toLowerCase().replace(/\s+/g, ''));
 
   return (
     <div className="max-w-2xl">
@@ -670,7 +680,8 @@ export const ExamTake: React.FC = () => {
     requireFullscreen: false,
     preventTabSwitch: false,
     preventCopy: false,
-    viewSolutionOnLastAttemptOnly: false
+    viewSolutionOnLastAttemptOnly: false,
+    caseSensitiveShortAnswer: false
   };
 
   const assignmentSettings = useMemo(() => {
@@ -1465,7 +1476,10 @@ export const ExamTake: React.FC = () => {
            console.log(`DEBUG: Q${idx + 1} MCQ_MULTIPLE INCORRECT. User: ${userArray}, Expected: ${correctArray}`);
         }
       } else if (q.type === 'SHORT_ANSWER') {
-        const sAns = String(userAns || '').trim().toLowerCase().replace(/\s+/g, '');
+        const isCaseSensitive = !!assignmentSettings.caseSensitiveShortAnswer;
+        const sAns = isCaseSensitive
+          ? String(userAns || '').trim().replace(/\s+/g, ' ')
+          : String(userAns || '').trim().toLowerCase().replace(/\s+/g, '');
         
         // CẢI TIẾN: Chỉ so khớp với solution nếu nó ngắn (thường là đáp án ngắn), 
         // nếu solution dài dằng dặc thì đó là lời giải chi tiết, không dùng để chấm điểm tự động.
@@ -1474,8 +1488,15 @@ export const ExamTake: React.FC = () => {
         
         // So khớp với danh sách options (đáp án chấp nhận được) HOẶC solution (nếu nó ngắn)
         isCorrect = (q.options && q.options.length > 0)
-          ? q.options.some(opt => String(opt).trim().toLowerCase().replace(/\s+/g, '') === sAns)
-          : (isSolutionShort && sAns === solString.toLowerCase().replace(/\s+/g, ''));
+          ? q.options.some(opt => {
+              const optStr = isCaseSensitive
+                ? String(opt || '').trim().replace(/\s+/g, ' ')
+                : String(opt || '').trim().toLowerCase().replace(/\s+/g, '');
+              return optStr === sAns;
+            })
+          : (isSolutionShort && sAns === (isCaseSensitive
+              ? solString.replace(/\s+/g, ' ')
+              : solString.toLowerCase().replace(/\s+/g, '')));
 
         if (isCorrect) {
            console.log(`DEBUG: Q${idx + 1} SHORT_ANSWER CORRECT. User: "${sAns}"`);
@@ -2203,6 +2224,7 @@ export const ExamTake: React.FC = () => {
                       onSetAnswer={(val: any) => handleSetAnswer(q.id, val)}
                       isSubmitted={isSubmitted}
                       viewPassFail={viewPassFail}
+                      caseSensitive={assignmentSettings?.caseSensitiveShortAnswer}
                     />
                   )}
 

@@ -113,6 +113,7 @@ export interface AssignmentSettings {
   preventTabSwitch?: boolean;
   preventCopy?: boolean;
   viewSolutionOnLastAttemptOnly?: boolean;
+  caseSensitiveShortAnswer?: boolean;
 }
 
 export interface Assignment {
