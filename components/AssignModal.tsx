@@ -256,21 +256,21 @@ export const AssignModal: React.FC<Props> = ({ exam, isOpen, onClose }) => {
             </div>
 
             {/* Time Config */}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-4">
               <div>
                 <label className="block text-sm font-bold text-gray-900 mb-2 flex items-center gap-2">
-                  <Calendar className="h-4 w-4 text-indigo-600" /> Bắt đầu
+                  <Calendar className="h-4 w-4 text-indigo-600" /> Thời gian Bắt đầu
                 </label>
-                <div className="flex gap-2">
+                <div className="grid grid-cols-3 gap-2">
                   <input
                     type="date"
-                    className="flex-1 border border-gray-300 bg-white text-gray-900 rounded-lg p-2.5 text-sm outline-none focus:border-indigo-500"
+                    className="col-span-2 border border-gray-300 bg-white text-gray-900 rounded-lg p-2.5 text-sm outline-none focus:border-indigo-500 w-full"
                     value={startTimeDate}
                     onChange={e => setStartTimeDate(e.target.value)}
                   />
                   <input
                     type="time"
-                    className="w-24 border border-gray-300 bg-white text-gray-900 rounded-lg p-2.5 text-sm outline-none focus:border-indigo-500"
+                    className="col-span-1 border border-gray-300 bg-white text-gray-900 rounded-lg p-2.5 text-sm outline-none focus:border-indigo-500 w-full"
                     value={startTimeHour}
                     onChange={e => setStartTimeHour(e.target.value)}
                   />
@@ -278,18 +278,18 @@ export const AssignModal: React.FC<Props> = ({ exam, isOpen, onClose }) => {
               </div>
               <div>
                 <label className="block text-sm font-bold text-gray-900 mb-2 flex items-center gap-2">
-                  <Calendar className="h-4 w-4 text-indigo-600" /> Kết thúc
+                  <Calendar className="h-4 w-4 text-indigo-600" /> Thời gian Kết thúc
                 </label>
-                <div className="flex gap-2">
+                <div className="grid grid-cols-3 gap-2">
                   <input
                     type="date"
-                    className="flex-1 border border-gray-300 bg-white text-gray-900 rounded-lg p-2.5 text-sm outline-none focus:border-indigo-500"
+                    className="col-span-2 border border-gray-300 bg-white text-gray-900 rounded-lg p-2.5 text-sm outline-none focus:border-indigo-500 w-full"
                     value={endTimeDate}
                     onChange={e => setEndTimeDate(e.target.value)}
                   />
                   <input
                     type="time"
-                    className="w-24 border border-gray-300 bg-white text-gray-900 rounded-lg p-2.5 text-sm outline-none focus:border-indigo-500"
+                    className="col-span-1 border border-gray-300 bg-white text-gray-900 rounded-lg p-2.5 text-sm outline-none focus:border-indigo-500 w-full"
                     value={endTimeHour}
                     onChange={e => setEndTimeHour(e.target.value)}
                   />
