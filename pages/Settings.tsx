@@ -195,11 +195,32 @@ export const Settings: React.FC = () => {
       setGeminiApiKey(apiKeyInput.trim());
       const { GoogleGenAI } = await import('@google/genai');
       const ai = new GoogleGenAI({ apiKey: apiKeyInput.trim() });
-      const response = await ai.models.generateContent({
-        model: 'gemini-2.5-flash',
-        contents: 'Trả lời đúng 1 từ: Xin chào'
-      });
-      if (response.text) {
+      
+      let response;
+      let lastErrMessage = '';
+      try {
+        response = await ai.models.generateContent({
+          model: 'gemini-2.5-flash',
+          contents: 'Trả lời đúng 1 từ: Xin chào'
+        });
+      } catch (e: any) {
+        lastErrMessage = e?.message || e?.toString() || '';
+        // Nếu 2.5-flash bị quá tải, thử gọi 3.5-flash làm fallback kiểm tra
+        if (lastErrMessage.includes('503') || lastErrMessage.includes('demand') || lastErrMessage.includes('429') || lastErrMessage.includes('quota') || lastErrMessage.includes('UNAVAILABLE')) {
+          try {
+            response = await ai.models.generateContent({
+              model: 'gemini-3.5-flash',
+              contents: 'Trả lời đúng 1 từ: Xin chào'
+            });
+          } catch (e2: any) {
+            throw e2;
+          }
+        } else {
+          throw e;
+        }
+      }
+
+      if (response && response.text) {
         setApiKeyStatus('valid');
         setApiKeyConfigured(true);
       } else {
@@ -208,8 +229,17 @@ export const Settings: React.FC = () => {
       }
     } catch (err: any) {
       console.error('API Key test failed:', err);
-      setApiKeyStatus('invalid');
-      setApiTestError(err?.message || err?.toString() || 'Lỗi kết nối không xác định.');
+      const errMsg = err?.message || err?.toString() || '';
+      
+      // Nếu lỗi là do quá tải (503) hoặc hết quota (429) nhưng KHÔNG phải sai key (400, 403), tức là Key vẫn HỢP LỆ
+      if (errMsg.includes('503') || errMsg.includes('demand') || errMsg.includes('429') || errMsg.includes('quota') || errMsg.includes('UNAVAILABLE')) {
+        setApiKeyStatus('valid');
+        setApiKeyConfigured(true);
+        setApiTestError('API Key của bạn HỢP LỆ. Tuy nhiên mô hình Gemini tại vùng của bạn đang bị quá tải tạm thời (503/429). Hệ thống vẫn lưu key và tự sử dụng khi Google ổn định lại.');
+      } else {
+        setApiKeyStatus('invalid');
+        setApiTestError(errMsg);
+      }
     }
   };
 
