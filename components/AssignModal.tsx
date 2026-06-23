@@ -264,13 +264,13 @@ export const AssignModal: React.FC<Props> = ({ exam, isOpen, onClose }) => {
                 <div className="grid grid-cols-3 gap-2">
                   <input
                     type="date"
-                    className="col-span-2 border border-gray-300 bg-white text-gray-900 rounded-lg p-2.5 text-sm outline-none focus:border-indigo-500 w-full"
+                    className="col-span-2 border border-gray-300 bg-white text-gray-900 rounded-lg p-2.5 text-sm outline-none focus:border-indigo-500 w-full [&::-webkit-calendar-picker-indicator]:scale-[1.4] [&::-webkit-calendar-picker-indicator]:cursor-pointer"
                     value={startTimeDate}
                     onChange={e => setStartTimeDate(e.target.value)}
                   />
                   <input
                     type="time"
-                    className="col-span-1 border border-gray-300 bg-white text-gray-900 rounded-lg p-2.5 text-sm outline-none focus:border-indigo-500 w-full"
+                    className="col-span-1 border border-gray-300 bg-white text-gray-900 rounded-lg p-2.5 text-sm outline-none focus:border-indigo-500 w-full [&::-webkit-calendar-picker-indicator]:scale-[1.3] [&::-webkit-calendar-picker-indicator]:cursor-pointer"
                     value={startTimeHour}
                     onChange={e => setStartTimeHour(e.target.value)}
                   />
@@ -283,13 +283,13 @@ export const AssignModal: React.FC<Props> = ({ exam, isOpen, onClose }) => {
                 <div className="grid grid-cols-3 gap-2">
                   <input
                     type="date"
-                    className="col-span-2 border border-gray-300 bg-white text-gray-900 rounded-lg p-2.5 text-sm outline-none focus:border-indigo-500 w-full"
+                    className="col-span-2 border border-gray-300 bg-white text-gray-900 rounded-lg p-2.5 text-sm outline-none focus:border-indigo-500 w-full [&::-webkit-calendar-picker-indicator]:scale-[1.4] [&::-webkit-calendar-picker-indicator]:cursor-pointer"
                     value={endTimeDate}
                     onChange={e => setEndTimeDate(e.target.value)}
                   />
                   <input
                     type="time"
-                    className="col-span-1 border border-gray-300 bg-white text-gray-900 rounded-lg p-2.5 text-sm outline-none focus:border-indigo-500 w-full"
+                    className="col-span-1 border border-gray-300 bg-white text-gray-900 rounded-lg p-2.5 text-sm outline-none focus:border-indigo-500 w-full [&::-webkit-calendar-picker-indicator]:scale-[1.3] [&::-webkit-calendar-picker-indicator]:cursor-pointer"
                     value={endTimeHour}
                     onChange={e => setEndTimeHour(e.target.value)}
                   />
