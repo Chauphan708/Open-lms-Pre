@@ -81,6 +81,7 @@ export const Settings: React.FC = () => {
   const [showApiKey, setShowApiKey] = useState(false);
   const [apiKeyStatus, setApiKeyStatus] = useState<'idle' | 'checking' | 'valid' | 'invalid'>('idle');
   const [apiKeyConfigured, setApiKeyConfigured] = useState(false);
+  const [apiTestError, setApiTestError] = useState<string | null>(null);
 
   useEffect(() => {
     const existingKey = getGeminiApiKey();
@@ -188,13 +189,14 @@ export const Settings: React.FC = () => {
       return;
     }
     setApiKeyStatus('checking');
+    setApiTestError(null);
     try {
       // Lưu tạm key để test
       setGeminiApiKey(apiKeyInput.trim());
       const { GoogleGenAI } = await import('@google/genai');
       const ai = new GoogleGenAI({ apiKey: apiKeyInput.trim() });
       const response = await ai.models.generateContent({
-        model: 'gemini-2.0-flash-lite',
+        model: 'gemini-3-flash',
         contents: 'Trả lời đúng 1 từ: Xin chào'
       });
       if (response.text) {
@@ -202,10 +204,12 @@ export const Settings: React.FC = () => {
         setApiKeyConfigured(true);
       } else {
         setApiKeyStatus('invalid');
+        setApiTestError('Phản hồi trống từ API.');
       }
     } catch (err: any) {
       console.error('API Key test failed:', err);
       setApiKeyStatus('invalid');
+      setApiTestError(err?.message || err?.toString() || 'Lỗi kết nối không xác định.');
     }
   };
 
@@ -660,7 +664,7 @@ export const Settings: React.FC = () => {
                     type={showApiKey ? 'text' : 'password'}
                     value={apiKeyInput}
                     onChange={e => { setApiKeyInput(e.target.value); setApiKeyStatus('idle'); }}
-                    placeholder="Dán API Key của bạn vào đây (VD: AIzaSy...)"
+                    placeholder="Dán API Key của bạn vào đây (VD: AQ...)"
                     className="w-full border border-gray-300 bg-white text-gray-900 rounded-lg px-4 py-3 pr-12 focus:ring-2 focus:ring-indigo-500 outline-none font-mono text-sm"
                   />
                   <button
@@ -680,9 +684,16 @@ export const Settings: React.FC = () => {
                   </p>
                 )}
                 {apiKeyStatus === 'invalid' && (
-                  <p className="text-sm text-red-600 flex items-center gap-1">
-                    <AlertCircle className="h-4 w-4" /> API Key không hợp lệ hoặc đã hết hạn. Vui lòng kiểm tra lại.
-                  </p>
+                  <div className="space-y-1">
+                    <p className="text-sm text-red-600 flex items-center gap-1 font-semibold">
+                      <AlertCircle className="h-4 w-4" /> API Key không hợp lệ hoặc đã hết hạn. Vui lòng kiểm tra lại.
+                    </p>
+                    {apiTestError && (
+                      <p className="text-xs text-red-500 bg-red-50 p-2 rounded border border-red-100 font-mono break-all">
+                        Chi tiết lỗi: {apiTestError}
+                      </p>
+                    )}
+                  </div>
                 )}
               </div>
 
