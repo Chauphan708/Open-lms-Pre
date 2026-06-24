@@ -554,6 +554,48 @@ export const ArenaAdmin: React.FC = () => {
             questionsList: Omit<ArenaQuestion, 'id'>[],
             errorsList: string[]
         ) => {
+            // Deferred parsing of raw_answer
+            if (q.raw_answer !== undefined && q.raw_answer !== null && q.raw_answer.trim() !== '') {
+                const rawAns = q.raw_answer.trim();
+                const ansVal = cleanDivision(rawAns, q.subject);
+
+                // Auto-detect question type if not explicitly set
+                if (!q.has_explicit_type) {
+                    const hasOptions = q.answers && q.answers.filter(Boolean).length > 0;
+                    if (!hasOptions) {
+                        q.type = 'SHORT_ANSWER';
+                    } else {
+                        const isOptionList = /^[A-D\s,|]+$/i.test(rawAns);
+                        if (!isOptionList) {
+                            q.type = 'SHORT_ANSWER';
+                        } else {
+                            const chars = rawAns.toUpperCase().replace(/[^A-D]/g, '').split('');
+                            if (chars.length > 1) {
+                                q.type = 'MCQ_MULTIPLE';
+                            } else {
+                                q.type = 'MCQ';
+                            }
+                        }
+                    }
+                }
+
+                // Actually parse and assign answer fields based on resolved type
+                if (q.type === 'SHORT_ANSWER') {
+                    q.correct_answer_string = ansVal;
+                } else {
+                    const chars = rawAns.toUpperCase().replace(/[^A-D]/g, '').split('');
+                    if (chars.length > 1) {
+                        q.type = 'MCQ_MULTIPLE';
+                        q.correct_indices = chars.map((c: string) => c.charCodeAt(0) - 65).sort();
+                    } else if (chars.length === 1) {
+                        q.type = 'MCQ';
+                        q.correct_index = chars[0].charCodeAt(0) - 65;
+                    } else {
+                        q.correct_answer_string = ansVal;
+                    }
+                }
+            }
+
             if (q.answers.length > 0 && q.type === 'MCQ' && q.correct_indices && q.correct_indices.length > 1) {
                 q.type = 'MCQ_MULTIPLE';
             }
@@ -665,7 +707,9 @@ export const ArenaAdmin: React.FC = () => {
                     xp_reward: 10,
                     type: 'MCQ',
                     guide: '',
-                    explanation: ''
+                    explanation: '',
+                    raw_answer: '',
+                    has_explicit_type: false
                 };
                 continue;
             }
@@ -682,21 +726,7 @@ export const ArenaAdmin: React.FC = () => {
 
             if (line.toLowerCase().startsWith('đáp án đúng:') || line.toLowerCase().startsWith('đáp án:')) {
                 const prefixLength = line.toLowerCase().startsWith('đáp án đúng:') ? 12 : 7;
-                const ansVal = cleanDivision(line.substring(prefixLength).trim(), currentQuestion.subject);
-                
-                if (currentQuestion.type === 'SHORT_ANSWER') {
-                    currentQuestion.correct_answer_string = ansVal;
-                } else {
-                    const chars = ansVal.toUpperCase().replace(/[^A-D]/g, '').split('');
-                    if (chars.length > 1) {
-                        currentQuestion.type = 'MCQ_MULTIPLE';
-                        currentQuestion.correct_indices = chars.map(c => c.charCodeAt(0) - 65).sort();
-                    } else if (chars.length === 1) {
-                        currentQuestion.correct_index = chars[0].charCodeAt(0) - 65;
-                    } else {
-                        currentQuestion.correct_answer_string = ansVal;
-                    }
-                }
+                currentQuestion.raw_answer = line.substring(prefixLength).trim();
                 continue;
             }
 
@@ -735,10 +765,13 @@ export const ArenaAdmin: React.FC = () => {
                 const normalizedVal = valStr.toUpperCase();
                 if (normalizedVal === 'SHORT_ANSWER' || normalizedVal.includes('TỰ LUẬN') || normalizedVal.includes('ĐIỀN KHUYẾT')) {
                     currentQuestion.type = 'SHORT_ANSWER';
+                    currentQuestion.has_explicit_type = true;
                 } else if (normalizedVal === 'MCQ_MULTIPLE' || normalizedVal.includes('NHIỀU ĐÁP ÁN') || normalizedVal.includes('CHỌN NHIỀU')) {
                     currentQuestion.type = 'MCQ_MULTIPLE';
+                    currentQuestion.has_explicit_type = true;
                 } else if (normalizedVal === 'MCQ' || normalizedVal.includes('TRẮC NGHIỆM') || normalizedVal.includes('1 ĐÁP ÁN')) {
                     currentQuestion.type = 'MCQ';
+                    currentQuestion.has_explicit_type = true;
                 }
                 continue;
             }
