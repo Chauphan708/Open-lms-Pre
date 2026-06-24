@@ -417,12 +417,18 @@ export const ArenaAdmin: React.FC = () => {
     const handleSaveAiPreview = async () => {
         if (aiPreviewList.length === 0) return;
         setImporting(true);
-        const count = await bulkAddArenaQuestions(aiPreviewList);
-        setImportResult({ count, skipped: aiPreviewList.length - count });
-        setImporting(false);
-        setAiPreviewList([]);
-        setShowAiPreviewModal(false);
-        await fetchArenaQuestions();
+        try {
+            const count = await bulkAddArenaQuestions(aiPreviewList);
+            setImportResult({ count, skipped: aiPreviewList.length - count });
+            setAiPreviewList([]);
+            setShowAiPreviewModal(false);
+            await fetchArenaQuestions();
+        } catch (err: any) {
+            console.error("Lỗi khi lưu câu hỏi từ AI:", err);
+            alert(`Lỗi khi lưu câu hỏi: ${err.message || err}`);
+        } finally {
+            setImporting(false);
+        }
     };
 
     const handleDownloadDocxTemplate = () => {
