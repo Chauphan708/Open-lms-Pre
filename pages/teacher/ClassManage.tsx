@@ -11,7 +11,7 @@ import { ClassSeatingModal } from '../../components/classfun/ClassSeatingModal';
 import { ClassParentTab } from '../../components/parents/ClassParentTab';
 
 export const ClassManage: React.FC = () => {
-  const { classes, academicYears, users, user: currentUser, addClass, updateClass, fetchClasses } = useStore();
+  const { classes, academicYears, users, user: currentUser, addClass, updateClass, deleteClass, fetchClasses } = useStore();
 
   useEffect(() => {
     fetchClasses();
@@ -256,7 +256,25 @@ export const ClassManage: React.FC = () => {
           <>
             <div className="p-4 border-b flex justify-between items-center bg-white rounded-t-xl flex-wrap gap-2">
               <div className="flex flex-col gap-2">
-                <h2 className="text-xl font-bold text-gray-900">{selectedClassData.name}</h2>
+                <div className="flex items-center gap-3">
+                  <h2 className="text-xl font-bold text-gray-900">{selectedClassData.name}</h2>
+                  <button 
+                    onClick={async () => {
+                      if (confirm(`Bạn có chắc chắn muốn xóa lớp ${selectedClassData.name}? Hành động này sẽ không thể hoàn tác.`)) {
+                        const success = await deleteClass(selectedClassData.id);
+                        if (success) {
+                          setSelectedClassId(null);
+                        }
+                      }
+                    }} 
+                    className="p-1.5 text-red-500 hover:bg-red-50 hover:text-red-700 rounded-lg transition-colors"
+                    title="Xóa lớp học này"
+                  >
+                    <svg className="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-4v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                  </button>
+                </div>
                 <div className="flex bg-gray-100 p-1 rounded-lg w-fit">
                   <button 
                     onClick={() => setActiveTab('students')}

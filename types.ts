@@ -431,6 +431,7 @@ export interface AppState {
   classes: Class[];
   addClass: (cls: Class) => void;
   updateClass: (cls: Class) => void;
+  deleteClass: (classId: string) => Promise<boolean>;
 
   exams: Exam[];
   addExam: (exam: Exam) => void;

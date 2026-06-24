@@ -4,7 +4,7 @@ import { supabase } from '../services/supabaseClient';
 
 export type ClassSliceState = Pick<AppState,
   | 'academicYears' | 'addAcademicYear' | 'updateAcademicYear'
-  | 'classes' | 'addClass' | 'updateClass'
+  | 'classes' | 'addClass' | 'updateClass' | 'deleteClass'
 >;
 
 export const createClassSlice: StateCreator<AppState, [], [], ClassSliceState> = (set, get) => ({
@@ -55,6 +55,19 @@ export const createClassSlice: StateCreator<AppState, [], [], ClassSliceState> =
     } else {
       console.error("updateClass ultimate error", error);
       alert("Lỗi cập nhật lớp học: " + error.message);
+    }
+  },
+  deleteClass: async (classId) => {
+    const { error } = await supabase.from('classes').delete().eq('id', classId);
+    if (!error) {
+      set((state) => ({
+        classes: state.classes.filter(c => c.id !== classId)
+      }));
+      return true;
+    } else {
+      console.error("deleteClass ultimate error", error);
+      alert("Lỗi xóa lớp học: " + error.message);
+      return false;
     }
   }
 });
