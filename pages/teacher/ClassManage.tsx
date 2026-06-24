@@ -74,7 +74,15 @@ export const ClassManage: React.FC = () => {
   }, [selectedClassId, currentUser?.id, fetchClassFunData]);
 
   const selectedClassData = classes.find(c => c.id === selectedClassId);
-  const studentsInClass = allStudents.filter(s => selectedClassData?.studentIds.includes(s.id));
+  const studentsInClass = allStudents.filter(s => {
+    if (!selectedClassData) return false;
+    // Condition 1: Exists in studentIds array
+    const inStudentIds = selectedClassData.studentIds?.includes(s.id);
+    // Condition 2: Has matching class name (e.g. s.class_name matches class name)
+    const sClassName = (s.className || s.class_name || '').trim().toLowerCase();
+    const classNameMatch = sClassName && sClassName === selectedClassData.name.trim().toLowerCase();
+    return inStudentIds || classNameMatch;
+  });
 
   // Random Selection Logic
   const [showRoulette, setShowRoulette] = useState(false);
@@ -350,7 +358,12 @@ export const ClassManage: React.FC = () => {
                             <button
                               onClick={() => {
                                 const availableStudents = allStudents
-                                  .filter(s => !selectedClassData.studentIds.includes(s.id))
+                                  .filter(s => {
+                                    const inStudentIds = selectedClassData.studentIds?.includes(s.id);
+                                    const sClassName = (s.className || s.class_name || '').trim().toLowerCase();
+                                    const classNameMatch = sClassName && sClassName === selectedClassData.name.trim().toLowerCase();
+                                    return !inStudentIds && !classNameMatch;
+                                  })
                                   .filter(s => s.name.toLowerCase().includes(studentSearchTerm.toLowerCase()) || s.email.toLowerCase().includes(studentSearchTerm.toLowerCase()));
                                 setStudentsToAdd(availableStudents.map(s => s.id));
                               }}
@@ -368,7 +381,12 @@ export const ClassManage: React.FC = () => {
                         </div>
                         <div className="max-h-60 overflow-y-auto p-1 bg-white">
                           {allStudents
-                            .filter(s => !selectedClassData.studentIds.includes(s.id))
+                            .filter(s => {
+                              const inStudentIds = selectedClassData.studentIds?.includes(s.id);
+                              const sClassName = (s.className || s.class_name || '').trim().toLowerCase();
+                              const classNameMatch = sClassName && sClassName === selectedClassData.name.trim().toLowerCase();
+                              return !inStudentIds && !classNameMatch;
+                            })
                             .filter(s => s.name.toLowerCase().includes(studentSearchTerm.toLowerCase()) || s.email.toLowerCase().includes(studentSearchTerm.toLowerCase()))
                             .map(s => {
                               const isSelected = studentsToAdd.includes(s.id);
@@ -397,7 +415,12 @@ export const ClassManage: React.FC = () => {
                               );
                             })
                           }
-                          {allStudents.filter(s => !selectedClassData.studentIds.includes(s.id)).length === 0 && (
+                          {allStudents.filter(s => {
+                            const inStudentIds = selectedClassData.studentIds?.includes(s.id);
+                            const sClassName = (s.className || s.class_name || '').trim().toLowerCase();
+                            const classNameMatch = sClassName && sClassName === selectedClassData.name.trim().toLowerCase();
+                            return !inStudentIds && !classNameMatch;
+                          }).length === 0 && (
                             <div className="p-4 text-sm text-center text-gray-500 italic">
                               Đã thêm tất cả học sinh vào lớp.
                             </div>
