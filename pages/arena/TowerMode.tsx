@@ -95,6 +95,8 @@ export const TowerMode: React.FC = () => {
   const [selectedSubject, setSelectedSubject] = useState<string>('math');
   const [availableTopics, setAvailableTopics] = useState<{ topic: string; label: string; subject: string }[]>([]);
   const [dbTopics, setDbTopics] = useState<{ topic: string; subject: string; grade: string }[]>([]);
+  const [selectedGrade, setSelectedGrade] = useState<string>('');
+  const [allowedGrades, setAllowedGrades] = useState<string[]>([]);
 
   // Adaptive gameplay states
   const [lives, setLives] = useState(3);
@@ -195,41 +197,57 @@ export const TowerMode: React.FC = () => {
           studentGrade = match[1];
         }
       }
+      setSelectedGrade(studentGrade);
 
-      Promise.all([
-        fetchArenaProfile(user.id),
-        fetchArenaQuestions(studentGrade ? { grade: studentGrade } : undefined),
-        supabase.from('arena_topics').select('*').then(({ data }) => { if (data) setCustomTopics(data); }),
-        supabase.from('arena_questions').select('topic, subject, grade').then(({ data }) => {
-          if (data) {
-            const filtered = data
-              .filter(q => q.topic && q.topic.trim() && q.topic !== 'general')
-              .map(q => ({
-                topic: q.topic.trim(),
-                subject: normalizeSubject(q.subject) || 'math',
-                grade: q.grade || '4'
-              }));
-            const unique = Array.from(new Set(filtered.map(x => JSON.stringify(x)))).map(s => JSON.parse(s) as { topic: string; subject: string; grade: string });
-            setDbTopics(unique);
-          }
-        })
-      ]).then(() => setLoading(false));
+      const loadData = async () => {
+        try {
+          // Fetch student's profile allowed_grades
+          const { data: prof } = await supabase.from('profiles').select('allowed_grades').eq('id', user.id).maybeSingle();
+          const allowed = prof?.allowed_grades || [];
+          setAllowedGrades(allowed);
+
+          await Promise.all([
+            fetchArenaProfile(user.id),
+            fetchArenaQuestions(studentGrade ? { grade: studentGrade } : undefined),
+            supabase.from('arena_topics').select('*').then(({ data }) => { if (data) setCustomTopics(data); }),
+            supabase.from('arena_questions').select('topic, subject, grade').then(({ data }) => {
+              if (data) {
+                const filtered = data
+                  .filter(q => q.topic && q.topic.trim() && q.topic !== 'general')
+                  .map(q => ({
+                    topic: q.topic.trim(),
+                    subject: normalizeSubject(q.subject) || 'math',
+                    grade: q.grade || '4'
+                  }));
+                const unique = Array.from(new Set(filtered.map(x => JSON.stringify(x)))).map(s => JSON.parse(s) as { topic: string; subject: string; grade: string });
+                setDbTopics(unique);
+              }
+            })
+          ]);
+        } catch (e) {
+          console.error("Error loading tower mode setup:", e);
+        } finally {
+          setLoading(false);
+        }
+      };
+      loadData();
     }
   }, [user]);
+
+  // Load questions when selectedGrade changes
+  useEffect(() => {
+    if (user && selectedGrade && !loading) {
+      setLoading(true);
+      fetchArenaQuestions({ grade: selectedGrade }).then(() => setLoading(false));
+    }
+  }, [selectedGrade, user]);
 
   // Extract unique topics dynamically from bank + exams
   useEffect(() => {
     if (loading) return;
 
-    // Determine student grade from user.class_name or user.className (e.g., 'Bom lớp 4A' -> '4', 'duyen5a2' -> '5')
-    let studentGrade = '';
-    const className = user?.class_name || user?.className || '';
-    if (className) {
-      const match = className.match(/(\d+)/);
-      if (match) {
-        studentGrade = match[1];
-      }
-    }
+    // Use selectedGrade instead of extracting from class name to support grade switching
+    let studentGrade = selectedGrade;
 
     // Combine preset topics and dynamically found topics
     const dynamicTopics: { topic: string; label: string; subject: string }[] = [];
@@ -433,15 +451,8 @@ export const TowerMode: React.FC = () => {
     setLoading(true);
     let pool: ArenaQuestion[] = [];
 
-    // Determine student grade
-    let studentGrade = '';
-    const className = user?.class_name || user?.className || '';
-    if (className) {
-      const match = className.match(/(\d+)/);
-      if (match) {
-        studentGrade = match[1];
-      }
-    }
+    // Use selectedGrade instead of hardcoded class name to support grade switching
+    let studentGrade = selectedGrade;
 
     try {
       // Query all matching questions for this topic directly from Supabase (bypassing the 50-limit store pagination)
@@ -1049,10 +1060,49 @@ export const TowerMode: React.FC = () => {
 
         {/* Dynamic Topic Selector */}
         <div className="bg-[#080d16] rounded-2xl p-6 border border-white/5 space-y-6 animate-fade-in" style={{ animationDelay: '0.2s' }}>
+          {/* Grade Selector (Allowed Grades) */}
+          <div>
+            <h3 className="font-bold text-white mb-3 flex items-center gap-2">
+              <GraduationCap className="h-5 w-5 text-amber-500" />
+              1. Khối lớp học tập
+            </h3>
+            <div className="flex gap-2">
+              {[...new Set([
+                // Student's default grade (from class name)
+                (() => {
+                  const className = user?.class_name || user?.className || '';
+                  const match = className.match(/(\d+)/);
+                  return match ? match[1] : '';
+                })(),
+                ...allowedGrades
+              ])].filter(Boolean).sort().map((g) => (
+                <button
+                  key={g}
+                  onClick={() => setSelectedGrade(g)}
+                  className={`px-4 py-2 rounded-xl text-xs font-black transition-all ${
+                    selectedGrade === g
+                      ? 'bg-amber-500 text-black font-extrabold shadow-lg shadow-amber-500/20'
+                      : 'bg-white/5 text-gray-400 hover:bg-white/10'
+                  }`}
+                >
+                  Khối {g}
+                  {(() => {
+                    const defaultGrade = (() => {
+                      const className = user?.class_name || user?.className || '';
+                      const match = className.match(/(\d+)/);
+                      return match ? match[1] : '';
+                    })();
+                    return defaultGrade && defaultGrade !== g ? ' (Học vượt)' : ' (Mặc định)';
+                  })()}
+                </button>
+              ))}
+            </div>
+          </div>
+
           <div>
             <h3 className="font-bold text-white mb-3 flex items-center gap-2">
               <BookOpen className="h-5 w-5 text-indigo-400" />
-              1. Lựa chọn môn học & Chuyên đề
+              2. Lựa chọn môn học & Chuyên đề
             </h3>
 
             {/* Subject Selector Buttons */}

@@ -72,6 +72,37 @@ export const StudentPortfolio: React.FC = () => {
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [shareMessage, setShareMessage] = useState('');
   const [isSharing, setIsSharing] = useState(false);
+  const [allowedGrades, setAllowedGrades] = useState<string[]>([]);
+
+  const handleToggleAllowedGrade = async (grade: string) => {
+    if (!studentId) return;
+    const isAllowed = allowedGrades.includes(grade);
+    const newGrades = isAllowed
+      ? allowedGrades.filter(g => g !== grade)
+      : [...allowedGrades, grade];
+    
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ allowed_grades: newGrades })
+        .eq('id', studentId);
+      
+      if (error) throw error;
+      setAllowedGrades(newGrades);
+      
+      // Tạo thông báo cho học sinh
+      await supabase.from('notifications').insert({
+        user_id: studentId,
+        type: 'INFO',
+        title: 'Cập nhật quyền học vượt',
+        message: `Giáo viên đã cập nhật quyền học vượt cấp của bạn. Bạn được phép làm bài các Khối: ${newGrades.join(', ')}.`,
+        is_read: false,
+        created_at: new Date().toISOString()
+      });
+    } catch (e: any) {
+      alert('Lỗi cập nhật quyền học vượt: ' + e.message);
+    }
+  };
 
   const student = users.find(u => u.id === studentId);
 
@@ -81,6 +112,11 @@ export const StudentPortfolio: React.FC = () => {
     const load = async () => {
       setIsLoadingData(true);
       try {
+        // Fetch allowed_grades
+        const { data: prof } = await supabase.from('profiles').select('allowed_grades').eq('id', studentId).maybeSingle();
+        if (prof && prof.allowed_grades) {
+          setAllowedGrades(prof.allowed_grades);
+        }
         // Behavior logs
         fetchStudentLogs(studentId);
         // Evaluations
@@ -519,6 +555,35 @@ export const StudentPortfolio: React.FC = () => {
         {/* ===== TAB: ĐẤU TRƯỜNG ===== */}
         {activeTab === 'arena' && (
           <div className="space-y-6">
+            {/* CẤU HÌNH QUYỀN HỌC VƯỢT */}
+            <div className="bg-white rounded-xl p-5 border shadow-sm space-y-4">
+              <div>
+                <h3 className="font-bold text-gray-800 flex items-center gap-2">
+                  <Brain className="h-5 w-5 text-indigo-600 animate-pulse" /> Phê duyệt khối lớp học vượt cấp (Đấu Trường)
+                </h3>
+                <p className="text-xs text-gray-500 mt-0.5">Chọn các khối lớp bổ sung cho phép học sinh này làm bài tập và tham gia Arena</p>
+              </div>
+
+              <div className="flex flex-wrap gap-4 pt-2">
+                {['1', '2', '3', '4', '5'].map(grade => {
+                  const isCurrentGrade = (student?.class_name || '').includes(grade);
+                  const isAllowed = allowedGrades.includes(grade);
+                  return (
+                    <label key={grade} className={`flex items-center gap-2 border px-4 py-2 rounded-xl text-sm font-bold cursor-pointer transition ${isCurrentGrade ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed' : isAllowed ? 'bg-indigo-50 border-indigo-200 text-indigo-700 font-bold' : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'}`}>
+                      <input
+                        type="checkbox"
+                        disabled={isCurrentGrade}
+                        checked={isCurrentGrade || isAllowed}
+                        onChange={() => handleToggleAllowedGrade(grade)}
+                        className="rounded text-indigo-600 focus:ring-indigo-500 h-4 w-4 cursor-pointer"
+                      />
+                      Khối Lớp {grade} {isCurrentGrade && '(Lớp hiện tại)'}
+                    </label>
+                  );
+                })}
+              </div>
+            </div>
+
             {!arenaProfile ? (
               <div className="bg-white rounded-xl p-12 border text-center">
                 <Trophy className="h-12 w-12 text-gray-300 mx-auto mb-3" />
