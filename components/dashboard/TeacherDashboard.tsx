@@ -60,12 +60,31 @@ export const TeacherDashboard: React.FC = () => {
 
   const classStudents = useMemo(() => {
     if (selectedClassId === 'ALL') {
-      const allStudentIds = myClasses.flatMap(c => c.studentIds);
-      return users.filter(u => allStudentIds.includes(u.id));
+      const allStudentIds = myClasses.flatMap(c => c.studentIds || []);
+      return users.filter(u => {
+        const inStudentIds = allStudentIds.includes(u.id);
+        const sClassName = (u.className || u.class_name || '').trim().toLowerCase();
+        const actualClassName = sClassName.includes('|') ? sClassName.split('|')[1] : sClassName;
+        const classIdFromProp = sClassName.includes('|') ? sClassName.split('|')[0] : '';
+        const classNameMatch = myClasses.some(c => 
+          (actualClassName && actualClassName === c.name.trim().toLowerCase()) ||
+          (classIdFromProp && classIdFromProp === c.id.toLowerCase())
+        );
+        return inStudentIds || classNameMatch;
+      });
     }
     const selectedClass = myClasses.find(c => c.id === selectedClassId);
     if (!selectedClass) return [];
-    return users.filter(u => selectedClass.studentIds.includes(u.id));
+    return users.filter(u => {
+      const inStudentIds = selectedClass.studentIds?.includes(u.id);
+      const sClassName = (u.className || u.class_name || '').trim().toLowerCase();
+      const actualClassName = sClassName.includes('|') ? sClassName.split('|')[1] : sClassName;
+      const classIdFromProp = sClassName.includes('|') ? sClassName.split('|')[0] : '';
+      const classNameMatch = 
+        (actualClassName && actualClassName === selectedClass.name.trim().toLowerCase()) ||
+        (classIdFromProp && classIdFromProp === selectedClass.id.toLowerCase());
+      return inStudentIds || classNameMatch;
+    });
   }, [selectedClassId, myClasses, users]);
 
   const filteredStudents = useMemo(() => {

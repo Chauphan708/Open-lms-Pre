@@ -882,12 +882,10 @@ export const UserManage: React.FC<Props> = ({ targetRole, title }) => {
                             <button onClick={() => setShowBulkTopicModal(true)} className="px-4 py-2 bg-purple-50 hover:bg-purple-100 text-purple-700 rounded-lg text-sm font-bold flex items-center gap-2 transition border border-purple-100 shadow-sm animate-fade-in">
                                 <GraduationCap className="h-5 w-5" /> Ẩn/Hiện Chủ Đề
                             </button>
+                            <button onClick={() => setSelectedStudentIds([])} className="text-xs text-gray-500 hover:text-gray-700 underline ml-auto">
+                                Bỏ chọn
+                            </button>
                         </>
-                    )}
-                    {selectedStudentIds.length > 0 && (
-                        <button onClick={() => setSelectedStudentIds([])} className="text-xs text-gray-500 hover:text-gray-700 underline ml-auto">
-                            Bỏ chọn
-                        </button>
                     )}
                 </div>
             )}
@@ -897,6 +895,24 @@ export const UserManage: React.FC<Props> = ({ targetRole, title }) => {
                 <table className="w-full text-left text-sm text-gray-500">
                     <thead className="bg-gray-50 text-gray-700 uppercase">
                         <tr>
+                            {targetRole === 'STUDENT' && (
+                                <th className="px-4 py-3 w-12 text-center">
+                                    <input 
+                                        type="checkbox" 
+                                        className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 h-4 w-4 cursor-pointer bg-white"
+                                        checked={filteredUsers.length > 0 && filteredUsers.every(u => selectedStudentIds.includes(u.id))}
+                                        onChange={e => {
+                                            if (e.target.checked) {
+                                                const allIds = filteredUsers.map(u => u.id);
+                                                setSelectedStudentIds(prev => Array.from(new Set([...prev, ...allIds])));
+                                            } else {
+                                                const filteredIds = filteredUsers.map(u => u.id);
+                                                setSelectedStudentIds(prev => prev.filter(id => !filteredIds.includes(id)));
+                                            }
+                                        }}
+                                    />
+                                </th>
+                            )}
                             <th className="px-6 py-3">Họ tên</th>
                             <th className="px-6 py-3">Tên đăng nhập / Email</th>
                             {targetRole === 'STUDENT' && <th className="px-6 py-3">Lớp</th>}
@@ -908,7 +924,27 @@ export const UserManage: React.FC<Props> = ({ targetRole, title }) => {
                         {filteredUsers.map(u => {
                             const isSelected = selectedStudentIds.includes(u.id);
                             return (
-                                <tr key={u.id} className={`transition-colors ${isSelected ? 'bg-indigo-50/70' : 'hover:bg-gray-50'}`}>
+                                <tr 
+                                    key={u.id} 
+                                    onClick={() => {
+                                        if (targetRole === 'STUDENT') {
+                                            setSelectedStudentIds(p => p.includes(u.id) ? p.filter(id => id !== u.id) : [...p, u.id]);
+                                        }
+                                    }}
+                                    className={`transition-colors ${targetRole === 'STUDENT' ? 'cursor-pointer' : ''} ${isSelected ? 'bg-indigo-50/70' : 'hover:bg-gray-50'}`}
+                                >
+                                    {targetRole === 'STUDENT' && (
+                                        <td className="px-4 py-4 text-center" onClick={e => e.stopPropagation()}>
+                                            <input 
+                                                type="checkbox"
+                                                className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 h-4 w-4 cursor-pointer bg-white"
+                                                checked={isSelected}
+                                                onChange={() => {
+                                                    setSelectedStudentIds(p => p.includes(u.id) ? p.filter(id => id !== u.id) : [...p, u.id]);
+                                                }}
+                                            />
+                                        </td>
+                                    )}
                                     <td className="px-6 py-4 flex items-center gap-3 relative">
                                         {isSelected && <div className="absolute left-0 top-0 bottom-0 w-1 bg-indigo-500"></div>}
                                         <img src={u.avatar} className={`w-8 h-8 rounded-full border border-gray-200 ${isSelected ? 'ring-2 ring-indigo-500' : ''}`} alt="" />
@@ -932,7 +968,7 @@ export const UserManage: React.FC<Props> = ({ targetRole, title }) => {
                                             {u.role}
                                         </span>
                                     </td>
-                                    <td className="px-6 py-4 text-center">
+                                    <td className="px-6 py-4 text-center" onClick={e => e.stopPropagation()}>
                                         <div className="flex items-center justify-center gap-2">
                                             <button
                                                 onClick={() => openEditModal(u)}
@@ -969,8 +1005,28 @@ export const UserManage: React.FC<Props> = ({ targetRole, title }) => {
                 {filteredUsers.map(u => {
                     const isSelected = selectedStudentIds.includes(u.id);
                     return (
-                        <div key={u.id} className={`p-4 rounded-xl border shadow-sm transition-colors ${isSelected ? 'bg-indigo-50 border-indigo-200' : 'bg-white'}`}>
+                        <div 
+                            key={u.id} 
+                            onClick={() => {
+                                if (targetRole === 'STUDENT') {
+                                    setSelectedStudentIds(p => p.includes(u.id) ? p.filter(id => id !== u.id) : [...p, u.id]);
+                                }
+                            }}
+                            className={`p-4 rounded-xl border shadow-sm transition-colors ${targetRole === 'STUDENT' ? 'cursor-pointer' : ''} ${isSelected ? 'bg-indigo-50 border-indigo-200' : 'bg-white'}`}
+                        >
                             <div className="flex items-start gap-3 mb-3">
+                                {targetRole === 'STUDENT' && (
+                                    <div className="pt-1" onClick={e => e.stopPropagation()}>
+                                        <input 
+                                            type="checkbox"
+                                            className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 h-4 w-4 cursor-pointer bg-white"
+                                            checked={isSelected}
+                                            onChange={() => {
+                                                setSelectedStudentIds(p => p.includes(u.id) ? p.filter(id => id !== u.id) : [...p, u.id]);
+                                            }}
+                                        />
+                                    </div>
+                                )}
                                 <img src={u.avatar} className={`w-10 h-10 rounded-full border ${isSelected ? 'ring-2 ring-indigo-500' : ''}`} alt="" />
                                 <div className="flex-1 min-w-0">
                                     <div className="flex justify-between items-start">
@@ -995,7 +1051,7 @@ export const UserManage: React.FC<Props> = ({ targetRole, title }) => {
                                 </div>
                             </div>
 
-                            <div className="flex border-t pt-3 gap-2">
+                            <div className="flex border-t pt-3 gap-2" onClick={e => e.stopPropagation()}>
                                 <button
                                     onClick={() => openEditModal(u)}
                                     className="flex-1 py-2 text-xs font-bold text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 flex items-center justify-center gap-1"
