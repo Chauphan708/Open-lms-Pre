@@ -1,7 +1,7 @@
-
 import React, { useState, useEffect } from 'react';
 import { useStore } from '../store';
 import { setGeminiApiKey, getGeminiApiKey, clearGeminiApiKey } from '../services/geminiService';
+import { supabase } from '../services/supabaseClient';
 import {
   User,
   Bell,
@@ -148,39 +148,75 @@ export const Settings: React.FC = () => {
     });
     setLoading(false);
     if (success) {
-      alert('Đã lưu cấu hình hệ thống và chân trang thành công!');
+      alert('Đã cập nhật cấu hình hệ thống thành công!');
     } else {
-      alert('Lỗi khi lưu cấu hình hệ thống.');
+      alert('Lỗi cập nhật cấu hình hệ thống.');
     }
   };
 
-  const handleSaveTools = () => {
+  const handleSaveTools = async () => {
+    if (!user) return;
     setLoading(true);
-    updateUserCustomTools(customTools);
+    
+    // Save to user profiles customTools
+    await updateUserCustomTools(user.id, customTools);
+    
     setTimeout(() => {
       setLoading(false);
       alert('Đã cập nhật danh sách công cụ hỗ trợ trên Sidebar!');
     }, 500);
   };
 
-  const handleSaveApiKey = () => {
+  const handleSaveApiKey = async () => {
     if (!apiKeyInput.trim()) {
       alert('Vui lòng nhập API Key!');
       return;
     }
-    setGeminiApiKey(apiKeyInput.trim());
-    setApiKeyConfigured(true);
-    setApiKeyStatus('idle');
-    alert('✅ Đã lưu API Key thành công!');
+    setLoading(true);
+    try {
+      setGeminiApiKey(apiKeyInput.trim());
+      
+      const { error } = await supabase.from('system_settings').upsert({
+        key: 'gemini_api_key',
+        value: { key: apiKeyInput.trim() },
+        updated_at: new Date().toISOString()
+      });
+
+      if (error) {
+        console.error("Lỗi khi lưu API Key lên database:", error);
+        alert('⚠️ Đã lưu API Key vào trình duyệt của bạn, nhưng gặp lỗi khi đồng bộ lên database: ' + error.message);
+      } else {
+        alert('✅ Đã lưu và đồng bộ API Key lên hệ thống thành công!');
+      }
+      setApiKeyConfigured(true);
+      setApiKeyStatus('idle');
+    } catch (e: any) {
+      console.error(e);
+      alert('❌ Lỗi: ' + e.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleClearApiKey = () => {
+  const handleClearApiKey = async () => {
     if (!confirm('Bạn có chắc muốn xóa API Key? Các tính năng AI sẽ ngừng hoạt động.')) return;
-    clearGeminiApiKey();
-    setApiKeyInput('');
-    setApiKeyConfigured(false);
-    setApiKeyStatus('idle');
-    alert('Đã xóa API Key.');
+    setLoading(true);
+    try {
+      clearGeminiApiKey();
+      setApiKeyInput('');
+      setApiKeyConfigured(false);
+      setApiKeyStatus('idle');
+
+      const { error } = await supabase.from('system_settings').delete().eq('key', 'gemini_api_key');
+      if (error) {
+        console.error("Lỗi khi xóa API Key khỏi database:", error);
+      }
+      alert('Đã xóa API Key thành công!');
+    } catch (err: any) {
+      alert('Lỗi khi xóa API Key trên database: ' + err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleTestApiKey = async () => {

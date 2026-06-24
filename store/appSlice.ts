@@ -26,6 +26,20 @@ export const createAppSlice: StateCreator<AppState, [], [], AppSliceState> = (se
         };
         set({ siteSettings: initial });
       }
+
+      // Sync Gemini API Key from Supabase to localStorage
+      try {
+        const { data: apiKeyData } = await supabase
+          .from('system_settings')
+          .select('*')
+          .eq('key', 'gemini_api_key')
+          .maybeSingle();
+        if (apiKeyData && apiKeyData.value && apiKeyData.value.key) {
+          localStorage.setItem('gemini_api_key', apiKeyData.value.key.trim());
+        }
+      } catch (keyErr) {
+        console.error("Error fetching gemini api key from DB:", keyErr);
+      }
     } catch (err) {
       console.error("Error fetching site settings:", err);
     }
