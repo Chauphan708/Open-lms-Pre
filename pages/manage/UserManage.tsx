@@ -18,6 +18,7 @@ export const UserManage: React.FC<Props> = ({ targetRole, title }) => {
     const [mode, setMode] = useState<ImportMode>('SINGLE');
     const [isCreating, setIsCreating] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
+    const [selectedClassFilter, setSelectedClassFilter] = useState('');
 
     // Password Reset State
     const [resetUser, setResetUser] = useState<User | null>(null);
@@ -88,10 +89,27 @@ export const UserManage: React.FC<Props> = ({ targetRole, title }) => {
         const isTargetRole = u.role === targetRole;
         if (!isTargetRole) return false;
 
-        const matchesSearch = (u.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                               u.email.includes(searchTerm) || 
-                               (u.className && u.className.toLowerCase().includes(searchTerm.toLowerCase())));
+        // Tìm kiếm thông minh không phân biệt dấu tiếng Việt
+        const searchNoTone = removeVietnameseTones(searchTerm).toLowerCase().trim();
+        const userNameNoTone = removeVietnameseTones(u.name).toLowerCase();
+        const userEmailNoTone = removeVietnameseTones(u.email || '').toLowerCase();
+        const userClassNameNoTone = removeVietnameseTones(u.className || u.class_name || '').toLowerCase();
+
+        const matchesSearch = userNameNoTone.includes(searchNoTone) || 
+                               userEmailNoTone.includes(searchNoTone) || 
+                               userClassNameNoTone.includes(searchNoTone);
         if (!matchesSearch) return false;
+
+        // Bộ lọc lớp học
+        if (targetRole === 'STUDENT' && selectedClassFilter) {
+            const classObj = classes.find(c => c.id === selectedClassFilter);
+            if (classObj) {
+                const inStudentIds = classObj.studentIds?.includes(u.id);
+                const sClassName = (u.className || u.class_name || '').trim().toLowerCase();
+                const classNameMatch = sClassName && sClassName === classObj.name.trim().toLowerCase();
+                if (!inStudentIds && !classNameMatch) return false;
+            }
+        }
 
         // Data Isolation: If current user is a teacher and looking at students, ONLY show students in THEIR classes
         if (currentUser?.role === 'TEACHER' && targetRole === 'STUDENT') {
@@ -682,16 +700,38 @@ export const UserManage: React.FC<Props> = ({ targetRole, title }) => {
             )}
 
             {/* SEARCH BAR */}
-            <div className="bg-white rounded-xl border shadow-sm p-4">
-                <div className="relative">
+            <div className="bg-white rounded-xl border shadow-sm p-4 flex flex-col sm:flex-row gap-3">
+                <div className="relative flex-1">
                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
                     <input
-                        className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
-                        placeholder="Tìm kiếm theo tên, email hoặc lớp..."
+                        className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none bg-white text-gray-950 font-medium"
+                        placeholder="Tìm kiếm theo tên hoặc tên đăng nhập..."
                         value={searchTerm}
                         onChange={e => setSearchTerm(e.target.value)}
                     />
                 </div>
+                {targetRole === 'STUDENT' && (
+                    <div className="w-full sm:w-48 flex-shrink-0">
+                        <select
+                            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500 bg-white text-gray-950 font-medium"
+                            value={selectedClassFilter}
+                            onChange={e => setSelectedClassFilter(e.target.value)}
+                        >
+                            <option value="">-- Tất cả các lớp --</option>
+                            {classes.map(c => (
+                                <option key={c.id} value={c.id}>{c.name}</option>
+                            ))}
+                        </select>
+                    </div>
+                )}
+                <button
+                    onClick={() => {
+                        // Tìm kiếm thông minh chạy tự động khi gõ chữ (Instant), nút này để bổ trợ trải nghiệm bấm trực quan
+                    }}
+                    className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm px-6 py-2 rounded-lg flex items-center justify-center gap-2 shadow-sm transition-colors whitespace-nowrap"
+                >
+                    <Search className="h-4 w-4" /> Tìm kiếm
+                </button>
             </div>
 
             {filteredUsers.length === 0 && (
