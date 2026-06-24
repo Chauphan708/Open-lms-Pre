@@ -241,16 +241,35 @@ export const ClassManage: React.FC = () => {
             >
               <div className="flex justify-between items-center">
                 <span className="font-bold text-gray-800">{c.name}</span>
-                <span className="text-xs bg-gray-100 px-2 py-1 rounded text-gray-600 flex items-center gap-1">
-                  <Users className="h-3 w-3" /> {
-                    allStudents.filter(s => {
-                      const inStudentIds = c.studentIds?.includes(s.id);
-                      const sClassName = (s.className || s.class_name || '').trim().toLowerCase();
-                      const classNameMatch = sClassName && sClassName === c.name.trim().toLowerCase();
-                      return inStudentIds || classNameMatch;
-                    }).length
-                  }
-                </span>
+                <div className="flex items-center gap-1.5">
+                  <button
+                    onClick={async (e) => {
+                      e.stopPropagation(); // Ngăn kích hoạt hành động chọn lớp
+                      if (confirm(`Bạn có chắc chắn muốn xóa lớp ${c.name}? Hành động này sẽ không thể hoàn tác.`)) {
+                        const success = await deleteClass(c.id);
+                        if (success && selectedClassId === c.id) {
+                          setSelectedClassId(null);
+                        }
+                      }
+                    }}
+                    className="p-1 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
+                    title="Xóa lớp học"
+                  >
+                    <svg className="h-3.8 w-3.8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-4v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                  </button>
+                  <span className="text-xs bg-gray-100 px-2 py-1 rounded text-gray-600 flex items-center gap-1">
+                    <Users className="h-3 w-3" /> {
+                      allStudents.filter(s => {
+                        const inStudentIds = c.studentIds?.includes(s.id);
+                        const sClassName = (s.className || s.class_name || '').trim().toLowerCase();
+                        const classNameMatch = sClassName && sClassName === c.name.trim().toLowerCase();
+                        return inStudentIds || classNameMatch;
+                      }).length
+                    }
+                  </span>
+                </div>
               </div>
               <div className="text-xs text-gray-500 mt-1">
                 {academicYears.find(y => y.id === c.academicYearId)?.name}
