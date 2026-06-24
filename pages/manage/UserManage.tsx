@@ -35,11 +35,24 @@ export const UserManage: React.FC<Props> = ({ targetRole, title }) => {
     const [bulkTopicSelectedTopics, setBulkTopicSelectedTopics] = useState<string[]>([]);
     const [bulkTopicAction, setBulkTopicAction] = useState<'SHOW' | 'HIDE'>('SHOW');
     const [bulkCustomTopics, setBulkCustomTopics] = useState<any[]>([]);
+    const [bulkDbTopics, setBulkDbTopics] = useState<any[]>([]);
 
     useEffect(() => {
         if (showBulkTopicModal) {
             supabase.from('arena_topics').select('*').then(({ data }) => {
                 if (data) setBulkCustomTopics(data);
+            });
+            supabase.from('arena_questions').select('topic, subject').then(({ data }) => {
+                if (data) {
+                    const filtered = data
+                        .filter(q => q.topic && q.topic.trim() && q.topic !== 'general')
+                        .map(q => ({
+                            topic: q.topic.trim(),
+                            subject: q.subject || 'math'
+                        }));
+                    const unique = Array.from(new Set(filtered.map(x => JSON.stringify(x)))).map(s => JSON.parse(s));
+                    setBulkDbTopics(unique);
+                }
             });
         }
     }, [showBulkTopicModal]);
@@ -56,8 +69,18 @@ export const UserManage: React.FC<Props> = ({ targetRole, title }) => {
                 });
             }
         });
+        bulkDbTopics.forEach((dt: any) => {
+            const exists = list.some(t => t.topic.toLowerCase() === dt.topic.toLowerCase());
+            if (!exists) {
+                list.push({
+                    topic: dt.topic,
+                    label: dt.topic,
+                    subject: dt.subject || 'Khác'
+                });
+            }
+        });
         return list;
-    }, [bulkCustomTopics]);
+    }, [bulkCustomTopics, bulkDbTopics]);
 
     const bulkTopicsBySubject = React.useMemo(() => {
         const map: Record<string, typeof combinedBulkTopics> = {};

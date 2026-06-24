@@ -106,6 +106,7 @@ export const StudentPortfolio: React.FC = () => {
   const [allowedGrades, setAllowedGrades] = useState<string[]>([]);
   const [hiddenTopics, setHiddenTopics] = useState<string[]>([]);
   const [customTopics, setCustomTopics] = useState<any[]>([]);
+  const [dbTopics, setDbTopics] = useState<any[]>([]);
 
   const combinedTopics = useMemo(() => {
     const list = [...ALL_DEFAULT_TOPICS];
@@ -119,8 +120,18 @@ export const StudentPortfolio: React.FC = () => {
         });
       }
     });
+    dbTopics.forEach((dt: any) => {
+      const exists = list.some(t => t.topic.toLowerCase() === dt.topic.toLowerCase());
+      if (!exists) {
+        list.push({
+          topic: dt.topic,
+          label: dt.topic,
+          subject: dt.subject || 'Khác'
+        });
+      }
+    });
     return list;
-  }, [customTopics]);
+  }, [customTopics, dbTopics]);
 
   const topicsBySubject = useMemo(() => {
     const map: Record<string, typeof combinedTopics> = {};
@@ -201,6 +212,19 @@ export const StudentPortfolio: React.FC = () => {
         const { data: customT } = await supabase.from('arena_topics').select('*');
         if (customT) {
           setCustomTopics(customT);
+        }
+
+        // Fetch arena_questions unique topics
+        const { data: aqTopics } = await supabase.from('arena_questions').select('topic, subject');
+        if (aqTopics) {
+          const filtered = aqTopics
+            .filter(q => q.topic && q.topic.trim() && q.topic !== 'general')
+            .map(q => ({
+              topic: q.topic.trim(),
+              subject: q.subject || 'math'
+            }));
+          const unique = Array.from(new Set(filtered.map(x => JSON.stringify(x)))).map(s => JSON.parse(s));
+          setDbTopics(unique);
         }
         // Behavior logs
         fetchStudentLogs(studentId);
