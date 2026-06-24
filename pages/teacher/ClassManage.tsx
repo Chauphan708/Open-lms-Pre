@@ -26,7 +26,13 @@ export const ClassManage: React.FC = () => {
 
   // Form State
   const [newClassName, setNewClassName] = useState('');
-  const [selectedYear, setSelectedYear] = useState(academicYears[0]?.id || '');
+  const [selectedYear, setSelectedYear] = useState('');
+
+  useEffect(() => {
+    if (academicYears.length > 0 && !selectedYear) {
+      setSelectedYear(academicYears[0].id);
+    }
+  }, [academicYears, selectedYear]);
 
   // Add Student State
   const [studentsToAdd, setStudentsToAdd] = useState<string[]>([]);
@@ -55,7 +61,8 @@ export const ClassManage: React.FC = () => {
   };
 
   const handleCreateClass = () => {
-    if (!newClassName.trim() || !selectedYear) return;
+    const yearId = selectedYear || academicYears[0]?.id;
+    if (!newClassName.trim() || !yearId) return;
     const nameNormalized = newClassName.trim().toLowerCase();
     
     // Kiểm tra trùng tên lớp (không phân biệt hoa thường, khoảng trắng thừa)
@@ -68,7 +75,7 @@ export const ClassManage: React.FC = () => {
     const newClass: Class = {
       id: `cls_${Date.now()}`,
       name: newClassName.trim(),
-      academicYearId: selectedYear,
+      academicYearId: yearId,
       teacherId: currentUser?.id || '',
       studentIds: []
     };
