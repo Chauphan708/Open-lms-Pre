@@ -1,5 +1,5 @@
 import { StateCreator } from 'zustand';
-import { AppState, AvatarClass, ArenaMatchFilters } from '../types';
+import { AppState, AvatarClass, ArenaMatchFilters, ArenaQuestion } from '../types';
 import { supabase } from '../services/supabaseClient';
 
 type ArenaSliceState = Pick<AppState, 
@@ -70,6 +70,37 @@ export const createArenaSlice: StateCreator<AppState, [], [], ArenaSliceState> =
   },
 
   updateArenaProfile: async (profile) => {
+    const state = get();
+    const current = state.arenaProfile;
+
+    // Nếu cập nhật Elo, XP hoặc Tầng tháp, sử dụng RPC an toàn để tránh ghi trực tiếp từ Client
+    if (current && current.id === profile.id && (profile.elo_rating !== undefined || profile.total_xp !== undefined || profile.tower_floor !== undefined)) {
+      const xpGained = (profile.total_xp ?? current.total_xp) - current.total_xp;
+      const eloChange = (profile.elo_rating ?? current.elo_rating) - current.elo_rating;
+      const newFloor = profile.tower_floor !== undefined ? profile.tower_floor : null;
+
+      const { error } = await supabase.rpc('update_arena_profile_stats_rpc', {
+        p_user_id: profile.id,
+        p_xp_gained: Math.max(0, xpGained),
+        p_elo_change: eloChange,
+        p_new_floor: newFloor
+      });
+
+      if (!error) {
+        set({
+          arenaProfile: {
+            ...current,
+            total_xp: current.total_xp + Math.max(0, xpGained),
+            elo_rating: Math.max(500, current.elo_rating + eloChange),
+            tower_floor: newFloor !== null ? newFloor : current.tower_floor
+          }
+        });
+        return;
+      } else {
+        console.error("Lỗi cập nhật Profile qua RPC an toàn:", error.message);
+      }
+    }
+
     const { error } = await supabase.from('arena_profiles').update(profile).eq('id', profile.id);
     if (!error) {
       set(state => ({
@@ -406,55 +437,22 @@ export const createArenaSlice: StateCreator<AppState, [], [], ArenaSliceState> =
   },
 
   finishMatch: async (matchId, winnerId) => {
-    await supabase.from('arena_matches').update({ status: 'finished', winner_id: winnerId }).eq('id', matchId);
+    // Gọi RPC để tính toán Elo, XP, Thắng/Thua và cập nhật trạng thái trận đấu trên Server
+    const { error: rpcError } = await supabase.rpc('finish_arena_match_rpc', {
+      p_match_id: matchId,
+      p_winner_id: winnerId
+    });
 
-    // Update Elo for both players
-    const { data: match } = await supabase.from('arena_matches').select('*').eq('id', matchId).single();
-    if (!match) return;
+    if (rpcError) {
+      console.error("Lỗi khi kết thúc trận đấu qua RPC:", rpcError.message);
+      // Fallback nếu RPC chưa được cài đặt trong database
+      await supabase.from('arena_matches').update({ status: 'finished', winner_id: winnerId }).eq('id', matchId);
+    }
 
-    const { data: p1Profile } = await supabase.from('arena_profiles').select('*').eq('id', match.player1_id).single();
-    const { data: p2Profile } = await supabase.from('arena_profiles').select('*').eq('id', match.player2_id).single();
-    if (!p1Profile || !p2Profile) return;
-
-    const K = 32;
-    const expected1 = 1 / (1 + Math.pow(10, (p2Profile.elo_rating - p1Profile.elo_rating) / 400));
-    const expected2 = 1 - expected1;
-
-    let score1 = 0.5, score2 = 0.5; // draw
-    if (winnerId === match.player1_id) { score1 = 1; score2 = 0; }
-    else if (winnerId === match.player2_id) { score1 = 0; score2 = 1; }
-
-    const newElo1 = Math.round(p1Profile.elo_rating + K * (score1 - expected1));
-    const newElo2 = Math.round(p2Profile.elo_rating + K * (score2 - expected2));
-
-    await supabase.from('arena_profiles').update({
-      elo_rating: newElo1,
-      total_xp: p1Profile.total_xp + (score1 === 1 ? 50 : 10),
-      wins: p1Profile.wins + (score1 === 1 ? 1 : 0),
-      losses: p1Profile.losses + (score1 === 0 ? 1 : 0)
-    }).eq('id', match.player1_id);
-
-    await supabase.from('arena_profiles').update({
-      elo_rating: newElo2,
-      total_xp: p2Profile.total_xp + (score2 === 1 ? 50 : 10),
-      wins: p2Profile.wins + (score2 === 1 ? 1 : 0),
-      losses: p2Profile.losses + (score2 === 0 ? 1 : 0)
-    }).eq('id', match.player2_id);
-
-    // Update local if current user
+    // Tải lại thông tin cá nhân của người chơi hiện tại từ database để cập nhật giao diện
     const state = get();
-    if (state.arenaProfile && (state.arenaProfile.id === match.player1_id || state.arenaProfile.id === match.player2_id)) {
-      const isP1 = state.arenaProfile.id === match.player1_id;
-      const won = winnerId === state.arenaProfile.id;
-      set({
-        arenaProfile: {
-          ...state.arenaProfile,
-          elo_rating: isP1 ? newElo1 : newElo2,
-          total_xp: state.arenaProfile.total_xp + (won ? 50 : 10),
-          wins: state.arenaProfile.wins + (won ? 1 : 0),
-          losses: state.arenaProfile.losses + (!won && winnerId ? 1 : 0)
-        }
-      });
+    if (state.user) {
+      await state.fetchArenaProfile(state.user.id);
     }
   },
 
@@ -468,7 +466,49 @@ export const createArenaSlice: StateCreator<AppState, [], [], ArenaSliceState> =
   },
 
   bulkAddArenaQuestions: async (questions) => {
-    const rowsFull = questions.map((q, i) => ({
+    if (questions.length === 0) return 0;
+
+    // 1. Remove duplicate questions within the incoming list itself (based on trimmed lowercase content)
+    const uniqueIncoming: Omit<ArenaQuestion, 'id'>[] = [];
+    const seenContents = new Set<string>();
+    for (const q of questions) {
+      const normalized = q.content.trim().toLowerCase().replace(/\s+/g, ' ');
+      if (!seenContents.has(normalized)) {
+        seenContents.add(normalized);
+        uniqueIncoming.push(q);
+      }
+    }
+
+    if (uniqueIncoming.length === 0) return 0;
+
+    // 2. Fetch existing questions to check for duplicates in database
+    const incomingContents = uniqueIncoming.map(q => q.content.trim());
+    let existingContents: string[] = [];
+    try {
+      const { data, error } = await supabase
+        .from('arena_questions')
+        .select('content')
+        .in('content', incomingContents);
+        
+      if (!error && data) {
+        existingContents = data.map(row => row.content.trim().toLowerCase().replace(/\s+/g, ' '));
+      }
+    } catch (dbErr) {
+      console.error("Error checking duplicates:", dbErr);
+    }
+
+    // Filter out questions that already exist in the database
+    const finalToInsert = uniqueIncoming.filter(q => {
+      const norm = q.content.trim().toLowerCase().replace(/\s+/g, ' ');
+      return !existingContents.includes(norm);
+    });
+
+    if (finalToInsert.length === 0) {
+      console.log("All questions were duplicates. Skipping insert.");
+      return 0;
+    }
+
+    const rowsFull = finalToInsert.map((q, i) => ({
       id: `aq_bulk_${Date.now()}_${i}`,
       content: q.content,
       answers: q.answers || [],
@@ -489,7 +529,7 @@ export const createArenaSlice: StateCreator<AppState, [], [], ArenaSliceState> =
     let { error } = await supabase.from('arena_questions').insert(rowsFull);
     if (error) {
       console.warn("Retrying bulk insert without custom time, xp, and new columns...", error.message);
-      const rowsMin = questions.map((q, i) => ({
+      const rowsMin = finalToInsert.map((q, i) => ({
         id: `aq_bulk_${Date.now()}_${i}`,
         content: q.content,
         answers: q.answers || [],

@@ -69,7 +69,7 @@ export const ArenaAdmin: React.FC = () => {
     const [importPreview, setImportPreview] = useState<Omit<ArenaQuestion, 'id'>[]>([]);
     const [importErrors, setImportErrors] = useState<string[]>([]);
     const [importing, setImporting] = useState(false);
-    const [importResult, setImportResult] = useState<{ count: number } | null>(null);
+    const [importResult, setImportResult] = useState<{ count: number, skipped?: number } | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [validParsedQuestions, setValidParsedQuestions] = useState<Omit<ArenaQuestion, 'id'>[]>([]);
     const [invalidQuestionsText, setInvalidQuestionsText] = useState('');
@@ -314,7 +314,7 @@ export const ArenaAdmin: React.FC = () => {
             type: q.type as any || 'MCQ'
         }));
         const count = await bulkAddArenaQuestions(converted);
-        setImportResult({ count });
+        setImportResult({ count, skipped: converted.length - count });
         setImporting(false);
         setBankSelectedIds(new Set());
     };
@@ -417,7 +417,7 @@ export const ArenaAdmin: React.FC = () => {
         if (aiPreviewList.length === 0) return;
         setImporting(true);
         const count = await bulkAddArenaQuestions(aiPreviewList);
-        setImportResult({ count });
+        setImportResult({ count, skipped: aiPreviewList.length - count });
         setImporting(false);
         setAiPreviewList([]);
         setShowAiPreviewModal(false);
@@ -955,7 +955,7 @@ export const ArenaAdmin: React.FC = () => {
         setImporting(true);
         try {
             const count = await bulkAddArenaQuestions(validParsedQuestions);
-            alert(`📥 Đã thêm thành công ${count} câu hỏi hợp lệ vào Đấu Trí.`);
+            alert(`📥 Đã thêm thành công ${count} câu hỏi hợp lệ vào Đấu Trí${validParsedQuestions.length - count > 0 ? ` (đã bỏ qua ${validParsedQuestions.length - count} câu trùng lặp)` : ''}.`);
             
             // Reconstruct text to keep only invalid questions for correction
             setAiScanText(invalidQuestionsText);
@@ -1334,7 +1334,7 @@ export const ArenaAdmin: React.FC = () => {
         if (importPreview.length === 0) return;
         setImporting(true);
         const count = await bulkAddArenaQuestions(importPreview);
-        setImportResult({ count });
+        setImportResult({ count, skipped: importPreview.length - count });
         setImporting(false);
         setImportPreview([]);
         await fetchArenaQuestions();
@@ -1818,7 +1818,12 @@ export const ArenaAdmin: React.FC = () => {
                                 <div className="text-center py-8">
                                     <CheckCircle className="h-16 w-16 text-emerald-500 mx-auto mb-4" />
                                     <h3 className="text-xl font-bold text-gray-900 mb-2">Import thành công!</h3>
-                                    <p className="text-gray-500">Đã thêm <strong className="text-emerald-600">{importResult.count}</strong> câu hỏi</p>
+                                    <p className="text-gray-500">
+                                        Đã thêm <strong className="text-emerald-600">{importResult.count}</strong> câu hỏi
+                                        {importResult.skipped !== undefined && importResult.skipped > 0 && (
+                                            <> (đã tự động bỏ qua <strong className="text-amber-600">{importResult.skipped}</strong> câu trùng lặp)</>
+                                        )}
+                                    </p>
                                     <button onClick={() => { setShowImport(false); setImportResult(null); }} className="mt-6 px-6 py-2.5 bg-indigo-600 text-white rounded-xl font-bold">Đóng</button>
                                 </div>
                             ) : (
@@ -2005,7 +2010,12 @@ export const ArenaAdmin: React.FC = () => {
                                 <div className="text-center py-8">
                                     <CheckCircle className="h-16 w-16 text-emerald-500 mx-auto mb-4" />
                                     <h3 className="text-xl font-bold text-gray-900 mb-2">Import thành công!</h3>
-                                    <p className="text-gray-500">Đã thêm <strong className="text-emerald-600">{importResult.count}</strong> câu hỏi vào Đấu Trí</p>
+                                    <p className="text-gray-500">
+                                        Đã thêm <strong className="text-emerald-600">{importResult.count}</strong> câu hỏi vào Đấu Trí
+                                        {importResult.skipped !== undefined && importResult.skipped > 0 && (
+                                            <> (đã tự động bỏ qua <strong className="text-amber-600">{importResult.skipped}</strong> câu trùng lặp)</>
+                                        )}
+                                    </p>
                                     <button onClick={() => { setShowBankImport(false); setImportResult(null); }} className="mt-6 px-6 py-2.5 bg-indigo-600 text-white rounded-xl font-bold">Đóng</button>
                                 </div>
                             ) : (
