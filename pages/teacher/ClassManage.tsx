@@ -33,11 +33,41 @@ export const ClassManage: React.FC = () => {
   const [isAddDropdownOpen, setIsAddDropdownOpen] = useState(false);
   const [studentSearchTerm, setStudentSearchTerm] = useState('');
 
+  // Edit Class State
+  const [editingClassId, setEditingClassId] = useState<string | null>(null);
+  const [editingClassName, setEditingClassName] = useState('');
+
+  const handleUpdateClassName = async (c: Class) => {
+    if (!editingClassName.trim()) return;
+    const nameNormalized = editingClassName.trim().toLowerCase();
+    
+    // Kiểm tra trùng tên lớp
+    const isDuplicate = myClasses.some(cls => cls.id !== c.id && cls.name.trim().toLowerCase() === nameNormalized);
+    if (isDuplicate) {
+      alert(`Lớp học với tên "${editingClassName.trim()}" đã tồn tại. Vui lòng nhập tên lớp khác.`);
+      return;
+    }
+
+    const updated = { ...c, name: editingClassName.trim() };
+    await updateClass(updated);
+    setEditingClassId(null);
+    setEditingClassName('');
+  };
+
   const handleCreateClass = () => {
-    if (!newClassName || !selectedYear) return;
+    if (!newClassName.trim() || !selectedYear) return;
+    const nameNormalized = newClassName.trim().toLowerCase();
+    
+    // Kiểm tra trùng tên lớp (không phân biệt hoa thường, khoảng trắng thừa)
+    const isDuplicate = myClasses.some(c => c.name.trim().toLowerCase() === nameNormalized);
+    if (isDuplicate) {
+      alert(`Lớp học với tên "${newClassName.trim()}" đã tồn tại. Vui lòng nhập tên lớp khác.`);
+      return;
+    }
+
     const newClass: Class = {
       id: `cls_${Date.now()}`,
-      name: newClassName,
+      name: newClassName.trim(),
       academicYearId: selectedYear,
       teacherId: currentUser?.id || '',
       studentIds: []
@@ -240,8 +270,51 @@ export const ClassManage: React.FC = () => {
                 `}
             >
               <div className="flex justify-between items-center">
-                <span className="font-bold text-gray-800">{c.name}</span>
+                {editingClassId === c.id ? (
+                  <div className="flex items-center gap-1 flex-1 mr-2" onClick={e => e.stopPropagation()}>
+                    <input
+                      type="text"
+                      className="w-full px-2 py-1 text-xs border rounded bg-white text-gray-900 focus:outline-indigo-500 font-bold"
+                      value={editingClassName}
+                      onChange={e => setEditingClassName(e.target.value)}
+                      autoFocus
+                      onKeyDown={e => {
+                        if (e.key === 'Enter') handleUpdateClassName(c);
+                        if (e.key === 'Escape') setEditingClassId(null);
+                      }}
+                    />
+                    <button
+                      onClick={() => handleUpdateClassName(c)}
+                      className="p-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 rounded text-[10px] font-bold"
+                    >
+                      Lưu
+                    </button>
+                    <button
+                      onClick={() => setEditingClassId(null)}
+                      className="p-1 bg-gray-100 hover:bg-gray-200 text-gray-500 rounded text-[10px]"
+                    >
+                      Hủy
+                    </button>
+                  </div>
+                ) : (
+                  <span className="font-bold text-gray-800 flex-1 truncate">{c.name}</span>
+                )}
                 <div className="flex items-center gap-1.5">
+                  {editingClassId !== c.id && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation(); // Ngăn chọn lớp
+                        setEditingClassId(c.id);
+                        setEditingClassName(c.name);
+                      }}
+                      className="p-1.5 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors flex items-center justify-center"
+                      title="Sửa tên lớp"
+                    >
+                      <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                      </svg>
+                    </button>
+                  )}
                   <button
                     onClick={async (e) => {
                       e.stopPropagation(); // Ngăn kích hoạt hành động chọn lớp
