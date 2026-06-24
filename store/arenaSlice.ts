@@ -205,7 +205,8 @@ export const createArenaSlice: StateCreator<AppState, [], [], ArenaSliceState> =
       correct_answer_string: q.correct_answer_string || null,
       guide: q.guide || null,
       explanation: q.explanation || null,
-      grade: q.grade
+      grade: q.grade,
+      case_sensitive: q.case_sensitive ?? false
     };
     
     let { error } = await supabase.from('arena_questions').insert(rowFull);
@@ -240,7 +241,8 @@ export const createArenaSlice: StateCreator<AppState, [], [], ArenaSliceState> =
       correct_answer_string: q.correct_answer_string || null,
       guide: q.guide || null,
       explanation: q.explanation || null,
-      grade: q.grade
+      grade: q.grade,
+      case_sensitive: q.case_sensitive ?? false
     };
     let { error } = await supabase.from('arena_questions').update(payloadFull).eq('id', q.id);
     if (error) {
@@ -523,7 +525,8 @@ export const createArenaSlice: StateCreator<AppState, [], [], ArenaSliceState> =
       correct_answer_string: q.correct_answer_string || null,
       guide: q.guide || null,
       explanation: q.explanation || null,
-      grade: q.grade
+      grade: q.grade,
+      case_sensitive: q.case_sensitive ?? false
     }));
     
     let { error } = await supabase.from('arena_questions').insert(rowsFull);

@@ -114,6 +114,7 @@ export const ArenaAdmin: React.FC = () => {
     const [formCorrectAnswerString, setFormCorrectAnswerString] = useState('');
     const [formGuide, setFormGuide] = useState('');
     const [formExplanation, setFormExplanation] = useState('');
+    const [formCaseSensitive, setFormCaseSensitive] = useState(false);
 
     const [dbTopics, setDbTopics] = useState<{ topic: string; subject: string; grade: string }[]>([]);
 
@@ -992,6 +993,7 @@ export const ArenaAdmin: React.FC = () => {
         setFormXpReward(item.xp_reward || 10);
         setFormGuide(item.guide || '');
         setFormExplanation(item.explanation || '');
+        setFormCaseSensitive(item.case_sensitive || false);
         setEditingPreviewIndex(index);
     };
 
@@ -1005,6 +1007,7 @@ export const ArenaAdmin: React.FC = () => {
                 correct_index: formType === 'MCQ' ? formCorrect : 0,
                 correct_indices: formType === 'MCQ_MULTIPLE' ? formCorrectIndices : [],
                 correct_answer_string: formType === 'SHORT_ANSWER' ? formCorrectAnswerString.trim() : '',
+                case_sensitive: formType === 'SHORT_ANSWER' ? formCaseSensitive : false,
                 difficulty: formDifficulty,
                 subject: formSubject,
                 topic: formTopic.trim() || 'general',
@@ -1036,6 +1039,7 @@ export const ArenaAdmin: React.FC = () => {
         setFormGrade(filterGrade || '4');
         setFormGuide('');
         setFormExplanation('');
+        setFormCaseSensitive(false);
         setEditing({} as ArenaQuestion);
     };
 
@@ -1055,6 +1059,7 @@ export const ArenaAdmin: React.FC = () => {
         setFormGrade(q.grade || '4');
         setFormGuide(q.guide || '');
         setFormExplanation(q.explanation || '');
+        setFormCaseSensitive(q.case_sensitive || false);
         setEditing(q);
     };
 
@@ -1075,6 +1080,7 @@ export const ArenaAdmin: React.FC = () => {
             correct_index: formType === 'MCQ' ? formCorrect : 0,
             correct_indices: formType === 'MCQ_MULTIPLE' ? formCorrectIndices : null,
             correct_answer_string: formType === 'SHORT_ANSWER' ? formCorrectAnswerString.trim() : null,
+            case_sensitive: formType === 'SHORT_ANSWER' ? formCaseSensitive : false,
             answers: formType !== 'SHORT_ANSWER' ? formAnswers : [],
             guide: formGuide.trim(),
             explanation: formExplanation.trim()
@@ -1658,16 +1664,31 @@ export const ArenaAdmin: React.FC = () => {
 
                             {/* Render different answer options by selected type */}
                             {formType === 'SHORT_ANSWER' ? (
-                                <div className="bg-emerald-50/30 border border-emerald-100 p-4 rounded-xl">
-                                    <label className="block text-xs font-black text-emerald-800 uppercase tracking-widest mb-1.5">Đáp án chính xác (Điền từ) *</label>
-                                    <input 
-                                        type="text"
-                                        value={formCorrectAnswerString}
-                                        onChange={e => setFormCorrectAnswerString(e.target.value)}
-                                        placeholder="Nhập chuỗi/từ đáp án đúng chính xác..."
-                                        className="w-full border rounded-xl px-3.5 py-2.5 text-sm outline-none focus:ring-2 focus:ring-emerald-500 bg-white font-bold text-emerald-950"
-                                    />
-                                    <p className="text-[10px] text-emerald-700 mt-2 italic font-medium">* Lưu ý: Hệ thống Đấu trí sẽ tự động loại bỏ khoảng trắng và chuyển chữ thường khi chấm bài học sinh để đảm bảo chính xác.</p>
+                                <div className="bg-emerald-50/30 border border-emerald-100 p-4 rounded-xl space-y-3">
+                                    <div>
+                                        <label className="block text-xs font-black text-emerald-800 uppercase tracking-widest mb-1.5">Đáp án chính xác (Điền từ) *</label>
+                                        <input 
+                                            type="text"
+                                            value={formCorrectAnswerString}
+                                            onChange={e => setFormCorrectAnswerString(e.target.value)}
+                                            placeholder="Nhập chuỗi/từ đáp án đúng chính xác..."
+                                            className="w-full border rounded-xl px-3.5 py-2.5 text-sm outline-none focus:ring-2 focus:ring-emerald-500 bg-white font-bold text-emerald-950"
+                                        />
+                                    </div>
+                                    <label className="flex items-center gap-2 cursor-pointer select-none">
+                                        <input 
+                                            type="checkbox" 
+                                            checked={formCaseSensitive} 
+                                            onChange={e => setFormCaseSensitive(e.target.checked)}
+                                            className="rounded text-emerald-600 focus:ring-emerald-500 h-4 w-4" 
+                                        />
+                                        <span className="text-xs font-bold text-emerald-900">Phân biệt chữ hoa / chữ thường (Case Sensitive)</span>
+                                    </label>
+                                    <p className="text-[10px] text-emerald-700 mt-1 italic font-medium">
+                                        {formCaseSensitive 
+                                            ? "* Lưu ý: Học sinh phải viết hoa/thường khớp 100% với đáp án (rất cần thiết cho các câu hỏi chính tả)."
+                                            : "* Lưu ý: Hệ thống sẽ tự động chuyển về dạng chữ thường và bỏ dấu cách thừa khi đối chiếu kết quả của học sinh."}
+                                    </p>
                                 </div>
                             ) : (
                                 <>
@@ -2238,14 +2259,25 @@ export const ArenaAdmin: React.FC = () => {
                             </div>
 
                             {formType === 'SHORT_ANSWER' ? (
-                                <div className="bg-emerald-50 border p-3 rounded-xl">
-                                    <label className="block text-xs font-black text-emerald-800 uppercase tracking-widest mb-1.5">Đáp án đúng điền từ *</label>
-                                    <input 
-                                        type="text"
-                                        value={formCorrectAnswerString}
-                                        onChange={e => setFormCorrectAnswerString(e.target.value)}
-                                        className="w-full border rounded-xl px-3.5 py-2.5 text-sm outline-none focus:ring-2 focus:ring-emerald-500 bg-white font-bold text-emerald-950"
-                                    />
+                                <div className="bg-emerald-50 border p-3 rounded-xl space-y-3">
+                                    <div>
+                                        <label className="block text-xs font-black text-emerald-800 uppercase tracking-widest mb-1.5">Đáp án đúng điền từ *</label>
+                                        <input 
+                                            type="text"
+                                            value={formCorrectAnswerString}
+                                            onChange={e => setFormCorrectAnswerString(e.target.value)}
+                                            className="w-full border rounded-xl px-3.5 py-2.5 text-sm outline-none focus:ring-2 focus:ring-emerald-500 bg-white font-bold text-emerald-950"
+                                        />
+                                    </div>
+                                    <label className="flex items-center gap-2 cursor-pointer select-none">
+                                        <input 
+                                            type="checkbox" 
+                                            checked={formCaseSensitive} 
+                                            onChange={e => setFormCaseSensitive(e.target.checked)}
+                                            className="rounded text-emerald-600 focus:ring-emerald-500 h-4 w-4" 
+                                        />
+                                        <span className="text-xs font-bold text-emerald-900">Phân biệt chữ hoa / chữ thường (Case Sensitive)</span>
+                                    </label>
                                 </div>
                             ) : (
                                 <>

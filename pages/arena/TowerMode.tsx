@@ -629,8 +629,13 @@ export const TowerMode: React.FC = () => {
     let correct = false;
     if (currentQ.type === 'SHORT_ANSWER') {
       const ansStr = typeof payload === 'string' ? payload : '';
-      const cleanUser = ansStr.trim().toLowerCase().replace(/\s+/g, '');
-      const cleanCorrect = (currentQ.correct_answer_string || '').trim().toLowerCase().replace(/\s+/g, '');
+      const isCase = !!currentQ.case_sensitive;
+      const cleanUser = isCase
+        ? ansStr.trim().replace(/\s+/g, '')
+        : ansStr.trim().toLowerCase().replace(/\s+/g, '');
+      const cleanCorrect = isCase
+        ? (currentQ.correct_answer_string || '').trim().replace(/\s+/g, '')
+        : (currentQ.correct_answer_string || '').trim().toLowerCase().replace(/\s+/g, '');
       correct = cleanUser === cleanCorrect;
     } else if (currentQ.type === 'MCQ_MULTIPLE') {
       const userSelected = Array.isArray(payload) ? payload : [];

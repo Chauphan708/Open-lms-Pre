@@ -230,8 +230,13 @@ export const PvPBattle: React.FC = () => {
             finalAnswerIndex = indices.length > 0 ? indices[0] : -1; // Fallback index
         } else if (qType === 'SHORT_ANSWER') {
             const ansStr = idxPayload as string;
-            const cleanUser = ansStr.trim().toLowerCase().replace(/\s+/g, '');
-            const cleanCorrect = (q.correct_answer_string || '').trim().toLowerCase().replace(/\s+/g, '');
+            const isCase = !!q.case_sensitive;
+            const cleanUser = isCase
+                ? ansStr.trim().replace(/\s+/g, '')
+                : ansStr.trim().toLowerCase().replace(/\s+/g, '');
+            const cleanCorrect = isCase
+                ? (q.correct_answer_string || '').trim().replace(/\s+/g, '')
+                : (q.correct_answer_string || '').trim().toLowerCase().replace(/\s+/g, '');
             correct = cleanUser === cleanCorrect;
             finalAnswerIndex = correct ? 0 : -1;
         }
