@@ -252,10 +252,10 @@ export const ClassManage: React.FC = () => {
                         }
                       }
                     }}
-                    className="p-1 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
+                    className="p-1.5 text-red-500 hover:text-red-700 bg-red-50/50 hover:bg-red-100/70 rounded-lg transition-colors flex items-center justify-center"
                     title="Xóa lớp học"
                   >
-                    <svg className="h-3.8 w-3.8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-4v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                     </svg>
                   </button>
