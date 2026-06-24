@@ -14,11 +14,19 @@ interface Props {
 type ImportMode = 'SINGLE' | 'BULK';
 
 export const UserManage: React.FC<Props> = ({ targetRole, title }) => {
-    const { user: currentUser, users, classes, addUser, updateUser, deleteUser, changePassword } = useStore();
+    const { user: currentUser, users, classes, addUser, updateUser, deleteUser, changePassword, fetchClasses } = useStore();
     const [mode, setMode] = useState<ImportMode>('SINGLE');
     const [isCreating, setIsCreating] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedClassFilter, setSelectedClassFilter] = useState('');
+
+    useEffect(() => {
+        fetchClasses();
+    }, [fetchClasses]);
+
+    const displayClasses = currentUser?.role === 'TEACHER'
+        ? classes.filter(c => c.teacherId === currentUser.id)
+        : classes;
 
     // Password Reset State
     const [resetUser, setResetUser] = useState<User | null>(null);
@@ -468,7 +476,7 @@ export const UserManage: React.FC<Props> = ({ targetRole, title }) => {
                                                 onChange={e => setClassName(e.target.value)}
                                             >
                                                 <option value="">-- Chọn lớp học --</option>
-                                                {classes.map(c => (
+                                                {displayClasses.map(c => (
                                                     <option key={c.id} value={`${c.id}|${c.name}`}>{c.name}</option>
                                                 ))}
                                             </select>
@@ -524,7 +532,7 @@ export const UserManage: React.FC<Props> = ({ targetRole, title }) => {
                                                         onChange={e => setClassName(e.target.value)}
                                                     >
                                                         <option value="">-- Lớp mặc định --</option>
-                                                        {classes.map(c => (
+                                                        {displayClasses.map(c => (
                                                             <option key={c.id} value={`${c.id}|${c.name}`}>{c.name}</option>
                                                         ))}
                                                     </select>
@@ -640,7 +648,7 @@ export const UserManage: React.FC<Props> = ({ targetRole, title }) => {
                                         onChange={e => setEditClassName(e.target.value)}
                                     >
                                         <option value="">-- Chọn lớp học --</option>
-                                        {classes.map(c => (
+                                        {displayClasses.map(c => (
                                             <option key={c.id} value={`${c.id}|${c.name}`}>{c.name}</option>
                                         ))}
                                     </select>
@@ -718,7 +726,7 @@ export const UserManage: React.FC<Props> = ({ targetRole, title }) => {
                             onChange={e => setSelectedClassFilter(e.target.value)}
                         >
                             <option value="">-- Tất cả các lớp --</option>
-                            {classes.map(c => (
+                            {displayClasses.map(c => (
                                 <option key={c.id} value={c.id}>{c.name}</option>
                             ))}
                         </select>
