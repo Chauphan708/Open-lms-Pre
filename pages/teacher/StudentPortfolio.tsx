@@ -50,6 +50,37 @@ const TABS = [
 type TabKey = typeof TABS[number]['key'];
 
 // ============================================
+// ============================================
+// CONSTANTS
+// ============================================
+export const ALL_DEFAULT_TOPICS = [
+  // Toán
+  { topic: 'Phân số & Số thập phân', label: '📐 Phân số & Số thập phân', subject: 'Toán' },
+  { topic: 'Hình học', label: '📐 Hình học', subject: 'Toán' },
+  { topic: 'Tỉ số phần trăm', label: '📐 Tỉ số phần trăm', subject: 'Toán' },
+  { topic: 'Vận tốc', label: '📐 Vận tốc & Chuyển động', subject: 'Toán' },
+  // Khoa học
+  { topic: 'Sự sinh sản', label: '🔬 Sự sinh sản & Phát triển', subject: 'Khoa học' },
+  { topic: 'Năng lượng', label: '🔬 Năng lượng', subject: 'Khoa học' },
+  { topic: 'Môi trường', label: '🔬 Môi trường', subject: 'Khoa học' },
+  { topic: 'Biến đổi chất', label: '🔬 Biến đổi chất', subject: 'Khoa học' },
+  // Tin học
+  { topic: 'Phần cứng', label: '💻 Phần cứng', subject: 'Tin học' },
+  { topic: 'Phần mềm', label: '💻 Phần mềm', subject: 'Tin học' },
+  { topic: 'Internet', label: '💻 Internet', subject: 'Tin học' },
+  // Tiếng Việt
+  { topic: 'Luyện từ và câu', label: '📝 Luyện từ và câu', subject: 'Tiếng Việt' },
+  { topic: 'Tập làm văn', label: '📝 Tập làm văn', subject: 'Tiếng Việt' },
+  { topic: 'Chính tả', label: '📝 Chính tả', subject: 'Tiếng Việt' },
+  // Tiếng Anh
+  { topic: 'Vocabulary', label: '🌐 Vocabulary', subject: 'Tiếng Anh' },
+  { topic: 'Grammar', label: '🌐 Grammar', subject: 'Tiếng Anh' },
+  // Lịch sử & Địa lí
+  { topic: 'Địa lí Việt Nam', label: '⏳ Địa lí Việt Nam', subject: 'Lịch sử & Địa lí' },
+  { topic: 'Lịch sử thế kỉ XX', label: '⏳ Lịch sử thế kỉ XX', subject: 'Lịch sử & Địa lí' },
+  { topic: 'Triều Nguyễn', label: '⏳ Triều Nguyễn', subject: 'Lịch sử & Địa lí' }
+];
+
 // MAIN COMPONENT
 // ============================================
 export const StudentPortfolio: React.FC = () => {
@@ -73,6 +104,53 @@ export const StudentPortfolio: React.FC = () => {
   const [shareMessage, setShareMessage] = useState('');
   const [isSharing, setIsSharing] = useState(false);
   const [allowedGrades, setAllowedGrades] = useState<string[]>([]);
+  const [hiddenTopics, setHiddenTopics] = useState<string[]>([]);
+  const [customTopics, setCustomTopics] = useState<any[]>([]);
+
+  const combinedTopics = useMemo(() => {
+    const list = [...ALL_DEFAULT_TOPICS];
+    customTopics.forEach((ct: any) => {
+      const exists = list.some(t => t.topic.toLowerCase() === ct.topic.toLowerCase());
+      if (!exists) {
+        list.push({
+          topic: ct.topic,
+          label: ct.topic,
+          subject: ct.subject || 'Khác'
+        });
+      }
+    });
+    return list;
+  }, [customTopics]);
+
+  const topicsBySubject = useMemo(() => {
+    const map: Record<string, typeof combinedTopics> = {};
+    combinedTopics.forEach(t => {
+      const sub = t.subject || 'Khác';
+      if (!map[sub]) map[sub] = [];
+      map[sub].push(t);
+    });
+    return map;
+  }, [combinedTopics]);
+
+  const handleToggleHiddenTopic = async (topicName: string) => {
+    if (!studentId) return;
+    const isCurrentlyHidden = hiddenTopics.includes(topicName);
+    const newHiddenTopics = isCurrentlyHidden
+      ? hiddenTopics.filter(t => t !== topicName)
+      : [...hiddenTopics, topicName];
+
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ hidden_topics: newHiddenTopics })
+        .eq('id', studentId);
+      
+      if (error) throw error;
+      setHiddenTopics(newHiddenTopics);
+    } catch (e: any) {
+      alert('Lỗi cập nhật cài đặt chủ đề: ' + e.message);
+    }
+  };
 
   const handleToggleAllowedGrade = async (grade: string) => {
     if (!studentId) return;
@@ -112,10 +190,17 @@ export const StudentPortfolio: React.FC = () => {
     const load = async () => {
       setIsLoadingData(true);
       try {
-        // Fetch allowed_grades
-        const { data: prof } = await supabase.from('profiles').select('allowed_grades').eq('id', studentId).maybeSingle();
-        if (prof && prof.allowed_grades) {
-          setAllowedGrades(prof.allowed_grades);
+        // Fetch allowed_grades & hidden_topics
+        const { data: prof } = await supabase.from('profiles').select('allowed_grades, hidden_topics').eq('id', studentId).maybeSingle();
+        if (prof) {
+          if (prof.allowed_grades) setAllowedGrades(prof.allowed_grades);
+          if (prof.hidden_topics) setHiddenTopics(prof.hidden_topics);
+        }
+
+        // Fetch custom topics
+        const { data: customT } = await supabase.from('arena_topics').select('*');
+        if (customT) {
+          setCustomTopics(customT);
         }
         // Behavior logs
         fetchStudentLogs(studentId);
@@ -581,6 +666,40 @@ export const StudentPortfolio: React.FC = () => {
                     </label>
                   );
                 })}
+              </div>
+            </div>
+
+            {/* QUẢN LÝ CHỦ ĐỀ LEO THÁP */}
+            <div className="bg-white rounded-xl p-5 border shadow-sm space-y-4">
+              <div>
+                <h3 className="font-bold text-gray-800 flex items-center gap-2">
+                  <Brain className="h-5 w-5 text-indigo-600 animate-pulse" /> Quản lý các chủ đề Leo Tháp
+                </h3>
+                <p className="text-xs text-gray-500 mt-0.5">Tích chọn để cho phép học sinh này nhìn thấy và làm bài tập. Bỏ tích để ẩn đi chủ đề đó.</p>
+              </div>
+
+              <div className="space-y-4 pt-2">
+                {Object.entries(topicsBySubject).map(([subj, tList]) => (
+                  <div key={subj} className="space-y-2 border-b last:border-0 pb-3 last:pb-0">
+                    <h4 className="text-sm font-bold text-gray-700 bg-gray-50 px-2 py-1 rounded w-fit">{subj}</h4>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                      {tList.map(t => {
+                        const isVisible = !hiddenTopics.includes(t.topic);
+                        return (
+                          <label key={t.topic} className={`flex items-center gap-2 border px-3 py-1.5 rounded-lg text-xs font-bold cursor-pointer transition ${isVisible ? 'bg-indigo-50/50 border-indigo-200 text-indigo-700' : 'bg-white border-gray-200 text-gray-500 hover:bg-gray-50'}`}>
+                            <input
+                              type="checkbox"
+                              checked={isVisible}
+                              onChange={() => handleToggleHiddenTopic(t.topic)}
+                              className="rounded text-indigo-600 focus:ring-indigo-500 h-3.5 w-3.5 cursor-pointer"
+                            />
+                            {t.label || t.topic}
+                          </label>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
 

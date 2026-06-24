@@ -6,6 +6,7 @@ import { Users, Plus, Search, Upload, FileText, CheckCircle, AlertCircle, X, Sav
 import { DuckRace } from '../../components/classfun/DuckRace';
 import { RandomRoulette } from '../../components/classfun/RandomRoulette';
 import { RandomGroupModal } from '../../components/classfun/RandomGroupModal';
+import { ALL_DEFAULT_TOPICS } from '../teacher/StudentPortfolio';
 
 interface Props {
     targetRole: UserRole; // 'TEACHER' or 'STUDENT'
@@ -28,6 +29,78 @@ export const UserManage: React.FC<Props> = ({ targetRole, title }) => {
     const displayClasses = currentUser?.role === 'TEACHER'
         ? classes.filter(c => c.teacherId === currentUser.id)
         : classes;
+
+    // Bulk Topic Management State
+    const [showBulkTopicModal, setShowBulkTopicModal] = useState(false);
+    const [bulkTopicSelectedTopics, setBulkTopicSelectedTopics] = useState<string[]>([]);
+    const [bulkTopicAction, setBulkTopicAction] = useState<'SHOW' | 'HIDE'>('SHOW');
+    const [bulkCustomTopics, setBulkCustomTopics] = useState<any[]>([]);
+
+    useEffect(() => {
+        if (showBulkTopicModal) {
+            supabase.from('arena_topics').select('*').then(({ data }) => {
+                if (data) setBulkCustomTopics(data);
+            });
+        }
+    }, [showBulkTopicModal]);
+
+    const combinedBulkTopics = React.useMemo(() => {
+        const list = [...ALL_DEFAULT_TOPICS];
+        bulkCustomTopics.forEach((ct: any) => {
+            const exists = list.some(t => t.topic.toLowerCase() === ct.topic.toLowerCase());
+            if (!exists) {
+                list.push({
+                    topic: ct.topic,
+                    label: ct.topic,
+                    subject: ct.subject || 'Khác'
+                });
+            }
+        });
+        return list;
+    }, [bulkCustomTopics]);
+
+    const bulkTopicsBySubject = React.useMemo(() => {
+        const map: Record<string, typeof combinedBulkTopics> = {};
+        combinedBulkTopics.forEach(t => {
+            const sub = t.subject || 'Khác';
+            if (!map[sub]) map[sub] = [];
+            map[sub].push(t);
+        });
+        return map;
+    }, [combinedBulkTopics]);
+
+    const handleApplyBulkTopics = async () => {
+        if (selectedStudentIds.length === 0 || bulkTopicSelectedTopics.length === 0) return;
+
+        try {
+            const { data: currentProfiles, error: fetchErr } = await supabase
+                .from('profiles')
+                .select('id, hidden_topics')
+                .in('id', selectedStudentIds);
+
+            if (fetchErr) throw fetchErr;
+
+            if (currentProfiles) {
+                const updatePromises = currentProfiles.map(p => {
+                    const nextHidden = bulkTopicAction === 'SHOW'
+                        ? (p.hidden_topics || []).filter((t: string) => !bulkTopicSelectedTopics.includes(t))
+                        : Array.from(new Set([...(p.hidden_topics || []), ...bulkTopicSelectedTopics]));
+                    
+                    return supabase
+                        .from('profiles')
+                        .update({ hidden_topics: nextHidden })
+                        .eq('id', p.id);
+                });
+                await Promise.all(updatePromises);
+                alert("Đã áp dụng cài đặt chủ đề thành công cho " + selectedStudentIds.length + " học sinh!");
+                setShowBulkTopicModal(false);
+                setBulkTopicSelectedTopics([]);
+                setSelectedStudentIds([]);
+            }
+        } catch (e: any) {
+            alert("Lỗi khi áp dụng cài đặt chủ đề: " + e.message);
+        }
+    };
 
     // Password Reset State
     const [resetUser, setResetUser] = useState<User | null>(null);
@@ -804,6 +877,14 @@ export const UserManage: React.FC<Props> = ({ targetRole, title }) => {
                         🦆 Đua Vịt
                     </button>
                     {selectedStudentIds.length > 0 && (
+                        <>
+                            <div className="w-px h-5 bg-gray-300 mx-1"></div>
+                            <button onClick={() => setShowBulkTopicModal(true)} className="px-4 py-2 bg-purple-50 hover:bg-purple-100 text-purple-700 rounded-lg text-sm font-bold flex items-center gap-2 transition border border-purple-100 shadow-sm animate-fade-in">
+                                <GraduationCap className="h-5 w-5" /> Ẩn/Hiện Chủ Đề
+                            </button>
+                        </>
+                    )}
+                    {selectedStudentIds.length > 0 && (
                         <button onClick={() => setSelectedStudentIds([])} className="text-xs text-gray-500 hover:text-gray-700 underline ml-auto">
                             Bỏ chọn
                         </button>
@@ -960,6 +1041,82 @@ export const UserManage: React.FC<Props> = ({ targetRole, title }) => {
                     onClose={() => setShowDuckRace(false)}
                     onComplete={handleDuckRaceComplete}
                 />
+            )}
+
+            {showBulkTopicModal && (
+                <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
+                    <div className="bg-white rounded-xl shadow-lg w-full max-w-2xl p-6 animate-fade-in flex flex-col max-h-[85vh]">
+                        <h3 className="text-lg font-bold text-gray-900 mb-2">Ẩn/Hiện Chủ Đề Leo Tháp cho {selectedStudentIds.length} học sinh</h3>
+                        <p className="text-xs text-gray-500 mb-4">Cấu hình hiển thị hoặc ẩn hàng loạt chủ đề cho các học sinh đã chọn.</p>
+
+                        <div className="mb-4 bg-gray-50 p-3 rounded-lg flex items-center gap-3">
+                            <span className="text-sm font-bold text-gray-700">Hành động áp dụng:</span>
+                            <label className="flex items-center gap-1.5 text-sm cursor-pointer">
+                                <input
+                                    type="radio"
+                                    name="bulk_action"
+                                    checked={bulkTopicAction === 'SHOW'}
+                                    onChange={() => setBulkTopicAction('SHOW')}
+                                    className="text-indigo-600 focus:ring-indigo-500"
+                                />
+                                <span className="font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 px-2 py-0.5 rounded-md text-xs">Hiện chủ đề</span>
+                            </label>
+                            <label className="flex items-center gap-1.5 text-sm cursor-pointer">
+                                <input
+                                    type="radio"
+                                    name="bulk_action"
+                                    checked={bulkTopicAction === 'HIDE'}
+                                    onChange={() => setBulkTopicAction('HIDE')}
+                                    className="text-indigo-600 focus:ring-indigo-500"
+                                />
+                                <span className="font-bold text-red-700 bg-red-50 border border-red-200 px-2 py-0.5 rounded-md text-xs">Ẩn chủ đề</span>
+                            </label>
+                        </div>
+
+                        <div className="flex-1 overflow-y-auto pr-1 space-y-4 mb-4">
+                            {Object.entries(bulkTopicsBySubject).map(([subj, tList]) => (
+                                <div key={subj} className="space-y-2 border-b last:border-0 pb-3 last:pb-0">
+                                    <h4 className="text-sm font-bold text-gray-700 bg-gray-50 px-2 py-1 rounded w-fit">{subj}</h4>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                        {tList.map(t => {
+                                            const isSelected = bulkTopicSelectedTopics.includes(t.topic);
+                                            return (
+                                                <label key={t.topic} className={`flex items-center gap-2 border px-3 py-2 rounded-lg text-xs font-bold cursor-pointer transition ${isSelected ? 'bg-indigo-50 border-indigo-300 text-indigo-700' : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'}`}>
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={isSelected}
+                                                        onChange={() => setBulkTopicSelectedTopics(prev => prev.includes(t.topic) ? prev.filter(x => x !== t.topic) : [...prev, t.topic])}
+                                                        className="rounded text-indigo-600 focus:ring-indigo-500 h-4 w-4 cursor-pointer"
+                                                    />
+                                                    {t.label || t.topic}
+                                                </label>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+
+                        <div className="flex justify-end gap-2 pt-2 border-t">
+                            <button
+                                onClick={() => {
+                                    setShowBulkTopicModal(false);
+                                    setBulkTopicSelectedTopics([]);
+                                }}
+                                className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg font-medium text-sm"
+                            >
+                                Hủy
+                            </button>
+                            <button
+                                onClick={handleApplyBulkTopics}
+                                disabled={bulkTopicSelectedTopics.length === 0}
+                                className="px-5 py-2 bg-indigo-600 text-white font-bold rounded-lg hover:bg-indigo-700 disabled:opacity-50 text-sm"
+                            >
+                                Áp dụng ngay
+                            </button>
+                        </div>
+                    </div>
+                </div>
             )}
         </div>
     );

@@ -97,6 +97,7 @@ export const TowerMode: React.FC = () => {
   const [dbTopics, setDbTopics] = useState<{ topic: string; subject: string; grade: string }[]>([]);
   const [selectedGrade, setSelectedGrade] = useState<string>('');
   const [allowedGrades, setAllowedGrades] = useState<string[]>([]);
+  const [studentHiddenTopics, setStudentHiddenTopics] = useState<string[]>([]);
 
   // Adaptive gameplay states
   const [lives, setLives] = useState(3);
@@ -201,10 +202,11 @@ export const TowerMode: React.FC = () => {
 
       const loadData = async () => {
         try {
-          // Fetch student's profile allowed_grades
-          const { data: prof } = await supabase.from('profiles').select('allowed_grades').eq('id', user.id).maybeSingle();
+          // Fetch student's profile allowed_grades & hidden_topics
+          const { data: prof } = await supabase.from('profiles').select('allowed_grades, hidden_topics').eq('id', user.id).maybeSingle();
           const allowed = prof?.allowed_grades || [];
           setAllowedGrades(allowed);
+          setStudentHiddenTopics(prof?.hidden_topics || []);
 
           await Promise.all([
             fetchArenaProfile(user.id),
@@ -334,14 +336,20 @@ export const TowerMode: React.FC = () => {
       }
     });
 
-    setAvailableTopics(merged);
+    const visibleTopics = merged.filter(t => {
+      const isHidden = (studentHiddenTopics || []).some((ht: string) => ht.toLowerCase() === t.topic.toLowerCase()) ||
+                       (user && Array.isArray(user.hidden_topics) && user.hidden_topics.some((ht: string) => ht.toLowerCase() === t.topic.toLowerCase()));
+      return !isHidden;
+    });
+
+    setAvailableTopics(visibleTopics);
     
     // Default select first topic for math if none selected yet
     if (!selectedTopic) {
-      const firstMath = merged.find(t => t.subject === 'math');
+      const firstMath = visibleTopics.find(t => t.subject === 'math');
       if (firstMath) setSelectedTopic(firstMath.topic);
     }
-  }, [loading, arenaQuestions, exams, user, dbTopics, customTopics, selectedTopic]);
+  }, [loading, arenaQuestions, exams, user, dbTopics, customTopics, selectedTopic, studentHiddenTopics]);
 
   // Timer loop
   useEffect(() => {

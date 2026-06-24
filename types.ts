@@ -26,6 +26,7 @@ export interface User {
   password?: string;
   className?: string; // For students
   class_name?: string; // For students (db mapped)
+  hidden_topics?: string[]; // For students (topics hidden by teacher)
   gender?: 'MALE' | 'FEMALE' | 'OTHER'; // For grouping
   savedPrompts?: string[];
   customTools?: CustomToolMenu[]; // For teachers/admins
