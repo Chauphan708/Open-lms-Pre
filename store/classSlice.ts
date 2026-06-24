@@ -40,6 +40,9 @@ export const createClassSlice: StateCreator<AppState, [], [], ClassSliceState> =
     }
   },
   updateClass: async (updatedClass) => {
+    const oldClass = get().classes.find(c => c.id === updatedClass.id);
+    const oldName = oldClass?.name;
+
     const payload = {
       name: updatedClass.name,
       academic_year_id: updatedClass.academicYearId,
@@ -49,20 +52,63 @@ export const createClassSlice: StateCreator<AppState, [], [], ClassSliceState> =
     const { error } = await supabase.from('classes').update(payload).eq('id', updatedClass.id);
 
     if (!error) {
-      set((state) => ({
-        classes: state.classes.map(c => c.id === updatedClass.id ? updatedClass : c)
-      }));
+      // 1. Cập nhật cơ sở dữ liệu supabase cho cột class_name của học sinh
+      if (oldName && oldName !== updatedClass.name) {
+        await supabase
+          .from('profiles')
+          .update({ class_name: updatedClass.name })
+          .eq('class_name', oldName);
+      }
+
+      if (updatedClass.studentIds && updatedClass.studentIds.length > 0) {
+        await supabase
+          .from('profiles')
+          .update({ class_name: updatedClass.name })
+          .in('id', updatedClass.studentIds);
+      }
+
+      // 2. Cập nhật local state cho cả classes và users
+      set((state: any) => {
+        const nextClasses = state.classes.map((c: any) => c.id === updatedClass.id ? updatedClass : c);
+        const nextUsers = state.users.map((u: any) => {
+          const isExplicitStudent = updatedClass.studentIds?.includes(u.id);
+          const matchesOldName = oldName && u.role === 'STUDENT' && (u.class_name || '').trim().toLowerCase() === oldName.trim().toLowerCase();
+          
+          if (isExplicitStudent || matchesOldName) {
+            return { ...u, class_name: updatedClass.name, className: updatedClass.name };
+          }
+          return u;
+        });
+        return { classes: nextClasses, users: nextUsers };
+      });
     } else {
       console.error("updateClass ultimate error", error);
       alert("Lỗi cập nhật lớp học: " + error.message);
     }
   },
   deleteClass: async (classId) => {
+    const oldClass = get().classes.find(c => c.id === classId);
+    const oldName = oldClass?.name;
+
     const { error } = await supabase.from('classes').delete().eq('id', classId);
     if (!error) {
-      set((state) => ({
-        classes: state.classes.filter(c => c.id !== classId)
-      }));
+      if (oldName) {
+        await supabase
+          .from('profiles')
+          .update({ class_name: null })
+          .eq('class_name', oldName);
+      }
+
+      set((state: any) => {
+        const nextClasses = state.classes.filter((c: any) => c.id !== classId);
+        const nextUsers = state.users.map((u: any) => {
+          if (oldName && u.role === 'STUDENT' && (u.class_name || '').trim().toLowerCase() === oldName.trim().toLowerCase()) {
+            return { ...u, class_name: '', className: '' };
+          }
+          return u;
+        });
+        return { classes: nextClasses, users: nextUsers };
+      });
       return true;
     } else {
       console.error("deleteClass ultimate error", error);
