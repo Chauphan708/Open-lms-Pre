@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useStore } from '../../store';
 import { User, UserRole } from '../../types';
+import { supabase } from '../../services/supabaseClient';
 import { Users, Plus, Search, Upload, FileText, CheckCircle, AlertCircle, X, Save, Trash2, Key, Edit, Dices, GraduationCap, LayoutGrid, List } from 'lucide-react';
 import { DuckRace } from '../../components/classfun/DuckRace';
 import { RandomRoulette } from '../../components/classfun/RandomRoulette';
@@ -225,7 +226,7 @@ export const UserManage: React.FC<Props> = ({ targetRole, title }) => {
         setEditGender(user.gender || 'OTHER');
     };
 
-    const handleUpdateUser = () => {
+    const handleUpdateUser = async () => {
         if (!editingUser || !editName || !editEmail) return;
 
         // Check Duplicate Email if changed
@@ -236,11 +237,19 @@ export const UserManage: React.FC<Props> = ({ targetRole, title }) => {
             }
         }
 
-        let finalClassName = targetRole === 'STUDENT' ? editClassName : undefined;
+        let targetClassId = '';
+        let targetClassName = '';
         if (targetRole === 'STUDENT' && editClassName) {
             const parts = editClassName.split('|');
             if (parts.length === 2) {
-                finalClassName = parts[1];
+                targetClassId = parts[0];
+                targetClassName = parts[1];
+            } else {
+                const found = classes.find(c => c.name === editClassName || c.id === editClassName);
+                if (found) {
+                    targetClassId = found.id;
+                    targetClassName = found.name;
+                }
             }
         }
 
@@ -248,10 +257,43 @@ export const UserManage: React.FC<Props> = ({ targetRole, title }) => {
             ...editingUser,
             name: editName,
             email: editEmail.trim(),
-            className: finalClassName,
+            className: targetClassName || undefined,
             gender: targetRole === 'STUDENT' ? editGender : editingUser.gender
         };
-        updateUser(updated);
+
+        if (targetRole === 'STUDENT') {
+            // Tìm lớp cũ của học sinh này
+            const oldClass = classes.find(c => c.studentIds?.includes(editingUser.id));
+
+            // Nếu học sinh đã ở lớp cũ và chuyển sang lớp mới khác lớp cũ
+            if (oldClass && oldClass.id !== targetClassId) {
+                const newStudentIds = oldClass.studentIds.filter(id => id !== editingUser.id);
+                const { error: err1 } = await supabase
+                    .from('classes')
+                    .update({ student_ids: newStudentIds })
+                    .eq('id', oldClass.id);
+                if (!err1) {
+                    oldClass.studentIds = newStudentIds;
+                }
+            }
+
+            // Nếu được chọn vào lớp mới
+            if (targetClassId) {
+                const newClass = classes.find(c => c.id === targetClassId);
+                if (newClass && !newClass.studentIds.includes(editingUser.id)) {
+                    const newStudentIds = [...newClass.studentIds, editingUser.id];
+                    const { error: err2 } = await supabase
+                        .from('classes')
+                        .update({ student_ids: newStudentIds })
+                        .eq('id', targetClassId);
+                    if (!err2) {
+                        newClass.studentIds = newStudentIds;
+                    }
+                }
+            }
+        }
+
+        await updateUser(updated);
         setEditingUser(null);
         alert("Cập nhật thông tin thành công!");
     };
@@ -652,7 +694,7 @@ export const UserManage: React.FC<Props> = ({ targetRole, title }) => {
                                             <option key={c.id} value={`${c.id}|${c.name}`}>{c.name}</option>
                                         ))}
                                     </select>
-                                    <p className="text-xs text-blue-600 mt-1">Lưu ý: Bạn chỉ đang đổi nhãn hiển thị, học sinh chưa được di chuyển thực tế. (Tính năng chuyển lớp sẽ bổ sung sau)</p>
+                                    <p className="text-xs text-green-600 mt-1">Học sinh sẽ được tự động chuyển từ lớp cũ sang lớp mới được chọn.</p>
                                 </div>
                             )}
                             {editingUser.role === 'STUDENT' && (
