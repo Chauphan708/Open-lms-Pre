@@ -71,6 +71,8 @@ export const ArenaAdmin: React.FC = () => {
     const [importing, setImporting] = useState(false);
     const [importResult, setImportResult] = useState<{ count: number } | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const [validParsedQuestions, setValidParsedQuestions] = useState<Omit<ArenaQuestion, 'id'>[]>([]);
+    const [invalidQuestionsText, setInvalidQuestionsText] = useState('');
 
     // Bank import filter
     const [bankFilterSubject, setBankFilterSubject] = useState('');
@@ -518,6 +520,9 @@ export const ArenaAdmin: React.FC = () => {
         const lines = rawText.split('\n').map(l => l.trim());
         const questions: Omit<ArenaQuestion, 'id'>[] = [];
         const errors: string[] = [];
+        const validQuestions: Omit<ArenaQuestion, 'id'>[] = [];
+        const invalidQuestions: { q: any, index: number, errors: string[] }[] = [];
+        const globalLines: string[] = [];
 
         let currentSubject = 'math';
         let currentTopic = 'general';
@@ -603,28 +608,38 @@ export const ArenaAdmin: React.FC = () => {
                 q.type = 'SHORT_ANSWER';
             }
 
+            const qErrors: string[] = [];
+
             if (!q.content.trim()) {
+                qErrors.push(`Câu ${index}: Thân câu hỏi không được trống.`);
                 errorsList.push(`Câu ${index}: Thân câu hỏi không được trống.`);
                 return;
             }
 
             if (q.type === 'SHORT_ANSWER') {
                 if (!q.correct_answer_string.trim()) {
-                    errorsList.push(`Câu ${index}: Dạng Điền từ (SHORT_ANSWER) yêu cầu nhập đáp án đúng.`);
+                    qErrors.push(`Câu ${index}: Dạng Điền từ (SHORT_ANSWER) yêu cầu nhập đáp án đúng.`);
                 }
             } else {
                 if (q.answers.length < 4) {
-                    errorsList.push(`Câu ${index}: Dạng Trắc nghiệm yêu cầu nhập đầy đủ 4 tùy chọn A, B, C, D.`);
+                    qErrors.push(`Câu ${index}: Dạng Trắc nghiệm yêu cầu nhập đầy đủ 4 tùy chọn A, B, C, D.`);
                 }
                 if (q.type === 'MCQ') {
                     if (q.correct_index === undefined || q.correct_index < 0 || q.correct_index > 3) {
-                        errorsList.push(`Câu ${index}: Dạng Trắc nghiệm 1 đáp án yêu cầu chỉ định đáp án đúng hợp lệ (A, B, C hoặc D).`);
+                        qErrors.push(`Câu ${index}: Dạng Trắc nghiệm 1 đáp án yêu cầu chỉ định đáp án đúng hợp lệ (A, B, C hoặc D).`);
                     }
                 } else {
                     if (!q.correct_indices || q.correct_indices.length === 0) {
-                        errorsList.push(`Câu ${index}: Dạng Trắc nghiệm nhiều đáp án yêu cầu chỉ định ít nhất 1 đáp án đúng (ví dụ: A, C).`);
+                        qErrors.push(`Câu ${index}: Dạng Trắc nghiệm nhiều đáp án yêu cầu chỉ định ít nhất 1 đáp án đúng (ví dụ: A, C).`);
                     }
                 }
+            }
+
+            if (qErrors.length > 0) {
+                errorsList.push(...qErrors);
+                invalidQuestions.push({ q, index, errors: qErrors });
+            } else {
+                validQuestions.push(q);
             }
 
             questionsList.push(q);
@@ -633,6 +648,12 @@ export const ArenaAdmin: React.FC = () => {
         for (let i = 0; i < lines.length; i++) {
             const line = lines[i];
             if (!line) continue;
+
+            if (!currentQuestion) {
+                if (!line.match(/^Câu\s+(\d+)\s*[:.-]?\s*(.*)$/i)) {
+                    globalLines.push(line);
+                }
+            }
 
             if (line.toLowerCase().startsWith('môn:')) {
                 const subStr = line.substring(4).trim();
@@ -709,12 +730,14 @@ export const ArenaAdmin: React.FC = () => {
                     guide: '',
                     explanation: '',
                     raw_answer: '',
-                    has_explicit_type: false
+                    has_explicit_type: false,
+                    raw_lines: [line]
                 };
                 continue;
             }
 
             if (!currentQuestion) continue;
+            currentQuestion.raw_lines.push(line);
 
             const matchOption = line.match(/^([A-D])\s*[:.-]\s*(.*)$/i);
             if (matchOption) {
@@ -883,7 +906,7 @@ export const ArenaAdmin: React.FC = () => {
             validateAndPushQuestionLocal(currentQuestion, questionCounter, questions, errors);
         }
 
-        return { questions, errors };
+        return { questions, errors, validQuestions, invalidQuestions, globalLines };
     };
 
     const handleStartDeterministicScan = () => {
@@ -893,15 +916,27 @@ export const ArenaAdmin: React.FC = () => {
         }
         setAiScanning(true);
         try {
-            const { questions, errors } = parseQuestionsFromRawText(aiScanText);
+            const { questions, errors, validQuestions, invalidQuestions, globalLines } = parseQuestionsFromRawText(aiScanText);
             if (errors.length > 0) {
                 setImportErrors(errors);
                 setImportPreview([]);
-                alert(`⚠️ Phát hiện ${errors.length} lỗi định dạng cú pháp câu hỏi. Vui lòng kéo xuống xem chi tiết lỗi và sửa lại.`);
+                setValidParsedQuestions(validQuestions);
+
+                // Reconstruct invalid questions text with global lines kept at the top
+                const header = globalLines.join('\n');
+                const body = invalidQuestions.map(iq => iq.q.raw_lines.join('\n')).join('\n\n');
+                const remainingText = header ? header + '\n\n' + body : body;
+                setInvalidQuestionsText(remainingText);
+
+                alert(`⚠️ Phát hiện ${errors.length} lỗi định dạng cú pháp câu hỏi. Bạn có thể nhấn nút xanh ở góc dưới bên trái để chỉ đẩy ${validQuestions.length} câu đúng lên hệ thống, hoặc sửa trực tiếp trong khung soạn đề.`);
             } else if (questions.length === 0) {
                 alert("Không phát hiện câu hỏi nào đúng định dạng (Câu 1: ...) trong tài liệu của bạn.");
+                setValidParsedQuestions([]);
+                setInvalidQuestionsText('');
             } else {
                 setImportErrors([]);
+                setValidParsedQuestions([]);
+                setInvalidQuestionsText('');
                 setAiPreviewList(questions);
                 setShowAiScan(false);
                 setShowAiPreviewModal(true);
@@ -912,6 +947,28 @@ export const ArenaAdmin: React.FC = () => {
             alert("Đã xảy ra lỗi không xác định khi bóc tách đề.");
         } finally {
             setAiScanning(false);
+        }
+    };
+
+    const handleImportOnlyValid = async () => {
+        if (validParsedQuestions.length === 0) return;
+        setImporting(true);
+        try {
+            const count = await bulkAddArenaQuestions(validParsedQuestions);
+            alert(`📥 Đã thêm thành công ${count} câu hỏi hợp lệ vào Đấu Trí.`);
+            
+            // Reconstruct text to keep only invalid questions for correction
+            setAiScanText(invalidQuestionsText);
+            
+            // Clear lists
+            setValidParsedQuestions([]);
+            setImportErrors([]);
+            await fetchArenaQuestions();
+        } catch (error: any) {
+            console.error("Lỗi import câu hỏi đúng:", error);
+            alert("Lỗi khi thêm câu hỏi: " + (error.message || error));
+        } finally {
+            setImporting(false);
         }
     };
 
@@ -1893,14 +1950,28 @@ export const ArenaAdmin: React.FC = () => {
                                             <p key={i} className="text-xs text-red-600 font-medium font-mono">- {e}</p>
                                         ))}
                                     </div>
+                                    {validParsedQuestions.length > 0 && (
+                                        <p className="text-[11px] text-emerald-700 mt-2 font-bold bg-emerald-50 p-2 rounded-lg border border-emerald-100">
+                                            💡 Gợi ý: Bạn có {validParsedQuestions.length} câu hỏi hợp lệ. Bạn có thể nhấn nút màu xanh bên dưới để chỉ đẩy các câu hợp lệ lên hệ thống. Các câu lỗi sẽ được giữ lại trong khung nhập liệu để bạn tiếp tục chỉnh sửa.
+                                        </p>
+                                    )}
                                 </div>
                             )}
                         </div>
 
                         <div className="p-4 border-t bg-gray-50/50 flex justify-end gap-2 rounded-b-3xl">
+                            {importErrors.length > 0 && validParsedQuestions.length > 0 && (
+                                <button
+                                    disabled={importing || aiScanning}
+                                    onClick={handleImportOnlyValid}
+                                    className="px-6 py-2 bg-emerald-600 text-white rounded-xl font-bold hover:bg-emerald-700 disabled:opacity-50 flex items-center gap-2 text-sm active:scale-95 transition-all mr-auto"
+                                >
+                                    {importing ? '⏳ Đang lưu...' : `📥 Chỉ đẩy ${validParsedQuestions.length} câu đúng`}
+                                </button>
+                            )}
                             <button
                                 disabled={aiScanning}
-                                onClick={() => { setShowAiScan(false); setImportErrors([]); }}
+                                onClick={() => { setShowAiScan(false); setImportErrors([]); setValidParsedQuestions([]); }}
                                 className="px-5 py-2 bg-white border text-gray-700 rounded-xl font-bold hover:bg-gray-50 text-sm active:scale-95 transition-all"
                             >
                                 Hủy bỏ
