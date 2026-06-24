@@ -1477,9 +1477,17 @@ export const ExamTake: React.FC = () => {
         }
       } else if (q.type === 'SHORT_ANSWER') {
         const isCaseSensitive = !!assignmentSettings.caseSensitiveShortAnswer;
+        
+        const normalizeMath = (s: string) => {
+            return s
+                .replace(/\$/g, '')
+                .replace(/\\frac\{([^{}]+)\}\{([^{}]+)\}/g, '$1/$2')
+                .replace(/:/g, '/');
+        };
+
         const sAns = isCaseSensitive
-          ? String(userAns || '').trim().replace(/\s+/g, ' ')
-          : String(userAns || '').trim().toLowerCase().replace(/\s+/g, '');
+          ? normalizeMath(String(userAns || '').trim().replace(/\s+/g, ' '))
+          : normalizeMath(String(userAns || '').trim().toLowerCase().replace(/\s+/g, ''));
         
         // CẢI TIẾN: Chỉ so khớp với solution nếu nó ngắn (thường là đáp án ngắn), 
         // nếu solution dài dằng dặc thì đó là lời giải chi tiết, không dùng để chấm điểm tự động.
@@ -1490,11 +1498,11 @@ export const ExamTake: React.FC = () => {
         isCorrect = (q.options && q.options.length > 0)
           ? q.options.some(opt => {
               const optStr = isCaseSensitive
-                ? String(opt || '').trim().replace(/\s+/g, ' ')
-                : String(opt || '').trim().toLowerCase().replace(/\s+/g, '');
+                ? normalizeMath(String(opt || '').trim().replace(/\s+/g, ' '))
+                : normalizeMath(String(opt || '').trim().toLowerCase().replace(/\s+/g, ''));
               return optStr === sAns;
             })
-          : (isSolutionShort && sAns === (isCaseSensitive
+          : (isSolutionShort && sAns === normalizeMath(isCaseSensitive
               ? solString.replace(/\s+/g, ' ')
               : solString.toLowerCase().replace(/\s+/g, '')));
 

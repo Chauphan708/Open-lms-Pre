@@ -231,12 +231,20 @@ export const PvPBattle: React.FC = () => {
         } else if (qType === 'SHORT_ANSWER') {
             const ansStr = idxPayload as string;
             const isCase = !!q.case_sensitive;
+            
+            const normalizeMath = (s: string) => {
+                return s
+                    .replace(/\$/g, '')
+                    .replace(/\\frac\{([^{}]+)\}\{([^{}]+)\}/g, '$1/$2')
+                    .replace(/:/g, '/');
+            };
+
             const cleanUser = isCase
-                ? ansStr.trim().replace(/\s+/g, '')
-                : ansStr.trim().toLowerCase().replace(/\s+/g, '');
+                ? normalizeMath(ansStr.trim().replace(/\s+/g, ''))
+                : normalizeMath(ansStr.trim().toLowerCase().replace(/\s+/g, ''));
             const cleanCorrect = isCase
-                ? (q.correct_answer_string || '').trim().replace(/\s+/g, '')
-                : (q.correct_answer_string || '').trim().toLowerCase().replace(/\s+/g, '');
+                ? normalizeMath((q.correct_answer_string || '').trim().replace(/\s+/g, ''))
+                : normalizeMath((q.correct_answer_string || '').trim().toLowerCase().replace(/\s+/g, ''));
             correct = cleanUser === cleanCorrect;
             finalAnswerIndex = correct ? 0 : -1;
         }

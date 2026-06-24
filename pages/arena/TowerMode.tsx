@@ -630,12 +630,20 @@ export const TowerMode: React.FC = () => {
     if (currentQ.type === 'SHORT_ANSWER') {
       const ansStr = typeof payload === 'string' ? payload : '';
       const isCase = !!currentQ.case_sensitive;
+      
+      const normalizeMath = (s: string) => {
+          return s
+              .replace(/\$/g, '')
+              .replace(/\\frac\{([^{}]+)\}\{([^{}]+)\}/g, '$1/$2')
+              .replace(/:/g, '/');
+      };
+
       const cleanUser = isCase
-        ? ansStr.trim().replace(/\s+/g, '')
-        : ansStr.trim().toLowerCase().replace(/\s+/g, '');
+        ? normalizeMath(ansStr.trim().replace(/\s+/g, ''))
+        : normalizeMath(ansStr.trim().toLowerCase().replace(/\s+/g, ''));
       const cleanCorrect = isCase
-        ? (currentQ.correct_answer_string || '').trim().replace(/\s+/g, '')
-        : (currentQ.correct_answer_string || '').trim().toLowerCase().replace(/\s+/g, '');
+        ? normalizeMath((currentQ.correct_answer_string || '').trim().replace(/\s+/g, ''))
+        : normalizeMath((currentQ.correct_answer_string || '').trim().toLowerCase().replace(/\s+/g, ''));
       correct = cleanUser === cleanCorrect;
     } else if (currentQ.type === 'MCQ_MULTIPLE') {
       const userSelected = Array.isArray(payload) ? payload : [];
