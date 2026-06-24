@@ -242,7 +242,14 @@ export const ClassManage: React.FC = () => {
               <div className="flex justify-between items-center">
                 <span className="font-bold text-gray-800">{c.name}</span>
                 <span className="text-xs bg-gray-100 px-2 py-1 rounded text-gray-600 flex items-center gap-1">
-                  <Users className="h-3 w-3" /> {c.studentIds.length}
+                  <Users className="h-3 w-3" /> {
+                    allStudents.filter(s => {
+                      const inStudentIds = c.studentIds?.includes(s.id);
+                      const sClassName = (s.className || s.class_name || '').trim().toLowerCase();
+                      const classNameMatch = sClassName && sClassName === c.name.trim().toLowerCase();
+                      return inStudentIds || classNameMatch;
+                    }).length
+                  }
                 </span>
               </div>
               <div className="text-xs text-gray-500 mt-1">
