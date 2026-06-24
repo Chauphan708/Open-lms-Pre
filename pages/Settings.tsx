@@ -159,7 +159,7 @@ export const Settings: React.FC = () => {
     setLoading(true);
     
     // Save to user profiles customTools
-    await updateUserCustomTools(user.id, customTools);
+    await updateUserCustomTools(customTools);
     
     setTimeout(() => {
       setLoading(false);

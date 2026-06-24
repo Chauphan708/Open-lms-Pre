@@ -798,10 +798,108 @@ export const TeacherAnalytics: React.FC = () => {
   const [isStudentDropdownOpen, setIsStudentDropdownOpen] = useState(false);
   
   // New Arena management states
-  const [activeTab, setActiveTab] = useState<'exams' | 'arena'>('exams');
+  const [activeTab, setActiveTab] = useState<'exams' | 'arena' | 'ai_requests'>('exams');
   const [arenaProfiles, setArenaProfiles] = useState<any[]>([]);
   const [arenaMatches, setArenaMatches] = useState<any[]>([]);
   const [loadingArena, setLoadingArena] = useState(false);
+
+  // AI Requests management states
+  const [aiRequests, setAiRequests] = useState<any[]>([]);
+  const [loadingAiRequests, setLoadingAiRequests] = useState(false);
+
+  const fetchAiRequests = async () => {
+    setLoadingAiRequests(true);
+    try {
+      const { data, error } = await supabase
+        .from('ai_requests')
+        .select('*')
+        .order('created_at', { ascending: false });
+      if (data) {
+        setAiRequests(data);
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setLoadingAiRequests(false);
+    }
+  };
+
+  useEffect(() => {
+    if (activeTab === 'ai_requests') {
+      fetchAiRequests();
+    }
+  }, [activeTab]);
+
+  const handleRejectRequest = async (req: any) => {
+    if (!confirm(`Bạn có chắc muốn từ chối yêu cầu sử dụng AI của ${req.student_name}?`)) return;
+    try {
+      const { error } = await supabase.from('ai_requests').update({
+        status: 'rejected',
+        actioned_by: currentUser?.id,
+        actioned_at: new Date().toISOString()
+      }).eq('id', req.id);
+
+      if (error) throw error;
+      
+      // Tạo thông báo cho học sinh
+      await supabase.from('notifications').insert({
+        user_id: req.student_id,
+        type: 'WARNING',
+        title: 'Yêu cầu AI của bạn bị từ chối',
+        message: `Yêu cầu sử dụng AI (${req.feature_name === 'portfolio_analysis' ? 'Hồ sơ học tập' : 'Gợi ý học tập'}) đã bị Giáo viên từ chối.`,
+        is_read: false,
+        created_at: new Date().toISOString()
+      });
+
+      alert('Đã từ chối yêu cầu của học sinh.');
+      fetchAiRequests();
+    } catch (e: any) {
+      alert('Lỗi khi từ chối yêu cầu: ' + e.message);
+    }
+  };
+
+  const handleApproveRequest = async (req: any) => {
+    if (!confirm(`Hệ thống sẽ chạy mô hình Gemini AI để tạo phân tích cho ${req.student_name}. Đồng ý?`)) return;
+    setLoadingAiRequests(true);
+    try {
+      let result = '';
+      if (req.feature_name === 'portfolio_analysis') {
+        const { generatePortfolioAnalysis } = await import('../../services/geminiService');
+        result = await generatePortfolioAnalysis(req.student_name, req.request_data);
+      } else if (req.feature_name === 'learning_analytics') {
+        const { generatePersonalizedRecommendation } = await import('../../services/geminiService');
+        result = await generatePersonalizedRecommendation(req.request_data);
+      }
+
+      const { error } = await supabase.from('ai_requests').update({
+        status: 'approved',
+        response_data: result,
+        actioned_by: currentUser?.id,
+        actioned_at: new Date().toISOString()
+      }).eq('id', req.id);
+
+      if (error) throw error;
+
+      // Tạo thông báo cho học sinh
+      await supabase.from('notifications').insert({
+        user_id: req.student_id,
+        type: 'SUCCESS',
+        title: 'AI Phân tích học tập đã sẵn sàng!',
+        message: `Yêu cầu sử dụng AI (${req.feature_name === 'portfolio_analysis' ? 'Hồ sơ học tập' : 'Gợi ý học tập'}) đã được Giáo viên phê duyệt và hoàn tất.`,
+        is_read: false,
+        link: req.feature_name === 'portfolio_analysis' ? '/portfolio' : '/analytics',
+        created_at: new Date().toISOString()
+      });
+
+      alert('✅ Phê duyệt và tạo phân tích AI thành công!');
+      fetchAiRequests();
+    } catch (e: any) {
+      console.error(e);
+      alert('❌ Lỗi khi duyệt/chạy AI: ' + e.message);
+    } finally {
+      setLoadingAiRequests(false);
+    }
+  };
 
   const dropdownRef = useRef<HTMLDivElement>(null);
   const { addNotification } = useStore();
@@ -964,12 +1062,88 @@ export const TeacherAnalytics: React.FC = () => {
   }, [selectedStudentIds, teacherComment, addNotification]);
 
   const renderMainContent = () => {
-    if (!selectedClassId) {
+    if (!selectedClassId && activeTab !== 'ai_requests') {
       return (
         <div className="bg-gray-50 rounded-2xl border border-dashed p-16 text-center no-print">
           <School className="h-16 w-16 mx-auto text-gray-300 mb-4" />
           <h3 className="text-xl font-bold text-gray-600">Phân tích học tập lớp học</h3>
           <p className="text-gray-400">Vui lòng chọn lớp học ở phía trên để bắt đầu xem báo cáo phân tích.</p>
+        </div>
+      );
+    }
+
+    if (activeTab === 'ai_requests') {
+      return (
+        <div className="bg-white rounded-2xl border shadow-sm p-6 space-y-6">
+          <div className="flex justify-between items-center border-b pb-4">
+            <div>
+              <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+                <Brain className="h-5.5 w-5.5 text-indigo-600" /> Phê duyệt yêu cầu sử dụng AI từ Học sinh
+              </h2>
+              <p className="text-xs text-gray-500">Giáo viên phê duyệt các yêu cầu phân tích học tập cá nhân và gợi ý học tập từ học sinh</p>
+            </div>
+            <button 
+              onClick={fetchAiRequests}
+              disabled={loadingAiRequests}
+              className="text-xs bg-indigo-50 text-indigo-700 font-bold hover:bg-indigo-100 px-3.5 py-1.5 rounded-lg flex items-center gap-1.5 transition no-print"
+            >
+              Làm mới {loadingAiRequests ? '...' : '🔄'}
+            </button>
+          </div>
+
+          {loadingAiRequests ? (
+            <div className="py-12 flex justify-center items-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+            </div>
+          ) : aiRequests.length === 0 ? (
+            <div className="text-center py-16 text-gray-400">
+              <Brain className="h-16 w-16 mx-auto mb-4 opacity-20" />
+              <p className="font-medium">Chưa có yêu cầu sử dụng AI nào từ học sinh.</p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {aiRequests.map((req) => (
+                <div key={req.id} className={`border rounded-xl p-5 transition-all shadow-sm ${req.status === 'pending' ? 'bg-amber-50/30 border-amber-200' : req.status === 'approved' ? 'bg-green-50/20 border-green-200' : 'bg-gray-50 border-gray-200'}`}>
+                  <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="font-bold text-gray-900 text-sm">{req.student_name}</span>
+                        <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase ${req.status === 'pending' ? 'bg-amber-100 text-amber-800' : req.status === 'approved' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                          {req.status === 'pending' ? 'Chờ phê duyệt' : req.status === 'approved' ? 'Đã duyệt' : 'Từ chối'}
+                        </span>
+                      </div>
+                      <p className="text-xs text-gray-500 mt-1.5">
+                        Chức năng: <strong className="text-indigo-700">{req.feature_name === 'portfolio_analysis' ? 'Phân tích hồ sơ' : 'Gợi ý học tập'}</strong> • Gửi lúc {new Date(req.created_at).toLocaleString('vi-VN')}
+                      </p>
+                    </div>
+
+                    {req.status === 'pending' && (
+                      <div className="flex items-center gap-2 no-print">
+                        <button
+                          onClick={() => handleRejectRequest(req)}
+                          className="px-3.5 py-1.5 border border-red-300 text-red-600 rounded-lg text-xs font-bold bg-white hover:bg-red-50 transition"
+                        >
+                          Từ chối
+                        </button>
+                        <button
+                          onClick={() => handleApproveRequest(req)}
+                          className="px-3.5 py-1.5 bg-indigo-600 text-white rounded-lg text-xs font-bold hover:bg-indigo-700 transition flex items-center gap-1 shadow-sm"
+                        >
+                          <Sparkles className="h-3.5 w-3.5" /> Phê duyệt & Chạy AI
+                        </button>
+                      </div>
+                    )}
+                  </div>
+
+                  {req.response_data && (
+                    <div className="mt-4 p-4 bg-white rounded-xl border border-gray-100 text-xs text-gray-700 max-h-60 overflow-y-auto whitespace-pre-wrap leading-relaxed italic border-l-4 border-indigo-400">
+                      {req.response_data}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       );
     }
@@ -1334,30 +1508,38 @@ export const TeacherAnalytics: React.FC = () => {
         </div>
       </div>
 
-      {selectedClassId && (
-        <div className="flex border-b border-gray-200 no-print">
-          <button
-            onClick={() => setActiveTab('exams')}
-            className={`px-6 py-3 font-bold text-sm border-b-2 transition-all flex items-center gap-2 ${
-              activeTab === 'exams'
-                ? 'border-indigo-600 text-indigo-600'
-                : 'border-transparent text-gray-400 hover:text-gray-600'
-            }`}
-          >
-            <BarChart3 className="h-4.5 w-4.5" /> Phân tích Khảo thí
-          </button>
-          <button
-            onClick={() => setActiveTab('arena')}
-            className={`px-6 py-3 font-bold text-sm border-b-2 transition-all flex items-center gap-2 ${
-              activeTab === 'arena'
-                ? 'border-indigo-600 text-indigo-600'
-                : 'border-transparent text-gray-400 hover:text-gray-600'
-            }`}
-          >
-            <Trophy className="h-4.5 w-4.5" /> Đấu Trường Arena
-          </button>
-        </div>
-      )}
+      <div className="flex border-b border-gray-200 no-print mb-4">
+        <button
+          onClick={() => setActiveTab('exams')}
+          className={`px-6 py-3 font-bold text-sm border-b-2 transition-all flex items-center gap-2 ${
+            activeTab === 'exams'
+              ? 'border-indigo-600 text-indigo-600'
+              : 'border-transparent text-gray-400 hover:text-gray-600'
+          }`}
+        >
+          <BarChart3 className="h-4.5 w-4.5" /> Phân tích Khảo thí
+        </button>
+        <button
+          onClick={() => setActiveTab('arena')}
+          className={`px-6 py-3 font-bold text-sm border-b-2 transition-all flex items-center gap-2 ${
+            activeTab === 'arena'
+              ? 'border-indigo-600 text-indigo-600'
+              : 'border-transparent text-gray-400 hover:text-gray-600'
+          }`}
+        >
+          <Trophy className="h-4.5 w-4.5" /> Đấu Trường Arena
+        </button>
+        <button
+          onClick={() => setActiveTab('ai_requests')}
+          className={`px-6 py-3 font-bold text-sm border-b-2 transition-all flex items-center gap-2 ${
+            activeTab === 'ai_requests'
+              ? 'border-indigo-600 text-indigo-600'
+              : 'border-transparent text-gray-400 hover:text-gray-600'
+          }`}
+        >
+          <Brain className="h-4.5 w-4.5" /> Phê duyệt yêu cầu AI
+        </button>
+      </div>
 
       {renderMainContent()}
     </div>

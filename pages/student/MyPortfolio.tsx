@@ -23,6 +23,7 @@ export const MyPortfolio: React.FC = () => {
   const [arenaMatches, setArenaMatches] = useState<any[]>([]);
   const [isLoadingAi, setIsLoadingAi] = useState(false);
   const [aiResult, setAiResult] = useState('');
+  const [aiRequest, setAiRequest] = useState<any>(null);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [shareMessage, setShareMessage] = useState('');
   const [isSharing, setIsSharing] = useState(false);
@@ -50,6 +51,20 @@ export const MyPortfolio: React.FC = () => {
       const { data: pn } = await supabase.from('portfolio_notes').select('*')
         .eq('student_id', studentId).order('created_at', { ascending: false });
       setNotes(pn || []);
+
+      // Fetch AI Request
+      const { data: req } = await supabase
+        .from('ai_requests')
+        .select('*')
+        .eq('student_id', studentId)
+        .eq('feature_name', 'portfolio_analysis')
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      setAiRequest(req);
+      if (req && req.status === 'approved' && req.response_data) {
+        setAiResult(req.response_data);
+      }
     };
     load();
   }, [studentId]);
@@ -78,7 +93,7 @@ export const MyPortfolio: React.FC = () => {
     };
   }, [attendance, studentId]);
 
-  const handleAiAnalysis = async () => {
+  const handleRequestAiAnalysis = async () => {
     if (!user || !analytics) return;
     setIsLoadingAi(true);
     try {
@@ -94,8 +109,7 @@ export const MyPortfolio: React.FC = () => {
         ? notes.map(n => `[${n.category}] ${n.title}: ${n.content}`).join('\n')
         : '';
 
-      const { generatePortfolioAnalysis } = await import('../../services/geminiService');
-      const result = await generatePortfolioAnalysis(user.name, {
+      const requestData = {
         avgScore: analytics.avgScore,
         totalAttempts: analytics.totalAttempts,
         weakTopics: analytics.weakTopics.slice(0, 5),
@@ -111,10 +125,25 @@ export const MyPortfolio: React.FC = () => {
         arenaLosses: arenaProfile?.losses || 0,
         towerFloor: arenaProfile?.tower_floor || 1,
         teacherNotes: notesSummary,
-      });
-      setAiResult(result);
+      };
+
+      // Delete older request first to keep DB clean
+      await supabase.from('ai_requests').delete().eq('student_id', user.id).eq('feature_name', 'portfolio_analysis');
+
+      const { data, error } = await supabase.from('ai_requests').insert({
+        student_id: user.id,
+        student_name: user.name,
+        feature_name: 'portfolio_analysis',
+        status: 'pending',
+        request_data: requestData
+      }).select().single();
+
+      if (error) throw error;
+      setAiRequest(data);
+      setAiResult('');
+      alert('✅ Đã gửi yêu cầu sử dụng AI phân tích học tập thành công cho Giáo viên phê duyệt!');
     } catch (err: any) {
-      setAiResult("⚠️ Lỗi AI: " + (err.message || "Không thể kết nối."));
+      alert('❌ Lỗi gửi yêu cầu AI: ' + err.message);
     } finally {
       setIsLoadingAi(false);
     }
@@ -410,26 +439,43 @@ export const MyPortfolio: React.FC = () => {
           </div>
         </div>
 
-        {!aiResult && !isLoadingAi && (
-          <button onClick={handleAiAnalysis}
-            className="w-full py-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold flex items-center justify-center gap-2 transition-all shadow-lg shadow-indigo-200 group">
-            <Sparkles className="h-5 w-5 group-hover:rotate-12 transition-transform" />
-            Nhờ AI phân tích hồ sơ của em
-          </button>
-        )}
-
-        {isLoadingAi && (
-          <div className="py-8 flex flex-col items-center">
-            <div className="h-10 w-10 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin mb-3"></div>
-            <p className="text-indigo-600 font-bold animate-pulse">Thông thái đang đọc hồ sơ của em...</p>
+        {/* Nếu chưa có yêu cầu hoặc yêu cầu bị từ chối */}
+        {(!aiRequest || aiRequest.status === 'rejected') && !isLoadingAi && (
+          <div className="space-y-3">
+            {aiRequest?.status === 'rejected' && (
+              <p className="text-sm text-red-600 bg-red-50 p-3 rounded-lg border border-red-100 font-medium">⚠️ Yêu cầu trước đó đã bị Giáo viên từ chối.</p>
+            )}
+            <button onClick={handleRequestAiAnalysis}
+              className="w-full py-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold flex items-center justify-center gap-2 transition-all shadow-lg shadow-indigo-200 group">
+              <Sparkles className="h-5 w-5 group-hover:rotate-12 transition-transform" />
+              Gửi yêu cầu AI phân tích học tập cho Giáo viên duyệt
+            </button>
           </div>
         )}
 
-        {aiResult && !isLoadingAi && (
+        {/* Nếu đang chờ duyệt */}
+        {aiRequest && aiRequest.status === 'pending' && !isLoadingAi && (
+          <div className="py-6 px-4 bg-amber-50 border border-amber-200 rounded-xl text-center">
+            <p className="text-amber-700 font-bold text-sm flex items-center justify-center gap-2">
+              ⏳ Đang chờ Giáo viên phê duyệt yêu cầu sử dụng AI...
+            </p>
+            <p className="text-xs text-gray-500 mt-1">Yêu cầu được gửi lúc {new Date(aiRequest.created_at).toLocaleString('vi-VN')}</p>
+          </div>
+        )}
+
+        {/* Đang chạy tải */}
+        {isLoadingAi && (
+          <div className="py-8 flex flex-col items-center">
+            <div className="h-10 w-10 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin mb-3"></div>
+            <p className="text-indigo-600 font-bold animate-pulse">Đang gửi yêu cầu...</p>
+          </div>
+        )}
+
+        {/* Khi đã được duyệt và có kết quả */}
+        {aiRequest && aiRequest.status === 'approved' && aiResult && !isLoadingAi && (
           <div className="bg-white rounded-xl p-6 border border-indigo-100 shadow-sm relative overflow-hidden prose prose-indigo max-w-none">
             <div className="absolute top-0 right-0 p-3 opacity-10"><Sparkles className="h-12 w-12 text-indigo-600" /></div>
             <div className="relative text-sm text-gray-700 leading-relaxed">
-              {/* Note: In a real app we'd use ReactMarkdown here, but for simplicity we show text */}
               {aiResult.split('\n').map((line, i) => (
                 <p key={i} className={line.startsWith('#') ? 'font-black text-indigo-900 text-base mb-2 mt-4' : 'mb-2'}>
                   {line}
@@ -437,8 +483,8 @@ export const MyPortfolio: React.FC = () => {
               ))}
             </div>
             <div className="mt-6 pt-4 border-t border-gray-100 flex items-center justify-between text-[10px] text-gray-400 font-bold uppercase tracking-wider">
-              <span>Gemini 2.5 Flash • OpenLMS AI Intelligence</span>
-              <button onClick={handleAiAnalysis} className="text-indigo-600 hover:text-indigo-800">Cập nhật lại</button>
+              <span>Được duyệt bởi GV • Gemini 2.5 Flash</span>
+              <button onClick={handleRequestAiAnalysis} className="text-indigo-600 hover:text-indigo-800">Yêu cầu phân tích mới</button>
             </div>
           </div>
         )}

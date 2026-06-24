@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useCallback } from 'react';
+import React, { useMemo, useState, useCallback, useEffect } from 'react';
 import { useStore } from '../../store';
 import {
   TrendingUp, TrendingDown, Minus, BookOpen, Brain, Target, AlertTriangle,
@@ -8,6 +8,7 @@ import { Link } from 'react-router-dom';
 import { computeStudentAnalytics, TIME_PERIODS, TimePeriod, StudentAnalytics } from '../../utils/analyticsEngine';
 import { getRecommendations, getRecentExamIds } from '../../utils/recommendationEngine';
 import { generatePersonalizedRecommendation } from '../../services/geminiService';
+import { supabase } from '../../services/supabaseClient';
 
 // ============================================================
 // SUB COMPONENTS
@@ -154,9 +155,29 @@ export const LearningAnalytics: React.FC = () => {
   const { user, attempts, exams, questionBank } = useStore();
   const [selectedPeriod, setSelectedPeriod] = useState<TimePeriod>(TIME_PERIODS[1]); // Mặc định 1 tháng
   const [aiInsight, setAiInsight] = useState<string | null>(null);
+  const [aiRequest, setAiRequest] = useState<any>(null);
   const [isLoadingAI, setIsLoadingAI] = useState(false);
   const [showAllWeakTopics, setShowAllWeakTopics] = useState(false);
   const [showAllRecommended, setShowAllRecommended] = useState(false);
+
+  useEffect(() => {
+    if (!user?.id) return;
+    const fetchRequest = async () => {
+      const { data: req } = await supabase
+        .from('ai_requests')
+        .select('*')
+        .eq('student_id', user.id)
+        .eq('feature_name', 'learning_analytics')
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      setAiRequest(req);
+      if (req && req.status === 'approved' && req.response_data) {
+        setAiInsight(req.response_data);
+      }
+    };
+    fetchRequest();
+  }, [user?.id]);
 
   if (!user || user.role !== 'STUDENT') {
     return <div className="p-8 text-center text-gray-500">Trang này chỉ dành cho học sinh.</div>;
@@ -185,16 +206,35 @@ export const LearningAnalytics: React.FC = () => {
 
   // Lấy AI insight theo yêu cầu
   const handleGetAIInsight = useCallback(async () => {
+    if (!user) return;
     setIsLoadingAI(true);
     try {
-      const result = await generatePersonalizedRecommendation(analytics);
-      setAiInsight(result);
+      // Clear older request
+      await supabase.from('ai_requests').delete().eq('student_id', user.id).eq('feature_name', 'learning_analytics');
+
+      const { data, error } = await supabase.from('ai_requests').insert({
+        student_id: user.id,
+        student_name: user.name,
+        feature_name: 'learning_analytics',
+        status: 'pending',
+        request_data: {
+          avgScore: analytics.avgScore,
+          totalAttempts: analytics.totalAttempts,
+          weakTopics: analytics.weakTopics.slice(0, 5),
+          studyStreak: analytics.studyStreak
+        }
+      }).select().single();
+
+      if (error) throw error;
+      setAiRequest(data);
+      setAiInsight(null);
+      alert('✅ Đã gửi yêu cầu AI gợi ý học tập thành công cho Giáo viên phê duyệt!');
     } catch (e: any) {
-      setAiInsight(`Không thể lấy gợi ý AI: ${e.message}`);
+      alert(`Không thể gửi yêu cầu: ${e.message}`);
     } finally {
       setIsLoadingAI(false);
     }
-  }, [analytics]);
+  }, [user, analytics]);
 
   const handlePrint = () => {
     window.print();
@@ -399,28 +439,49 @@ export const LearningAnalytics: React.FC = () => {
                 </h2>
                 <p className="text-sm text-gray-500 mt-0.5">Hệ thống tự động phân tích và chọn bài phù hợp năng lực của bạn</p>
               </div>
-              <button
-                onClick={handleGetAIInsight}
-                disabled={isLoadingAI}
-                className="flex items-center gap-2 bg-purple-50 text-purple-700 border border-purple-100 px-3 py-2 rounded-xl text-sm font-bold hover:bg-purple-100 transition-all disabled:opacity-50"
-              >
-                {isLoadingAI ? (
-                  <RefreshCw className="h-4 w-4 animate-spin" />
-                ) : (
-                  <Sparkles className="h-4 w-4" />
-                )}
-                Gợi ý từ AI
-              </button>
+              {(!aiRequest || aiRequest.status === 'rejected') && (
+                <button
+                  onClick={handleGetAIInsight}
+                  disabled={isLoadingAI}
+                  className="flex items-center gap-2 bg-purple-50 text-purple-700 border border-purple-100 px-3 py-2 rounded-xl text-sm font-bold hover:bg-purple-100 transition-all disabled:opacity-50 hover:scale-105"
+                >
+                  <Sparkles className="h-4 w-4 text-purple-600" />
+                  Yêu cầu AI gợi ý học tập
+                </button>
+              )}
+
+              {aiRequest && aiRequest.status === 'pending' && (
+                <span className="text-xs font-bold text-amber-600 bg-amber-50 border border-amber-100 px-3 py-2 rounded-xl">
+                  ⏳ Đang chờ Giáo viên phê duyệt...
+                </span>
+              )}
+
+              {aiRequest && aiRequest.status === 'approved' && (
+                <button
+                  onClick={handleGetAIInsight}
+                  disabled={isLoadingAI}
+                  className="flex items-center gap-2 bg-indigo-50 text-indigo-700 border border-indigo-100 px-3 py-2 rounded-xl text-sm font-bold hover:bg-indigo-100 transition-all disabled:opacity-50"
+                >
+                  <RefreshCw className="h-4 w-4" />
+                  Yêu cầu gợi ý mới
+                </button>
+              )}
             </div>
 
             {/* AI Insight */}
-            {aiInsight && (
+            {aiRequest?.status === 'rejected' && (
+              <div className="mb-4 bg-red-50 border border-red-100 rounded-2xl p-4 text-sm text-red-700">
+                ⚠️ Yêu cầu sử dụng AI gợi ý học tập đã bị Giáo viên từ chối.
+              </div>
+            )}
+            
+            {aiInsight && aiRequest?.status === 'approved' && (
               <div className="mb-4 bg-gradient-to-br from-indigo-50 via-purple-50 to-white border border-purple-100 rounded-2xl p-5 shadow-inner animate-in slide-in-from-top-4 duration-500">
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-2 font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-700 to-indigo-700">
-                    <Sparkles className="h-5 w-5 text-purple-600" /> AI Phân tích cá nhân hóa
+                    <Sparkles className="h-5 w-5 text-purple-600" /> Lời khuyên từ Trợ lý AI (Đã phê duyệt)
                   </div>
-                  <div className="text-[10px] text-purple-400 font-medium uppercase tracking-wider bg-purple-100/50 px-2 py-0.5 rounded">Gemini Optimized</div>
+                  <div className="text-[10px] text-purple-400 font-medium uppercase tracking-wider bg-purple-100/50 px-2 py-0.5 rounded">Được duyệt bởi GV</div>
                 </div>
                 <div className="text-sm text-gray-800 leading-relaxed italic border-l-4 border-purple-300 pl-4 py-1">
                   "{aiInsight}"
