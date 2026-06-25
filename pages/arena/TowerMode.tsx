@@ -1407,7 +1407,7 @@ export const TowerMode: React.FC = () => {
   if (victory || gameOver) {
     const league = getLeagueInfo(arenaProfile?.elo_rating || 1000);
     return (
-      <div className="max-w-2xl mx-auto pb-12 px-4 bg-[#030712] text-gray-100 rounded-3xl border border-white/5 shadow-2xl relative overflow-hidden min-h-[85vh]">
+      <div className="max-w-2xl lg:max-w-4xl xl:max-w-5xl mx-auto pb-12 px-6 md:px-8 bg-[#030712] text-gray-100 rounded-3xl border border-white/5 shadow-2xl relative overflow-hidden min-h-[85vh]">
         <style>{`
           @keyframes popIn { 0% { transform: scale(0.9); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
           .animate-pop { animation: popIn 0.4s ease-out forwards; }
@@ -1551,7 +1551,7 @@ export const TowerMode: React.FC = () => {
   const charClass = arenaProfile?.avatar_class || 'scholar';
 
   return (
-    <div className="max-w-2xl mx-auto pb-12 px-4 bg-[#030712] text-gray-100 rounded-3xl border border-white/5 shadow-2xl relative overflow-hidden min-h-[85vh]">
+    <div className="max-w-2xl lg:max-w-4xl xl:max-w-5xl mx-auto pb-12 px-6 md:px-8 bg-[#030712] text-gray-100 rounded-3xl border border-white/5 shadow-2xl relative overflow-hidden min-h-[85vh]">
       <style>{`
         @keyframes slideIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
         .animate-slide { animation: slideIn 0.3s ease-out forwards; }
@@ -1744,7 +1744,7 @@ export const TowerMode: React.FC = () => {
                 Difficulty: {currentQ.difficulty}/3
               </span>
             </div>
-            <div className="text-lg font-bold text-white leading-relaxed">
+            <div className="text-xl md:text-2xl font-bold text-white leading-relaxed">
               <MathText>{currentQ.content}</MathText>
             </div>
             {hint && !showResult && (
@@ -1809,7 +1809,7 @@ export const TowerMode: React.FC = () => {
               )}
             </div>
           ) : (
-            <div className="space-y-3">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {currentQ.answers.map((answer, idx) => {
                 const isEliminated = eliminatedOptions.includes(idx);
                 const isMultiple = currentQ.type === 'MCQ_MULTIPLE';
@@ -1850,7 +1850,7 @@ export const TowerMode: React.FC = () => {
                     key={idx}
                     onClick={handleOptClick}
                     disabled={showResult || isEliminated}
-                    className={`w-full p-4 rounded-xl border text-left font-semibold transition-all flex items-center gap-3 ${btnStyle} ${isEliminated ? 'opacity-20 cursor-not-allowed line-through' : ''}`}
+                    className={`w-full p-4 md:p-5 rounded-2xl border text-left font-bold text-sm md:text-base transition-all flex items-center gap-3 ${btnStyle} ${isEliminated ? 'opacity-20 cursor-not-allowed line-through' : ''}`}
                   >
                     <span className={`w-8 h-8 rounded-lg flex items-center justify-center text-sm font-black flex-shrink-0 ${showResult && isCorrectOption ? 'bg-emerald-500 text-white shadow-md' : showResult && isSelected && !isCorrectOption ? 'bg-rose-500 text-white shadow-md' : isSelected ? 'bg-indigo-500 text-white shadow-md' : 'bg-white/10 text-gray-400'}`}>
                       {showResult && isCorrectOption ? (
