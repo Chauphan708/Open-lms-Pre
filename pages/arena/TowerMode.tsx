@@ -1017,7 +1017,7 @@ export const TowerMode: React.FC = () => {
     const techTopics = availableTopics.filter(t => t.subject === 'technology');
 
     return (
-      <div className="max-w-2xl lg:max-w-5xl mx-auto pb-12 px-4 md:px-6 bg-[#030712] text-gray-100 rounded-3xl border border-white/5 shadow-2xl relative overflow-hidden min-h-[85vh]">
+      <div className="max-w-2xl lg:max-w-6xl xl:max-w-7xl mx-auto pb-12 px-4 md:px-8 bg-[#030712] text-gray-100 rounded-3xl border border-white/5 shadow-2xl relative overflow-hidden min-h-[85vh]">
         <style>{`
           @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
           .animate-fade-in { animation: fadeIn 0.4s ease-out forwards; }
@@ -1028,15 +1028,15 @@ export const TowerMode: React.FC = () => {
         <div className="absolute top-0 right-1/4 w-72 h-72 rounded-full opacity-[0.03] blur-[90px] pointer-events-none bg-amber-500"></div>
 
         {/* Header */}
-        <div className="flex items-center gap-3 mb-6 bg-white/5 p-4 rounded-2xl border border-white/5 mt-4 animate-fade-in">
+        <div className="flex items-center gap-3 mb-6 bg-white/5 p-4 lg:p-5 rounded-2xl border border-white/5 mt-4 animate-fade-in">
           <button onClick={() => navigate('/arena')} className="p-2 hover:bg-white/10 rounded-full transition-colors text-gray-400 hover:text-white">
-            <ArrowLeft className="h-5 w-5" />
+            <ArrowLeft className="h-5 w-5 lg:h-6 lg:w-6" />
           </button>
           <div>
-            <h1 className="text-xl font-black text-white flex items-center gap-2">
-              <GraduationCap className="h-6 w-6 text-amber-500" /> Leo Tháp Thích Ứng (VioEdu)
+            <h1 className="text-xl lg:text-3xl font-black text-white flex items-center gap-2">
+              <GraduationCap className="h-6 w-6 lg:h-8 lg:w-8 text-amber-500" /> Leo Tháp Thích Ứng (VioEdu)
             </h1>
-            <p className="text-sm text-gray-400">Chinh phục chuyên đề theo độ khó tăng dần của AI</p>
+            <p className="text-sm lg:text-base text-gray-400">Chinh phục chuyên đề theo độ khó tăng dần của AI</p>
           </div>
         </div>
 
@@ -1048,35 +1048,35 @@ export const TowerMode: React.FC = () => {
             {/* ELO & Character details */}
             {arenaProfile && (
               <div className="grid grid-cols-2 gap-4">
-                <div className={`p-4 rounded-2xl bg-[#080d16] border ${league.border} flex items-center gap-3`}>
-                  <span className="text-3xl">{league.badge}</span>
+                <div className={`p-4 lg:p-5 rounded-2xl bg-[#080d16] border ${league.border} flex items-center gap-3 lg:gap-4`}>
+                  <span className="text-3xl lg:text-4xl">{league.badge}</span>
                   <div>
-                    <p className="text-[10px] text-gray-500 uppercase font-black">Xếp hạng Võ Đài</p>
-                    <p className="font-bold text-white text-sm truncate">{league.name.split(' ')[0]}</p>
-                    <p className="text-xs font-semibold text-amber-400">{arenaProfile.elo_rating} Elo</p>
+                    <p className="text-[10px] lg:text-xs text-gray-500 uppercase font-black">Xếp hạng Võ Đài</p>
+                    <p className="font-bold text-white text-sm lg:text-base truncate">{league.name.split(' ')[0]}</p>
+                    <p className="text-xs lg:text-sm font-semibold text-amber-400">{arenaProfile.elo_rating} Elo</p>
                   </div>
                 </div>
-                <div className="p-4 rounded-2xl bg-[#080d16] border border-white/5 flex items-center gap-3">
-                  <span className="text-3xl">
+                <div className="p-4 lg:p-5 rounded-2xl bg-[#080d16] border border-white/5 flex items-center gap-3 lg:gap-4">
+                  <span className="text-3xl lg:text-4xl">
                     {arenaProfile.avatar_class === 'scholar' ? '📖' : arenaProfile.avatar_class === 'scientist' ? '🔬' : arenaProfile.avatar_class === 'artist' ? '🎨' : '🌍'}
                   </span>
                   <div>
-                    <p className="text-[10px] text-gray-500 uppercase font-black">Lớp nhân vật</p>
-                    <p className="font-bold text-white text-sm truncate">
+                    <p className="text-[10px] lg:text-xs text-gray-500 uppercase font-black">Lớp nhân vật</p>
+                    <p className="font-bold text-white text-sm lg:text-base truncate">
                       {arenaProfile.avatar_class === 'scholar' ? 'Nhà Thông Thái' : arenaProfile.avatar_class === 'scientist' ? 'Nhà Khoa Học' : arenaProfile.avatar_class === 'artist' ? 'Nghệ Sĩ' : 'Nhà Thám Hiểm'}
                     </p>
-                    <p className="text-xs text-purple-400 font-semibold truncate">{arenaProfile.active_title || 'Học Giả'}</p>
+                    <p className="text-xs lg:text-sm text-purple-400 font-semibold truncate">{arenaProfile.active_title || 'Học Giả'}</p>
                   </div>
                 </div>
               </div>
             )}
 
             {/* Selectors Card */}
-            <div className="bg-[#080d16] rounded-2xl p-5 border border-white/5 space-y-6">
+            <div className="bg-[#080d16] rounded-2xl p-5 lg:p-6 border border-white/5 space-y-6">
               {/* Grade Selector */}
               <div>
-                <h3 className="font-bold text-white mb-3 flex items-center gap-2 text-sm">
-                  <GraduationCap className="h-4 w-4 text-amber-500" />
+                <h3 className="font-bold text-white mb-3 flex items-center gap-2 text-sm lg:text-base">
+                  <GraduationCap className="h-4 w-4 lg:h-5 lg:w-5 text-amber-500" />
                   1. Khối lớp học tập
                 </h3>
                 <div className="flex flex-wrap gap-2">
@@ -1092,7 +1092,7 @@ export const TowerMode: React.FC = () => {
                     <button
                       key={g}
                       onClick={() => setSelectedGrade(g)}
-                      className={`px-3 py-2 rounded-xl text-xs font-black transition-all ${
+                      className={`px-3 py-2 lg:px-4 lg:py-2.5 rounded-xl text-xs lg:text-sm font-black transition-all ${
                         selectedGrade === g
                           ? 'bg-amber-500 text-black font-extrabold shadow-lg shadow-amber-500/20'
                           : 'bg-white/5 text-gray-400 hover:bg-white/10'
@@ -1114,18 +1114,18 @@ export const TowerMode: React.FC = () => {
 
               {/* Subject Selector */}
               <div>
-                <h3 className="font-bold text-white mb-3 flex items-center gap-2 text-sm">
-                  <BookOpen className="h-4 w-4 text-indigo-400" />
+                <h3 className="font-bold text-white mb-3 flex items-center gap-2 text-sm lg:text-base">
+                  <BookOpen className="h-4 w-4 lg:h-5 lg:w-5 text-indigo-400" />
                   2. Lựa chọn môn học
                 </h3>
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-2 gap-2 lg:gap-3">
                   <button 
                     onClick={() => {
                       setSelectedSubject('math');
                       const list = availableTopics.filter(t => t.subject === 'math');
                       if (list.length > 0) setSelectedTopic(list[0].topic);
                     }}
-                    className={`py-2 px-1 rounded-xl text-xs font-black transition-all text-center ${selectedSubject === 'math' ? 'bg-indigo-600 text-white shadow-md' : 'bg-white/5 text-gray-400 hover:bg-white/10'}`}
+                    className={`py-2 lg:py-3 px-1 lg:px-2 rounded-xl text-xs lg:text-sm font-black transition-all text-center ${selectedSubject === 'math' ? 'bg-indigo-600 text-white shadow-md' : 'bg-white/5 text-gray-400 hover:bg-white/10'}`}
                   >
                     📐 Toán học
                   </button>
@@ -1135,7 +1135,7 @@ export const TowerMode: React.FC = () => {
                       const list = availableTopics.filter(t => t.subject === 'science');
                       if (list.length > 0) setSelectedTopic(list[0].topic);
                     }}
-                    className={`py-2 px-1 rounded-xl text-xs font-black transition-all text-center ${selectedSubject === 'science' ? 'bg-purple-600 text-white shadow-md' : 'bg-white/5 text-gray-400 hover:bg-white/10'}`}
+                    className={`py-2 lg:py-3 px-1 lg:px-2 rounded-xl text-xs lg:text-sm font-black transition-all text-center ${selectedSubject === 'science' ? 'bg-purple-600 text-white shadow-md' : 'bg-white/5 text-gray-400 hover:bg-white/10'}`}
                   >
                     🔬 Khoa học
                   </button>
@@ -1145,7 +1145,7 @@ export const TowerMode: React.FC = () => {
                       const list = availableTopics.filter(t => t.subject === 'technology');
                       if (list.length > 0) setSelectedTopic(list[0].topic);
                     }}
-                    className={`py-2 px-1 rounded-xl text-xs font-black transition-all text-center ${selectedSubject === 'technology' ? 'bg-emerald-600 text-white shadow-md' : 'bg-white/5 text-gray-400 hover:bg-white/10'}`}
+                    className={`py-2 lg:py-3 px-1 lg:px-2 rounded-xl text-xs lg:text-sm font-black transition-all text-center ${selectedSubject === 'technology' ? 'bg-emerald-600 text-white shadow-md' : 'bg-white/5 text-gray-400 hover:bg-white/10'}`}
                   >
                     💻 Công nghệ
                   </button>
@@ -1155,7 +1155,7 @@ export const TowerMode: React.FC = () => {
                       const list = availableTopics.filter(t => t.subject === 'vietnamese');
                       if (list.length > 0) setSelectedTopic(list[0].topic);
                     }}
-                    className={`py-2 px-1 rounded-xl text-xs font-black transition-all text-center ${selectedSubject === 'vietnamese' ? 'bg-rose-600 text-white shadow-md' : 'bg-white/5 text-gray-400 hover:bg-white/10'}`}
+                    className={`py-2 lg:py-3 px-1 lg:px-2 rounded-xl text-xs lg:text-sm font-black transition-all text-center ${selectedSubject === 'vietnamese' ? 'bg-rose-600 text-white shadow-md' : 'bg-white/5 text-gray-400 hover:bg-white/10'}`}
                   >
                     📝 Tiếng Việt
                   </button>
@@ -1165,7 +1165,7 @@ export const TowerMode: React.FC = () => {
                       const list = availableTopics.filter(t => t.subject === 'english');
                       if (list.length > 0) setSelectedTopic(list[0].topic);
                     }}
-                    className={`py-2 px-1 rounded-xl text-xs font-black transition-all text-center ${selectedSubject === 'english' ? 'bg-teal-600 text-white shadow-md' : 'bg-white/5 text-gray-400 hover:bg-white/10'}`}
+                    className={`py-2 lg:py-3 px-1 lg:px-2 rounded-xl text-xs lg:text-sm font-black transition-all text-center ${selectedSubject === 'english' ? 'bg-teal-600 text-white shadow-md' : 'bg-white/5 text-gray-400 hover:bg-white/10'}`}
                   >
                     🌐 Tiếng Anh
                   </button>
@@ -1175,7 +1175,7 @@ export const TowerMode: React.FC = () => {
                       const list = availableTopics.filter(t => t.subject === 'history_geography');
                       if (list.length > 0) setSelectedTopic(list[0].topic);
                     }}
-                    className={`py-2 px-1 rounded-xl text-xs font-black transition-all text-center ${selectedSubject === 'history_geography' ? 'bg-amber-600 text-white shadow-md' : 'bg-white/5 text-gray-400 hover:bg-white/10'}`}
+                    className={`py-2 lg:py-3 px-1 lg:px-2 rounded-xl text-xs lg:text-sm font-black transition-all text-center ${selectedSubject === 'history_geography' ? 'bg-amber-600 text-white shadow-md' : 'bg-white/5 text-gray-400 hover:bg-white/10'}`}
                   >
                     ⏳ Lịch sử & Địa lí
                   </button>
@@ -1185,15 +1185,15 @@ export const TowerMode: React.FC = () => {
           </div>
 
           {/* Column Right: Chuyên đề & Nút bắt đầu (7 cols) */}
-          <div className="lg:col-span-7 bg-[#080d16] rounded-2xl p-5 border border-white/5 space-y-6 flex flex-col justify-between min-h-[50vh] lg:min-h-[58vh]">
+          <div className="lg:col-span-7 bg-[#080d16] rounded-2xl p-5 lg:p-6 border border-white/5 space-y-6 flex flex-col justify-between min-h-[50vh] lg:min-h-[58vh]">
             <div className="space-y-4">
-              <h3 className="font-bold text-white flex items-center gap-2 text-sm border-b border-white/5 pb-2">
-                <Trophy className="h-4 w-4 text-amber-500" />
+              <h3 className="font-bold text-white flex items-center gap-2 text-sm lg:text-base border-b border-white/5 pb-2">
+                <Trophy className="h-4 w-4 lg:h-5 lg:w-5 text-amber-500" />
                 3. Chọn Chuyên đề leo tháp
               </h3>
 
               {/* Topic List */}
-              <div className="space-y-2.5 max-h-[250px] lg:max-h-[350px] overflow-y-auto pr-1 custom-scrollbar">
+              <div className="space-y-2.5 max-h-[300px] lg:max-h-[420px] overflow-y-auto pr-1 custom-scrollbar">
                 {availableTopics.filter(t => t.subject === selectedSubject).map((topicObj) => {
                   const mastery = arenaProfile?.topic_mastery?.[topicObj.topic] || 0;
                   const isSelected = selectedTopic === topicObj.topic;
@@ -1202,25 +1202,25 @@ export const TowerMode: React.FC = () => {
                     <button
                       key={topicObj.topic}
                       onClick={() => setSelectedTopic(topicObj.topic)}
-                      className={`w-full p-4 rounded-xl border text-left flex items-center justify-between transition-all ${isSelected ? 'border-amber-500/50 bg-amber-500/10 glow-active' : 'border-white/5 bg-white/5 hover:bg-white/10'}`}
+                      className={`w-full p-4 lg:p-5 rounded-xl border text-left flex items-center justify-between transition-all ${isSelected ? 'border-amber-500/50 bg-amber-500/10 glow-active' : 'border-white/5 bg-white/5 hover:bg-white/10'}`}
                     >
                       <div className="flex-1 pr-4">
-                        <p className={`text-sm font-bold ${isSelected ? 'text-amber-400' : 'text-gray-200'}`}>{topicObj.label}</p>
-                        <div className="flex items-center gap-2 mt-1.5">
-                          <div className="h-1.5 flex-1 bg-white/5 rounded-full overflow-hidden">
+                        <p className={`text-sm lg:text-base font-bold ${isSelected ? 'text-amber-400' : 'text-gray-200'}`}>{topicObj.label}</p>
+                        <div className="flex items-center gap-2 mt-2">
+                          <div className="h-2 flex-1 bg-white/5 rounded-full overflow-hidden">
                             <div className="h-full bg-gradient-to-r from-amber-500 to-orange-500" style={{ width: `${mastery}%` }}></div>
                           </div>
-                          <span className="text-[10px] font-black text-gray-400">${mastery}% Mastery</span>
+                          <span className="text-[10px] lg:text-xs font-black text-gray-400">${mastery}% Mastery</span>
                         </div>
                       </div>
                       {mastery >= 100 && (
-                        <span className="text-xl bg-yellow-500/10 p-1.5 rounded-lg border border-yellow-500/20" title="Đã làm chủ">🏆</span>
+                        <span className="text-xl lg:text-2xl bg-yellow-500/10 p-1.5 lg:p-2 rounded-lg border border-yellow-500/20" title="Đã làm chủ">🏆</span>
                       )}
                     </button>
                   );
                 })}
                 {availableTopics.filter(t => t.subject === selectedSubject).length === 0 && (
-                  <div className="text-center py-10 text-gray-500 text-xs italic">
+                  <div className="text-center py-10 text-gray-500 text-sm italic">
                     Chưa có chuyên đề nào được mở cho môn học này ở Khối ${selectedGrade}.
                   </div>
                 )}
@@ -1229,8 +1229,8 @@ export const TowerMode: React.FC = () => {
 
             <div className="space-y-4">
               {/* AI Info Card */}
-              <div className="bg-gradient-to-r from-indigo-950/20 to-purple-950/20 border border-indigo-500/20 rounded-xl p-3 flex gap-3 text-xs text-indigo-300">
-                <Bot className="h-4 w-4 text-indigo-400 flex-shrink-0 animate-bounce mt-0.5" />
+              <div className="bg-gradient-to-r from-indigo-950/20 to-purple-950/20 border border-indigo-500/20 rounded-xl p-3 lg:p-4 flex gap-3 text-xs lg:text-sm text-indigo-300">
+                <Bot className="h-4 w-4 lg:h-5 lg:w-5 text-indigo-400 flex-shrink-0 animate-bounce mt-0.5" />
                 <p className="leading-relaxed">
                   <strong>Gia sư AI gợi ý:</strong> Sau khi bắt đầu, bạn cần trả lời đúng liên tiếp số câu quy định để thăng cấp <strong>(Mức 1: 4 câu, Mức 2: 5 câu, Mức 3: 4 câu)</strong>. Bất kỳ câu sai nào cũng reset chuỗi, hạ độ khó và kích hoạt gợi ý chẩn đoán lý thuyết của AI ngay lập tức!
                 </p>
@@ -1238,14 +1238,14 @@ export const TowerMode: React.FC = () => {
 
               {/* Action Trigger */}
               {aiGeneratingFallback ? (
-                <div className="py-4 text-center text-amber-500 font-bold animate-pulse flex items-center justify-center gap-2">
-                  <Clock className="h-5 w-5 animate-spin" /> Đang nhờ AI tạo câu hỏi chuyên đề thích ứng...
+                <div className="py-4 lg:py-5 text-center text-amber-500 font-bold animate-pulse flex items-center justify-center gap-2 text-sm lg:text-base">
+                  <Clock className="h-5 w-5 lg:h-6 lg:w-6 animate-spin" /> Đang nhờ AI tạo câu hỏi chuyên đề thích ứng...
                 </div>
               ) : (
                 <button
                   onClick={handleStart}
                   disabled={!selectedTopic}
-                  className={`w-full py-4 rounded-xl font-black text-lg bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white shadow-lg shadow-orange-950/30 transition-all active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed`}
+                  className={`w-full py-4 lg:py-5 rounded-xl font-black text-lg lg:text-xl bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white shadow-lg shadow-orange-950/30 transition-all active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed`}
                 >
                   🚀 Bắt đầu chinh phục!
                 </button>
