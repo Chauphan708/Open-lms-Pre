@@ -1755,10 +1755,10 @@ export const TowerMode: React.FC = () => {
             {hint && !showResult && (
               <div className="mt-4 border-t border-white/5 pt-3">
                 <details className="group cursor-pointer select-none">
-                  <summary className="text-xs font-black text-indigo-400 hover:text-indigo-300 flex items-center gap-1 outline-none">
+                  <summary className="text-sm md:text-base font-black text-indigo-400 hover:text-indigo-300 flex items-center gap-1 outline-none">
                     <span>💡 Xem gợi ý cách làm</span>
                   </summary>
-                  <div className="text-xs text-gray-400 mt-2 pl-4 border-l border-indigo-500/30 leading-relaxed">
+                  <div className="text-sm md:text-base lg:text-lg text-gray-300 mt-2 pl-4 border-l border-indigo-500/30 leading-relaxed font-bold">
                     <MathText>{hint}</MathText>
                   </div>
                 </details>
@@ -1917,16 +1917,16 @@ export const TowerMode: React.FC = () => {
               {/* Quick AI explanation box */}
               {showAiExplanation && (
                 <div className="bg-[#080d16] border border-indigo-500/20 rounded-2xl p-5 space-y-3 animate-slide">
-                  <h4 className="font-bold text-white text-xs flex items-center gap-1.5">
-                    <Bot className="h-4.5 w-4.5 text-indigo-400 animate-bounce" />
+                  <h4 className="font-bold text-white text-sm md:text-base lg:text-lg flex items-center gap-1.5">
+                    <Bot className="h-5 w-5 text-indigo-400 animate-bounce" />
                     AI Gia Sư giải thích nhanh
                   </h4>
                   {aiLoading ? (
-                    <div className="py-4 flex flex-col items-center justify-center text-xs text-indigo-400 font-bold animate-pulse">
+                    <div className="py-4 flex flex-col items-center justify-center text-sm text-indigo-400 font-bold animate-pulse">
                       <Clock className="h-5 w-5 animate-spin mb-1" /> Đang chuẩn bị chẩn đoán lý thuyết...
                     </div>
                   ) : (
-                    <div className="text-xs text-gray-300 leading-relaxed bg-white/5 p-4 rounded-xl border border-white/5">
+                    <div className="text-sm md:text-base lg:text-lg text-gray-200 leading-relaxed bg-white/5 p-4 rounded-xl border border-white/5">
                       <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>
                         {aiExplanation}
                       </ReactMarkdown>
@@ -1937,15 +1937,15 @@ export const TowerMode: React.FC = () => {
 
               {/* Solution/Explanation */}
               {explanation ? (
-                <div className="bg-indigo-950/20 border border-indigo-500/20 rounded-xl p-4 text-xs">
-                  <p className="font-black text-indigo-400">📖 Lời giải chi tiết:</p>
-                  <p className="mt-1.5 text-gray-300 leading-relaxed whitespace-pre-wrap"><MathText>{explanation}</MathText></p>
+                <div className="bg-indigo-950/20 border border-indigo-500/20 rounded-2xl p-5 text-sm md:text-base lg:text-lg">
+                  <p className="font-black text-indigo-400 text-base md:text-lg lg:text-xl mb-2">📖 Lời giải chi tiết:</p>
+                  <p className="mt-1.5 text-gray-200 leading-relaxed whitespace-pre-wrap"><MathText>{explanation}</MathText></p>
                 </div>
               ) : (
                 !isCorrect && (
-                  <div className="bg-white/5 border border-white/5 rounded-xl p-4 text-xs text-gray-400">
-                    <p className="font-black text-gray-300">Lời giải tham chiếu:</p>
-                    <div className="mt-1 leading-relaxed">
+                  <div className="bg-white/5 border border-white/5 rounded-2xl p-5 text-sm md:text-base lg:text-lg text-gray-300">
+                    <p className="font-black text-gray-200 text-base md:text-lg lg:text-xl mb-2">Lời giải tham chiếu:</p>
+                    <div className="mt-1 leading-relaxed font-bold">
                       {(currentQ.type === 'SHORT_ANSWER' || !currentQ.answers || currentQ.answers.length === 0) ? (
                         <span>Đáp án đúng là: <strong className="text-emerald-400">{currentQ.correct_answer_string}</strong></span>
                       ) : currentQ.type === 'MCQ_MULTIPLE' ? (
