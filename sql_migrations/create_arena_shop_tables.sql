@@ -184,3 +184,54 @@ EXCEPTION
     RETURN jsonb_build_object('success', false, 'message', SQLERRM);
 END;
 $$;
+
+-- Secure function to consume/use an item in-game
+CREATE OR REPLACE FUNCTION public.use_arena_item(p_item_id TEXT)
+RETURNS JSONB
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+DECLARE
+  v_student_id TEXT;
+  v_qty INT;
+  v_item_name TEXT;
+BEGIN
+  v_student_id := auth.uid()::text;
+  IF v_student_id IS NULL THEN
+    RETURN jsonb_build_object('success', false, 'message', 'Unauthorized access');
+  END IF;
+
+  -- Get inventory status
+  SELECT quantity 
+  INTO v_qty
+  FROM public.arena_inventory
+  WHERE student_id = v_student_id AND item_id = p_item_id;
+
+  IF v_qty IS NULL OR v_qty <= 0 THEN
+    RETURN jsonb_build_object('success', false, 'message', 'Bạn không sở hữu vật phẩm này hoặc đã hết lượt dùng');
+  END IF;
+
+  -- Get item details
+  SELECT name 
+  INTO v_item_name
+  FROM public.arena_shop_items
+  WHERE id = p_item_id;
+
+  -- Deduct quantity & increment times used
+  UPDATE public.arena_inventory
+  SET 
+    quantity = quantity - 1,
+    times_used = times_used + 1,
+    updated_at = now()
+  WHERE student_id = v_student_id AND item_id = p_item_id;
+
+  RETURN jsonb_build_object(
+    'success', true,
+    'message', 'Sử dụng thành công: ' || v_item_name,
+    'remaining_quantity', v_qty - 1
+  );
+EXCEPTION
+  WHEN OTHERS THEN
+    RETURN jsonb_build_object('success', false, 'message', SQLERRM);
+END;
+$$;

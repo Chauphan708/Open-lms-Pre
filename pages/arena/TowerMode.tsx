@@ -2,6 +2,7 @@ import { supabase } from '../../services/supabaseClient';
 import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useStore } from '../../store';
+import toast, { Toaster } from 'react-hot-toast';
 import { ArenaQuestion, ArenaProfile } from '../../types';
 import { 
   ArrowLeft, Heart, Star, Zap, GraduationCap, CheckCircle, XCircle, Bot, Sparkles, 
@@ -107,6 +108,7 @@ export const TowerMode: React.FC = () => {
   const [streakCombo, setStreakCombo] = useState(0); // Run-wide consecutive correct streak
   const [consecutiveCorrect, setConsecutiveCorrect] = useState(0); // Consecutive correct at current level (target = 3 for level-up)
   const [consecutiveWrong, setConsecutiveWrong] = useState(0); // Consecutive wrong at current level (target = 2 for level-down)
+  const [inventoryItems, setInventoryItems] = useState<Record<string, number>>({});
   
   // Question selection & state
   const [questionPool, setQuestionPool] = useState<ArenaQuestion[]>([]);
@@ -211,6 +213,16 @@ export const TowerMode: React.FC = () => {
           const allowed = prof?.allowed_grades || [];
           setAllowedGrades(allowed);
           setStudentHiddenTopics(prof?.hidden_topics || []);
+
+          // Fetch student inventory
+          const { data: inv } = await supabase.from('arena_inventory').select('item_id, quantity').eq('student_id', user.id);
+          if (inv) {
+            const invMap: Record<string, number> = {};
+            inv.forEach(item => {
+              invMap[item.item_id] = item.quantity;
+            });
+            setInventoryItems(invMap);
+          }
 
           await Promise.all([
             fetchArenaProfile(user.id),
@@ -755,12 +767,30 @@ export const TowerMode: React.FC = () => {
 
     } else {
       // Incorrect answer
-      newStreak = 0;
-      newConsecutiveCorrect = 0;
-      newConsecutiveWrong += 1;
-      setStreakCombo(0);
-      setConsecutiveCorrect(0);
-      setConsecutiveWrong(newConsecutiveWrong);
+      if (streakCombo > 0 && (inventoryItems['streak_shield'] || 0) > 0) {
+        // Trigger Streak Shield!
+        newStreak = streakCombo;
+        newConsecutiveCorrect = consecutiveCorrect;
+        newConsecutiveWrong += 1;
+        setConsecutiveWrong(newConsecutiveWrong);
+        
+        // Deduct shield quantity locally
+        setInventoryItems(prev => ({
+          ...prev,
+          streak_shield: Math.max(0, (prev['streak_shield'] || 0) - 1)
+        }));
+        
+        // Deduct in DB
+        supabase.rpc('use_arena_item', { p_item_id: 'streak_shield' });
+        toast.success("🛡️ Đã dùng Thẻ Bảo Vệ Chuỗi để giữ vững Combo!");
+      } else {
+        newStreak = 0;
+        newConsecutiveCorrect = 0;
+        newConsecutiveWrong += 1;
+        setStreakCombo(0);
+        setConsecutiveCorrect(0);
+        setConsecutiveWrong(newConsecutiveWrong);
+      }
 
       // Deduct half of the gained percentage at current difficulty level when incorrect
       const baseGain = currentDifficulty === 1 ? 8 
@@ -808,6 +838,65 @@ export const TowerMode: React.FC = () => {
   const handleNext = () => {
     if (gameOver || victory) return;
     pickNextQuestion(questionPool, currentDifficulty, usedIds);
+  };
+
+  const handleUseHpPotion = async () => {
+    if (lives >= maxLives) {
+      toast.error("Mạng sống đã đầy!");
+      return;
+    }
+    const qty = inventoryItems['small_hp_potion'] || 0;
+    if (qty <= 0) {
+      toast.error("Bạn không sở hữu Bình HP Nhỏ!");
+      return;
+    }
+
+    try {
+      const { data, error } = await supabase.rpc('use_arena_item', { p_item_id: 'small_hp_potion' });
+      if (error) throw error;
+      const res = data as { success: boolean; message: string };
+      if (res.success) {
+        setLives(prev => Math.min(maxLives, prev + 1));
+        setInventoryItems(prev => ({
+          ...prev,
+          small_hp_potion: Math.max(0, qty - 1)
+        }));
+        toast.success("🧪 Đã dùng 1 Bình HP Nhỏ (Hồi 1 Tim)");
+      } else {
+        toast.error(res.message);
+      }
+    } catch (e) {
+      console.error(e);
+      toast.error("Lỗi sử dụng vật phẩm");
+    }
+  };
+
+  const handleUseHourglass = async () => {
+    if (showResult || gameOver || victory || !started) return;
+    const qty = inventoryItems['hourglass_5s'] || 0;
+    if (qty <= 0) {
+      toast.error("Bạn không sở hữu Đồng Hồ Cát (+5s)!");
+      return;
+    }
+
+    try {
+      const { data, error } = await supabase.rpc('use_arena_item', { p_item_id: 'hourglass_5s' });
+      if (error) throw error;
+      const res = data as { success: boolean; message: string };
+      if (res.success) {
+        setTimer(prev => prev + 5);
+        setInventoryItems(prev => ({
+          ...prev,
+          hourglass_5s: Math.max(0, qty - 1)
+        }));
+        toast.success("⏱️ Đã cộng 5 giây vào đồng hồ đếm ngược!");
+      } else {
+        toast.error(res.message);
+      }
+    } catch (e) {
+      console.error(e);
+      toast.error("Lỗi sử dụng vật phẩm");
+    }
   };
 
   // Handle game over (lives depleted)
@@ -1538,47 +1627,82 @@ export const TowerMode: React.FC = () => {
       </div>
 
       {/* Active Skill & Buff Panel */}
-      <div className="mb-5 relative z-10 flex gap-2">
-        <button
-          onClick={handleActivateSkill}
-          disabled={skillUsed || showResult}
-          className={`flex-1 p-3 rounded-xl border flex items-center justify-center gap-2 transition-all ${
-            skillUsed 
-              ? 'border-white/5 bg-white/5 text-gray-500 cursor-not-allowed' 
-              : showResult
-                ? 'border-white/5 bg-white/5 text-gray-400 cursor-not-allowed'
-                : 'border-purple-500/30 bg-purple-950/20 text-purple-300 hover:border-purple-500/50 hover:bg-purple-950/40 active:scale-[0.98]'
-          }`}
-        >
-          {charClass === 'scholar' && (
-            <>
-              <BookOpen className="h-4.5 w-4.5" />
-              <span className="text-xs font-bold">📖 Kỹ năng Scholar: 50/50</span>
-            </>
+      <div className="mb-5 relative z-10 flex flex-col gap-3">
+        <div className="flex gap-2">
+          <button
+            onClick={handleActivateSkill}
+            disabled={skillUsed || showResult}
+            className={`flex-1 p-3 rounded-xl border flex items-center justify-center gap-2 transition-all ${
+              skillUsed 
+                ? 'border-white/5 bg-white/5 text-gray-500 cursor-not-allowed' 
+                : showResult
+                  ? 'border-white/5 bg-white/5 text-gray-400 cursor-not-allowed'
+                  : 'border-purple-500/30 bg-purple-950/20 text-purple-300 hover:border-purple-500/50 hover:bg-purple-950/40 active:scale-[0.98]'
+            }`}
+          >
+            {charClass === 'scholar' && (
+              <>
+                <BookOpen className="h-4.5 w-4.5" />
+                <span className="text-xs font-bold">📖 Kỹ năng Scholar: 50/50</span>
+              </>
+            )}
+            {charClass === 'scientist' && (
+              <>
+                <Clock className="h-4.5 w-4.5 animate-spin" style={{ animationDuration: '6s' }} />
+                <span className="text-xs font-bold">🔬 Kỹ năng Scientist: +15 Giây</span>
+              </>
+            )}
+            {charClass === 'artist' && (
+              <>
+                <Shield className="h-4.5 w-4.5" />
+                <span className="text-xs font-bold">🎨 Kỹ năng Artist: Khiên bảo vệ</span>
+              </>
+            )}
+            {charClass === 'explorer' && (
+              <>
+                <Heart className="h-4.5 w-4.5 text-rose-500" />
+                <span className="text-xs font-bold">🌍 Kỹ năng Explorer: Sơ Cứu (+1 ❤️)</span>
+              </>
+            )}
+            {skillUsed && <span className="text-[10px] bg-white/5 px-2 py-0.5 rounded text-gray-500">Đã dùng</span>}
+          </button>
+          {shieldActive && (
+            <div className="px-4 py-2 bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 rounded-xl flex items-center gap-1.5 text-xs font-black animate-pulse">
+              <ShieldCheck className="h-4.5 w-4.5" /> Khiên bảo vệ
+            </div>
           )}
-          {charClass === 'scientist' && (
-            <>
-              <Clock className="h-4.5 w-4.5 animate-spin" style={{ animationDuration: '6s' }} />
-              <span className="text-xs font-bold">🔬 Kỹ năng Scientist: +15 Giây</span>
-            </>
-          )}
-          {charClass === 'artist' && (
-            <>
-              <Shield className="h-4.5 w-4.5" />
-              <span className="text-xs font-bold">🎨 Kỹ năng Artist: Khiên bảo vệ</span>
-            </>
-          )}
-          {charClass === 'explorer' && (
-            <>
-              <Heart className="h-4.5 w-4.5 text-rose-500" />
-              <span className="text-xs font-bold">🌍 Kỹ năng Explorer: Sơ Cứu (+1 ❤️)</span>
-            </>
-          )}
-          {skillUsed && <span className="text-[10px] bg-white/5 px-2 py-0.5 rounded text-gray-500">Đã dùng</span>}
-        </button>
-        {shieldActive && (
-          <div className="px-4 py-2 bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 rounded-xl flex items-center gap-1.5 text-xs font-black animate-pulse">
-            <ShieldCheck className="h-4.5 w-4.5" /> Khiên bảo vệ đang kích hoạt
+        </div>
+
+        {/* Consumable Items HUD */}
+        {((inventoryItems['small_hp_potion'] || 0) > 0 || (inventoryItems['hourglass_5s'] || 0) > 0) && (
+          <div className="flex gap-2 bg-white/[0.02] border border-white/5 p-2.5 rounded-2xl">
+            {(inventoryItems['small_hp_potion'] || 0) > 0 && (
+              <button
+                onClick={handleUseHpPotion}
+                disabled={lives >= maxLives || showResult || gameOver || victory}
+                className={`flex-1 py-2.5 px-3 rounded-xl border text-xs font-bold flex items-center justify-center gap-1.5 transition ${
+                  lives >= maxLives || showResult || gameOver || victory
+                    ? 'border-white/5 bg-white/5 text-gray-500 cursor-not-allowed'
+                    : 'border-red-500/30 bg-red-950/20 text-red-400 hover:bg-red-950/30 active:scale-[0.98]'
+                }`}
+              >
+                🧪 Hồi 1 HP ({inventoryItems['small_hp_potion']} bình)
+              </button>
+            )}
+
+            {(inventoryItems['hourglass_5s'] || 0) > 0 && (
+              <button
+                onClick={handleUseHourglass}
+                disabled={showResult || gameOver || victory || !started}
+                className={`flex-1 py-2.5 px-3 rounded-xl border text-xs font-bold flex items-center justify-center gap-1.5 transition ${
+                  showResult || gameOver || victory || !started
+                    ? 'border-white/5 bg-white/5 text-gray-500 cursor-not-allowed'
+                    : 'border-amber-500/30 bg-amber-950/20 text-amber-400 hover:bg-amber-950/30 active:scale-[0.98]'
+                }`}
+              >
+                ⏱️ Thêm 5 Giây ({inventoryItems['hourglass_5s']} cát)
+              </button>
+            )}
           </div>
         )}
       </div>
@@ -1839,6 +1963,7 @@ export const TowerMode: React.FC = () => {
           )}
         </div>
       ) : null}
+      <Toaster position="top-center" />
     </div>
   );
 };
