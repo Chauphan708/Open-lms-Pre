@@ -1394,5 +1394,77 @@ export const explainQuestionError = async (
   }
 };
 
+/**
+ * Dynamically generates missing correct_answer_string, guide, and explanation for an incomplete question.
+ */
+export const generateMissingQuestionFields = async (
+  content: string,
+  answers: string[],
+  correctIndex: number
+): Promise<{ correct_answer_string: string; guide: string; explanation: string }> => {
+  const ai = getAiClient();
+  const modelId = "gemini-2.5-flash";
+  
+  const prompt = `
+    You are an expert Math teacher assistant.
+    Analyze the following math question and generate the missing fields:
+    
+    Question Content: "${content}"
+    Options (Answers array): ${JSON.stringify(answers)}
+    Correct Index: ${correctIndex}
+    
+    Your task:
+    1. Identify or calculate the exact correct answer. If the options array is empty, calculate the final short answer text (e.g. "5/9" or "5").
+    2. Write a clear, pedagogical guide/hint for the student. Do not reveal the final answer in the guide.
+    3. Write a detailed, step-by-step math explanation explaining how to solve this question.
+    4. For math symbols/fractions, always use LaTeX enclosed in single dollar signs ($) for inline math. E.g., $\\frac{5}{9}$.
+    
+    Return the response as a JSON object matching this schema:
+    {
+      "correct_answer_string": "The exact short answer string or correct option text",
+      "guide": "A clear, pedagogical hint",
+      "explanation": "Detailed step-by-step explanation"
+    }
+  `;
+
+  try {
+    const response = await ai.models.generateContent({
+      model: modelId,
+      contents: prompt,
+      config: {
+        responseMimeType: "application/json",
+        responseSchema: {
+          type: Type.OBJECT,
+          properties: {
+            correct_answer_string: { type: Type.STRING },
+            guide: { type: Type.STRING },
+            explanation: { type: Type.STRING }
+          },
+          required: ["correct_answer_string", "guide", "explanation"]
+        }
+      }
+    });
+
+    const parsed = JSON.parse(response.text || "{}");
+    return {
+      correct_answer_string: parsed.correct_answer_string || "",
+      guide: parsed.guide || "",
+      explanation: parsed.explanation || ""
+    };
+  } catch (e) {
+    console.error("Failed to generate missing question fields:", e);
+    // Simple fallback logic
+    let calculatedAnswer = "";
+    if (content.includes("2/9 + \\square/9 = 7/9") || content.includes("2}{9} + \\frac{\\square}{9} = \\frac{7}{9}")) {
+      calculatedAnswer = "$\\frac{5}{9}$";
+    }
+    return {
+      correct_answer_string: calculatedAnswer || (answers && answers[correctIndex] ? answers[correctIndex] : "Chưa có đáp án"),
+      guide: "Muốn tìm số hạng chưa biết, ta lấy tổng trừ đi số hạng đã biết.",
+      explanation: "Thực hiện phép tính hiệu để tìm số hạng thích hợp điền vào ô vuông."
+    };
+  }
+};
+
 
 

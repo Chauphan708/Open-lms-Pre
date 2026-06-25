@@ -17,7 +17,8 @@ import {
   explainQuestionError, 
   generateQuestionsByTopic, 
   generateRevengeQuestions,
-  generateArenaStudyGuide
+  generateArenaStudyGuide,
+  generateMissingQuestionFields
 } from '../../services/geminiService';
 
 // League calculation based on ELO rating
@@ -259,6 +260,57 @@ export const TowerMode: React.FC = () => {
       fetchArenaQuestions({ grade: selectedGrade }).then(() => setLoading(false));
     }
   }, [selectedGrade, user]);
+
+  // Dynamically heal/repair question if it has missing guide, explanation, or correct answer string
+  useEffect(() => {
+    if (!currentQ) return;
+    
+    const isShortAnswer = currentQ.type === 'SHORT_ANSWER' || !currentQ.answers || currentQ.answers.length === 0;
+    const needsAnswerString = isShortAnswer && !currentQ.correct_answer_string;
+    const needsGuide = !currentQ.guide;
+    const needsExplanation = !currentQ.explanation;
+    
+    if (needsAnswerString || needsGuide || needsExplanation) {
+      console.log(`[Heal] Question ${currentQ.id} is missing key data. Fetching dynamic repair from Gemini...`);
+      
+      generateMissingQuestionFields(
+        currentQ.content,
+        currentQ.answers || [],
+        currentQ.correct_index !== undefined ? currentQ.correct_index : 0
+      ).then(async (healed) => {
+        if (!healed) return;
+        
+        // Update local state
+        setCurrentQ(prev => {
+          if (!prev || prev.id !== currentQ.id) return prev;
+          return {
+            ...prev,
+            correct_answer_string: prev.correct_answer_string || healed.correct_answer_string,
+            guide: prev.guide || healed.guide,
+            explanation: prev.explanation || healed.explanation
+          };
+        });
+        
+        // Update the question permanently in the database so we heal the question bank!
+        const { error } = await supabase
+          .from('arena_questions')
+          .update({
+            correct_answer_string: currentQ.correct_answer_string || healed.correct_answer_string,
+            guide: currentQ.guide || healed.guide,
+            explanation: currentQ.explanation || healed.explanation
+          })
+          .eq('id', currentQ.id);
+          
+        if (error) {
+          console.warn(`[Heal Database Error] Failed to update question ${currentQ.id}:`, error.message);
+        } else {
+          console.log(`[Heal Database Success] Saved healed data for question ${currentQ.id}`);
+        }
+      }).catch(err => {
+        console.error("[Heal Error] Failed to heal question fields:", err);
+      });
+    }
+  }, [currentQ?.id]);
 
   // Extract unique topics dynamically from bank + exams
   useEffect(() => {
