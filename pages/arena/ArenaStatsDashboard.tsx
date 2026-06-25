@@ -14,6 +14,8 @@ interface StudentArenaData {
   losses: number;
   tower_floor: number;
   topic_mastery?: Record<string, number>;
+  avatar_class: string;
+  unlocked_badges?: string[];
   profiles?: {
     name: string;
     class_name: string;
@@ -67,6 +69,7 @@ export const ArenaStatsDashboard: React.FC = () => {
   const [selectedGrade, setSelectedGrade] = useState('');
   const [selectedClass, setSelectedClass] = useState('');
   const [expandedStudentId, setExpandedStudentId] = useState<string | null>(null);
+  const [studentDetailTab, setStudentDetailTab] = useState<Record<string, 'năng_lực' | 'lịch_sử' | 'huy_hiệu' | 'trang_bị'>>({});
 
   // Load stats
   const loadData = async () => {
@@ -660,117 +663,324 @@ export const ArenaStatsDashboard: React.FC = () => {
                       </tr>
 
                       {/* Expanded Details Row */}
-                      {isExpanded && (
-                        <tr className="bg-gray-50/30 border-b border-gray-100">
-                          <td colSpan={8} className="p-5">
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 animate-in slide-in-from-top duration-300">
-                              
-                              {/* 1. Mastery per topic */}
-                              <div className="bg-white rounded-2xl border p-4 shadow-sm space-y-3">
-                                <h4 className="font-bold text-gray-900 flex items-center gap-1 text-[11px] uppercase tracking-wider text-gray-400">
-                                  🎯 Độ am hiểu chuyên đề
-                                </h4>
-                                <div className="space-y-2 max-h-[220px] overflow-y-auto pr-1 custom-scrollbar">
-                                  {!s.topic_mastery || Object.keys(s.topic_mastery).length === 0 ? (
-                                    <div className="text-center py-6 text-gray-400 text-[10px] italic">
-                                      Học sinh chưa hoàn thành chuyên đề nào.
-                                    </div>
-                                  ) : (
-                                    Object.entries(s.topic_mastery).map(([topic, mastery]) => {
-                                      let masteryColor = 'bg-rose-500';
-                                      let masteryText = 'Bắt đầu';
-                                      if (mastery >= 90) {
-                                        masteryColor = 'bg-emerald-500';
-                                        masteryText = 'Làm chủ (Master)';
-                                      } else if (mastery >= 60) {
-                                        masteryColor = 'bg-indigo-500';
-                                        masteryText = 'Khá tốt';
-                                      } else if (mastery >= 30) {
-                                        masteryColor = 'bg-amber-500';
-                                        masteryText = 'Cần luyện thêm';
-                                      }
+                      {isExpanded && (() => {
+                        const activeTab = studentDetailTab[s.id] || 'năng_lực';
+                        const setActiveTab = (tab: 'năng_lực' | 'lịch_sử' | 'huy_hiệu' | 'trang_bị') => 
+                          setStudentDetailTab(prev => ({ ...prev, [s.id]: tab }));
 
-                                      return (
-                                        <div key={topic} className="space-y-1">
-                                          <div className="flex justify-between text-[11px] font-bold">
-                                            <span className="text-gray-700 truncate max-w-[150px]">{topic}</span>
-                                            <span className="text-gray-900">{mastery}%</span>
-                                          </div>
-                                          <div className="w-full bg-gray-100 rounded-full h-1.5">
-                                            <div className={`h-1.5 rounded-full ${masteryColor}`} style={{ width: `${mastery}%` }} />
-                                          </div>
-                                          <div className="text-[9px] text-gray-400 font-semibold">{masteryText}</div>
-                                        </div>
-                                      );
-                                    })
-                                  )}
-                                </div>
+                        // Class skill details based on role
+                        const getSkillDetails = (cls: string) => {
+                          switch (cls) {
+                            case 'scholar': return { name: '📖 Sách Loại Trừ 50/50', desc: 'Loại bỏ 2 phương án sai khi trả lời trắc nghiệm.', status: 'Đặc quyền Scholar' };
+                            case 'scientist': return { name: '⏱️ Kính Nhìn Tương Lai (+15s)', desc: 'Cộng thêm 15 giây vào đồng hồ đếm ngược.', status: 'Đặc quyền Scientist' };
+                            case 'artist': return { name: '🛡️ Khiên Nghệ Thuật', desc: 'Chống đỡ sát thương, bảo vệ 1 mạng khi trả lời sai.', status: 'Đặc quyền Artist' };
+                            case 'explorer': return { name: '🧪 Bình HP Hồi Sinh (+1 mạng)', desc: 'Cộng thêm 1 mạng sinh mệnh khi leo tháp.', status: 'Đặc quyền Explorer' };
+                            default: return { name: '📖 Kính Nhìn Thấu', desc: 'Mở khóa đặc quyền.', status: 'Đã mua' };
+                          }
+                        };
+                        const skill = getSkillDetails(s.avatar_class);
+
+                        return (
+                          <tr className="bg-gray-50/40 border-b border-gray-100 animate-in slide-in-from-top duration-300">
+                            <td colSpan={8} className="p-5">
+                              {/* Sub-tab selection */}
+                              <div className="flex gap-4 border-b border-gray-200/60 pb-2.5 mb-4 text-[10px] sm:text-xs font-bold">
+                                <button 
+                                  onClick={() => setActiveTab('năng_lực')}
+                                  className={`pb-1.5 px-1 relative transition-colors ${activeTab === 'năng_lực' ? 'text-indigo-600 font-extrabold' : 'text-gray-400 hover:text-gray-600'}`}
+                                >
+                                  {activeTab === 'năng_lực' && <span className="absolute bottom-0 left-0 w-full h-0.5 bg-indigo-600 rounded-full" />}
+                                  🎯 Năng Lực & Gợi Ý AI
+                                </button>
+                                <button 
+                                  onClick={() => setActiveTab('lịch_sử')}
+                                  className={`pb-1.5 px-1 relative transition-colors ${activeTab === 'lịch_sử' ? 'text-indigo-600 font-extrabold' : 'text-gray-400 hover:text-gray-600'}`}
+                                >
+                                  {activeTab === 'lịch_sử' && <span className="absolute bottom-0 left-0 w-full h-0.5 bg-indigo-600 rounded-full" />}
+                                  🏆 Lịch Sử Đấu Trường
+                                </button>
+                                <button 
+                                  onClick={() => setActiveTab('huy_hiệu')}
+                                  className={`pb-1.5 px-1 relative transition-colors ${activeTab === 'huy_hiệu' ? 'text-indigo-600 font-extrabold' : 'text-gray-400 hover:text-gray-600'}`}
+                                >
+                                  {activeTab === 'huy_hiệu' && <span className="absolute bottom-0 left-0 w-full h-0.5 bg-indigo-600 rounded-full" />}
+                                  🏅 Huy Hiệu ({s.unlocked_badges?.length || 0})
+                                </button>
+                                <button 
+                                  onClick={() => setActiveTab('trang_bị')}
+                                  className={`pb-1.5 px-1 relative transition-colors ${activeTab === 'trang_bị' ? 'text-indigo-600 font-extrabold' : 'text-gray-400 hover:text-gray-600'}`}
+                                >
+                                  {activeTab === 'trang_bị' && <span className="absolute bottom-0 left-0 w-full h-0.5 bg-indigo-600 rounded-full" />}
+                                  🎒 Trang Bị & Vật Phẩm (4)
+                                </button>
                               </div>
 
-                              {/* 2. Recent Tower Attempts */}
-                              <div className="bg-white rounded-2xl border p-4 shadow-sm space-y-3">
-                                <h4 className="font-bold text-gray-900 flex items-center gap-1 text-[11px] uppercase tracking-wider text-gray-400">
-                                  🏆 Thử thách leo tháp gần đây
-                                </h4>
-                                <div className="space-y-2 max-h-[220px] overflow-y-auto pr-1 custom-scrollbar">
-                                  {enrichedAttempts.filter(a => a.student_id === s.id).length === 0 ? (
-                                    <div className="text-center py-6 text-gray-400 text-[10px] italic">
-                                      Không có lịch sử leo tháp gần đây.
-                                    </div>
-                                  ) : (
-                                    enrichedAttempts
-                                      .filter(a => a.student_id === s.id)
-                                      .slice(0, 5)
-                                      .map((a, idx) => (
-                                        <div key={idx} className="p-2 bg-gray-50/50 rounded-xl border border-gray-100 flex justify-between items-center">
-                                          <div className="min-w-0">
-                                            <div className="text-[11px] font-bold text-gray-800 truncate" title={a.topic}>{a.topic}</div>
-                                            <div className="text-[9px] text-gray-400 font-semibold">
-                                              {new Date(a.created_at).toLocaleDateString()} • Độ khó: Mức {a.end_floor}
-                                            </div>
-                                          </div>
-                                          <div className="text-right flex-shrink-0 ml-2">
-                                            <div className={`text-[10px] font-black ${a.is_victory ? 'text-emerald-600' : 'text-amber-600'}`}>
-                                              {a.is_victory ? 'Chiến thắng' : `Thất bại`}
-                                            </div>
-                                            <div className="text-[9px] text-gray-400 font-medium">
-                                              Đúng {a.correct_answers}/{a.total_questions}
-                                            </div>
-                                          </div>
+                              {/* Tab Content 1: Topic Mastery & AI Advice */}
+                              {activeTab === 'năng_lực' && (
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                  {/* Left: Mastery per topic */}
+                                  <div className="bg-white rounded-2xl border p-4 shadow-sm space-y-3">
+                                    <h4 className="font-bold text-gray-900 flex items-center gap-1 text-[11px] uppercase tracking-wider text-gray-400">
+                                      🎯 Độ am hiểu chuyên đề leo tháp
+                                    </h4>
+                                    <div className="space-y-2.5 max-h-[220px] overflow-y-auto pr-1 custom-scrollbar">
+                                      {!s.topic_mastery || Object.keys(s.topic_mastery).length === 0 ? (
+                                        <div className="text-center py-10 text-gray-400 text-[10px] italic">
+                                          Học sinh chưa hoàn thành chuyên đề nào.
                                         </div>
-                                      ))
-                                  )}
-                                </div>
-                              </div>
+                                      ) : (
+                                        Object.entries(s.topic_mastery).map(([topic, mastery]) => {
+                                          let masteryColor = 'bg-rose-500';
+                                          let masteryText = 'Mới bắt đầu';
+                                          if (mastery >= 90) {
+                                            masteryColor = 'bg-emerald-500';
+                                            masteryText = 'Làm chủ (Master)';
+                                          } else if (mastery >= 60) {
+                                            masteryColor = 'bg-indigo-500';
+                                            masteryText = 'Khá tốt';
+                                          } else if (mastery >= 30) {
+                                            masteryColor = 'bg-amber-500';
+                                            masteryText = 'Cần luyện tập thêm';
+                                          }
 
-                              {/* 3. ELO & Custom suggestions */}
-                              <div className="bg-white rounded-2xl border p-4 shadow-sm flex flex-col justify-between space-y-3">
-                                <div className="space-y-2">
-                                  <h4 className="font-bold text-gray-900 flex items-center gap-1 text-[11px] uppercase tracking-wider text-gray-400">
-                                    💡 Chẩn đoán & Gợi ý của AI
-                                  </h4>
-                                  <div className="text-[11px] text-gray-600 font-medium leading-relaxed">
-                                    {s.elo_rating >= 1800 ? (
-                                      <span>Học sinh xuất sắc! Kỹ năng giải quyết bài tập nâng cao rất tốt. AI khuyên giáo viên cấp thêm quyền học vượt cấp và cho làm đề chuyên sâu.</span>
-                                    ) : s.elo_rating < 1000 ? (
-                                      <span>Học sinh còn yếu một số chuyên đề cơ bản. Giáo viên nên giao các bài tập Mức 1 & 2 để củng cố trước khi cho học sinh leo tháp tiếp.</span>
-                                    ) : (
-                                      <span>Tiến trình phát triển ổn định. Kỹ năng PvP khá tốt. Đề xuất củng cố thêm các chuyên đề có tỉ lệ đúng dưới 70%.</span>
-                                    )}
+                                          return (
+                                            <div key={topic} className="space-y-1">
+                                              <div className="flex justify-between text-[11px] font-bold">
+                                                <span className="text-gray-700 truncate max-w-[200px]">{topic}</span>
+                                                <span className="text-gray-900">{mastery}%</span>
+                                              </div>
+                                              <div className="w-full bg-gray-100 rounded-full h-1.5">
+                                                <div className={`h-1.5 rounded-full ${masteryColor}`} style={{ width: `${mastery}%` }} />
+                                              </div>
+                                              <div className="text-[9px] text-gray-400 font-semibold">{masteryText}</div>
+                                            </div>
+                                          );
+                                        })
+                                      )}
+                                    </div>
+                                  </div>
+
+                                  {/* Right: AI Gợi ý */}
+                                  <div className="bg-white rounded-2xl border p-4 shadow-sm flex flex-col justify-between space-y-3">
+                                    <div className="space-y-2">
+                                      <h4 className="font-bold text-gray-900 flex items-center gap-1 text-[11px] uppercase tracking-wider text-gray-400">
+                                        💡 Chẩn đoán & Gợi ý từ AI
+                                      </h4>
+                                      <div className="text-[11px] text-gray-600 font-medium leading-relaxed bg-gray-50 p-3.5 rounded-xl border border-gray-100">
+                                        {s.elo_rating >= 1800 ? (
+                                          <span>Học sinh xuất sắc! Kỹ năng giải quyết bài tập thích ứng (Adaptive) cực kỳ tốt. Đề xuất cho phép học vượt khối cấp trên và giao các thử thách nâng cao Mức 4.</span>
+                                        ) : s.elo_rating < 1000 ? (
+                                          <span>Học sinh còn gặp khó khăn ở các chuyên đề cơ bản. Giáo viên nên giao các bài tập đơn giản (Mức 1 & 2) trong ngân hàng câu hỏi để học sinh củng cố kiến thức trước khi leo tháp.</span>
+                                        ) : (
+                                          <span>Tiến trình phát triển ổn định. Khả năng tư duy nhanh tốt. Đề xuất củng cố các chuyên đề có tỉ lệ trả lời sai cao hoặc tăng thời gian thực hành leo tháp hàng ngày.</span>
+                                        )}
+                                      </div>
+                                    </div>
+                                    <div className="pt-2 border-t border-gray-100 flex items-center justify-between">
+                                      <div className="text-[10px] text-gray-400 font-semibold">Tỷ lệ PvP thắng:</div>
+                                      <div className="text-[11px] font-black text-rose-500">{pvpWinRate}% ({winPvP} trận thắng)</div>
+                                    </div>
                                   </div>
                                 </div>
+                              )}
 
-                                {/* Custom quick command */}
-                                <div className="pt-2 border-t border-gray-100 flex items-center justify-between">
-                                  <div className="text-[10px] text-gray-400 font-semibold">Tỷ lệ PvP thắng:</div>
-                                  <div className="text-[11px] font-black text-rose-500">{pvpWinRate}% ({winPvP} trận thắng)</div>
+                              {/* Tab Content 2: Match History & Tower Runs */}
+                              {activeTab === 'lịch_sử' && (
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                  {/* Left: Recent Tower Runs */}
+                                  <div className="bg-white rounded-2xl border p-4 shadow-sm space-y-3">
+                                    <h4 className="font-bold text-gray-900 flex items-center gap-1 text-[11px] uppercase tracking-wider text-gray-400">
+                                      🏰 Lượt leo tháp gần đây
+                                    </h4>
+                                    <div className="space-y-2 max-h-[220px] overflow-y-auto pr-1 custom-scrollbar">
+                                      {enrichedAttempts.filter(a => a.student_id === s.id).length === 0 ? (
+                                        <div className="text-center py-10 text-gray-400 text-[10px] italic">
+                                          Không có lịch sử leo tháp gần đây.
+                                        </div>
+                                      ) : (
+                                        enrichedAttempts
+                                          .filter(a => a.student_id === s.id)
+                                          .slice(0, 5)
+                                          .map((a, idx) => (
+                                            <div key={idx} className="p-2.5 bg-gray-50/50 rounded-xl border border-gray-100 flex justify-between items-center">
+                                              <div className="min-w-0">
+                                                <div className="text-[11px] font-bold text-gray-800 truncate" title={a.topic}>{a.topic}</div>
+                                                <div className="text-[9px] text-gray-400 font-semibold mt-0.5">
+                                                  {new Date(a.created_at).toLocaleDateString()} • Khối {a.grade} • Tầng {a.end_floor}
+                                                </div>
+                                              </div>
+                                              <div className="text-right flex-shrink-0 ml-2">
+                                                <div className={`text-[10px] font-black ${a.is_victory ? 'text-emerald-600' : 'text-amber-600'}`}>
+                                                  {a.is_victory ? '🏆 Chiến thắng' : `Thất bại`}
+                                                </div>
+                                                <div className="text-[9px] text-gray-400 font-medium">
+                                                  Đúng {a.correct_answers}/{a.total_questions} ({a.elo_change >= 0 ? `+${a.elo_change}` : a.elo_change} ELO)
+                                                </div>
+                                              </div>
+                                            </div>
+                                          ))
+                                      )}
+                                    </div>
+                                  </div>
+
+                                  {/* Right: Recent PvP Matches */}
+                                  <div className="bg-white rounded-2xl border p-4 shadow-sm space-y-3">
+                                    <h4 className="font-bold text-gray-900 flex items-center gap-1 text-[11px] uppercase tracking-wider text-gray-400">
+                                      ⚔️ Lịch sử đấu trí 1v1 PvP
+                                    </h4>
+                                    <div className="space-y-2 max-h-[220px] overflow-y-auto pr-1 custom-scrollbar">
+                                      {enrichedMatches.filter(m => m.player1_id === s.id || m.player2_id === s.id).length === 0 ? (
+                                        <div className="text-center py-10 text-gray-400 text-[10px] italic">
+                                          Không có trận đấu PvP nào gần đây.
+                                        </div>
+                                      ) : (
+                                        enrichedMatches
+                                          .filter(m => m.player1_id === s.id || m.player2_id === s.id)
+                                          .slice(0, 5)
+                                          .map((m, idx) => {
+                                            const isP1 = m.player1_id === s.id;
+                                            const isWin = (m.winner_id === s.id);
+                                            const opponentName = isP1 ? m.player2_name : m.player1_name;
+                                            const myScore = isP1 ? m.player1_score : m.player2_score;
+                                            const opScore = isP1 ? m.player2_score : m.player1_score;
+                                            
+                                            return (
+                                              <div key={idx} className="p-2.5 bg-gray-50/50 rounded-xl border border-gray-100 flex justify-between items-center">
+                                                <div>
+                                                  <div className="text-[11px] font-bold text-gray-800">
+                                                    Đối thủ: <span className="text-indigo-600">{opponentName}</span>
+                                                  </div>
+                                                  <div className="text-[9px] text-gray-400 font-semibold mt-0.5">
+                                                    {new Date(m.created_at).toLocaleDateString()} • Lớp {m.filter_grade || 'Chung'}
+                                                  </div>
+                                                </div>
+                                                <div className="text-right">
+                                                  <div className={`text-[10px] font-black ${isWin ? 'text-emerald-600' : 'text-rose-500'}`}>
+                                                    {isWin ? '🏆 Thắng' : '❌ Thua'}
+                                                  </div>
+                                                  <div className="text-[9px] text-gray-400 font-semibold">
+                                                    Tỉ số: {myScore} - {opScore} điểm
+                                                  </div>
+                                                </div>
+                                              </div>
+                                            );
+                                          })
+                                      )}
+                                    </div>
+                                  </div>
                                 </div>
-                              </div>
+                              )}
 
-                            </div>
-                          </td>
-                        </tr>
-                      )}
+                              {/* Tab Content 3: Badges Achieved */}
+                              {activeTab === 'huy_hiệu' && (
+                                <div className="bg-white rounded-2xl border p-5 shadow-sm space-y-4 animate-in fade-in">
+                                  <h4 className="font-bold text-gray-950 flex items-center gap-1 text-[11px] uppercase tracking-wider text-gray-400">
+                                    🏆 Bộ sưu tập Huy hiệu danh dự
+                                  </h4>
+                                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                    {[
+                                      { id: 'math_genius', name: 'Thiên Tài Trí Tuệ', desc: 'Trả lời đúng 10 câu liên tiếp', emoji: '🌟' },
+                                      { id: 'tower_master', name: 'Bậc Thầy Chinh Phục', desc: 'Đạt 100% mastery ở chuyên đề', emoji: '🏆' },
+                                      { id: 'elo_champion', name: 'Nhà Thông Thái Vô Song', desc: 'Đạt thứ hạng Elo >= 1500', emoji: '👑' },
+                                      { id: 'pvp_conqueror', name: 'Chiến Thần Võ Đài', desc: 'Thắng lũy kế 5 trận PvP', emoji: '⚔️' }
+                                    ].map(badge => {
+                                      const isUnlocked = s.unlocked_badges?.includes(badge.id);
+                                      return (
+                                        <div 
+                                          key={badge.id}
+                                          className={`p-4 rounded-2xl border flex flex-col items-center text-center transition-all ${
+                                            isUnlocked 
+                                              ? 'border-purple-200 bg-purple-50/30 text-gray-900 shadow-sm' 
+                                              : 'border-gray-100 bg-gray-50/50 text-gray-400 opacity-60'
+                                          }`}
+                                        >
+                                          <span className={`text-3xl mb-2 ${isUnlocked ? 'animate-pulse' : 'filter grayscale'}`}>{badge.emoji}</span>
+                                          <h5 className="font-bold text-xs text-gray-950">{badge.name}</h5>
+                                          <p className="text-[10px] text-gray-500 mt-1 leading-normal">{badge.desc}</p>
+                                          {isUnlocked ? (
+                                            <span className="text-[8px] bg-emerald-500/10 text-emerald-600 px-2 py-0.5 rounded mt-3 font-bold border border-emerald-500/20">🏆 ĐÃ ĐẠT</span>
+                                          ) : (
+                                            <span className="text-[8px] bg-gray-200/50 text-gray-400 px-2 py-0.5 rounded mt-3 font-bold">CHƯA ĐẠT</span>
+                                          )}
+                                        </div>
+                                      );
+                                    })}
+                                  </div>
+                                </div>
+                              )}
+
+                              {/* Tab Content 4: Items & Purchases */}
+                              {activeTab === 'trang_bị' && (
+                                <div className="bg-white rounded-2xl border p-5 shadow-sm space-y-4 animate-in fade-in">
+                                  <h4 className="font-bold text-gray-950 flex items-center gap-1 text-[11px] uppercase tracking-wider text-gray-400">
+                                    🎒 Hành trang vật phẩm & Trang bị đặc quyền
+                                  </h4>
+                                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                                    {/* 1. Class Special skill (Equipped) */}
+                                    <div className="p-4 rounded-2xl border border-indigo-100 bg-indigo-50/30 text-gray-900 shadow-sm flex flex-col justify-between">
+                                      <div className="text-center">
+                                        <span className="text-3xl block mb-2">🛡️</span>
+                                        <h5 className="font-bold text-xs text-gray-950">{skill.name}</h5>
+                                        <p className="text-[10px] text-gray-500 mt-1.5 leading-normal">{skill.desc}</p>
+                                      </div>
+                                      <span className="text-[8px] bg-indigo-500/20 text-indigo-700 px-2 py-0.5 rounded mt-4 font-bold border border-indigo-500/20 text-center uppercase">
+                                        🎒 ĐẶC QUYỀN (ĐÃ SỬ DỤNG)
+                                      </span>
+                                    </div>
+
+                                    {/* 2. ELO Protection Card */}
+                                    <div className="p-4 rounded-2xl border border-gray-100 bg-white text-gray-900 shadow-sm flex flex-col justify-between">
+                                      <div className="text-center">
+                                        <span className="text-3xl block mb-2">⭐</span>
+                                        <h5 className="font-bold text-xs text-gray-950">Thẻ bảo hiểm ELO</h5>
+                                        <p className="text-[10px] text-gray-500 mt-1.5 leading-normal">Bảo toàn ELO, không bị trừ điểm khi thua cuộc.</p>
+                                      </div>
+                                      <div className="mt-4 flex flex-col gap-1 items-center">
+                                        <span className="text-[8px] bg-emerald-500/10 text-emerald-600 px-2 py-0.5 rounded font-bold border border-emerald-500/20 text-center uppercase">
+                                          🛒 ĐÃ MUA (SL: 2)
+                                        </span>
+                                        <span className="text-[8px] text-gray-400 font-semibold">Đã sử dụng: 5 lần</span>
+                                      </div>
+                                    </div>
+
+                                    {/* 3. Double XP Card */}
+                                    <div className="p-4 rounded-2xl border border-gray-100 bg-white text-gray-900 shadow-sm flex flex-col justify-between">
+                                      <div className="text-center">
+                                        <span className="text-3xl block mb-2">⚡</span>
+                                        <h5 className="font-bold text-xs text-gray-950">Thẻ nhân đôi XP</h5>
+                                        <p className="text-[10px] text-gray-500 mt-1.5 leading-normal">Nhân 2 lượng kinh nghiệm nhận được sau mỗi lượt leo tháp.</p>
+                                      </div>
+                                      <div className="mt-4 flex flex-col gap-1 items-center">
+                                        <span className="text-[8px] bg-emerald-500/10 text-emerald-600 px-2 py-0.5 rounded font-bold border border-emerald-500/20 text-center uppercase">
+                                          🛒 ĐÃ MUA (SL: 1)
+                                        </span>
+                                        <span className="text-[8px] text-gray-400 font-semibold">Đã sử dụng: 3 lần</span>
+                                      </div>
+                                    </div>
+
+                                    {/* 4. Tournament Ticket */}
+                                    <div className="p-4 rounded-2xl border border-gray-100 bg-white text-gray-900 shadow-sm flex flex-col justify-between">
+                                      <div className="text-center">
+                                        <span className="text-3xl block mb-2">🎟️</span>
+                                        <h5 className="font-bold text-xs text-gray-950">Vé Giải Đấu</h5>
+                                        <p className="text-[10px] text-gray-500 mt-1.5 leading-normal">Vé để tham dự các giải đấu đặc biệt có giải thưởng lớn của giáo viên.</p>
+                                      </div>
+                                      <div className="mt-4 flex flex-col gap-1 items-center">
+                                        <span className="text-[8px] bg-indigo-500/10 text-indigo-600 px-2 py-0.5 rounded font-bold border border-indigo-500/20 text-center uppercase">
+                                          🎒 ĐÃ MUA (SL: 5)
+                                        </span>
+                                        <span className="text-[8px] text-gray-400 font-semibold">Đã sử dụng: 0 lần</span>
+                                      </div>
+                                    </div>
+
+                                  </div>
+                                </div>
+                              )}
+
+                            </td>
+                          </tr>
+                        );
+                      })()}
                     </React.Fragment>
                   );
                 })
