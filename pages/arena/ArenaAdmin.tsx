@@ -625,8 +625,16 @@ export const ArenaAdmin: React.FC = () => {
                 return;
             }
 
+            if (!q.guide || !q.guide.trim()) {
+                qErrors.push(`Câu ${index}: Thiếu gợi ý làm bài (guide) hướng dẫn học sinh.`);
+            }
+
+            if (!q.explanation || !q.explanation.trim()) {
+                qErrors.push(`Câu ${index}: Thiếu lời giải chi tiết (explanation) để học sinh đối chiếu.`);
+            }
+
             if (q.type === 'SHORT_ANSWER') {
-                if (!q.correct_answer_string.trim()) {
+                if (!q.correct_answer_string || !q.correct_answer_string.trim()) {
                     qErrors.push(`Câu ${index}: Dạng Điền từ (SHORT_ANSWER) yêu cầu nhập đáp án đúng.`);
                 }
             } else {
@@ -645,7 +653,7 @@ export const ArenaAdmin: React.FC = () => {
             }
 
             if (qErrors.length > 0) {
-                errorsList.push(...qErrors);
+                errorsList.push(...qErrors.filter(err => !errorsList.includes(err)));
                 invalidQuestions.push({ q, index, errors: qErrors });
             } else {
                 validQuestions.push(q);
