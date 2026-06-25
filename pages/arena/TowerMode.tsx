@@ -1407,12 +1407,13 @@ export const TowerMode: React.FC = () => {
   if (victory || gameOver) {
     const league = getLeagueInfo(arenaProfile?.elo_rating || 1000);
     return (
-      <div className="max-w-2xl lg:max-w-4xl xl:max-w-5xl mx-auto pb-12 px-6 md:px-8 bg-[#030712] text-gray-100 rounded-3xl border border-white/5 shadow-2xl relative overflow-hidden min-h-[85vh]">
+      <div className="max-w-2xl lg:max-w-5xl xl:max-w-6xl mx-auto pb-12 px-6 md:px-8 bg-[#030712] text-gray-100 rounded-3xl border border-white/5 shadow-2xl relative overflow-hidden min-h-[85vh]">
         <style>{`
           @keyframes popIn { 0% { transform: scale(0.9); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
           .animate-pop { animation: popIn 0.4s ease-out forwards; }
           .prose ul { list-style-type: disc !important; padding-left: 1.5rem !important; margin-bottom: 0.5rem !important; }
           .prose li { margin-bottom: 0.25rem !important; }
+          .katex { font-size: 1.35em !important; }
         `}</style>
 
         {victory && (
@@ -1551,12 +1552,13 @@ export const TowerMode: React.FC = () => {
   const charClass = arenaProfile?.avatar_class || 'scholar';
 
   return (
-    <div className="max-w-2xl lg:max-w-4xl xl:max-w-5xl mx-auto pb-12 px-6 md:px-8 bg-[#030712] text-gray-100 rounded-3xl border border-white/5 shadow-2xl relative overflow-hidden min-h-[85vh]">
+    <div className="max-w-2xl lg:max-w-5xl xl:max-w-6xl mx-auto pb-12 px-6 md:px-8 bg-[#030712] text-gray-100 rounded-3xl border border-white/5 shadow-2xl relative overflow-hidden min-h-[85vh]">
       <style>{`
         @keyframes slideIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
         .animate-slide { animation: slideIn 0.3s ease-out forwards; }
         .glass-hud { background: rgba(255, 255, 255, 0.02); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.05); }
         .glow-heart { filter: drop-shadow(0 0 4px rgba(244, 63, 94, 0.5)); }
+        .katex { font-size: 1.35em !important; }
       `}</style>
 
       {/* Ambient glowing dot */}
