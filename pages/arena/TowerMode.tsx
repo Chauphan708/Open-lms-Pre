@@ -666,7 +666,8 @@ export const TowerMode: React.FC = () => {
     if (showResult || !currentQ || !arenaProfile) return;
     
     let correct = false;
-    if (currentQ.type === 'SHORT_ANSWER') {
+    const isShortAnswer = currentQ.type === 'SHORT_ANSWER' || !currentQ.answers || currentQ.answers.length === 0;
+    if (isShortAnswer) {
       const ansStr = typeof payload === 'string' ? payload : '';
       const isCase = !!currentQ.case_sensitive;
       
@@ -1013,7 +1014,8 @@ export const TowerMode: React.FC = () => {
     try {
       let wrongText = "";
       let correctText = "";
-      if (currentQ.type === 'SHORT_ANSWER') {
+      const isShortAnswer = currentQ.type === 'SHORT_ANSWER' || !currentQ.answers || currentQ.answers.length === 0;
+      if (isShortAnswer) {
         wrongText = shortAnswerText || "(Không trả lời)";
         correctText = currentQ.correct_answer_string || "";
       } else if (currentQ.type === 'MCQ_MULTIPLE') {
@@ -1039,7 +1041,8 @@ export const TowerMode: React.FC = () => {
 
     const charClass = arenaProfile.avatar_class;
 
-    if (charClass === 'scholar' && currentQ.type === 'SHORT_ANSWER') {
+    const isShortAnswer = currentQ.type === 'SHORT_ANSWER' || !currentQ.answers || currentQ.answers.length === 0;
+    if (charClass === 'scholar' && isShortAnswer) {
       alert("Kỹ năng 50/50 không dùng được cho câu hỏi tự luận!");
       return;
     }
@@ -1588,9 +1591,9 @@ export const TowerMode: React.FC = () => {
 
       {/* Mastery Progress Bar */}
       <div className="mb-6 relative z-10">
-        <div className="flex justify-between items-center text-xs mb-1.5">
-          <span className="font-black text-gray-400 uppercase tracking-wider">Làm chủ Chuyên đề: {selectedTopic}</span>
-          <span className="text-amber-400 font-black">{masteryScore}% Mastery</span>
+        <div className="flex justify-between items-center text-base md:text-lg lg:text-xl mb-1.5">
+          <span className="font-black text-gray-300 uppercase tracking-wider">Làm chủ Chuyên đề: {selectedTopic}</span>
+          <span className="text-amber-400 font-black text-lg md:text-xl lg:text-2xl">{masteryScore}% Mastery</span>
         </div>
         <div className="h-3.5 bg-white/5 rounded-full overflow-hidden border border-white/5 p-0.5">
           <div 
@@ -1601,27 +1604,27 @@ export const TowerMode: React.FC = () => {
       </div>
 
       {/* VioEdu Difficulty Level Indicator & Combo HUD */}
-      <div className="grid grid-cols-2 gap-3 mb-5 relative z-10">
-        <div className="glass-hud rounded-xl p-3 flex items-center gap-2">
-          <GraduationCap className="h-5 w-5 text-indigo-400" />
+      <div className="grid grid-cols-2 gap-4 mb-5 relative z-10">
+        <div className="glass-hud rounded-2xl p-5 flex items-center gap-3">
+          <GraduationCap className="h-8 w-8 text-indigo-400" />
           <div>
-            <p className="text-[9px] text-gray-500 uppercase font-black">Mức độ thích ứng</p>
-            <p className="text-xs font-black text-indigo-300">
+            <p className="text-xs md:text-sm lg:text-base text-gray-400 uppercase font-black">Mức độ thích ứng</p>
+            <p className="text-base md:text-lg lg:text-xl font-black text-indigo-300">
               {currentDifficulty === 4 ? 'Mức nâng cao' : currentDifficulty === 3 ? 'Mức 3' : currentDifficulty === 2 ? 'Mức 2' : 'Mức 1'}
             </p>
           </div>
         </div>
 
-        <div className="glass-hud rounded-xl p-3 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Zap className="h-5 w-5 text-amber-500 animate-pulse" />
+        <div className="glass-hud rounded-2xl p-5 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <Zap className="h-8 w-8 text-amber-500 animate-pulse" />
             <div>
-              <p className="text-[9px] text-gray-500 uppercase font-black">Chuỗi lên cấp</p>
-              <p className="text-xs font-black text-amber-300">{consecutiveCorrect}/3 câu đúng</p>
+              <p className="text-xs md:text-sm lg:text-base text-gray-400 uppercase font-black">Chuỗi lên cấp</p>
+              <p className="text-base md:text-lg lg:text-xl font-black text-amber-300">{consecutiveCorrect}/3 câu đúng</p>
             </div>
           </div>
           {streakCombo >= 2 && (
-            <span className="text-xs font-black bg-orange-500/10 border border-orange-500/20 px-2 py-0.5 rounded-lg text-orange-400 animate-bounce">
+            <span className="text-sm font-black bg-orange-500/10 border border-orange-500/20 px-3 py-1 rounded-xl text-orange-400 animate-bounce">
               🔥 Combo x{streakCombo >= 4 ? 3.0 : streakCombo === 3 ? 2.0 : 1.5}
             </span>
           )}
@@ -1634,7 +1637,7 @@ export const TowerMode: React.FC = () => {
           <button
             onClick={handleActivateSkill}
             disabled={skillUsed || showResult}
-            className={`flex-1 p-3 rounded-xl border flex items-center justify-center gap-2 transition-all ${
+            className={`flex-1 p-4 md:p-5 rounded-2xl border flex items-center justify-center gap-2 transition-all ${
               skillUsed 
                 ? 'border-white/5 bg-white/5 text-gray-500 cursor-not-allowed' 
                 : showResult
@@ -1644,45 +1647,45 @@ export const TowerMode: React.FC = () => {
           >
             {charClass === 'scholar' && (
               <>
-                <BookOpen className="h-4.5 w-4.5" />
-                <span className="text-xs font-bold">📖 Kỹ năng Scholar: 50/50</span>
+                <BookOpen className="h-6 w-6" />
+                <span className="text-base md:text-lg lg:text-xl font-black">📖 Kỹ năng Scholar: 50/50</span>
               </>
             )}
             {charClass === 'scientist' && (
               <>
-                <Clock className="h-4.5 w-4.5 animate-spin" style={{ animationDuration: '6s' }} />
-                <span className="text-xs font-bold">🔬 Kỹ năng Scientist: +15 Giây</span>
+                <Clock className="h-6 w-6 animate-spin" style={{ animationDuration: '6s' }} />
+                <span className="text-base md:text-lg lg:text-xl font-black">🔬 Kỹ năng Scientist: +15 Giây</span>
               </>
             )}
             {charClass === 'artist' && (
               <>
-                <Shield className="h-4.5 w-4.5" />
-                <span className="text-xs font-bold">🎨 Kỹ năng Artist: Khiên bảo vệ</span>
+                <Shield className="h-6 w-6" />
+                <span className="text-base md:text-lg lg:text-xl font-black">🎨 Kỹ năng Artist: Khiên bảo vệ</span>
               </>
             )}
             {charClass === 'explorer' && (
               <>
-                <Heart className="h-4.5 w-4.5 text-rose-500" />
-                <span className="text-xs font-bold">🌍 Kỹ năng Explorer: Sơ Cứu (+1 ❤️)</span>
+                <Heart className="h-6 w-6 text-rose-500" />
+                <span className="text-base md:text-lg lg:text-xl font-black">🌍 Kỹ năng Explorer: Sơ Cứu (+1 ❤️)</span>
               </>
             )}
-            {skillUsed && <span className="text-[10px] bg-white/5 px-2 py-0.5 rounded text-gray-500">Đã dùng</span>}
+            {skillUsed && <span className="text-sm bg-white/5 px-2 py-0.5 rounded text-gray-500">Đã dùng</span>}
           </button>
           {shieldActive && (
-            <div className="px-4 py-2 bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 rounded-xl flex items-center gap-1.5 text-xs font-black animate-pulse">
-              <ShieldCheck className="h-4.5 w-4.5" /> Khiên bảo vệ
+            <div className="px-5 py-3.5 bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 rounded-2xl flex items-center gap-1.5 text-base font-black animate-pulse">
+              <ShieldCheck className="h-6 w-6" /> Khiên bảo vệ
             </div>
           )}
         </div>
 
         {/* Consumable Items HUD */}
         {((inventoryItems['small_hp_potion'] || 0) > 0 || (inventoryItems['hourglass_5s'] || 0) > 0) && (
-          <div className="flex gap-2 bg-white/[0.02] border border-white/5 p-2.5 rounded-2xl">
+          <div className="flex gap-3 bg-white/[0.02] border border-white/5 p-3 rounded-2xl">
             {(inventoryItems['small_hp_potion'] || 0) > 0 && (
               <button
                 onClick={handleUseHpPotion}
                 disabled={lives >= maxLives || showResult || gameOver || victory}
-                className={`flex-1 py-2.5 px-3 rounded-xl border text-xs font-bold flex items-center justify-center gap-1.5 transition ${
+                className={`flex-1 py-4 px-5 rounded-xl border text-base md:text-lg lg:text-xl font-black flex items-center justify-center gap-1.5 transition ${
                   lives >= maxLives || showResult || gameOver || victory
                     ? 'border-white/5 bg-white/5 text-gray-500 cursor-not-allowed'
                     : 'border-red-500/30 bg-red-950/20 text-red-400 hover:bg-red-950/30 active:scale-[0.98]'
@@ -1696,7 +1699,7 @@ export const TowerMode: React.FC = () => {
               <button
                 onClick={handleUseHourglass}
                 disabled={showResult || gameOver || victory || !started}
-                className={`flex-1 py-2.5 px-3 rounded-xl border text-xs font-bold flex items-center justify-center gap-1.5 transition ${
+                className={`flex-1 py-4 px-5 rounded-xl border text-base md:text-lg lg:text-xl font-black flex items-center justify-center gap-1.5 transition ${
                   showResult || gameOver || victory || !started
                     ? 'border-white/5 bg-white/5 text-gray-500 cursor-not-allowed'
                     : 'border-amber-500/30 bg-amber-950/20 text-amber-400 hover:bg-amber-950/30 active:scale-[0.98]'
@@ -1721,8 +1724,8 @@ export const TowerMode: React.FC = () => {
               }}
             />
           </div>
-          <div className="flex justify-between text-[10px] text-gray-500 mt-1 font-bold">
-            <span>⏱️ Còn {timer} giây</span>
+          <div className="flex justify-between text-sm md:text-base lg:text-lg text-gray-300 mt-2.5 font-black">
+            <span className="text-amber-400 text-base md:text-lg lg:text-xl">⏱️ Còn {timer} giây</span>
             <span>Thời gian đếm ngược</span>
           </div>
         </div>
@@ -1739,10 +1742,10 @@ export const TowerMode: React.FC = () => {
           {/* Question Stem */}
           <div className="bg-[#080d16] border border-white/5 rounded-2xl p-6 mb-5">
             <div className="flex items-center justify-between mb-4">
-              <span className="bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 px-3 py-0.5 rounded-full text-[10px] font-black uppercase">
+              <span className="bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 px-4 py-1.5 rounded-full text-sm md:text-base lg:text-lg font-black uppercase">
                 {selectedSubject === 'math' ? '📐 Toán' : selectedSubject === 'science' ? '🔬 Khoa học' : selectedSubject === 'technology' ? '💻 Công nghệ' : selectedSubject === 'vietnamese' ? '📝 Tiếng Việt' : selectedSubject === 'english' ? '🇬🇧 Tiếng Anh' : '🌍 Lịch sử & Địa lí'}
               </span>
-              <span className="text-[10px] font-black text-gray-500">
+              <span className="text-sm md:text-base lg:text-lg font-black text-gray-300">
                 Difficulty: {currentQ.difficulty}/3
               </span>
             </div>
@@ -1764,17 +1767,17 @@ export const TowerMode: React.FC = () => {
           </div>
 
           {/* Options / Input Field */}
-          {currentQ.type === 'SHORT_ANSWER' ? (
+          {(currentQ.type === 'SHORT_ANSWER' || !currentQ.answers || currentQ.answers.length === 0) ? (
             <div className="bg-[#080d16] border border-white/5 rounded-2xl p-6 mb-5">
               <div className="mb-4">
-                <label className="block text-sm font-semibold text-gray-400 mb-2">Nhập đáp án của bạn:</label>
+                <label className="block text-base md:text-lg font-bold text-gray-300 mb-3">Nhập đáp án của bạn:</label>
                 <input
                   type="text"
                   value={shortAnswerText}
                   onChange={(e) => setShortAnswerText(e.target.value)}
                   disabled={showResult}
                   placeholder="Điền từ, số hoặc cụm từ đáp án chính xác..."
-                  className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all font-semibold"
+                  className="w-full px-5 py-4 rounded-xl bg-white/5 border border-white/10 text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all font-black text-lg md:text-xl lg:text-2xl"
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' && shortAnswerText.trim() && !showResult) {
                       handleAnswer(shortAnswerText);
@@ -1804,7 +1807,7 @@ export const TowerMode: React.FC = () => {
                 <button
                   onClick={() => handleAnswer(shortAnswerText)}
                   disabled={!shortAnswerText.trim()}
-                  className="w-full py-3 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-bold rounded-xl transition-all shadow-md active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full py-4 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-black text-lg md:text-xl rounded-xl transition-all shadow-md active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Nộp câu trả lời
                 </button>
@@ -1943,7 +1946,7 @@ export const TowerMode: React.FC = () => {
                   <div className="bg-white/5 border border-white/5 rounded-xl p-4 text-xs text-gray-400">
                     <p className="font-black text-gray-300">Lời giải tham chiếu:</p>
                     <div className="mt-1 leading-relaxed">
-                      {currentQ.type === 'SHORT_ANSWER' ? (
+                      {(currentQ.type === 'SHORT_ANSWER' || !currentQ.answers || currentQ.answers.length === 0) ? (
                         <span>Đáp án đúng là: <strong className="text-emerald-400">{currentQ.correct_answer_string}</strong></span>
                       ) : currentQ.type === 'MCQ_MULTIPLE' ? (
                         <span>Đáp án đúng là: <strong className="text-emerald-400">{(currentQ.correct_indices || []).map(idx => String.fromCharCode(65 + idx)).join(', ')}</strong></span>
