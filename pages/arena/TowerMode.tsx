@@ -757,6 +757,9 @@ export const TowerMode: React.FC = () => {
     let newConsecutiveWrong = consecutiveWrong;
     let masteryChange = 0;
 
+    let xp = 0;
+    let elo = 0;
+
     if (correct) {
       newStreak += 1;
       newConsecutiveCorrect += 1;
@@ -787,11 +790,22 @@ export const TowerMode: React.FC = () => {
       else if (newStreak >= 4) xpMultiplier = 3.0;
 
       const baseXP = currentDifficulty === 1 ? 10 : currentDifficulty === 2 ? 15 : currentDifficulty === 3 ? 20 : 30;
-      const xp = Math.round(baseXP * xpMultiplier);
+      xp = Math.round(baseXP * xpMultiplier);
       setXpGained(xp);
 
-      const elo = currentDifficulty * 5;
+      elo = currentDifficulty * 5;
       setEloGained(elo);
+
+      // Compute latest totals for session
+      const finalCorrectAnswers = correctAnswersCount + 1;
+      const finalTotalQuestions = totalQuestionsCount + 1;
+      const finalXpGainedRun = xpGainedSession + xp;
+      const finalEloChangeRun = eloChangedSession + elo;
+
+      setCorrectAnswersCount(finalCorrectAnswers);
+      setTotalQuestionsCount(finalTotalQuestions);
+      setXpGainedSession(finalXpGainedRun);
+      setEloChangedSession(finalEloChangeRun);
 
       // Check level up (Level 1: 4 correct, Level 2: 5 correct, Level 3: 4 correct)
       const neededCorrect = currentDifficulty === 1 ? 4 
@@ -809,7 +823,7 @@ export const TowerMode: React.FC = () => {
 
       // Check victory
       if (newMastery >= 100) {
-        handleVictory(newMastery);
+        handleVictory(newMastery, finalCorrectAnswers, finalTotalQuestions, finalXpGainedRun, finalEloChangeRun);
         return;
       }
 
@@ -854,8 +868,21 @@ export const TowerMode: React.FC = () => {
       const newMastery = Math.max(0, masteryScore - masteryLoss);
       setMasteryScore(newMastery);
       masteryChange = -masteryLoss;
+      xp = 0;
       setXpGained(0);
+      elo = -3;
       setEloGained(-3);
+
+      // Compute latest totals for session
+      const finalCorrectAnswers = correctAnswersCount;
+      const finalTotalQuestions = totalQuestionsCount + 1;
+      const finalXpGainedRun = xpGainedSession;
+      const finalEloChangeRun = eloChangedSession - 3;
+
+      setCorrectAnswersCount(finalCorrectAnswers);
+      setTotalQuestionsCount(finalTotalQuestions);
+      setXpGainedSession(finalXpGainedRun);
+      setEloChangedSession(finalEloChangeRun);
 
       // check if shield is active
       if (shieldActive) {
@@ -864,7 +891,7 @@ export const TowerMode: React.FC = () => {
         finalLives = lives - 1;
         setLives(finalLives);
         if (finalLives <= 0) {
-          handleGameOver(newMastery);
+          handleGameOver(newMastery, finalCorrectAnswers, finalTotalQuestions, finalXpGainedRun, finalEloChangeRun);
           return;
         }
       }
@@ -882,8 +909,8 @@ export const TowerMode: React.FC = () => {
     // Save progress to Supabase
     await updateArenaProfile({
       id: arenaProfile.id,
-      total_xp: arenaProfile.total_xp + (correct ? xpGained : 0),
-      elo_rating: Math.max(500, arenaProfile.elo_rating + (correct ? eloGained : -3))
+      total_xp: arenaProfile.total_xp + (correct ? xp : 0),
+      elo_rating: Math.max(500, arenaProfile.elo_rating + (correct ? elo : -3))
     });
   };
 
@@ -1186,6 +1213,27 @@ export const TowerMode: React.FC = () => {
 
   // Restart Tower Run
   const handleRestart = () => {
+    if (started && totalQuestionsCount > 0) {
+      try {
+        supabase.from('arena_tower_attempts').insert({
+          student_id: user?.id || '',
+          subject: selectedSubject,
+          topic: selectedTopic,
+          grade: selectedGrade || '5',
+          xp_gained: xpGainedSession,
+          elo_change: eloChangedSession,
+          end_floor: currentDifficulty,
+          is_victory: false,
+          correct_answers: correctAnswersCount,
+          total_questions: totalQuestionsCount
+        }).then(({ error }) => {
+          if (error) console.warn("Failed to save exiting attempt:", error.message);
+        });
+      } catch (dbErr) {
+        console.error("Failed to save exiting attempt:", dbErr);
+      }
+    }
+
     setLives(3);
     setMasteryScore(0);
     setGameOver(false);
@@ -1193,6 +1241,10 @@ export const TowerMode: React.FC = () => {
     setStarted(false);
     setRevengeActive(false);
     setRevengeQuestions([]);
+    setCorrectAnswersCount(0);
+    setTotalQuestionsCount(0);
+    setXpGainedSession(0);
+    setEloChangedSession(0);
   };
 
   if (loading) {

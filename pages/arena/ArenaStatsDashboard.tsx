@@ -475,7 +475,7 @@ export const ArenaStatsDashboard: React.FC = () => {
                           {t.student_name} <span className="text-xs font-normal text-gray-500">lớp {t.student_class}</span>
                         </div>
                         <div className="text-xs text-gray-500 font-medium mt-0.5">
-                          Leo tháp chủ đề <span className="text-indigo-600 font-semibold">{t.topic}</span> (Khối {t.grade})
+                          Môn: <span className="text-indigo-600 font-semibold">{t.subject === 'math' ? 'Toán' : t.subject === 'science' ? 'Khoa học' : t.subject === 'technology' ? 'Công nghệ' : t.subject === 'vietnamese' ? 'Tiếng Việt' : t.subject === 'english' ? 'Tiếng Anh' : t.subject === 'history_geography' ? 'Lịch sử & Địa lí' : t.subject}</span> • Chủ đề: <span className="text-indigo-600 font-semibold">{t.topic}</span> (Khối {t.grade})
                         </div>
                         <div className="flex items-center gap-2 mt-1.5 flex-wrap">
                           <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${t.is_victory ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>
