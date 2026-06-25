@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useStore } from '../../store';
 import { AvatarClass } from '../../types';
-import { Brain, Trophy, GraduationCap, BookOpen, Sparkles, Target, Heart, ArrowLeft, Star, Zap, HelpCircle, X } from 'lucide-react';
+import { Brain, Trophy, GraduationCap, BookOpen, Sparkles, Target, Heart, ArrowLeft, Star, Zap, HelpCircle, X, ShoppingBag } from 'lucide-react';
 import { getLeagueInfo } from './TowerMode';
 
 const AVATAR_CLASSES: { id: AvatarClass; name: string; icon: any; color: string; desc: string; emoji: string; lore: string }[] = [
@@ -185,7 +185,7 @@ export const ArenaHome: React.FC = () => {
             </div>
 
             {/* Game Modes */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-5">
                 {/* AI Dashboard */}
                 <button
                     onClick={() => navigate('/arena/dashboard')}
@@ -199,8 +199,8 @@ export const ArenaHome: React.FC = () => {
                         <div className="w-14 h-14 bg-gradient-to-br from-pink-500 to-rose-600 rounded-xl flex items-center justify-center text-white text-2xl mb-4 shadow-lg shadow-pink-900/40 group-hover:scale-110 transition-transform">
                             🤖
                         </div>
-                        <h3 className="text-lg font-bold text-white mb-1.5 group-hover:text-pink-400 transition-colors">Trạm Phân Tích AI</h3>
-                        <p className="text-xs text-gray-400">Kê đơn hướng dẫn tri thức & Sơ đồ năng lực SVG</p>
+                        <h3 className="text-lg font-bold text-white mb-1.5 group-hover:text-pink-400 transition-colors">Trạm AI</h3>
+                        <p className="text-xs text-gray-400">Phân tích & gợi ý học tập</p>
                     </div>
                 </button>
 
@@ -218,7 +218,7 @@ export const ArenaHome: React.FC = () => {
                             🧠
                         </div>
                         <h3 className="text-lg font-bold text-white mb-1.5 group-hover:text-indigo-400 transition-colors">Đấu Trí 1v1</h3>
-                        <p className="text-xs text-gray-400">Thách đấu kiến thức PvP realtime kịch tính</p>
+                        <p className="text-xs text-gray-400">Thách đấu PvP thời gian thực</p>
                     </div>
                 </button>
 
@@ -235,8 +235,26 @@ export const ArenaHome: React.FC = () => {
                         <div className="w-14 h-14 bg-gradient-to-br from-amber-500 to-orange-600 rounded-xl flex items-center justify-center text-white text-2xl mb-4 shadow-lg shadow-amber-900/40 group-hover:scale-110 transition-transform">
                             🎓
                         </div>
-                        <h3 className="text-lg font-bold text-white mb-1.5 group-hover:text-amber-400 transition-colors">Leo Cấp Tri Thức</h3>
-                        <p className="text-xs text-gray-400">Tầng {arenaProfile.tower_floor} • Thử thách PvE vượt tháp</p>
+                        <h3 className="text-lg font-bold text-white mb-1.5 group-hover:text-amber-400 transition-colors">Leo Cấp</h3>
+                        <p className="text-xs text-gray-400">Tầng {arenaProfile.tower_floor} • Vượt tháp PvE</p>
+                    </div>
+                </button>
+
+                {/* Shop */}
+                <button
+                    onClick={() => navigate('/arena/shop')}
+                    className="relative overflow-hidden p-6 rounded-2xl text-left group transition-all duration-300 hover:shadow-xl hover:-translate-y-1.5 border border-purple-500/10 glass-card neon-border"
+                    style={{ '--neon-color': 'rgba(168,85,247,0.3)', animation: 'fadeIn 0.5s ease-out 0.25s both' } as any}
+                >
+                    <div className="absolute top-0 right-0 w-32 h-32 opacity-[0.03] group-hover:opacity-10 transition-opacity">
+                        <ShoppingBag className="w-full h-full text-purple-500" />
+                    </div>
+                    <div className="relative">
+                        <div className="w-14 h-14 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl flex items-center justify-center text-white text-2xl mb-4 shadow-lg shadow-purple-900/40 group-hover:scale-110 transition-transform">
+                            🏪
+                        </div>
+                        <h3 className="text-lg font-bold text-white mb-1.5 group-hover:text-purple-400 transition-colors">Cửa Hàng</h3>
+                        <p className="text-xs text-gray-400">Mua trang bị, hỗ trợ đấu trí 1v1</p>
                     </div>
                 </button>
 
@@ -253,8 +271,8 @@ export const ArenaHome: React.FC = () => {
                         <div className="w-14 h-14 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center text-white text-2xl mb-4 shadow-lg shadow-emerald-900/40 group-hover:scale-110 transition-transform">
                             🏆
                         </div>
-                        <h3 className="text-lg font-bold text-white mb-1.5 group-hover:text-emerald-400 transition-colors">Bảng Xếp Hạng</h3>
-                        <p className="text-xs text-gray-400">Xem Top học giả ELO cao nhất võ đài</p>
+                        <h3 className="text-lg font-bold text-white mb-1.5 group-hover:text-emerald-400 transition-colors">Xếp Hạng</h3>
+                        <p className="text-xs text-gray-400">Xem bảng vàng học giả ELO võ đài</p>
                     </div>
                 </button>
             </div>

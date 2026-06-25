@@ -70,6 +70,39 @@ export const ArenaStatsDashboard: React.FC = () => {
   const [selectedClass, setSelectedClass] = useState('');
   const [expandedStudentId, setExpandedStudentId] = useState<string | null>(null);
   const [studentDetailTab, setStudentDetailTab] = useState<Record<string, 'năng_lực' | 'lịch_sử' | 'huy_hiệu' | 'trang_bị'>>({});
+  
+  // Expanded Student Inventory
+  const [expandedStudentInventory, setExpandedStudentInventory] = useState<any[]>([]);
+  const [loadingInventory, setLoadingInventory] = useState(false);
+
+  // Fetch expanded student inventory from Database
+  const fetchStudentInventory = async (studentId: string) => {
+    setLoadingInventory(true);
+    try {
+      const { data, error } = await supabase
+        .from('arena_inventory')
+        .select(`
+          *,
+          arena_shop_items:item_id (*)
+        `)
+        .eq('student_id', studentId);
+      if (!error && data) {
+        setExpandedStudentInventory(data);
+      }
+    } catch (err) {
+      console.error("Error loading student inventory:", err);
+    } finally {
+      setLoadingInventory(false);
+    }
+  };
+
+  useEffect(() => {
+    if (expandedStudentId) {
+      fetchStudentInventory(expandedStudentId);
+    } else {
+      setExpandedStudentInventory([]);
+    }
+  }, [expandedStudentId]);
 
   // Load stats
   const loadData = async () => {
@@ -711,7 +744,7 @@ export const ArenaStatsDashboard: React.FC = () => {
                                   className={`pb-1.5 px-1 relative transition-colors ${activeTab === 'trang_bị' ? 'text-indigo-600 font-extrabold' : 'text-gray-400 hover:text-gray-600'}`}
                                 >
                                   {activeTab === 'trang_bị' && <span className="absolute bottom-0 left-0 w-full h-0.5 bg-indigo-600 rounded-full" />}
-                                  🎒 Trang Bị & Vật Phẩm (4)
+                                  🎒 Trang Bị & Vật Phẩm ({expandedStudentId === s.id ? (expandedStudentInventory?.length || 0) + 1 : 1})
                                 </button>
                               </div>
 
@@ -928,51 +961,49 @@ export const ArenaStatsDashboard: React.FC = () => {
                                       </span>
                                     </div>
 
-                                    {/* 2. ELO Protection Card */}
-                                    <div className="p-4 rounded-2xl border border-gray-100 bg-white text-gray-900 shadow-sm flex flex-col justify-between">
-                                      <div className="text-center">
-                                        <span className="text-3xl block mb-2">⭐</span>
-                                        <h5 className="font-bold text-xs text-gray-950">Thẻ bảo hiểm ELO</h5>
-                                        <p className="text-[10px] text-gray-500 mt-1.5 leading-normal">Bảo toàn ELO, không bị trừ điểm khi thua cuộc.</p>
+                                    {/* Dynamic purchased items from inventory */}
+                                    {loadingInventory ? (
+                                      <div className="col-span-3 flex items-center justify-center py-8">
+                                        <div className="w-5 h-5 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
                                       </div>
-                                      <div className="mt-4 flex flex-col gap-1 items-center">
-                                        <span className="text-[8px] bg-emerald-500/10 text-emerald-600 px-2 py-0.5 rounded font-bold border border-emerald-500/20 text-center uppercase">
-                                          🛒 ĐÃ MUA (SL: 2)
-                                        </span>
-                                        <span className="text-[8px] text-gray-400 font-semibold">Đã sử dụng: 5 lần</span>
+                                    ) : expandedStudentInventory.length === 0 ? (
+                                      <div className="col-span-3 border border-dashed border-gray-200 rounded-2xl flex flex-col items-center justify-center p-6 text-center">
+                                        <span className="text-2xl mb-1">🛒</span>
+                                        <p className="text-xs font-bold text-gray-400">Chưa mua vật phẩm nào</p>
+                                        <p className="text-[10px] text-gray-400">Học sinh chưa thực hiện giao dịch nào trong Cửa Hàng.</p>
                                       </div>
-                                    </div>
-
-                                    {/* 3. Double XP Card */}
-                                    <div className="p-4 rounded-2xl border border-gray-100 bg-white text-gray-900 shadow-sm flex flex-col justify-between">
-                                      <div className="text-center">
-                                        <span className="text-3xl block mb-2">⚡</span>
-                                        <h5 className="font-bold text-xs text-gray-950">Thẻ nhân đôi XP</h5>
-                                        <p className="text-[10px] text-gray-500 mt-1.5 leading-normal">Nhân 2 lượng kinh nghiệm nhận được sau mỗi lượt leo tháp.</p>
-                                      </div>
-                                      <div className="mt-4 flex flex-col gap-1 items-center">
-                                        <span className="text-[8px] bg-emerald-500/10 text-emerald-600 px-2 py-0.5 rounded font-bold border border-emerald-500/20 text-center uppercase">
-                                          🛒 ĐÃ MUA (SL: 1)
-                                        </span>
-                                        <span className="text-[8px] text-gray-400 font-semibold">Đã sử dụng: 3 lần</span>
-                                      </div>
-                                    </div>
-
-                                    {/* 4. Tournament Ticket */}
-                                    <div className="p-4 rounded-2xl border border-gray-100 bg-white text-gray-900 shadow-sm flex flex-col justify-between">
-                                      <div className="text-center">
-                                        <span className="text-3xl block mb-2">🎟️</span>
-                                        <h5 className="font-bold text-xs text-gray-950">Vé Giải Đấu</h5>
-                                        <p className="text-[10px] text-gray-500 mt-1.5 leading-normal">Vé để tham dự các giải đấu đặc biệt có giải thưởng lớn của giáo viên.</p>
-                                      </div>
-                                      <div className="mt-4 flex flex-col gap-1 items-center">
-                                        <span className="text-[8px] bg-indigo-500/10 text-indigo-600 px-2 py-0.5 rounded font-bold border border-indigo-500/20 text-center uppercase">
-                                          🎒 ĐÃ MUA (SL: 5)
-                                        </span>
-                                        <span className="text-[8px] text-gray-400 font-semibold">Đã sử dụng: 0 lần</span>
-                                      </div>
-                                    </div>
-
+                                    ) : (
+                                      expandedStudentInventory.map(invItem => {
+                                        const item = invItem.arena_shop_items;
+                                        if (!item) return null;
+                                        return (
+                                          <div 
+                                            key={invItem.id} 
+                                            className={`p-4 rounded-2xl border flex flex-col justify-between transition-all ${
+                                              invItem.is_equipped 
+                                                ? 'border-purple-200 bg-purple-50/30 text-gray-900 shadow-sm' 
+                                                : 'border-gray-100 bg-white text-gray-900 shadow-sm'
+                                            }`}
+                                          >
+                                            <div className="text-center">
+                                              <span className="text-3xl block mb-2">{item.emoji || '📦'}</span>
+                                              <h5 className="font-bold text-xs text-gray-950">{item.name}</h5>
+                                              <p className="text-[10px] text-gray-500 mt-1.5 leading-normal">{item.description}</p>
+                                            </div>
+                                            <div className="mt-4 flex flex-col gap-1 items-center">
+                                              <span className={`text-[8px] px-2 py-0.5 rounded font-bold uppercase ${
+                                                invItem.is_equipped 
+                                                  ? 'bg-purple-500/20 text-purple-700 border border-purple-500/20' 
+                                                  : 'bg-emerald-500/10 text-emerald-600 border border-emerald-500/20'
+                                              }`}>
+                                                {invItem.is_equipped ? '🎒 ĐÃ TRANG BỊ' : `🛒 ĐÃ MUA (SL: ${invItem.quantity})`}
+                                              </span>
+                                              <span className="text-[8px] text-gray-400 font-semibold">Đã sử dụng: {invItem.times_used || 0} lần</span>
+                                            </div>
+                                          </div>
+                                        );
+                                      })
+                                    )}
                                   </div>
                                 </div>
                               )}

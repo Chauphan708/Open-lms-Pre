@@ -51,6 +51,7 @@ import { Leaderboard } from './pages/arena/Leaderboard';
 import { ArenaAdmin } from './pages/arena/ArenaAdmin';
 import { TournamentHost } from './pages/arena/TournamentHost';
 import { TournamentLobby } from './pages/arena/TournamentLobby';
+import { ArenaShop } from './pages/arena/ArenaShop';
 // Portfolio
 import { StudentPortfolio } from './pages/teacher/StudentPortfolio';
 import { MyPortfolio } from './pages/student/MyPortfolio';
@@ -512,6 +513,11 @@ function App() {
         <Route path="/arena" element={
           <ProtectedRoute roles={['STUDENT', 'TEACHER', 'ADMIN']}>
             <ArenaHome />
+          </ProtectedRoute>
+        } />
+        <Route path="/arena/shop" element={
+          <ProtectedRoute roles={['STUDENT', 'TEACHER', 'ADMIN']}>
+            <ArenaShop />
           </ProtectedRoute>
         } />
         <Route path="/arena/dashboard" element={
