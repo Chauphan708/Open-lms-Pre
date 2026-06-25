@@ -1,0 +1,784 @@
+import React, { useEffect, useState, useMemo } from 'react';
+import { supabase } from '../../services/supabaseClient';
+import { 
+  Brain, Trophy, Target, Search, Users, ChevronRight, ChevronDown, 
+  TrendingUp, BarChart3, Clock, AlertTriangle, CheckCircle, RefreshCw, X, ShieldAlert 
+} from 'lucide-react';
+import MathText from '../../components/MathText';
+
+interface StudentArenaData {
+  id: string;
+  elo_rating: number;
+  total_xp: number;
+  wins: number;
+  losses: number;
+  tower_floor: number;
+  topic_mastery?: Record<string, number>;
+  profiles?: {
+    name: string;
+    class_name: string;
+    avatar?: string;
+  } | null;
+}
+
+interface TowerAttempt {
+  id: string;
+  student_id: string;
+  subject: string;
+  topic: string;
+  grade: string;
+  xp_gained: number;
+  elo_change: number;
+  end_floor: number;
+  is_victory: boolean;
+  correct_answers: number;
+  total_questions: number;
+  created_at: string;
+  student_name?: string;
+  student_class?: string;
+}
+
+interface MatchHistory {
+  id: string;
+  player1_id: string;
+  player2_id: string;
+  status: string;
+  winner_id: string;
+  player1_score: number;
+  player2_score: number;
+  player1_hp: number;
+  player2_hp: number;
+  filter_subject?: string;
+  filter_grade?: string;
+  created_at: string;
+  player1_name?: string;
+  player2_name?: string;
+}
+
+export const ArenaStatsDashboard: React.FC = () => {
+  const [students, setStudents] = useState<StudentArenaData[]>([]);
+  const [towerAttempts, setTowerAttempts] = useState<TowerAttempt[]>([]);
+  const [matchHistory, setMatchHistory] = useState<MatchHistory[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+
+  // Filters & Search
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedGrade, setSelectedGrade] = useState('');
+  const [selectedClass, setSelectedClass] = useState('');
+  const [expandedStudentId, setExpandedStudentId] = useState<string | null>(null);
+
+  // Load stats
+  const loadData = async () => {
+    setRefreshing(true);
+    try {
+      // 1. Fetch arena profiles with user profile metadata
+      const { data: profileData, error: profileErr } = await supabase
+        .from('arena_profiles')
+        .select(`
+          *,
+          profiles:id (
+            name,
+            class_name,
+            avatar
+          )
+        `);
+      
+      if (profileErr) throw profileErr;
+      setStudents((profileData as any[]) || []);
+
+      // 2. Fetch tower attempts
+      const { data: towerData, error: towerErr } = await supabase
+        .from('arena_tower_attempts')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (!towerErr && towerData) {
+        setTowerAttempts(towerData as TowerAttempt[]);
+      }
+
+      // 3. Fetch PvP matches
+      const { data: matchData, error: matchErr } = await supabase
+        .from('arena_matches')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(100);
+
+      if (!matchErr && matchData) {
+        setMatchHistory(matchData as MatchHistory[]);
+      }
+
+    } catch (err) {
+      console.error("Lỗi khi tải dữ liệu thống kê Arena:", err);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
+
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  // Filter list of classes & grades from students list
+  const classesList = useMemo(() => {
+    const list = students.map(s => s.profiles?.class_name?.trim() || '').filter(Boolean);
+    return Array.from(new Set(list)).sort();
+  }, [students]);
+
+  const gradesList = useMemo(() => {
+    const list = students.map(s => {
+      const cls = s.profiles?.class_name || '';
+      const match = cls.match(/^(\d+)/);
+      return match ? match[1] : '';
+    }).filter(Boolean);
+    return Array.from(new Set(list)).sort();
+  }, [students]);
+
+  // Enrich Tower Attempts & Matches with student names
+  const enrichedAttempts = useMemo(() => {
+    return towerAttempts.map(attempt => {
+      const stud = students.find(s => s.id === attempt.student_id);
+      return {
+        ...attempt,
+        student_name: stud?.profiles?.name || 'Học sinh ẩn danh',
+        student_class: stud?.profiles?.class_name || 'Khác'
+      };
+    });
+  }, [towerAttempts, students]);
+
+  const enrichedMatches = useMemo(() => {
+    return matchHistory.map(match => {
+      const p1 = students.find(s => s.id === match.player1_id);
+      const p2 = students.find(s => s.id === match.player2_id);
+      return {
+        ...match,
+        player1_name: p1?.profiles?.name || 'Học sinh 1',
+        player2_name: p2?.profiles?.name || 'Học sinh 2'
+      };
+    });
+  }, [matchHistory, students]);
+
+  // Filtered Students
+  const filteredStudents = useMemo(() => {
+    return students.filter(s => {
+      const name = (s.profiles?.name || '').toLowerCase();
+      const cls = (s.profiles?.class_name || '').toLowerCase();
+      
+      const matchesSearch = name.includes(searchQuery.toLowerCase()) || cls.includes(searchQuery.toLowerCase());
+      
+      let matchesGrade = true;
+      if (selectedGrade) {
+        matchesGrade = cls.startsWith(selectedGrade.toLowerCase());
+      }
+      
+      let matchesClass = true;
+      if (selectedClass) {
+        matchesClass = cls === selectedClass.toLowerCase();
+      }
+
+      return matchesSearch && matchesGrade && matchesClass;
+    }).sort((a, b) => b.elo_rating - a.elo_rating);
+  }, [students, searchQuery, selectedGrade, selectedClass]);
+
+  // KPI Calculations
+  const statsSummary = useMemo(() => {
+    const totalStudents = students.length;
+    if (totalStudents === 0) {
+      return { avgElo: 1000, totalPvP: 0, totalTower: 0, winRate: 0, activeStudentsCount: 0 };
+    }
+
+    const totalElo = students.reduce((sum, s) => sum + s.elo_rating, 0);
+    const avgElo = Math.round(totalElo / totalStudents);
+
+    // Filter PvP matches and tower runs in the current data
+    const totalPvP = matchHistory.filter(m => m.status === 'finished').length;
+    const totalTower = towerAttempts.length;
+
+    // Active students: logged in and did at least 1 run or pvp
+    const activeIds = new Set([
+      ...towerAttempts.map(t => t.student_id),
+      ...matchHistory.map(m => m.player1_id),
+      ...matchHistory.map(m => m.player2_id)
+    ]);
+    const activeStudentsCount = students.filter(s => activeIds.has(s.id)).length;
+
+    // PvP Win rate
+    const wins = students.reduce((sum, s) => sum + s.wins, 0);
+    const losses = students.reduce((sum, s) => sum + s.losses, 0);
+    const totalWinsLosses = wins + losses;
+    const winRate = totalWinsLosses > 0 ? Math.round((wins / totalWinsLosses) * 100) : 0;
+
+    return { avgElo, totalPvP, totalTower, winRate, activeStudentsCount };
+  }, [students, towerAttempts, matchHistory]);
+
+  // Topic-wise analytics (Mastery & Failure rates)
+  const topicStats = useMemo(() => {
+    const map: Record<string, { topic: string; subject: string; totalAttempts: number; failures: number; totalQuestions: number; correctQuestions: number; sumMastery: number; countMastery: number }> = {};
+
+    // 1. Process Tower Attempts for failure rates
+    towerAttempts.forEach(t => {
+      const key = `${t.subject}-${t.topic}`;
+      if (!map[key]) {
+        map[key] = {
+          topic: t.topic,
+          subject: t.subject,
+          totalAttempts: 0,
+          failures: 0,
+          totalQuestions: 0,
+          correctQuestions: 0,
+          sumMastery: 0,
+          countMastery: 0
+        };
+      }
+      map[key].totalAttempts += 1;
+      if (!t.is_victory) {
+        map[key].failures += 1;
+      }
+      map[key].totalQuestions += t.total_questions;
+      map[key].correctQuestions += t.correct_answers;
+    });
+
+    // 2. Process student's current mastery levels
+    students.forEach(s => {
+      if (s.topic_mastery) {
+        Object.entries(s.topic_mastery).forEach(([topic, mastery]) => {
+          // Find subject for this topic
+          let subject = 'math';
+          // Check standard subjects if matched
+          if (topic.includes('Luyện từ') || topic.includes('Chính tả') || topic.includes('văn')) subject = 'vietnamese';
+          else if (topic.includes('Môi trường') || topic.includes('Sinh sản') || topic.includes('Năng lượng') || topic.includes('Không khí')) subject = 'science';
+          else if (topic.includes('Internet') || topic.includes('Phần mềm') || topic.includes('Cứng') || topic.includes('An toàn')) subject = 'technology';
+          else if (topic.includes('Vocabulary') || topic.includes('Grammar')) subject = 'english';
+          else if (topic.includes('Địa lí') || topic.includes('Lịch sử')) subject = 'history_geography';
+
+          const key = `${subject}-${topic}`;
+          if (!map[key]) {
+            map[key] = {
+              topic,
+              subject,
+              totalAttempts: 0,
+              failures: 0,
+              totalQuestions: 0,
+              correctQuestions: 0,
+              sumMastery: 0,
+              countMastery: 0
+            };
+          }
+          map[key].sumMastery += mastery;
+          map[key].countMastery += 1;
+        });
+      }
+    });
+
+    return Object.values(map).map(item => {
+      const errorRate = item.totalQuestions > 0 ? Math.round(((item.totalQuestions - item.correctQuestions) / item.totalQuestions) * 100) : (item.totalAttempts > 0 ? Math.round((item.failures / item.totalAttempts) * 100) : 0);
+      const avgMastery = item.countMastery > 0 ? Math.round(item.sumMastery / item.countMastery) : 0;
+      return {
+        ...item,
+        errorRate,
+        avgMastery
+      };
+    }).sort((a, b) => b.errorRate - a.errorRate); // Sort by highest error rate first (weakest topics)
+  }, [towerAttempts, students]);
+
+  // Expand helper
+  const toggleStudentExpand = (id: string) => {
+    setExpandedStudentId(expandedStudentId === id ? null : id);
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-[40vh] flex items-center justify-center">
+        <div className="text-center">
+          <RefreshCw className="h-8 w-8 text-indigo-600 animate-spin mx-auto mb-3" />
+          <p className="text-gray-500 font-medium">Đang tổng hợp dữ liệu đấu trí...</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6 animate-in fade-in duration-500 pb-10">
+      {/* Header Overview */}
+      <div className="flex items-center justify-between flex-wrap gap-4 bg-gradient-to-r from-indigo-900 to-indigo-950 p-6 rounded-3xl text-white shadow-xl shadow-indigo-950/20">
+        <div>
+          <h2 className="text-xl font-black flex items-center gap-2">
+            <Brain className="h-6 w-6 text-indigo-400 animate-pulse" /> Dashboard Thống Kê Đấu Trí
+          </h2>
+          <p className="text-xs text-indigo-200 mt-1">Phân tích chi tiết năng lực học sinh, chuyên đề còn yếu và lịch sử PvP/Leo tháp.</p>
+        </div>
+        <button 
+          onClick={loadData}
+          disabled={refreshing}
+          className="px-4 py-2 bg-indigo-800 hover:bg-indigo-700 disabled:opacity-50 text-white rounded-xl font-bold text-xs flex items-center gap-1.5 transition-colors border border-indigo-700"
+        >
+          <RefreshCw className={`h-3.5 w-3.5 ${refreshing ? 'animate-spin' : ''}`} /> Làm mới dữ liệu
+        </button>
+      </div>
+
+      {/* KPI Cards */}
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+        <div className="bg-white rounded-2xl border p-4 shadow-sm text-center">
+          <div className="text-xs text-gray-500 font-bold uppercase tracking-wider mb-1">Học sinh đã chơi</div>
+          <div className="text-3xl font-black text-indigo-600">
+            {statsSummary.activeStudentsCount} <span className="text-sm font-medium text-gray-400">/ {students.length}</span>
+          </div>
+        </div>
+        
+        <div className="bg-white rounded-2xl border p-4 shadow-sm text-center">
+          <div className="text-xs text-gray-500 font-bold uppercase tracking-wider mb-1">ELO Trung bình</div>
+          <div className="text-3xl font-black text-amber-500">{statsSummary.avgElo}</div>
+        </div>
+
+        <div className="bg-white rounded-2xl border p-4 shadow-sm text-center">
+          <div className="text-xs text-gray-500 font-bold uppercase tracking-wider mb-1">Lượt Leo Tháp</div>
+          <div className="text-3xl font-black text-emerald-600">{statsSummary.totalTower}</div>
+        </div>
+
+        <div className="bg-white rounded-2xl border p-4 shadow-sm text-center">
+          <div className="text-xs text-gray-500 font-bold uppercase tracking-wider mb-1">Trận PvP (1v1)</div>
+          <div className="text-3xl font-black text-purple-600">{statsSummary.totalPvP}</div>
+        </div>
+
+        <div className="bg-white rounded-2xl border p-4 shadow-sm text-center col-span-2 md:col-span-1">
+          <div className="text-xs text-gray-500 font-bold uppercase tracking-wider mb-1">Tỷ Lệ Thắng PvP</div>
+          <div className="text-3xl font-black text-rose-500">{statsSummary.winRate}%</div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        {/* WEAKEST TOPICS DIAGNOSTICS */}
+        <div className="lg:col-span-1 bg-white rounded-3xl border border-gray-100 p-6 shadow-sm flex flex-col space-y-4">
+          <div>
+            <h3 className="text-base font-bold text-gray-900 flex items-center gap-1.5">
+              <AlertTriangle className="h-5 w-5 text-amber-500" /> Chẩn đoán kiến thức yếu
+            </h3>
+            <p className="text-xs text-gray-500 mt-0.5">Danh sách các chuyên đề học sinh trả lời sai nhiều nhất (cần ôn tập thêm).</p>
+          </div>
+
+          <div className="space-y-3 flex-1 overflow-y-auto max-h-[360px] pr-1 custom-scrollbar">
+            {topicStats.length === 0 ? (
+              <div className="h-full flex items-center justify-center text-center p-6 text-gray-400 text-sm italic">
+                Chưa ghi nhận lượt chơi nào để chẩn đoán.
+              </div>
+            ) : (
+              topicStats.slice(0, 5).map((t, idx) => {
+                const colors = ['bg-rose-500', 'bg-orange-500', 'bg-amber-500', 'bg-amber-400', 'bg-indigo-400'];
+                return (
+                  <div key={idx} className="p-3 bg-gray-50/50 hover:bg-gray-50 border rounded-2xl transition-all">
+                    <div className="flex justify-between items-start gap-2 mb-1.5">
+                      <div className="min-w-0">
+                        <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                          {t.subject === 'math' ? 'Toán' : t.subject === 'science' ? 'Khoa học' : t.subject === 'technology' ? 'Công nghệ' : t.subject === 'vietnamese' ? 'Tiếng Việt' : t.subject === 'english' ? 'Tiếng Anh' : 'Lịch sử & Địa lí'}
+                        </div>
+                        <div className="text-sm font-bold text-gray-900 truncate" title={t.topic}>{t.topic}</div>
+                      </div>
+                      <div className="text-right flex-shrink-0">
+                        <span className="inline-block px-2 py-0.5 rounded-full text-[10px] font-black bg-rose-50 text-rose-600 border border-rose-100">
+                          {t.errorRate}% Lỗi
+                        </span>
+                      </div>
+                    </div>
+                    {/* Error rate progress bar */}
+                    <div className="w-full bg-gray-200/80 rounded-full h-2">
+                      <div className={`h-2 rounded-full ${colors[idx % colors.length]}`} style={{ width: `${t.errorRate}%` }} />
+                    </div>
+                    <div className="flex justify-between items-center text-[10px] text-gray-500 mt-1.5 font-medium">
+                      <span>Lượt chơi: {t.totalAttempts}</span>
+                      <span>Độ am hiểu TB: {t.avgMastery}%</span>
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
+        </div>
+
+        {/* RECENT ACTIVITY LOG */}
+        <div className="lg:col-span-2 bg-white rounded-3xl border border-gray-100 p-6 shadow-sm flex flex-col space-y-4">
+          <div>
+            <h3 className="text-base font-bold text-gray-900 flex items-center gap-1.5">
+              <Clock className="h-5 w-5 text-indigo-500" /> Nhật ký Đấu trường gần đây
+            </h3>
+            <p className="text-xs text-gray-500 mt-0.5">Các hoạt động PvP và Leo tháp thời gian thực của học sinh.</p>
+          </div>
+
+          <div className="flex-1 overflow-y-auto max-h-[360px] pr-1 custom-scrollbar space-y-3">
+            {enrichedAttempts.length === 0 && enrichedMatches.length === 0 ? (
+              <div className="h-full flex items-center justify-center text-center p-6 text-gray-400 text-sm italic">
+                Chưa có hoạt động nào trong sảnh đấu gần đây.
+              </div>
+            ) : (
+              // Merge PvP and Tower Mode and sort by date
+              [
+                ...enrichedAttempts.map(a => ({
+                  type: 'tower' as const,
+                  date: new Date(a.created_at),
+                  data: a
+                })),
+                ...enrichedMatches.filter(m => m.status === 'finished').map(m => ({
+                  type: 'pvp' as const,
+                  date: new Date(m.created_at),
+                  data: m
+                }))
+              ]
+              .sort((a, b) => b.date.getTime() - a.date.getTime())
+              .slice(0, 10)
+              .map((activity, index) => {
+                if (activity.type === 'tower') {
+                  const t = activity.data as typeof enrichedAttempts[0];
+                  return (
+                    <div key={`t-${t.id}-${index}`} className="flex items-center gap-3 p-3 bg-gray-50/40 border border-gray-100 hover:border-indigo-100 hover:bg-indigo-50/10 rounded-2xl transition-all">
+                      <div className={`p-2 rounded-xl flex-shrink-0 ${t.is_victory ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50/80 text-rose-500'}`}>
+                        <Trophy className="h-4.5 w-4.5" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="text-sm font-bold text-gray-900">
+                          {t.student_name} <span className="text-xs font-normal text-gray-500">lớp {t.student_class}</span>
+                        </div>
+                        <div className="text-xs text-gray-500 font-medium mt-0.5">
+                          Leo tháp chủ đề <span className="text-indigo-600 font-semibold">{t.topic}</span> (Khối {t.grade})
+                        </div>
+                        <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${t.is_victory ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>
+                            {t.is_victory ? '🏆 Chiến Thắng' : `❌ Thất bại (Tầng ${t.end_floor})`}
+                          </span>
+                          <span className="text-[10px] text-gray-400 font-medium">
+                            Đúng {t.correct_answers}/{t.total_questions} câu • ELO: {t.elo_change >= 0 ? `+${t.elo_change}` : t.elo_change}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="text-[10px] text-gray-400 font-bold whitespace-nowrap self-start mt-0.5">
+                        {activity.date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      </div>
+                    </div>
+                  );
+                } else {
+                  const m = activity.data as typeof enrichedMatches[0];
+                  const p1Win = m.winner_id === m.player1_id;
+                  return (
+                    <div key={`m-${m.id}-${index}`} className="flex items-center gap-3 p-3 bg-gray-50/40 border border-gray-100 hover:border-purple-100 hover:bg-purple-50/10 rounded-2xl transition-all">
+                      <div className="p-2 bg-purple-50 text-purple-600 rounded-xl flex-shrink-0">
+                        <Brain className="h-4.5 w-4.5" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="text-sm font-bold text-gray-900">
+                          {m.player1_name} vs {m.player2_name}
+                        </div>
+                        <div className="text-xs text-gray-500 font-medium mt-0.5">
+                          Trận Đấu Trí 1v1 • Môn: {m.filter_subject === 'math' ? 'Toán' : m.filter_subject === 'science' ? 'Khoa học' : 'Đấu Trí'} (Lớp {m.filter_grade})
+                        </div>
+                        <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+                          <span className="text-[10px] bg-purple-100 text-purple-700 font-black px-2 py-0.5 rounded-full">
+                            ⚔️ PvP Kết thúc
+                          </span>
+                          <span className="text-[10px] text-gray-400 font-medium">
+                            Thắng: <strong className="text-purple-600">{p1Win ? m.player1_name : m.player2_name}</strong> ({p1Win ? m.player1_score : m.player2_score} - {p1Win ? m.player2_score : m.player1_score} điểm)
+                          </span>
+                        </div>
+                      </div>
+                      <div className="text-[10px] text-gray-400 font-bold whitespace-nowrap self-start mt-0.5">
+                        {activity.date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      </div>
+                    </div>
+                  );
+                }
+              })
+            )}
+          </div>
+        </div>
+
+      </div>
+
+      {/* STUDENT TABLE AREA */}
+      <div className="bg-white rounded-3xl border border-gray-100 p-6 shadow-sm space-y-5">
+        <div className="flex justify-between items-center flex-wrap gap-4">
+          <div>
+            <h3 className="text-base font-bold text-gray-900 flex items-center gap-1.5">
+              <Users className="h-5 w-5 text-indigo-500" /> Bảng năng lực Học sinh
+            </h3>
+            <p className="text-xs text-gray-500 mt-0.5">Danh sách toàn bộ học sinh lớp học trong hệ thống Arena.</p>
+          </div>
+
+          {/* Table Toolbar */}
+          <div className="flex gap-2 flex-wrap items-center w-full md:w-auto">
+            {/* Search */}
+            <div className="relative flex-1 md:flex-initial">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <input 
+                type="text"
+                placeholder="Tìm học sinh, lớp học..."
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+                className="w-full md:w-60 pl-9 pr-8 py-2 border rounded-xl text-xs outline-none focus:border-indigo-500 bg-gray-50/50 hover:bg-gray-50/80 transition-all font-semibold"
+              />
+              {searchQuery && (
+                <button onClick={() => setSearchQuery('')} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                  <X className="h-3 w-3" />
+                </button>
+              )}
+            </div>
+
+            {/* Grade Filter */}
+            <select
+              value={selectedGrade}
+              onChange={e => { setSelectedGrade(e.target.value); setSelectedClass(''); }}
+              className="px-3 py-2 border rounded-xl text-xs outline-none font-semibold bg-white"
+            >
+              <option value="">-- Tất cả khối --</option>
+              {gradesList.map(g => (
+                <option key={g} value={g}>Khối {g}</option>
+              ))}
+            </select>
+
+            {/* Class Filter */}
+            <select
+              value={selectedClass}
+              onChange={e => setSelectedClass(e.target.value)}
+              className="px-3 py-2 border rounded-xl text-xs outline-none font-semibold bg-white"
+            >
+              <option value="">-- Tất cả lớp --</option>
+              {classesList.map(c => (
+                <option key={c} value={c}>Lớp {c}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        {/* Data Table */}
+        <div className="overflow-x-auto rounded-2xl border border-gray-100">
+          <table className="w-full text-left text-xs border-collapse">
+            <thead>
+              <tr className="bg-gray-50/70 border-b border-gray-100 text-gray-400 uppercase font-black tracking-wider">
+                <th className="p-4 w-8"></th>
+                <th className="p-4">Học Sinh</th>
+                <th className="p-4 text-center">Khối Lớp</th>
+                <th className="p-4 text-center">Điểm ELO</th>
+                <th className="p-4 text-center">Tầng Tháp</th>
+                <th className="p-4 text-center">PvP PvP (Thắng/Thua)</th>
+                <th className="p-4 text-center">Tổng XP Arena</th>
+                <th className="p-4 text-right">Hành động</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredStudents.length === 0 ? (
+                <tr>
+                  <td colSpan={8} className="p-8 text-center text-gray-400 font-medium italic">
+                    Không tìm thấy học sinh nào phù hợp bộ lọc.
+                  </td>
+                </tr>
+              ) : (
+                filteredStudents.map((s) => {
+                  const isExpanded = expandedStudentId === s.id;
+                  const winPvP = s.wins;
+                  const lossPvP = s.losses;
+                  const totalPvP = winPvP + lossPvP;
+                  const pvpWinRate = totalPvP > 0 ? Math.round((winPvP / totalPvP) * 100) : 0;
+
+                  // ELO Badge Level
+                  let eloLevel = 'Đồng';
+                  let eloColor = 'bg-amber-100 text-amber-800 border-amber-200';
+                  if (s.elo_rating >= 2200) {
+                    eloLevel = 'Thách Đấu';
+                    eloColor = 'bg-red-500 text-white border-red-600 animate-pulse';
+                  } else if (s.elo_rating >= 1800) {
+                    eloLevel = 'Cao Thủ';
+                    eloColor = 'bg-purple-100 text-purple-800 border-purple-200';
+                  } else if (s.elo_rating >= 1500) {
+                    eloLevel = 'Kim Cương';
+                    eloColor = 'bg-cyan-50 text-cyan-700 border-cyan-100';
+                  } else if (s.elo_rating >= 1200) {
+                    eloLevel = 'Bạch Kim';
+                    eloColor = 'bg-emerald-50 text-emerald-700 border-emerald-100';
+                  } else if (s.elo_rating >= 1000) {
+                    eloLevel = 'Vàng';
+                    eloColor = 'bg-yellow-50 text-yellow-800 border-yellow-100';
+                  }
+
+                  return (
+                    <React.Fragment key={s.id}>
+                      {/* Standard Table Row */}
+                      <tr 
+                        onClick={() => toggleStudentExpand(s.id)}
+                        className={`border-b border-gray-100/80 hover:bg-indigo-50/20 cursor-pointer transition-all ${isExpanded ? 'bg-indigo-50/30' : ''}`}
+                      >
+                        <td className="p-4 text-center">
+                          {isExpanded ? (
+                            <ChevronDown className="h-4.5 w-4.5 text-gray-500" />
+                          ) : (
+                            <ChevronRight className="h-4.5 w-4.5 text-gray-500" />
+                          )}
+                        </td>
+                        <td className="p-4">
+                          <div className="flex items-center gap-2.5">
+                            <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-500 text-white font-bold flex items-center justify-center text-xs shadow-sm">
+                              {s.profiles?.name?.charAt(0).toUpperCase() || 'S'}
+                            </div>
+                            <div>
+                              <div className="font-bold text-gray-900">{s.profiles?.name || 'Học sinh'}</div>
+                              <div className="text-[10px] text-gray-400 font-semibold">{s.profiles?.class_name || 'Chưa xếp lớp'}</div>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="p-4 text-center font-bold text-gray-700">
+                          {s.profiles?.class_name?.match(/^(\d+)/)?.[1] || '5'}
+                        </td>
+                        <td className="p-4 text-center">
+                          <div className="flex flex-col items-center gap-1">
+                            <span className="font-black text-gray-900">{s.elo_rating}</span>
+                            <span className={`px-1.5 py-0.5 rounded text-[8px] font-black border ${eloColor}`}>
+                              {eloLevel}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="p-4 text-center">
+                          <div className="flex items-center justify-center gap-1">
+                            <span className="font-black text-emerald-600">Tầng {s.tower_floor}</span>
+                          </div>
+                        </td>
+                        <td className="p-4 text-center">
+                          <div className="flex flex-col items-center gap-0.5">
+                            <span className="font-semibold text-gray-700">{winPvP}W - {lossPvP}L</span>
+                            {totalPvP > 0 && (
+                              <span className="text-[9px] text-gray-400 font-medium">WR: {pvpWinRate}%</span>
+                            )}
+                          </div>
+                        </td>
+                        <td className="p-4 text-center font-black text-indigo-600">
+                          {s.total_xp.toLocaleString()}
+                        </td>
+                        <td className="p-4 text-right">
+                          <button 
+                            onClick={(e) => { e.stopPropagation(); toggleStudentExpand(s.id); }}
+                            className="px-3 py-1.5 bg-gray-50 hover:bg-indigo-50 text-gray-600 hover:text-indigo-600 font-bold rounded-lg transition-colors border border-gray-200/50 text-[10px]"
+                          >
+                            {isExpanded ? 'Ẩn chi tiết' : 'Xem chi tiết'}
+                          </button>
+                        </td>
+                      </tr>
+
+                      {/* Expanded Details Row */}
+                      {isExpanded && (
+                        <tr className="bg-gray-50/30 border-b border-gray-100">
+                          <td colSpan={8} className="p-5">
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 animate-in slide-in-from-top duration-300">
+                              
+                              {/* 1. Mastery per topic */}
+                              <div className="bg-white rounded-2xl border p-4 shadow-sm space-y-3">
+                                <h4 className="font-bold text-gray-900 flex items-center gap-1 text-[11px] uppercase tracking-wider text-gray-400">
+                                  🎯 Độ am hiểu chuyên đề
+                                </h4>
+                                <div className="space-y-2 max-h-[220px] overflow-y-auto pr-1 custom-scrollbar">
+                                  {!s.topic_mastery || Object.keys(s.topic_mastery).length === 0 ? (
+                                    <div className="text-center py-6 text-gray-400 text-[10px] italic">
+                                      Học sinh chưa hoàn thành chuyên đề nào.
+                                    </div>
+                                  ) : (
+                                    Object.entries(s.topic_mastery).map(([topic, mastery]) => {
+                                      let masteryColor = 'bg-rose-500';
+                                      let masteryText = 'Bắt đầu';
+                                      if (mastery >= 90) {
+                                        masteryColor = 'bg-emerald-500';
+                                        masteryText = 'Làm chủ (Master)';
+                                      } else if (mastery >= 60) {
+                                        masteryColor = 'bg-indigo-500';
+                                        masteryText = 'Khá tốt';
+                                      } else if (mastery >= 30) {
+                                        masteryColor = 'bg-amber-500';
+                                        masteryText = 'Cần luyện thêm';
+                                      }
+
+                                      return (
+                                        <div key={topic} className="space-y-1">
+                                          <div className="flex justify-between text-[11px] font-bold">
+                                            <span className="text-gray-700 truncate max-w-[150px]">{topic}</span>
+                                            <span className="text-gray-900">{mastery}%</span>
+                                          </div>
+                                          <div className="w-full bg-gray-100 rounded-full h-1.5">
+                                            <div className={`h-1.5 rounded-full ${masteryColor}`} style={{ width: `${mastery}%` }} />
+                                          </div>
+                                          <div className="text-[9px] text-gray-400 font-semibold">{masteryText}</div>
+                                        </div>
+                                      );
+                                    })
+                                  )}
+                                </div>
+                              </div>
+
+                              {/* 2. Recent Tower Attempts */}
+                              <div className="bg-white rounded-2xl border p-4 shadow-sm space-y-3">
+                                <h4 className="font-bold text-gray-900 flex items-center gap-1 text-[11px] uppercase tracking-wider text-gray-400">
+                                  🏆 Thử thách leo tháp gần đây
+                                </h4>
+                                <div className="space-y-2 max-h-[220px] overflow-y-auto pr-1 custom-scrollbar">
+                                  {enrichedAttempts.filter(a => a.student_id === s.id).length === 0 ? (
+                                    <div className="text-center py-6 text-gray-400 text-[10px] italic">
+                                      Không có lịch sử leo tháp gần đây.
+                                    </div>
+                                  ) : (
+                                    enrichedAttempts
+                                      .filter(a => a.student_id === s.id)
+                                      .slice(0, 5)
+                                      .map((a, idx) => (
+                                        <div key={idx} className="p-2 bg-gray-50/50 rounded-xl border border-gray-100 flex justify-between items-center">
+                                          <div className="min-w-0">
+                                            <div className="text-[11px] font-bold text-gray-800 truncate" title={a.topic}>{a.topic}</div>
+                                            <div className="text-[9px] text-gray-400 font-semibold">
+                                              {new Date(a.created_at).toLocaleDateString()} • Độ khó: Mức {a.end_floor}
+                                            </div>
+                                          </div>
+                                          <div className="text-right flex-shrink-0 ml-2">
+                                            <div className={`text-[10px] font-black ${a.is_victory ? 'text-emerald-600' : 'text-amber-600'}`}>
+                                              {a.is_victory ? 'Chiến thắng' : `Thất bại`}
+                                            </div>
+                                            <div className="text-[9px] text-gray-400 font-medium">
+                                              Đúng {a.correct_answers}/{a.total_questions}
+                                            </div>
+                                          </div>
+                                        </div>
+                                      ))
+                                  )}
+                                </div>
+                              </div>
+
+                              {/* 3. ELO & Custom suggestions */}
+                              <div className="bg-white rounded-2xl border p-4 shadow-sm flex flex-col justify-between space-y-3">
+                                <div className="space-y-2">
+                                  <h4 className="font-bold text-gray-900 flex items-center gap-1 text-[11px] uppercase tracking-wider text-gray-400">
+                                    💡 Chẩn đoán & Gợi ý của AI
+                                  </h4>
+                                  <div className="text-[11px] text-gray-600 font-medium leading-relaxed">
+                                    {s.elo_rating >= 1800 ? (
+                                      <span>Học sinh xuất sắc! Kỹ năng giải quyết bài tập nâng cao rất tốt. AI khuyên giáo viên cấp thêm quyền học vượt cấp và cho làm đề chuyên sâu.</span>
+                                    ) : s.elo_rating < 1000 ? (
+                                      <span>Học sinh còn yếu một số chuyên đề cơ bản. Giáo viên nên giao các bài tập Mức 1 & 2 để củng cố trước khi cho học sinh leo tháp tiếp.</span>
+                                    ) : (
+                                      <span>Tiến trình phát triển ổn định. Kỹ năng PvP khá tốt. Đề xuất củng cố thêm các chuyên đề có tỉ lệ đúng dưới 70%.</span>
+                                    )}
+                                  </div>
+                                </div>
+
+                                {/* Custom quick command */}
+                                <div className="pt-2 border-t border-gray-100 flex items-center justify-between">
+                                  <div className="text-[10px] text-gray-400 font-semibold">Tỷ lệ PvP thắng:</div>
+                                  <div className="text-[11px] font-black text-rose-500">{pvpWinRate}% ({winPvP} trận thắng)</div>
+                                </div>
+                              </div>
+
+                            </div>
+                          </td>
+                        </tr>
+                      )}
+                    </React.Fragment>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+};

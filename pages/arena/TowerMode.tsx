@@ -178,6 +178,10 @@ export const TowerMode: React.FC = () => {
   const [victory, setVictory] = useState(false);
   const [aiGuide, setAiGuide] = useState('');
   const [aiGuideLoading, setAiGuideLoading] = useState(false);
+  const [correctAnswersCount, setCorrectAnswersCount] = useState(0);
+  const [totalQuestionsCount, setTotalQuestionsCount] = useState(0);
+  const [xpGainedSession, setXpGainedSession] = useState(0);
+  const [eloChangedSession, setEloChangedSession] = useState(0);
 
   // AI Revenge challenges
   const [revengeActive, setRevengeActive] = useState(false);
@@ -558,6 +562,10 @@ export const TowerMode: React.FC = () => {
     setGameOver(false);
     setVictory(false);
     setUnlockedBadgeSession(null);
+    setCorrectAnswersCount(0);
+    setTotalQuestionsCount(0);
+    setXpGainedSession(0);
+    setEloChangedSession(0);
 
     // Pick first question
     pickNextQuestion(pool, 1, new Set());
@@ -803,7 +811,13 @@ export const TowerMode: React.FC = () => {
   };
 
   // Handle game over (lives depleted)
-  const handleGameOver = async (finalMastery: number) => {
+  const handleGameOver = async (
+    finalMastery: number,
+    correctCount?: number,
+    totalCount?: number,
+    xpGainedRun?: number,
+    eloChangeRun?: number
+  ) => {
     setGameOver(true);
     setLives(0);
     setAiGuideLoading(true);
@@ -816,6 +830,24 @@ export const TowerMode: React.FC = () => {
         losses: arenaProfile.losses + 1,
         topic_mastery: updatedMastery
       });
+
+      // Save tower attempt log to Supabase
+      try {
+        await supabase.from('arena_tower_attempts').insert({
+          student_id: user?.id || '',
+          subject: selectedSubject,
+          topic: selectedTopic,
+          grade: selectedGrade || '5',
+          xp_gained: xpGainedRun || 0,
+          elo_change: eloChangeRun || 0,
+          end_floor: currentDifficulty,
+          is_victory: false,
+          correct_answers: correctCount || 0,
+          total_questions: totalCount || 0
+        });
+      } catch (dbErr) {
+        console.error("Failed to save tower attempt:", dbErr);
+      }
     }
 
     // Fetch AI study advice based on performance
@@ -830,7 +862,13 @@ export const TowerMode: React.FC = () => {
   };
 
   // Handle victory (Mastery = 100%)
-  const handleVictory = async (finalMastery: number) => {
+  const handleVictory = async (
+    finalMastery: number,
+    correctCount?: number,
+    totalCount?: number,
+    xpGainedRun?: number,
+    eloChangeRun?: number
+  ) => {
     setVictory(true);
     setAiGuideLoading(true);
 
@@ -847,6 +885,24 @@ export const TowerMode: React.FC = () => {
 
       // Check badge unlock
       checkBadgeUnlock(100);
+
+      // Save tower attempt log to Supabase
+      try {
+        await supabase.from('arena_tower_attempts').insert({
+          student_id: user?.id || '',
+          subject: selectedSubject,
+          topic: selectedTopic,
+          grade: selectedGrade || '5',
+          xp_gained: xpGainedRun || 50,
+          elo_change: eloChangeRun || 15,
+          end_floor: currentDifficulty,
+          is_victory: true,
+          correct_answers: correctCount || 0,
+          total_questions: totalCount || 0
+        });
+      } catch (dbErr) {
+        console.error("Failed to save tower attempt:", dbErr);
+      }
     }
 
     // Fetch AI recommendations & suggestions for advanced study

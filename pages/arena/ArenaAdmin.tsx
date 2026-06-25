@@ -8,6 +8,7 @@ import { ArenaQuestion } from '../../types';
 import { generateQuestionsByTopic, parseArenaQuestionsFromText } from '../../services/geminiService';
 import { Brain, Plus, Pencil, Trash2, Save, X, BookOpen, Filter, ArrowLeft, Upload, Download, FileText, CheckCircle, AlertTriangle, Sparkles, Loader2, Trophy, Search } from 'lucide-react';
 import MathText from '../../components/MathText';
+import { ArenaStatsDashboard } from './ArenaStatsDashboard';
 
 const SUBJECTS = [
     { value: 'math', label: '📐 Toán' },
@@ -43,6 +44,7 @@ export const ArenaAdmin: React.FC = () => {
 
     const [loading, setLoading] = useState(true);
     const [loadingMore, setLoadingMore] = useState(false);
+    const [activeTab, setActiveTab] = useState<'questions' | 'stats'>('questions');
 
     // Custom Topics States
     const [showTopicManager, setShowTopicManager] = useState(false);
@@ -1379,31 +1381,35 @@ export const ArenaAdmin: React.FC = () => {
                     </div>
                 </div>
                 <div className="flex gap-2 flex-wrap">
-                    <button onClick={() => setShowAiGen(true)} className="px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-xl font-bold text-sm hover:shadow-lg flex items-center gap-2 transition-all hover:scale-105 active:scale-95">
-                        <Sparkles className="h-4 w-4" /> AI Tạo
-                    </button>
-                    <button onClick={() => { setShowAiScan(true); setAiScanText(''); }} className="px-4 py-2 bg-gradient-to-r from-purple-500 to-indigo-600 text-white rounded-xl font-bold text-sm hover:shadow-lg flex items-center gap-2 transition-all hover:scale-105 active:scale-95">
-                        <FileText className="h-4 w-4" /> Nhập từ Word / Văn bản
-                    </button>
-                    <button onClick={() => { setShowBankImport(true); setImportResult(null); }} className="px-4 py-2 bg-indigo-50 text-indigo-700 rounded-xl font-bold text-sm hover:bg-indigo-100 flex items-center gap-2 transition-colors">
-                        <BookOpen className="h-4 w-4" /> Lấy từ Ngân hàng đề
-                    </button>
-                    <button onClick={() => setShowImport(true)} className="px-4 py-2 bg-emerald-50 text-emerald-700 rounded-xl font-bold text-sm hover:bg-emerald-100 flex items-center gap-2 transition-colors">
-                        <Upload className="h-4 w-4" /> Nhập CSV
-                    </button>
-                    <button onClick={handleExportCSV} className="px-4 py-2 bg-blue-50 text-blue-700 rounded-xl font-bold text-sm hover:bg-blue-100 flex items-center gap-2 transition-colors">
-                        <Download className="h-4 w-4" /> Xuất CSV
-                    </button>
-                    <button onClick={openNew} className="px-4 py-2 bg-indigo-600 text-white rounded-xl font-bold text-sm hover:bg-indigo-700 flex items-center gap-2 shadow-md shadow-indigo-100 hover:scale-105 active:scale-95 transition-all">
-                        <Plus className="h-4 w-4" /> Thêm câu hỏi
-                    </button>
+                    {activeTab === 'questions' && (
+                        <>
+                            <button onClick={() => setShowAiGen(true)} className="px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-xl font-bold text-sm hover:shadow-lg flex items-center gap-2 transition-all hover:scale-105 active:scale-95">
+                                <Sparkles className="h-4 w-4" /> AI Tạo
+                            </button>
+                            <button onClick={() => { setShowAiScan(true); setAiScanText(''); }} className="px-4 py-2 bg-gradient-to-r from-purple-500 to-indigo-600 text-white rounded-xl font-bold text-sm hover:shadow-lg flex items-center gap-2 transition-all hover:scale-105 active:scale-95">
+                                <FileText className="h-4 w-4" /> Nhập từ Word / Văn bản
+                            </button>
+                            <button onClick={() => { setShowBankImport(true); setImportResult(null); }} className="px-4 py-2 bg-indigo-50 text-indigo-700 rounded-xl font-bold text-sm hover:bg-indigo-100 flex items-center gap-2 transition-colors">
+                                <BookOpen className="h-4 w-4" /> Lấy từ Ngân hàng đề
+                            </button>
+                            <button onClick={() => setShowImport(true)} className="px-4 py-2 bg-emerald-50 text-emerald-700 rounded-xl font-bold text-sm hover:bg-emerald-100 flex items-center gap-2 transition-colors">
+                                <Upload className="h-4 w-4" /> Nhập CSV
+                            </button>
+                            <button onClick={handleExportCSV} className="px-4 py-2 bg-blue-50 text-blue-700 rounded-xl font-bold text-sm hover:bg-blue-100 flex items-center gap-2 transition-colors">
+                                <Download className="h-4 w-4" /> Xuất CSV
+                            </button>
+                            <button onClick={openNew} className="px-4 py-2 bg-indigo-600 text-white rounded-xl font-bold text-sm hover:bg-indigo-700 flex items-center gap-2 shadow-md shadow-indigo-100 hover:scale-105 active:scale-95 transition-all">
+                                <Plus className="h-4 w-4" /> Thêm câu hỏi
+                            </button>
+                            <button onClick={() => setShowTopicManager(true)} className="px-4 py-2 bg-purple-50 text-purple-700 rounded-xl font-bold text-sm hover:bg-purple-100 flex items-center gap-2 transition-colors">
+                                <BookOpen className="h-4 w-4" /> Quản lý chuyên đề
+                            </button>
+                        </>
+                    )}
                     <button onClick={() => navigate('/arena/tournament/host')} className="px-4 py-2 bg-amber-500 text-white rounded-xl font-bold text-sm hover:bg-amber-600 flex items-center gap-2 shadow-md transition-all hover:scale-105">
                         <Trophy className="h-4 w-4" /> Tổ chức Giải đấu
                     </button>
-                    <button onClick={() => setShowTopicManager(true)} className="px-4 py-2 bg-purple-50 text-purple-700 rounded-xl font-bold text-sm hover:bg-purple-100 flex items-center gap-2 transition-colors">
-                        <BookOpen className="h-4 w-4" /> Quản lý chuyên đề
-                    </button>
-                    {selectedIds.size > 0 && (
+                    {activeTab === 'questions' && selectedIds.size > 0 && (
                         <button
                             onClick={() => setBulkDeleteConfirm(true)}
                             className="px-4 py-2 bg-red-600 text-white rounded-xl font-bold text-sm hover:bg-red-700 flex items-center gap-2 shadow-md animate-in slide-in-from-right"
@@ -1414,8 +1420,30 @@ export const ArenaAdmin: React.FC = () => {
                 </div>
             </div>
 
-            {/* B2: Thống kê nhanh */}
-            <div className="grid grid-cols-2 sm:grid-cols-5 gap-4 mb-6">
+            {/* Tabs Selector */}
+            <div className="flex border-b mb-6 gap-6 text-sm font-semibold">
+                <button 
+                    onClick={() => setActiveTab('questions')} 
+                    className={`pb-3 relative transition-all ${activeTab === 'questions' ? 'text-indigo-600 font-bold' : 'text-gray-400 hover:text-gray-600'}`}
+                >
+                    {activeTab === 'questions' && <span className="absolute bottom-0 left-0 w-full h-0.5 bg-indigo-600 rounded-t-full" />}
+                    📚 Ngân Hàng Câu Hỏi
+                </button>
+                <button 
+                    onClick={() => setActiveTab('stats')} 
+                    className={`pb-3 relative transition-all ${activeTab === 'stats' ? 'text-indigo-600 font-bold' : 'text-gray-400 hover:text-gray-600'}`}
+                >
+                    {activeTab === 'stats' && <span className="absolute bottom-0 left-0 w-full h-0.5 bg-indigo-600 rounded-t-full" />}
+                    📊 Thống Kê Kết Quả
+                </button>
+            </div>
+
+            {activeTab === 'stats' ? (
+                <ArenaStatsDashboard />
+            ) : (
+                <>
+                    {/* B2: Thống kê nhanh */}
+                    <div className="grid grid-cols-2 sm:grid-cols-5 gap-4 mb-6">
                 <div className="bg-white rounded-2xl border p-4 shadow-sm text-center">
                     <div className="text-3xl font-black text-indigo-600">{arenaTotalCount}</div>
                     <div className="text-xs text-gray-500 font-bold uppercase tracking-wider mt-1">Tổng câu hỏi</div>
@@ -1623,6 +1651,8 @@ export const ArenaAdmin: React.FC = () => {
                         {loadingMore ? <><Loader2 className="h-4 w-4 animate-spin" /> Đang tải...</> : 'Tải thêm câu hỏi'}
                     </button>
                 </div>
+            )}
+                </>
             )}
 
             {/* Bulk Delete Confirm */}
