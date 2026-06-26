@@ -308,97 +308,102 @@ export const TeacherDashboard: React.FC = () => {
       </div>
 
       {/* 2. STATS CARDS SECTION WITH GRADIENT ACCENTS */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {[
-          { icon: Users, label: 'Tổng số Học sinh', value: teacherStudentsCount, color: 'from-emerald-500 to-teal-600', bg: 'from-emerald-50 to-white', border: 'border-emerald-100', text: 'text-emerald-950', iconColor: 'text-emerald-600' },
-          { icon: BookOpen, label: 'Bài tập đã tạo', value: filteredExams.length, color: 'from-blue-500 to-indigo-600', bg: 'from-blue-50 to-white', border: 'border-blue-100', text: 'text-blue-950', iconColor: 'text-blue-600' },
-          { icon: TrendingUp, label: 'Tổng lượt nộp bài', value: totalAttemptsCount, color: 'from-indigo-500 to-purple-600', bg: 'from-indigo-50 to-white', border: 'border-indigo-100', text: 'text-indigo-950', iconColor: 'text-indigo-600' },
-          { icon: BookOpen, label: 'Kho tài liệu & Web', value: filteredResources.length, color: 'from-amber-500 to-orange-600', bg: 'from-amber-50 to-white', border: 'border-amber-100', text: 'text-amber-950', iconColor: 'text-amber-600' }
+          { icon: Users, label: 'Tổng số Học sinh', value: teacherStudentsCount, color: 'from-emerald-500 to-teal-600', text: 'text-emerald-950 dark:text-emerald-300', bg: 'bg-emerald-50/30 dark:bg-emerald-950/10 border-emerald-100/60 dark:border-emerald-900/20' },
+          { icon: BookOpen, label: 'Bài tập đã tạo', value: filteredExams.length, color: 'from-blue-500 to-indigo-600', text: 'text-blue-950 dark:text-blue-300', bg: 'bg-blue-50/30 dark:bg-blue-950/10 border-blue-100/60 dark:border-blue-900/20' },
+          { icon: TrendingUp, label: 'Tổng lượt nộp bài', value: totalAttemptsCount, color: 'from-indigo-500 to-purple-600', text: 'text-indigo-950 dark:text-indigo-300', bg: 'bg-indigo-50/30 dark:bg-indigo-950/10 border-indigo-100/60 dark:border-indigo-900/20' },
+          { icon: BookOpen, label: 'Kho tài liệu & Web', value: filteredResources.length, color: 'from-amber-500 to-orange-600', text: 'text-amber-950 dark:text-amber-300', bg: 'bg-amber-50/30 dark:bg-amber-950/10 border-amber-100/60 dark:border-amber-900/20' }
         ].map((card, i) => (
-          <div key={i} className={`bg-gradient-to-br ${card.bg} p-5 rounded-2xl border ${card.border} shadow-xs relative overflow-hidden group hover:shadow-md transition-all duration-300`}>
-            <div className={`absolute top-0 right-0 w-16 h-16 bg-gradient-to-br ${card.color} opacity-5 rounded-bl-full group-hover:scale-110 transition-transform duration-300`} />
-            <div className="flex justify-between items-start mb-2">
-              <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">{card.label}</span>
-              <div className={`p-2 rounded-xl bg-white shadow-xs ${card.iconColor}`}>
-                <card.icon className="h-4.5 w-4.5 group-hover:rotate-12 transition-transform" />
-              </div>
+          <div key={i} className={`flex items-center gap-4 bg-white dark:bg-slate-900 p-4.5 rounded-2xl border dark:border-slate-800 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 ${card.bg}`}>
+            <div className={`p-3 rounded-2xl bg-gradient-to-br ${card.color} text-white shadow-sm flex-shrink-0`}>
+              <card.icon className="h-5 w-5" />
             </div>
-            <div className={`text-2xl font-black ${card.text}`}>{card.value}</div>
-            <div className="text-[10px] text-gray-400 mt-1">Dữ liệu cập nhật liên tục</div>
+            <div>
+              <p className="text-xs font-semibold text-gray-500 dark:text-slate-400">{card.label}</p>
+              <h4 className="text-xl font-extrabold text-gray-900 dark:text-slate-100 mt-0.5">{card.value}</h4>
+            </div>
           </div>
         ))}
       </div>
 
       {/* 3. INTERACTIVE SHORTCUT HUBS */}
       <div className="space-y-4">
-        <h2 className="text-xs font-black text-gray-400 uppercase tracking-widest">Trung tâm tiện ích giáo viên (Management Hubs)</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="flex items-center gap-2">
+          <div className="w-1 h-5 bg-indigo-600 dark:bg-indigo-400 rounded-full"></div>
+          <h2 className="text-base font-bold text-gray-900 dark:text-slate-100">Trung tâm tiện ích giáo viên (Management Hubs)</h2>
+        </div>
+        
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           
           {/* Hub 1: Student Portfolio */}
           <button
             onClick={() => setIsStudentListModalOpen(true)}
-            className="text-left bg-white p-6 rounded-3xl border border-gray-100 shadow-sm relative overflow-hidden group hover:border-indigo-200 hover:shadow-lg hover:shadow-indigo-50/40 transition-all duration-300 flex flex-col justify-between h-48"
+            className="text-left bg-gradient-to-br from-indigo-50/50 to-white dark:from-indigo-950/10 dark:to-slate-900/60 p-6 rounded-3xl border border-indigo-100/60 dark:border-indigo-950/40 shadow-sm relative overflow-hidden group hover:border-indigo-300 hover:shadow-lg hover:shadow-indigo-100/20 dark:hover:shadow-none hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between h-48"
           >
-            <div className="absolute top-0 right-0 w-24 h-24 bg-indigo-50 rounded-bl-full group-hover:scale-110 transition-all duration-300" />
-            <div className="p-3 bg-indigo-50 rounded-2xl text-indigo-600 w-fit relative z-10">
+            <div className="absolute top-0 right-0 w-24 h-24 bg-indigo-500/5 rounded-bl-full group-hover:scale-120 transition-all duration-300" />
+            <div className="p-3 bg-indigo-100 dark:bg-indigo-950/60 rounded-2xl text-indigo-600 dark:text-indigo-400 w-fit relative z-10">
               <Users className="h-6 w-6" />
             </div>
             <div className="space-y-1.5 relative z-10">
-              <h3 className="font-extrabold text-gray-900 group-hover:text-indigo-600 transition-colors text-base flex items-center gap-1.5">
+              <h3 className="font-extrabold text-indigo-950 dark:text-indigo-300 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors text-base flex items-center gap-1.5">
                 Hồ Sơ Học Sinh <ChevronRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
               </h3>
-              <p className="text-xs text-gray-500 leading-relaxed">Xem nhanh chi tiết kết quả học tập, điểm thi đua và quá trình rèn luyện cá nhân.</p>
+              <p className="text-xs text-gray-500 dark:text-slate-400 leading-relaxed line-clamp-2">Xem chi tiết kết quả học tập, điểm thi đua và quá trình rèn luyện cá nhân.</p>
             </div>
           </button>
 
           {/* Hub 2: Learning Analytics */}
           <Link
             to="/teacher/analytics"
-            className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm relative overflow-hidden group hover:border-purple-200 hover:shadow-lg hover:shadow-purple-50/40 transition-all duration-300 flex flex-col justify-between h-48"
+            className="bg-gradient-to-br from-purple-50/50 to-white dark:from-purple-950/10 dark:to-slate-900/60 p-6 rounded-3xl border border-purple-100/60 dark:border-purple-950/40 shadow-sm relative overflow-hidden group hover:border-purple-300 hover:shadow-lg hover:shadow-purple-100/20 dark:hover:shadow-none hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between h-48"
           >
-            <div className="absolute top-0 right-0 w-24 h-24 bg-purple-50 rounded-bl-full group-hover:scale-110 transition-all duration-300" />
-            <div className="p-3 bg-purple-50 rounded-2xl text-purple-600 w-fit relative z-10">
-              <BarChart3 className="h-6 w-6" />
+            <div className="absolute top-0 right-0 w-24 h-24 bg-purple-500/5 rounded-bl-full group-hover:scale-120 transition-all duration-300" />
+            <div className="flex justify-between items-start relative z-10 w-full">
+              <div className="p-3 bg-purple-100 dark:bg-purple-950/60 rounded-2xl text-purple-600 dark:text-purple-400 w-fit">
+                <BarChart3 className="h-6 w-6" />
+              </div>
+              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300 animate-pulse">Trí Tuệ Nhân Tạo</span>
             </div>
             <div className="space-y-1.5 relative z-10">
-              <h3 className="font-extrabold text-gray-900 group-hover:text-purple-600 transition-colors text-base flex items-center gap-1.5">
+              <h3 className="font-extrabold text-purple-950 dark:text-purple-300 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors text-base flex items-center gap-1.5">
                 Phân Tích Học Tập AI <ChevronRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
               </h3>
-              <p className="text-xs text-gray-500 leading-relaxed">Báo cáo điểm mạnh/yếu, phân tích phổ điểm thi cử và g gợi ý sư phạm tự động từ AI.</p>
+              <p className="text-xs text-gray-500 dark:text-slate-400 leading-relaxed line-clamp-2">Báo cáo điểm mạnh/yếu, phân tích phổ điểm thi cử từ AI.</p>
             </div>
           </Link>
 
           {/* Hub 3: Class Competition */}
           <Link
             to="/teacher/class-fun"
-            className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm relative overflow-hidden group hover:border-emerald-200 hover:shadow-lg hover:shadow-emerald-50/40 transition-all duration-300 flex flex-col justify-between h-48"
+            className="bg-gradient-to-br from-emerald-50/50 to-white dark:from-emerald-950/10 dark:to-slate-900/60 p-6 rounded-3xl border border-emerald-100/60 dark:border-emerald-950/40 shadow-sm relative overflow-hidden group hover:border-emerald-300 hover:shadow-lg hover:shadow-emerald-100/20 dark:hover:shadow-none hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between h-48"
           >
-            <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-50 rounded-bl-full group-hover:scale-110 transition-all duration-300" />
-            <div className="p-3 bg-emerald-50 rounded-2xl text-emerald-600 w-fit relative z-10">
+            <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/5 rounded-bl-full group-hover:scale-120 transition-all duration-300" />
+            <div className="p-3 bg-emerald-100 dark:bg-emerald-950/60 rounded-2xl text-emerald-600 dark:text-emerald-400 w-fit relative z-10">
               <Trophy className="h-6 w-6" />
             </div>
             <div className="space-y-1.5 relative z-10">
-              <h3 className="font-extrabold text-gray-900 group-hover:text-emerald-600 transition-colors text-base flex items-center gap-1.5">
+              <h3 className="font-extrabold text-emerald-950 dark:text-emerald-300 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors text-base flex items-center gap-1.5">
                 Thi Đua Lớp Học <ChevronRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
               </h3>
-              <p className="text-xs text-gray-500 leading-relaxed">Quản lý điểm cộng/trừ rèn luyện của học sinh, điểm danh và thống kê kinh nghiệm XP lớp học.</p>
+              <p className="text-xs text-gray-500 dark:text-slate-400 leading-relaxed line-clamp-2">Quản lý điểm cộng/trừ rèn luyện, điểm danh và kinh nghiệm XP lớp học.</p>
             </div>
           </Link>
 
           {/* Hub 4: Notebook */}
           <Link
             to="/teacher/notes"
-            className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm relative overflow-hidden group hover:border-amber-200 hover:shadow-lg hover:shadow-amber-50/40 transition-all duration-300 flex flex-col justify-between h-48"
+            className="bg-gradient-to-br from-amber-50/50 to-white dark:from-amber-950/10 dark:to-slate-900/60 p-6 rounded-3xl border border-amber-100/60 dark:border-amber-950/40 shadow-sm relative overflow-hidden group hover:border-amber-300 hover:shadow-lg hover:shadow-amber-100/20 dark:hover:shadow-none hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between h-48"
           >
-            <div className="absolute top-0 right-0 w-24 h-24 bg-amber-50 rounded-bl-full group-hover:scale-110 transition-all duration-300" />
-            <div className="p-3 bg-amber-50 rounded-2xl text-amber-600 w-fit relative z-10">
+            <div className="absolute top-0 right-0 w-24 h-24 bg-amber-500/5 rounded-bl-full group-hover:scale-120 transition-all duration-300" />
+            <div className="p-3 bg-amber-100 dark:bg-amber-950/60 rounded-2xl text-amber-600 dark:text-amber-400 w-fit relative z-10">
               <StickyNote className="h-6 w-6" />
             </div>
             <div className="space-y-1.5 relative z-10">
-              <h3 className="font-extrabold text-gray-900 group-hover:text-amber-600 transition-colors text-base flex items-center gap-1.5">
+              <h3 className="font-extrabold text-amber-950 dark:text-amber-300 group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors text-base flex items-center gap-1.5">
                 Sổ Tay Sư Phạm <ChevronRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
               </h3>
-              <p className="text-xs text-gray-500 leading-relaxed">Không gian ghi chú kế hoạch giảng dạy, nhắc nhở công việc họp và ghim danh sách việc cần làm.</p>
+              <p className="text-xs text-gray-500 dark:text-slate-400 leading-relaxed line-clamp-2">Ghi chú kế hoạch giảng dạy, nhắc nhở công việc họp và ghim việc cần làm.</p>
             </div>
           </Link>
 
@@ -409,22 +414,22 @@ export const TeacherDashboard: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
         {/* Timeline Block */}
-        <div className="bg-white p-6 rounded-3xl border shadow-sm lg:col-span-2">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="font-extrabold text-gray-900 text-base flex items-center gap-2">
-              <Clock className="h-5 w-5 text-indigo-500" /> Hoạt động gần đây {user?.role === 'ADMIN' ? '(Toàn hệ thống)' : '(Lớp của bạn)'}
+        <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border dark:border-slate-800 shadow-sm lg:col-span-2">
+          <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-3 mb-6">
+            <h2 className="font-extrabold text-gray-900 dark:text-slate-100 text-base flex items-center gap-2">
+              <Clock className="h-5 w-5 text-indigo-500 dark:text-indigo-400" /> Hoạt động gần đây {user?.role === 'ADMIN' ? '(Toàn hệ thống)' : '(Lớp của bạn)'}
             </h2>
             <div className="flex gap-2">
               <button 
                 onClick={handleExportActivities}
-                className="flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-gray-600 bg-gray-50 border rounded-xl hover:bg-gray-100 active:scale-95 transition-all"
+                className="flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-gray-600 dark:text-slate-350 bg-gray-50 dark:bg-slate-800 border dark:border-slate-700 rounded-xl hover:bg-gray-100 dark:hover:bg-slate-750 active:scale-95 transition-all"
                 title="Xuất danh sách ra CSV"
               >
                 <Download className="h-3.5 w-3.5" /> Xuất file
               </button>
               <button 
                 onClick={() => setShowAllActivities(true)}
-                className="flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-indigo-600 bg-indigo-50 border border-indigo-100 rounded-xl hover:bg-indigo-100 active:scale-95 transition-all"
+                className="flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-100 dark:border-indigo-900/50 rounded-xl hover:bg-indigo-100 dark:hover:bg-indigo-950/60 active:scale-95 transition-all"
               >
                 <List className="h-3.5 w-3.5" /> Xem toàn bộ
               </button>
@@ -440,37 +445,37 @@ export const TeacherDashboard: React.FC = () => {
                   key={act.id} 
                   className={`p-4 rounded-2xl border transition-all duration-300 hover:shadow-md flex flex-col justify-between
                     ${isExam 
-                      ? 'bg-gradient-to-br from-blue-50/30 to-white border-blue-100/60 hover:border-blue-200' 
-                      : 'bg-gradient-to-br from-emerald-50/30 to-white border-emerald-100/60 hover:border-emerald-200'
+                      ? 'bg-gradient-to-br from-blue-50/30 to-white dark:from-blue-950/10 dark:to-slate-900 border-blue-100/60 dark:border-blue-900/30 hover:border-blue-200 dark:hover:border-blue-800' 
+                      : 'bg-gradient-to-br from-emerald-50/30 to-white dark:from-emerald-950/10 dark:to-slate-900 border-emerald-100/60 dark:border-emerald-900/30 hover:border-emerald-200 dark:hover:border-emerald-800'
                     }`}
                 >
                   <div className="flex gap-3 items-start">
                     <div className={`p-2 rounded-xl shrink-0
-                      ${isExam ? 'bg-blue-100/80 text-blue-600' : 'bg-emerald-100/80 text-emerald-600'}`}>
+                      ${isExam ? 'bg-blue-100/80 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400' : 'bg-emerald-100/80 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400'}`}>
                       {isExam ? <BookOpen className="h-4.5 w-4.5" /> : <CheckCircle className="h-4.5 w-4.5" />}
                     </div>
                     <div className="space-y-1">
                       <span className={`text-[9px] px-2 py-0.5 rounded-md font-extrabold uppercase tracking-wider
-                        ${isExam ? 'bg-blue-100/50 text-blue-700' : 'bg-emerald-100/50 text-emerald-700'}`}>
+                        ${isExam ? 'bg-blue-100/50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300' : 'bg-emerald-100/50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-300'}`}>
                         {isExam ? 'Bài tập mới' : 'Nộp bài'}
                       </span>
-                      <h4 className="text-sm font-bold text-gray-800 line-clamp-2 leading-snug pt-1">
+                      <h4 className="text-sm font-bold text-gray-800 dark:text-slate-200 line-clamp-2 leading-snug pt-1">
                         {act.title}
                       </h4>
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-between mt-3 pt-2.5 border-t border-gray-100/60 text-gray-400 text-[10px] font-medium">
+                  <div className="flex items-center justify-between mt-3 pt-2.5 border-t border-gray-100/60 dark:border-slate-800 text-gray-400 dark:text-slate-500 text-[10px] font-medium">
                     <span className="flex items-center gap-1">
                       <Clock className="h-3 w-3" /> {getTimeAgo(act.time)}
                     </span>
-                    <span className="text-indigo-500 font-bold hover:underline cursor-pointer">Chi tiết</span>
+                    <span className="text-indigo-500 dark:text-indigo-400 font-bold hover:underline cursor-pointer">Chi tiết</span>
                   </div>
                 </div>
               );
             })}
             {recentActivities.length === 0 && (
-              <div className="col-span-full text-center py-8 text-gray-400 italic text-sm">
+              <div className="col-span-full text-center py-8 text-gray-400 dark:text-slate-500 italic text-sm">
                 Hệ thống chưa phát sinh hoạt động nào trong khoảng thời gian đã chọn.
               </div>
             )}
@@ -481,9 +486,9 @@ export const TeacherDashboard: React.FC = () => {
         <div className="space-y-6">
           
           {/* Quick Stats Widget */}
-          <div className="bg-gradient-to-r from-violet-600 via-indigo-600 to-indigo-700 p-6 rounded-3xl text-white relative overflow-hidden shadow-md">
+          <div className="bg-gradient-to-r from-violet-650 via-indigo-600 to-indigo-700 p-6 rounded-3xl text-white relative overflow-hidden shadow-md">
             <div className="absolute top-0 right-0 w-[150px] h-[150px] bg-white/5 rounded-full -translate-y-1/2 translate-x-1/3 blur-xl pointer-events-none" />
-            <h3 className="font-extrabold text-sm uppercase tracking-wider text-violet-200">Trợ Lý Sư Phạm AI</h3>
+            <h3 className="font-extrabold text-sm uppercase tracking-wider text-violet-250 dark:text-violet-200">Trợ Lý Sư Phạm AI</h3>
             <p className="text-xs text-indigo-50 mt-3 leading-relaxed">
               Bạn có thể sử dụng tính năng **Phân tích Học tập** hoặc tính năng **Chấm bài tự động AI** để giảm bớt 70% thời gian chấm bài viết tay và nhận xét học bạ định kỳ cho học sinh.
             </p>
@@ -496,7 +501,7 @@ export const TeacherDashboard: React.FC = () => {
               </Link>
               <Link 
                 to="/teacher/analytics" 
-                className="bg-white text-indigo-700 hover:bg-indigo-50 px-3.5 py-2 rounded-xl text-xs font-bold transition-all text-center flex-1 shadow-md"
+                className="bg-white text-indigo-750 hover:bg-indigo-50 px-3.5 py-2 rounded-xl text-xs font-bold transition-all text-center flex-1 shadow-md"
               >
                 Xem Phân Tích
               </Link>
@@ -504,14 +509,14 @@ export const TeacherDashboard: React.FC = () => {
           </div>
 
           {/* Quick Info Widget */}
-          <div className="bg-white p-6 rounded-3xl border shadow-sm">
-            <h3 className="font-extrabold text-gray-800 text-sm flex items-center gap-2">
-              <Calendar className="h-4.5 w-4.5 text-indigo-500" /> Trạng thái Đồng bộ
+          <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border dark:border-slate-800 shadow-sm">
+            <h3 className="font-extrabold text-gray-800 dark:text-slate-200 text-sm flex items-center gap-2">
+              <Calendar className="h-4.5 w-4.5 text-indigo-500 dark:text-indigo-400" /> Trạng thái Đồng bộ
             </h3>
             <div className="mt-4 space-y-3.5">
               <div className="flex justify-between items-center text-xs">
-                <span className="text-gray-500 font-medium">Kết nối Supabase</span>
-                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 font-bold border border-emerald-100">
+                <span className="text-gray-500 dark:text-slate-400 font-medium">Kết nối Supabase</span>
+                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 font-bold border border-emerald-100 dark:border-emerald-900/30">
                   <span className="h-1.5 w-1.5 bg-emerald-500 rounded-full animate-ping" /> Trực tuyến
                 </span>
               </div>
