@@ -14,8 +14,8 @@ async function testFullLogin() {
   console.log("Testing full auth flow...");
   
   const { data: authData, error: authErr } = await supabase.auth.signInWithPassword({
-    email: 'chauphan@gmail.com',
-    password: 'ChauPhan@2026!'
+    email: 'bo4a@openlms.edu',
+    password: '123456'
   });
 
   if (authErr) {

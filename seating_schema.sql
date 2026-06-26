@@ -32,4 +32,30 @@ DROP POLICY IF EXISTS "Allow all update access" ON public.class_seating_charts;
 DROP POLICY IF EXISTS "Allow all delete access" ON public.class_seating_charts;
 
 CREATE POLICY "Authenticated read access" ON public.class_seating_charts FOR SELECT TO authenticated USING (true);
-CREATE POLICY "Teacher full access" ON public.class_seating_charts FOR ALL TO authenticated USING (true) WITH CHECK (true);
+CREATE POLICY "Teacher write access" ON public.class_seating_charts FOR INSERT TO authenticated WITH CHECK (
+    EXISTS (
+        SELECT 1 FROM public.profiles 
+        WHERE id = auth.uid()::text 
+        AND role IN ('TEACHER', 'ADMIN')
+    )
+);
+CREATE POLICY "Teacher update access" ON public.class_seating_charts FOR UPDATE TO authenticated USING (
+    EXISTS (
+        SELECT 1 FROM public.profiles 
+        WHERE id = auth.uid()::text 
+        AND role IN ('TEACHER', 'ADMIN')
+    )
+) WITH CHECK (
+    EXISTS (
+        SELECT 1 FROM public.profiles 
+        WHERE id = auth.uid()::text 
+        AND role IN ('TEACHER', 'ADMIN')
+    )
+);
+CREATE POLICY "Teacher delete access" ON public.class_seating_charts FOR DELETE TO authenticated USING (
+    EXISTS (
+        SELECT 1 FROM public.profiles 
+        WHERE id = auth.uid()::text 
+        AND role IN ('TEACHER', 'ADMIN')
+    )
+);

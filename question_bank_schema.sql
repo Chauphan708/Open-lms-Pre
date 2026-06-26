@@ -28,11 +28,35 @@ CREATE TABLE public.question_bank (
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- 4. TẠM THỜI TẮT RLS ĐỂ KIỂM TRA (DISABLE RLS)
--- Việc này sẽ giúp chúng ta xác định lỗi 401/42501 là do Auth hay RLS
-ALTER TABLE public.question_bank DISABLE ROW LEVEL SECURITY;
+-- 4. Bật RLS
+ALTER TABLE public.question_bank ENABLE ROW LEVEL SECURITY;
 
--- 5. Cấp quyền truy cập cho mọi vai trò (An toàn cho việc test)
-GRANT ALL ON public.question_bank TO anon;
-GRANT ALL ON public.question_bank TO authenticated;
-GRANT ALL ON public.question_bank TO service_role;
+-- 5. Thiết lập chính sách bảo mật
+CREATE POLICY "Authenticated read access" ON public.question_bank FOR SELECT TO authenticated USING (true);
+CREATE POLICY "Teacher write access" ON public.question_bank FOR INSERT TO authenticated WITH CHECK (
+    EXISTS (
+        SELECT 1 FROM public.profiles 
+        WHERE id = auth.uid()::text 
+        AND role IN ('TEACHER', 'ADMIN')
+    )
+);
+CREATE POLICY "Teacher update access" ON public.question_bank FOR UPDATE TO authenticated USING (
+    EXISTS (
+        SELECT 1 FROM public.profiles 
+        WHERE id = auth.uid()::text 
+        AND role IN ('TEACHER', 'ADMIN')
+    )
+) WITH CHECK (
+    EXISTS (
+        SELECT 1 FROM public.profiles 
+        WHERE id = auth.uid()::text 
+        AND role IN ('TEACHER', 'ADMIN')
+    )
+);
+CREATE POLICY "Teacher delete access" ON public.question_bank FOR DELETE TO authenticated USING (
+    EXISTS (
+        SELECT 1 FROM public.profiles 
+        WHERE id = auth.uid()::text 
+        AND role IN ('TEACHER', 'ADMIN')
+    )
+);

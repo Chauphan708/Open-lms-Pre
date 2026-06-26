@@ -22,10 +22,10 @@ async function check() {
   const { data: chauphan, error: errC } = await supabase
     .from('profiles')
     .select('*')
-    .eq('email', 'chauphan@gmail.com')
+    .eq('email', 'bo4a@openlms.edu')
     .maybeSingle();
 
-  console.log("ChauPhan Profile:", chauphan, "Error:", errC);
+  console.log("bo4a Profile:", chauphan, "Error:", errC);
 }
 
 check();

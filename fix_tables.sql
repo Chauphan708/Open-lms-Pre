@@ -20,8 +20,35 @@ CREATE TABLE IF NOT EXISTS public.question_bank (
 -- Bật RLS
 ALTER TABLE public.question_bank ENABLE ROW LEVEL SECURITY;
 
--- Policy công khai cho phép đọc/ghi (Bạn có thể tinh chỉnh sau)
-CREATE POLICY "Public access" ON public.question_bank FOR ALL USING (true) WITH CHECK (true);
+-- Policy bảo mật cho phép tất cả tài khoản đọc, nhưng chỉ giáo viên/admin được sửa đổi
+CREATE POLICY "Authenticated read access" ON public.question_bank FOR SELECT TO authenticated USING (true);
+CREATE POLICY "Teacher write access" ON public.question_bank FOR INSERT TO authenticated WITH CHECK (
+    EXISTS (
+        SELECT 1 FROM public.profiles 
+        WHERE id = auth.uid()::text 
+        AND role IN ('TEACHER', 'ADMIN')
+    )
+);
+CREATE POLICY "Teacher update access" ON public.question_bank FOR UPDATE TO authenticated USING (
+    EXISTS (
+        SELECT 1 FROM public.profiles 
+        WHERE id = auth.uid()::text 
+        AND role IN ('TEACHER', 'ADMIN')
+    )
+) WITH CHECK (
+    EXISTS (
+        SELECT 1 FROM public.profiles 
+        WHERE id = auth.uid()::text 
+        AND role IN ('TEACHER', 'ADMIN')
+    )
+);
+CREATE POLICY "Teacher delete access" ON public.question_bank FOR DELETE TO authenticated USING (
+    EXISTS (
+        SELECT 1 FROM public.profiles 
+        WHERE id = auth.uid()::text 
+        AND role IN ('TEACHER', 'ADMIN')
+    )
+);
 
 -- Cập nhật bảng attempts (Nếu thiếu các cột mới)
 ALTER TABLE public.attempts ADD COLUMN IF NOT EXISTS total_time_spent_sec INTEGER;

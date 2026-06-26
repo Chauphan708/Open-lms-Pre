@@ -11,8 +11,9 @@ const supabaseKey = keyMatch ? keyMatch[1].trim() : '';
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 async function checkColumns() {
-  const { data, error } = await supabase.rpc('get_identities_columns'); // If we have an RPC, otherwise query information_schema via SQL?
-  // Since we can't query information_schema directly via client unless we have a helper or we just run a query.
-  // Wait! Let's write a generic SQL executor or just query a public table.
-  // Wait, let's check if we can query it using supabase.from() with a custom query? No, supabase client only supports table names.
+  const { data, error } = await supabase.rpc('get_identities_columns');
+  console.log("RPC get_identities_columns Data:", data);
+  console.log("RPC get_identities_columns Error:", error);
 }
+
+checkColumns();
