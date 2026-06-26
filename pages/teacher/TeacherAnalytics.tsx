@@ -146,7 +146,7 @@ const ComparisonView: React.FC<{
   }, [data, exams, questionBank, attempts]);
   
   return (
-    <div className="space-y-6 animate-in fade-in duration-500">
+    <div className="space-y-6 animate-in fade-in duration-500 text-gray-900 dark:text-slate-100">
       {/* Comparison Table */}
       <div className="bg-white rounded-2xl border shadow-sm overflow-hidden">
         <div className="p-6 border-b bg-gray-50/50">
@@ -157,7 +157,7 @@ const ComparisonView: React.FC<{
         <div className="overflow-x-auto">
           <table className="w-full text-left">
             <thead>
-              <tr className="bg-gray-50 text-gray-500 text-xs font-bold uppercase tracking-wider">
+              <tr className="bg-gray-50 dark:bg-slate-850 text-gray-505 dark:text-slate-400 text-xs font-bold uppercase tracking-wider">
                 <th className="px-6 py-4">Học sinh</th>
                 <th className="px-6 py-4 text-center">Số bài làm</th>
                 <th className="px-6 py-4 text-center">Điểm TB</th>
@@ -165,18 +165,18 @@ const ComparisonView: React.FC<{
                 <th className="px-6 py-4 text-center">Thứ hạng</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100">
+            <tbody className="divide-y divide-gray-100 dark:divide-slate-800">
               {data.map((item, i) => (
-                <tr key={i} className="hover:bg-gray-50/50 transition-colors">
+                <tr key={i} className="hover:bg-gray-50/50 dark:hover:bg-slate-850/50 transition-colors">
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">
-                      <div className="h-8 w-8 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold text-xs">
+                      <div className="h-8 w-8 rounded-full bg-indigo-100 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 flex items-center justify-center font-bold text-xs">
                         {item.student.name.charAt(0)}
                       </div>
-                      <div className="font-bold text-gray-900 text-sm">{item.student.name}</div>
+                      <div className="font-bold text-gray-900 dark:text-slate-100 text-sm">{item.student.name}</div>
                     </div>
                   </td>
-                  <td className="px-6 py-4 text-center text-sm font-medium text-gray-600">{item.stats.totalAttempts}</td>
+                  <td className="px-6 py-4 text-center text-sm font-medium text-gray-650 dark:text-slate-400">{item.stats.totalAttempts}</td>
                   <td className="px-6 py-4 text-center">
                     <span className={`px-3 py-1 rounded-full text-xs font-bold ${
                       item.stats.avgScore >= 8 ? 'bg-emerald-100 text-emerald-700' :
@@ -185,7 +185,7 @@ const ComparisonView: React.FC<{
                       {fmt(item.stats.avgScore)}
                     </span>
                   </td>
-                  <td className="px-6 py-4 text-center text-sm font-bold text-gray-700">{fmt(item.stats.maxScore)}</td>
+                  <td className="px-6 py-4 text-center text-sm font-bold text-gray-700 dark:text-slate-300">{fmt(item.stats.maxScore)}</td>
                   <td className="px-6 py-4 text-center text-sm font-medium text-gray-500">#{i + 1}</td>
                 </tr>
               ))}
@@ -197,10 +197,10 @@ const ComparisonView: React.FC<{
       {/* Grid of charts */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {data.map((item, i) => (
-          <div key={i} className="bg-white rounded-2xl border shadow-sm p-6 flex flex-col h-full">
-            <h3 className="font-bold text-gray-800 mb-4 flex items-center justify-between">
+          <div key={i} className="bg-white dark:bg-slate-900 rounded-2xl border dark:border-slate-800 shadow-sm p-6 flex flex-col h-full">
+            <h3 className="font-bold text-gray-800 dark:text-slate-200 mb-4 flex items-center justify-between">
               <span className="flex items-center gap-2"><Target className="h-4 w-4 text-indigo-400" /> {item.student.name}</span>
-              <span className="text-xs text-indigo-600 bg-indigo-50 px-2 py-1 rounded-lg">TB: {fmt(item.stats.avgScore)}</span>
+              <span className="text-xs text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/40 px-2 py-1 rounded-lg">TB: {fmt(item.stats.avgScore)}</span>
             </h3>
             <div className="flex-1">
                <ComboChart data={item.stats.chartData} />
@@ -211,24 +211,24 @@ const ComparisonView: React.FC<{
 
       {/* Group Recommendations */}
       {groupRecs.length > 0 && (
-        <div className="bg-white rounded-2xl border shadow-sm p-6 no-print">
+        <div className="bg-white dark:bg-slate-900 rounded-2xl border dark:border-slate-800 shadow-sm p-6 no-print">
           <h2 className="text-lg font-bold text-gray-800 mb-6 flex items-center gap-2">
             <Brain className="h-5 w-5 text-purple-500" /> Đề xuất bài tập can thiệp cho nhóm
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {groupRecs.map((gr, idx) => (
               <div key={idx} className="space-y-3">
-                <div className="flex items-center gap-2 border-b pb-2">
-                  <div className="h-6 w-6 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center text-[10px] font-bold">
+                <div className="flex items-center gap-2 border-b dark:border-slate-800 pb-2">
+                  <div className="h-6 w-6 rounded-full bg-purple-100 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 flex items-center justify-center text-[10px] font-bold">
                     {gr.student.name.charAt(0)}
                   </div>
-                  <span className="text-sm font-bold text-gray-700">{gr.student.name}</span>
+                  <span className="text-sm font-bold text-gray-700 dark:text-slate-300">{gr.student.name}</span>
                 </div>
                 {gr.recs.recommendedExams.slice(0, 2).map((rec, rIdx) => (
-                  <div key={rIdx} className="p-3 bg-gray-50 rounded-xl border border-gray-100 hover:border-purple-200 transition-all">
-                    <div className="text-xs font-bold text-gray-900 mb-1 line-clamp-1">{rec.exam.title}</div>
-                    <div className="text-[10px] text-purple-600 font-medium uppercase mb-1">{rec.exam.subject}</div>
-                    <div className="text-[10px] text-gray-500 italic line-clamp-2">"{rec.reasons[0]}"</div>
+                  <div key={rIdx} className="p-3 bg-gray-50 dark:bg-slate-950 rounded-xl border border-gray-100 dark:border-slate-850 hover:border-purple-200 dark:hover:border-purple-900/40 transition-all">
+                    <div className="text-xs font-bold text-gray-900 dark:text-slate-100 mb-1 line-clamp-1">{rec.exam.title}</div>
+                    <div className="text-[10px] text-purple-600 dark:text-purple-400 font-medium uppercase mb-1">{rec.exam.subject}</div>
+                    <div className="text-[10px] text-gray-500 dark:text-slate-400 italic line-clamp-2">"{rec.reasons[0]}"</div>
                   </div>
                 ))}
               </div>
@@ -477,11 +477,11 @@ const ArenaClassAnalytics: React.FC<{
             </h3>
             <div className="space-y-3">
               <div>
-                <div className="flex justify-between text-xs font-bold text-gray-500 mb-1">
+                <div className="flex justify-between text-xs font-bold text-gray-500 dark:text-slate-450 mb-1">
                   <span>Siêu Cấp (Elo &gt; 1200)</span>
                   <span>{dist.elite} HS</span>
                 </div>
-                <div className="w-full bg-gray-100 h-2.5 rounded-full overflow-hidden">
+                <div className="w-full bg-gray-100 dark:bg-slate-800 h-2.5 rounded-full overflow-hidden">
                   <div className="bg-amber-500 h-full rounded-full" style={{ width: `${students.length > 0 ? (dist.elite / students.length) * 100 : 0}%` }} />
                 </div>
               </div>
@@ -523,17 +523,17 @@ const ArenaClassAnalytics: React.FC<{
           </h3>
           <div className="space-y-3 max-h-[190px] overflow-y-auto pr-1 custom-scrollbar">
             {topicMasterySummary.length === 0 ? (
-              <div className="text-center text-xs text-gray-400 italic py-8">Lớp chưa tích lũy độ thành thạo chuyên đề nào.</div>
+              <div className="text-center text-xs text-gray-400 dark:text-slate-500 italic py-8">Lớp chưa tích lũy độ thành thạo chuyên đề nào.</div>
             ) : (
               topicMasterySummary.map(item => {
                 const isWeak = item.avg < 70;
                 return (
                   <div key={item.topic}>
-                    <div className="flex justify-between text-[11px] font-bold text-gray-600 mb-0.5">
+                    <div className="flex justify-between text-[11px] font-bold text-gray-650 dark:text-slate-400 mb-0.5">
                       <span className="truncate max-w-[70%]">{item.topic}</span>
                       <span className={isWeak ? "text-red-500" : "text-emerald-600"}>{item.avg}% Mastery</span>
                     </div>
-                    <div className="w-full bg-gray-100 h-2 rounded-full overflow-hidden">
+                    <div className="w-full bg-gray-100 dark:bg-slate-800 h-2 rounded-full overflow-hidden">
                       <div className={`h-full rounded-full ${isWeak ? 'bg-red-500' : 'bg-emerald-500'}`} style={{ width: `${item.avg}%` }} />
                     </div>
                   </div>
@@ -561,7 +561,7 @@ const ArenaClassAnalytics: React.FC<{
                 className="w-full pl-9 pr-4 py-2 border rounded-xl text-xs outline-none focus:ring-2 focus:ring-indigo-500"
               />
             </div>
-            <button onClick={handleExportCSV} className="px-3.5 py-2 border text-gray-600 bg-white rounded-xl text-xs font-bold hover:bg-gray-50 active:scale-95 transition-all flex items-center gap-1.5">
+            <button onClick={handleExportCSV} className="px-3.5 py-2 border dark:border-slate-800 text-gray-650 dark:text-slate-350 bg-white dark:bg-slate-900 rounded-xl text-xs font-bold hover:bg-gray-50 dark:hover:bg-slate-800 active:scale-95 transition-all flex items-center gap-1.5 shadow-sm">
               Xuất CSV
             </button>
           </div>
@@ -570,10 +570,10 @@ const ArenaClassAnalytics: React.FC<{
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
             <thead>
-              <tr className="bg-gray-50 text-gray-500 font-bold uppercase border-b select-none">
+              <tr className="bg-gray-50 dark:bg-slate-850 text-gray-500 dark:text-slate-400 font-bold uppercase border-b dark:border-slate-800 select-none">
                 <th className="px-5 py-4 w-12 text-center">Hạng</th>
                 <th className="px-5 py-4">Học sinh</th>
-                <th className="px-5 py-4 text-center cursor-pointer hover:bg-gray-100" onClick={() => handleSort('elo')}>
+                <th className="px-5 py-4 text-center cursor-pointer hover:bg-gray-100 dark:hover:bg-slate-800" onClick={() => handleSort('elo')}>
                   Elo Xếp Hạng {sortField === 'elo' && (sortDir === 'asc' ? '▲' : '▼')}
                 </th>
                 <th className="px-5 py-4 text-center cursor-pointer hover:bg-gray-100" onClick={() => handleSort('floor')}>
@@ -590,7 +590,7 @@ const ArenaClassAnalytics: React.FC<{
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100">
+            <tbody className="divide-y divide-gray-100 dark:divide-slate-800">
               {filteredList.map((item, i) => {
                 const isExpanded = expandedStudentId === item.student.id;
                 const studentMatches = getStudentMatches(item.student.id);
@@ -599,20 +599,20 @@ const ArenaClassAnalytics: React.FC<{
                   <React.Fragment key={item.student.id}>
                     <tr 
                       onClick={() => setExpandedStudentId(isExpanded ? null : item.student.id)} 
-                      className={`hover:bg-indigo-50/20 cursor-pointer transition-colors ${isExpanded ? 'bg-indigo-50/10' : ''}`}
+                      className={`hover:bg-indigo-50/20 dark:hover:bg-indigo-950/20 cursor-pointer transition-colors ${isExpanded ? 'bg-indigo-50/10 dark:bg-indigo-950/10' : ''}`}
                     >
-                      <td className="px-5 py-4 text-center font-bold text-gray-500">
+                      <td className="px-5 py-4 text-center font-bold text-gray-500 dark:text-slate-500">
                         {i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `#${i + 1}`}
                       </td>
                       <td className="px-5 py-4">
                         <div className="flex items-center gap-2.5">
-                          <img src={item.student.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(item.student.name)}`} alt="" className="w-7 h-7 rounded-full border shadow-xs" />
-                          <div className="font-bold text-gray-800 text-[13px]">{item.student.name}</div>
+                          <img src={item.student.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(item.student.name)}`} alt="" className="w-7 h-7 rounded-full border dark:border-slate-850 shadow-xs" />
+                          <div className="font-bold text-gray-800 dark:text-slate-200 text-[13px]">{item.student.name}</div>
                         </div>
                       </td>
-                      <td className="px-5 py-4 text-center font-black text-yellow-600 text-sm">{item.elo} ELO</td>
-                      <td className="px-5 py-4 text-center font-bold text-purple-600">Tầng {item.floor}</td>
-                      <td className="px-5 py-4 text-center font-semibold text-gray-600">{item.games} trận</td>
+                      <td className="px-5 py-4 text-center font-black text-yellow-600 dark:text-yellow-500 text-sm">{item.elo} ELO</td>
+                      <td className="px-5 py-4 text-center font-bold text-purple-600 dark:text-purple-400">Tầng {item.floor}</td>
+                      <td className="px-5 py-4 text-center font-semibold text-gray-650 dark:text-slate-400">{item.games} trận</td>
                       <td className="px-5 py-4 text-center">
                         <span className={`px-2 py-0.5 rounded-md font-bold text-[10px] ${
                           item.winrate >= 60 ? 'bg-emerald-100 text-emerald-800' :
@@ -621,17 +621,17 @@ const ArenaClassAnalytics: React.FC<{
                           {item.winrate}%
                         </span>
                       </td>
-                      <td className="px-5 py-4 text-center font-bold text-emerald-600">+{item.xp} XP</td>
+                      <td className="px-5 py-4 text-center font-bold text-emerald-600 dark:text-emerald-400">+{item.xp} XP</td>
                     </tr>
 
                     {/* Expandable Match History Row */}
                     {isExpanded && (
                       <tr>
-                        <td colSpan={7} className="px-8 py-4 bg-gray-50/50 border-y">
+                        <td colSpan={7} className="px-8 py-4 bg-gray-50/50 dark:bg-slate-850/50 border-y dark:border-slate-800">
                           <div className="space-y-3 animate-in slide-in-from-top-1 duration-200">
-                            <h4 className="font-black text-gray-700 text-[11px] uppercase tracking-wider">Lịch sử thi đấu gần nhất</h4>
+                            <h4 className="font-black text-gray-700 dark:text-slate-350 text-[11px] uppercase tracking-wider">Lịch sử thi đấu gần nhất</h4>
                             {studentMatches.length === 0 ? (
-                              <p className="text-xs text-gray-400 italic">Chưa phát sinh trận đấu nào gần đây trong Đấu Trường.</p>
+                              <p className="text-xs text-gray-400 dark:text-slate-500 italic">Chưa phát sinh trận đấu nào gần đây trong Đấu Trường.</p>
                             ) : (
                               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                 {studentMatches.map((m: any) => {
@@ -643,10 +643,10 @@ const ArenaClassAnalytics: React.FC<{
                                   const oppScore = isP1 ? m.player2_score : m.player1_score;
 
                                   return (
-                                    <div key={m.id} className="p-3 bg-white border rounded-xl flex items-center justify-between shadow-xs">
+                                    <div key={m.id} className="p-3 bg-white dark:bg-slate-900 border dark:border-slate-800 rounded-xl flex items-center justify-between shadow-xs">
                                       <div>
-                                        <div className="text-[10px] text-gray-400 font-medium">Đối đầu với:</div>
-                                        <div className="text-xs font-bold text-gray-700">{oppName}</div>
+                                        <div className="text-[10px] text-gray-400 dark:text-slate-500 font-medium">Đối đầu với:</div>
+                                        <div className="text-xs font-bold text-gray-700 dark:text-slate-300">{oppName}</div>
                                       </div>
                                       <div className="text-right">
                                         <span className={`inline-block px-1.5 py-0.5 rounded text-[9px] font-black uppercase ${
@@ -654,7 +654,7 @@ const ArenaClassAnalytics: React.FC<{
                                         }`}>
                                           {isWinner ? 'Thắng' : 'Thua'}
                                         </span>
-                                        <div className="text-xs font-extrabold text-gray-900 mt-0.5">{myScore} - {oppScore} HP</div>
+                                        <div className="text-xs font-extrabold text-gray-900 dark:text-slate-100 mt-0.5">{myScore} - {oppScore} HP</div>
                                       </div>
                                     </div>
                                   );
@@ -679,13 +679,13 @@ const ArenaClassAnalytics: React.FC<{
           <h3 className="font-bold text-gray-800 text-sm flex items-center gap-2">
             <Trophy className="h-4 w-4 text-purple-500 animate-pulse" /> Lịch sử Giải đấu Đấu Trường (Arena Tournaments)
           </h3>
-          <span className="text-xs bg-purple-100 text-purple-700 font-bold px-2.5 py-1 rounded-full">
+          <span className="text-xs bg-purple-100 dark:bg-purple-950/40 text-purple-700 dark:text-purple-400 font-bold px-2.5 py-1 rounded-full">
             {tournaments.length} giải đấu
           </span>
         </div>
         <div className="p-5">
           {tournaments.length === 0 ? (
-            <div className="text-center py-8 text-gray-400 text-xs italic">
+            <div className="text-center py-8 text-gray-400 dark:text-slate-500 text-xs italic">
               Chưa tổ chức giải đấu nào cho lớp học này.
             </div>
           ) : (
@@ -701,18 +701,18 @@ const ArenaClassAnalytics: React.FC<{
                   'Đang chờ';
                 
                 return (
-                  <div key={t.id} className="p-4 border rounded-xl bg-gray-50/30 hover:border-purple-200 hover:shadow-xs transition-all flex flex-col justify-between space-y-3">
+                  <div key={t.id} className="p-4 border dark:border-slate-800 rounded-xl bg-gray-50/30 dark:bg-slate-955/40 hover:border-purple-200 dark:hover:border-purple-900/40 hover:shadow-xs transition-all flex flex-col justify-between space-y-3">
                     <div className="flex justify-between items-start gap-2">
-                      <div className="font-bold text-sm text-gray-800 line-clamp-1">{t.title}</div>
+                      <div className="font-bold text-sm text-gray-800 dark:text-slate-200 line-clamp-1">{t.title}</div>
                       <span className={`text-[9px] font-black px-2 py-0.5 rounded-md border uppercase ${statusColors}`}>
                         {statusLabels}
                       </span>
                     </div>
-                    <div className="text-[11px] text-gray-500 space-y-1">
-                      <div>Môn học: <span className="font-semibold text-gray-700">{t.filter_subject || 'Tất cả'}</span></div>
-                      <div>Khối lớp: <span className="font-semibold text-gray-700">{t.filter_grade ? `Khối ${t.filter_grade}` : 'Tất cả'}</span></div>
-                      <div>Thể thức: <span className="font-semibold text-gray-700">{t.questions_per_match} câu/trận • {t.time_per_question} giây/câu</span></div>
-                      <div className="pt-1.5 border-t border-dashed text-[10px] text-gray-400">
+                    <div className="text-[11px] text-gray-500 dark:text-slate-400 space-y-1">
+                      <div>Môn học: <span className="font-semibold text-gray-700 dark:text-slate-300">{t.filter_subject || 'Tất cả'}</span></div>
+                      <div>Khối lớp: <span className="font-semibold text-gray-700 dark:text-slate-300">{t.filter_grade ? `Khối ${t.filter_grade}` : 'Tất cả'}</span></div>
+                      <div>Thể thức: <span className="font-semibold text-gray-700 dark:text-slate-300">{t.questions_per_match} câu/trận • {t.time_per_question} giây/câu</span></div>
+                      <div className="pt-1.5 border-t border-dashed dark:border-slate-800 text-[10px] text-gray-400 dark:text-slate-505">
                         Tạo lúc: {new Date(t.created_at || Date.now()).toLocaleDateString('vi-VN')} {new Date(t.created_at || Date.now()).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}
                       </div>
                     </div>
@@ -1074,7 +1074,7 @@ export const TeacherAnalytics: React.FC = () => {
 
     if (activeTab === 'ai_requests') {
       return (
-        <div className="bg-white rounded-2xl border shadow-sm p-6 space-y-6">
+        <div className="bg-white dark:bg-slate-900 rounded-2xl border dark:border-slate-800 shadow-sm p-6 space-y-6">
           <div className="flex justify-between items-center border-b pb-4">
             <div>
               <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
@@ -1103,12 +1103,12 @@ export const TeacherAnalytics: React.FC = () => {
           ) : (
             <div className="space-y-4">
               {aiRequests.map((req) => (
-                <div key={req.id} className={`border rounded-xl p-5 transition-all shadow-sm ${req.status === 'pending' ? 'bg-amber-50/30 border-amber-200' : req.status === 'approved' ? 'bg-green-50/20 border-green-200' : 'bg-gray-50 border-gray-200'}`}>
+                <div key={req.id} className={`border rounded-xl p-5 transition-all shadow-sm ${req.status === 'pending' ? 'bg-amber-50/30 dark:bg-amber-950/10 border-amber-250 dark:border-amber-900/30' : req.status === 'approved' ? 'bg-green-50/20 dark:bg-green-950/10 border-green-250 dark:border-green-900/30' : 'bg-gray-50 dark:bg-slate-850 border-gray-200 dark:border-slate-850'}`}>
                   <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
                     <div>
                       <div className="flex items-center gap-2">
-                        <span className="font-bold text-gray-900 text-sm">{req.student_name}</span>
-                        <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase ${req.status === 'pending' ? 'bg-amber-100 text-amber-800' : req.status === 'approved' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                        <span className="font-bold text-gray-900 dark:text-slate-100 text-sm">{req.student_name}</span>
+                        <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase ${req.status === 'pending' ? 'bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300' : req.status === 'approved' ? 'bg-green-100 dark:bg-green-950 text-green-850 dark:text-green-300' : 'bg-red-100 dark:bg-red-950 text-red-850 dark:text-red-300'}`}>
                           {req.status === 'pending' ? 'Chờ phê duyệt' : req.status === 'approved' ? 'Đã duyệt' : 'Từ chối'}
                         </span>
                       </div>
@@ -1136,7 +1136,7 @@ export const TeacherAnalytics: React.FC = () => {
                   </div>
 
                   {req.response_data && (
-                    <div className="mt-4 p-4 bg-white rounded-xl border border-gray-100 text-xs text-gray-700 max-h-60 overflow-y-auto whitespace-pre-wrap leading-relaxed italic border-l-4 border-indigo-400">
+                    <div className="mt-4 p-4 bg-white dark:bg-slate-955 rounded-xl border border-gray-100 dark:border-slate-850 text-xs text-gray-700 dark:text-slate-350 max-h-60 overflow-y-auto whitespace-pre-wrap leading-relaxed italic border-l-4 border-indigo-400 dark:border-l-indigo-500">
                       {req.response_data}
                     </div>
                   )}
@@ -1249,11 +1249,11 @@ export const TeacherAnalytics: React.FC = () => {
                   </button>
                 </div>
                 {aiInsight ? (
-                  <div className="bg-purple-50 rounded-xl p-4 text-sm text-gray-800 leading-relaxed italic">
+                   <div className="bg-purple-55 dark:bg-purple-955/20 rounded-xl p-4 text-sm text-gray-805 dark:text-slate-200 leading-relaxed italic">
                     {aiInsight}
                   </div>
                 ) : (
-                  <p className="text-gray-400 text-sm text-center py-6 border border-dashed rounded-xl no-print">
+                  <p className="text-gray-400 dark:text-slate-500 text-sm text-center py-6 border border-dashed dark:border-slate-800 rounded-xl no-print">
                     Nhấn nút "Phân tích qua AI" để xem nhận xét chuyên sâu về học sinh này.
                   </p>
                 )}
@@ -1291,7 +1291,7 @@ export const TeacherAnalytics: React.FC = () => {
                   <AlertTriangle className="h-5 w-5" /> Kiến thức cần lưu ý
                 </h2>
                 {analytics.weakTopics.length === 0 ? (
-                  <p className="text-gray-400 text-xs italic">Học sinh này đang làm rất tốt, chưa có chủ đề yếu cụ thể.</p>
+                  <p className="text-gray-400 dark:text-slate-500 text-xs italic">Học sinh này đang làm rất tốt, chưa có chủ đề yếu cụ thể.</p>
                 ) : (
                   <div className="space-y-3">
                     {analytics.weakTopics.slice(0, 5).map((t, i) => (
@@ -1310,10 +1310,10 @@ export const TeacherAnalytics: React.FC = () => {
                   {analytics.bySubject.map(s => (
                     <div key={s.subject}>
                       <div className="flex justify-between items-center mb-1 text-sm">
-                        <span className="font-bold text-gray-700">{s.subject}</span>
-                        <span className="font-bold">{fmt(s.avgScore)}</span>
+                        <span className="font-bold text-gray-700 dark:text-slate-350">{s.subject}</span>
+                        <span className="font-bold text-gray-900 dark:text-slate-100">{fmt(s.avgScore)}</span>
                       </div>
-                      <div className="w-full bg-gray-100 rounded-full h-2">
+                      <div className="w-full bg-gray-100 dark:bg-slate-800 rounded-full h-2">
                         <div
                           className={`h-2 rounded-full ${s.avgScore >= 8 ? 'bg-emerald-500' : s.avgScore >= 5 ? 'bg-indigo-500' : 'bg-red-500'}`}
                           style={{ width: `${(s.avgScore / 10) * 100}%` }}
@@ -1392,7 +1392,7 @@ export const TeacherAnalytics: React.FC = () => {
             <select
               value={selectedClassId}
               onChange={e => setSelectedClassId(e.target.value)}
-              className="w-full p-2.5 border border-gray-300 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500 bg-white"
+              className="w-full p-2.5 border border-gray-300 dark:border-slate-800 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500 bg-white dark:bg-slate-950 text-gray-900 dark:text-slate-100"
             >
               <option value="">-- Chọn lớp --</option>
               {myClasses.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
@@ -1409,7 +1409,7 @@ export const TeacherAnalytics: React.FC = () => {
                   <button
                     disabled={!selectedClassId}
                     onClick={() => setIsStudentDropdownOpen(!isStudentDropdownOpen)}
-                    className="w-full flex items-center justify-between p-2.5 border border-gray-300 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500 bg-white disabled:bg-gray-50 text-sm h-[46px]"
+                    className="w-full flex items-center justify-between p-2.5 border border-gray-300 dark:border-slate-800 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500 bg-white dark:bg-slate-950 disabled:bg-gray-50 dark:disabled:bg-slate-900 text-gray-900 dark:text-slate-100 text-sm h-[46px]"
                   >
                     <div className="flex flex-wrap gap-1 max-w-[90%] overflow-hidden">
                       {selectedStudentIds.length === 0 ? (
@@ -1422,9 +1422,9 @@ export const TeacherAnalytics: React.FC = () => {
                   </button>
                   
                   {isStudentDropdownOpen && (
-                    <div className="absolute z-50 mt-2 w-[300px] md:w-[600px] right-0 md:left-0 bg-white border rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-                      <div className="flex justify-between items-center p-4 bg-gray-50 border-b">
-                        <h4 className="font-bold text-gray-700 text-sm">Danh sách học sinh</h4>
+                    <div className="absolute z-50 mt-2 w-[300px] md:w-[600px] right-0 md:left-0 bg-white dark:bg-slate-900 border dark:border-slate-800 rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+                      <div className="flex justify-between items-center p-4 bg-gray-50 dark:bg-slate-850 border-b dark:border-slate-800">
+                        <h4 className="font-bold text-gray-700 dark:text-slate-300 text-sm">Danh sách học sinh</h4>
                         <div className="flex gap-4">
                           <button 
                             onClick={() => setSelectedStudentIds(studentsInClass.map(s => s.id))}
@@ -1463,7 +1463,7 @@ export const TeacherAnalytics: React.FC = () => {
                                 }}
                                 className="h-3.5 w-3.5 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
                               />
-                              <span className="text-xs font-semibold text-gray-700 truncate" title={s.name}>{s.name}</span>
+                              <span className="text-xs font-semibold text-gray-700 dark:text-slate-300 truncate" title={s.name}>{s.name}</span>
                             </label>
                           ))}
                         </div>
@@ -1489,14 +1489,14 @@ export const TeacherAnalytics: React.FC = () => {
                       const p = TIME_PERIODS.find(t => t.days === Number(e.target.value));
                       if (p) setSelectedPeriod(p);
                     }}
-                    className="w-full p-2.5 border border-gray-300 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500 bg-white h-[46px]"
+                    className="w-full p-2.5 border border-gray-300 dark:border-slate-800 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500 bg-white dark:bg-slate-955 text-gray-900 dark:text-slate-100 text-sm h-[46px]"
                   >
                     {TIME_PERIODS.map(p => <option key={p.days} value={p.days}>{p.label}</option>)}
                   </select>
                   <button 
                     onClick={() => window.print()}
                     disabled={selectedStudentIds.length === 0}
-                    className="bg-indigo-600 text-white p-2.5 rounded-xl hover:bg-indigo-700 disabled:opacity-50 disabled:bg-gray-400 no-print transition-all"
+                    className="bg-indigo-600 text-white p-2.5 rounded-xl hover:bg-indigo-700 disabled:opacity-50 disabled:bg-gray-400 dark:disabled:bg-slate-800 no-print transition-all"
                     title="In báo cáo (PDF)"
                   >
                     <Printer className="h-5 w-5" />
@@ -1508,7 +1508,7 @@ export const TeacherAnalytics: React.FC = () => {
         </div>
       </div>
 
-      <div className="flex border-b border-gray-200 no-print mb-4">
+      <div className="flex border-b border-gray-200 dark:border-slate-800 no-print mb-4">
         <button
           onClick={() => setActiveTab('exams')}
           className={`px-6 py-3 font-bold text-sm border-b-2 transition-all flex items-center gap-2 ${

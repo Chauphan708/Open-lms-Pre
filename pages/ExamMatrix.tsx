@@ -230,10 +230,10 @@ export const ExamMatrix: React.FC = () => {
             {/* Header */}
             <div className="flex justify-between items-center mb-4">
                 <div>
-                    <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-                        <BarChart3 className="h-6 w-6 text-emerald-600" /> Tạo Đề Kiểm Tra (Ma Trận)
+                    <h1 className="text-2xl font-bold text-gray-900 dark:text-slate-100 flex items-center gap-2">
+                        <BarChart3 className="h-6 w-6 text-emerald-600 dark:text-emerald-400" /> Tạo Đề Kiểm Tra (Ma Trận)
                     </h1>
-                    <p className="text-gray-500 text-sm">Cấu hình ma trận → Bốc câu từ Ngân hàng → In đề chuẩn A4</p>
+                    <p className="text-gray-500 dark:text-slate-400 text-sm">Cấu hình ma trận → Bốc câu từ Ngân hàng → In đề chuẩn A4</p>
                 </div>
                 <div className="flex gap-2">
                     {questions.length > 0 && (
@@ -243,19 +243,19 @@ export const ExamMatrix: React.FC = () => {
                                  <Shuffle className="h-5 w-5" /> Trộn đề {examVariant === 'A' ? '→ B' : examVariant === 'B' ? '→ C' : '→ A'}
                              </button>
                             <div className="relative group">
-                                <button className="flex items-center gap-2 bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 transition-colors font-medium shadow-sm">
+                                <button className="flex items-center gap-2 bg-white dark:bg-slate-900 border border-gray-300 dark:border-slate-800 text-gray-700 dark:text-slate-350 px-4 py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-850 transition-colors font-medium shadow-sm">
                                     <Printer className="h-4 w-4" /> Xuất File <ChevronDown className="h-3 w-3" />
                                 </button>
-                                <div className="absolute right-0 top-full mt-1 w-72 bg-white border border-gray-200 rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 overflow-hidden">
-                                    <div className="px-4 py-2 text-xs font-bold text-gray-400 bg-gray-50 border-b">Tùy chọn In (PDF)</div>
-                                    <button onClick={() => handlePrint('MATRIX')} className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-emerald-50 hover:text-emerald-700 flex items-center gap-2"><BarChart3 className="h-4 w-4" /> 1. In Ma trận</button>
-                                    <button onClick={() => handlePrint('EXAM')} className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-emerald-50 hover:text-emerald-700 flex items-center gap-2"><FileText className="h-4 w-4" /> 2. In Đề KT</button>
-                                    <button onClick={() => handlePrint('ALL')} className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-emerald-50 hover:text-emerald-700 flex items-center gap-2"><Printer className="h-4 w-4" /> 3. In Ma trận & Đề</button>
+                                <div className="absolute right-0 top-full mt-1 w-72 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 overflow-hidden">
+                                    <div className="px-4 py-2 text-xs font-bold text-gray-400 dark:text-slate-500 bg-gray-50 dark:bg-slate-950 border-b dark:border-slate-800">Tùy chọn In (PDF)</div>
+                                    <button onClick={() => handlePrint('MATRIX')} className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-slate-300 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 hover:text-emerald-700 dark:hover:text-emerald-400 flex items-center gap-2"><BarChart3 className="h-4 w-4" /> 1. In Ma trận</button>
+                                    <button onClick={() => handlePrint('EXAM')} className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-slate-300 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 hover:text-emerald-700 dark:hover:text-emerald-400 flex items-center gap-2"><FileText className="h-4 w-4" /> 2. In Đề KT</button>
+                                    <button onClick={() => handlePrint('ALL')} className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-slate-300 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 hover:text-emerald-700 dark:hover:text-emerald-400 flex items-center gap-2"><Printer className="h-4 w-4" /> 3. In Ma trận & Đề</button>
                                     
-                                    <div className="px-4 py-2 text-xs font-bold text-gray-400 bg-gray-50 border-t border-b">Tùy chọn Word (.docx)</div>
-                                    <button onClick={() => exportToDocx({ questions, title, subject, grade, duration, includeMatrix: true, includeSolution: false })} className="w-full text-left px-4 py-2 text-sm text-blue-700 hover:bg-blue-50 flex items-center gap-2"><Download className="h-4 w-4" /> 1. Word Ma trận</button>
-                                    <button onClick={() => exportToDocx({ questions, title, subject, grade, duration, includeMatrix: false, includeSolution: true })} className="w-full text-left px-4 py-2 text-sm text-blue-700 hover:bg-blue-50 flex items-center gap-2"><FileText className="h-4 w-4" /> 2. Word Đề KT</button>
-                                    <button onClick={() => exportToDocx({ questions, title, subject, grade, duration, includeMatrix: true, includeSolution: true })} className="w-full text-left px-4 py-2 text-sm text-blue-700 hover:bg-blue-50 flex items-center gap-2"><Download className="h-4 w-4" /> 3. Word Ma trận & Đề</button>
+                                    <div className="px-4 py-2 text-xs font-bold text-gray-400 dark:text-slate-500 bg-gray-50 dark:bg-slate-950 border-t dark:border-slate-800 border-b dark:border-slate-800">Tùy chọn Word (.docx)</div>
+                                    <button onClick={() => exportToDocx({ questions, title, subject, grade, duration, includeMatrix: true, includeSolution: false })} className="w-full text-left px-4 py-2 text-sm text-blue-700 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/40 flex items-center gap-2"><Download className="h-4 w-4" /> 1. Word Ma trận</button>
+                                    <button onClick={() => exportToDocx({ questions, title, subject, grade, duration, includeMatrix: false, includeSolution: true })} className="w-full text-left px-4 py-2 text-sm text-blue-700 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/40 flex items-center gap-2"><FileText className="h-4 w-4" /> 2. Word Đề KT</button>
+                                    <button onClick={() => exportToDocx({ questions, title, subject, grade, duration, includeMatrix: true, includeSolution: true })} className="w-full text-left px-4 py-2 text-sm text-blue-700 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/40 flex items-center gap-2"><Download className="h-4 w-4" /> 3. Word Ma trận & Đề</button>
                                 </div>
                             </div>
                         </>
@@ -276,64 +276,64 @@ export const ExamMatrix: React.FC = () => {
                 {/* TOP: Config */}
                 <div className="flex flex-col gap-3">
                     {/* Info */}
-                    <div className="bg-white p-4 rounded-xl border shadow-sm space-y-3">
+                    <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border dark:border-slate-800 shadow-sm space-y-3">
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Tên đề kiểm tra</label>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-slate-350 mb-1">Tên đề kiểm tra</label>
                             <input type="text" value={title} onChange={e => setTitle(e.target.value)}
                                 placeholder="VD: Kiểm tra Giữa Kì 1 Toán Lớp 5"
-                                className="w-full border border-gray-300 rounded-lg px-3 py-2 bg-white text-gray-900 focus:ring-2 focus:ring-emerald-500 outline-none" />
+                                className="w-full border border-gray-300 dark:border-slate-800 rounded-lg px-3 py-2 bg-white dark:bg-slate-950 text-gray-900 dark:text-slate-105 focus:ring-2 focus:ring-emerald-500 outline-none" />
                         </div>
                         <div className="grid grid-cols-4 gap-3">
                             <div className="col-span-1">
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Loại bài</label>
-                                <select value={examCategory} onChange={e => setExamCategory(e.target.value as any)} className="w-full border border-gray-300 rounded-lg px-3 py-1.5 bg-white text-gray-900 text-sm font-bold">
+                                <label className="block text-sm font-medium text-gray-700 dark:text-slate-350 mb-1">Loại bài</label>
+                                <select value={examCategory} onChange={e => setExamCategory(e.target.value as any)} className="w-full border border-gray-300 dark:border-slate-800 rounded-lg px-3 py-1.5 bg-white dark:bg-slate-950 text-gray-900 dark:text-slate-100 text-sm font-bold">
                                     <option value="EXAM">ĐỀ KT</option>
                                     <option value="TASK">NHIỆM VỤ</option>
                                 </select>
                             </div>
                             <div className="col-span-1">
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Môn</label>
-                                <select value={subject} onChange={e => setSubject(e.target.value)} className="w-full border border-gray-300 rounded-lg px-3 py-1.5 bg-white text-gray-900 text-sm">
+                                <label className="block text-sm font-medium text-gray-700 dark:text-slate-350 mb-1">Môn</label>
+                                <select value={subject} onChange={e => setSubject(e.target.value)} className="w-full border border-gray-300 dark:border-slate-800 rounded-lg px-3 py-1.5 bg-white dark:bg-slate-950 text-gray-900 dark:text-slate-100 text-sm">
                                     {SUBJECTS.map(s => <option key={s} value={s}>{s}</option>)}
                                 </select>
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Lớp</label>
-                                <select value={grade} onChange={e => setGrade(e.target.value)} className="w-full border border-gray-300 rounded-lg px-3 py-1.5 bg-white text-gray-900 text-sm">
+                                <label className="block text-sm font-medium text-gray-700 dark:text-slate-350 mb-1">Lớp</label>
+                                <select value={grade} onChange={e => setGrade(e.target.value)} className="w-full border border-gray-300 dark:border-slate-800 rounded-lg px-3 py-1.5 bg-white dark:bg-slate-950 text-gray-900 dark:text-slate-100 text-sm">
                                     {GRADES.map(g => <option key={g} value={g}>Lớp {g}</option>)}
                                 </select>
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Thời gian</label>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-slate-350 mb-1">Thời gian</label>
                                 <input type="number" value={duration} onChange={e => setDuration(Number(e.target.value))}
-                                    className="w-full border border-gray-300 rounded-lg px-3 py-1.5 bg-white text-gray-900 text-sm" />
+                                    className="w-full border border-gray-300 dark:border-slate-800 rounded-lg px-3 py-1.5 bg-white dark:bg-slate-950 text-gray-900 dark:text-slate-105 text-sm" />
                             </div>
                         </div>
                     </div>
 
                     {/* Matrix Config */}
-                    <div className="flex-1 bg-white p-4 rounded-xl border shadow-sm flex flex-col">
+                    <div className="flex-1 bg-white dark:bg-slate-900 p-4 rounded-xl border dark:border-slate-800 shadow-sm flex flex-col">
                         <MatrixConfig onGenerate={(qs) => setQuestions(prev => [...prev, ...qs])} subject={subject} grade={grade} />
                     </div>
                 </div>
 
                 {/* BOTTOM: Preview */}
-                <div className="bg-white rounded-xl border shadow-sm flex flex-col min-h-[500px] overflow-hidden">
-                    <div className="p-4 border-b bg-white flex justify-between items-center">
+                <div className="bg-white dark:bg-slate-900 rounded-xl border dark:border-slate-800 shadow-sm flex flex-col min-h-[500px] overflow-hidden">
+                    <div className="p-4 border-b dark:border-slate-800 bg-white dark:bg-slate-900 flex justify-between items-center">
                         <div className="flex items-center gap-3">
-                            <h3 className="font-bold text-gray-700">Đề {examVariant} ({questions.length} câu)</h3>
+                            <h3 className="font-bold text-gray-700 dark:text-slate-100">Đề {examVariant} ({questions.length} câu)</h3>
                             {/* C3: Timer toggle */}
-                            <label className="flex items-center gap-1.5 text-xs text-gray-500 cursor-pointer">
+                            <label className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-slate-405 cursor-pointer">
                                 <input type="checkbox" checked={timerEnabled} onChange={e => setTimerEnabled(e.target.checked)} className="rounded text-indigo-500" />
                                 <Timer className="h-3.5 w-3.5" /> {duration} phút
                             </label>
                             {questions.length > 0 && (
-                                 <div className="flex items-center gap-3 ml-4 border-l-2 border-emerald-100 pl-4 bg-emerald-50/30 py-1 px-3 rounded-lg">
-                                     <span className="text-[11px] font-black text-emerald-700 uppercase tracking-wider">Sắp xếp theo:</span>
-                                     <button onClick={sortByLevel} className="text-[11px] font-bold bg-white hover:bg-indigo-50 px-3 py-1.5 rounded-full border-2 border-indigo-100 text-indigo-700 flex items-center gap-1.5 transition-all shadow-sm hover:border-indigo-300">
+                                 <div className="flex items-center gap-3 ml-4 border-l-2 border-emerald-100 dark:border-emerald-900/40 pl-4 bg-emerald-50/30 dark:bg-emerald-950/20 py-1 px-3 rounded-lg">
+                                     <span className="text-[11px] font-black text-emerald-700 dark:text-emerald-450 uppercase tracking-wider">Sắp xếp theo:</span>
+                                     <button onClick={sortByLevel} className="text-[11px] font-bold bg-white dark:bg-slate-955 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 px-3 py-1.5 rounded-full border-2 border-indigo-100 dark:border-indigo-900/40 text-indigo-700 dark:text-indigo-400 flex items-center gap-1.5 transition-all shadow-sm hover:border-indigo-300">
                                          <BarChart3 className="h-3.5 w-3.5" /> Mức độ
                                      </button>
-                                     <button onClick={sortByType} className="text-[11px] font-bold bg-white hover:bg-purple-50 px-3 py-1.5 rounded-full border-2 border-purple-100 text-purple-700 flex items-center gap-1.5 transition-all shadow-sm hover:border-purple-300">
+                                     <button onClick={sortByType} className="text-[11px] font-bold bg-white dark:bg-slate-955 hover:bg-purple-50 dark:hover:bg-purple-950/40 px-3 py-1.5 rounded-full border-2 border-purple-100 dark:border-purple-900/40 text-purple-700 dark:text-purple-400 flex items-center gap-1.5 transition-all shadow-sm hover:border-purple-300">
                                          <FileText className="h-3.5 w-3.5" /> Loại câu (TN-TL)
                                      </button>
                                  </div>
@@ -346,37 +346,37 @@ export const ExamMatrix: React.FC = () => {
                         )}
                     </div>
 
-                    <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50/50">
+                    <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50/50 dark:bg-slate-950/50">
                         {questions.length === 0 ? (
-                            <div className="h-full flex flex-col items-center justify-center text-gray-400">
+                            <div className="h-full flex flex-col items-center justify-center text-gray-400 dark:text-slate-500">
                                 <BarChart3 className="h-16 w-16 mb-4 opacity-30" />
                                 <p className="font-medium">Chưa có câu hỏi nào.</p>
                                 <p className="text-sm mt-1">Cấu hình ma trận bên trái rồi bấm "Rút câu hỏi".</p>
                             </div>
                         ) : (
                             questions.map((q, idx) => (
-                                <div key={q.id} className="bg-white border rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow relative group">
+                                <div key={q.id} className="bg-white dark:bg-slate-900 border dark:border-slate-800 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow relative group">
                                     <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                                         <button onClick={() => handleReRollQuestion(q)} className="text-gray-300 hover:text-amber-500 p-1" title="Đổi câu khác cùng mức độ"><RefreshCw className="h-3.5 w-3.5" /></button>
                                         <button onClick={() => openEditModal(q)} className="text-gray-300 hover:text-indigo-600 p-1" title="Sửa câu hỏi này"><Edit2 className="h-3.5 w-3.5" /></button>
                                         <button onClick={() => removeQuestion(q.id)} className="text-gray-300 hover:text-red-500 p-1" title="Xóa bỏ"><Trash2 className="h-3.5 w-3.5" /></button>
                                     </div>
                                     <div className="flex gap-2 items-start">
-                                        <span className="flex-shrink-0 w-7 h-7 bg-emerald-50 rounded-full flex items-center justify-center font-bold text-emerald-600 text-xs">{idx + 1}</span>
+                                        <span className="flex-shrink-0 w-7 h-7 bg-emerald-50 dark:bg-emerald-950/60 rounded-full flex items-center justify-center font-bold text-emerald-600 dark:text-emerald-400 text-xs">{idx + 1}</span>
                                         <div className="flex-1">
                                             <div className="flex justify-between items-start pr-12 mb-1">
-                                                 <p className="text-gray-900 text-sm font-medium">
+                                                 <div className="text-gray-900 dark:text-slate-105 text-sm font-medium">
                                                      <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>{wrapMath(q.content)}</ReactMarkdown>
-                                                 </p>
+                                                 </div>
                                                 <div className="flex gap-1">
-                                                    {q.level && <span className="text-[9px] bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded">{q.level}</span>}
-                                                    <span className="text-[9px] bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded">{getTypeLabel(q.type)}</span>
+                                                    {q.level && <span className="text-[9px] bg-blue-50 dark:bg-blue-955/40 text-blue-600 dark:text-blue-300 px-1.5 py-0.5 rounded">{q.level}</span>}
+                                                    <span className="text-[9px] bg-gray-100 dark:bg-slate-800 text-gray-500 dark:text-slate-400 px-1.5 py-0.5 rounded">{getTypeLabel(q.type)}</span>
                                                 </div>
                                             </div>
                                             {q.options && q.options.length > 0 && (
                                                 <div className="grid grid-cols-2 gap-1.5 mt-1">
                                                     {q.options.map((opt, i) => (
-                                                        <div key={i} className={`px-2 py-1 rounded text-xs ${q.correctOptionIndex === i ? 'bg-green-50 border border-green-200 text-green-800 font-bold' : 'bg-gray-50 text-gray-600'}`}>
+                                                        <div key={i} className={`px-2 py-1 rounded text-xs ${q.correctOptionIndex === i ? 'bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-900/40 text-green-800 dark:text-green-300 font-bold' : 'bg-gray-50 dark:bg-slate-950 text-gray-600 dark:text-slate-400'}`}>
                                                             <div className="flex gap-1">
                                                                 <span className="flex-shrink-0">{String.fromCharCode(65 + i)}.</span>
                                                                  <div className="flex-1">
@@ -399,26 +399,26 @@ export const ExamMatrix: React.FC = () => {
             {/* Edit Modal */}
             {editingQuestion && (
                 <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-                    <div className="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-                        <div className="p-5 border-b flex justify-between items-center sticky top-0 bg-white z-10">
-                            <h3 className="font-bold text-lg text-gray-800">Chỉnh sửa câu hỏi</h3>
-                            <button onClick={() => setEditingQuestion(null)} className="hover:bg-gray-100 p-2 rounded-full"><X className="h-5 w-5" /></button>
+                    <div className="bg-white dark:bg-slate-900 rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto border dark:border-slate-800">
+                        <div className="p-5 border-b dark:border-slate-800 flex justify-between items-center sticky top-0 bg-white dark:bg-slate-900 z-10">
+                            <h3 className="font-bold text-lg text-gray-800 dark:text-slate-100">Chỉnh sửa câu hỏi</h3>
+                            <button onClick={() => setEditingQuestion(null)} className="hover:bg-gray-100 dark:hover:bg-slate-800 p-2 rounded-full text-gray-500 dark:text-slate-400"><X className="h-5 w-5" /></button>
                         </div>
                         <div className="p-6 space-y-4">
                             <div>
-                                <label className="block text-sm font-bold text-gray-700 mb-1">Nội dung câu hỏi</label>
+                                <label className="block text-sm font-bold text-gray-700 dark:text-slate-300 mb-1">Nội dung câu hỏi</label>
                                 <textarea value={editingQuestion.content}
                                     onChange={e => setEditingQuestion({ ...editingQuestion, content: e.target.value })}
-                                    className="w-full border rounded-lg p-3 bg-white text-gray-900 h-24 focus:ring-2 focus:ring-emerald-500 outline-none" />
+                                    className="w-full border dark:border-slate-800 rounded-lg p-3 bg-white dark:bg-slate-950 text-gray-900 dark:text-slate-105 h-24 focus:ring-2 focus:ring-emerald-500 outline-none" />
                             </div>
                             <div>
-                                <label className="block text-sm font-bold text-gray-700 mb-2">Các lựa chọn</label>
+                                <label className="block text-sm font-bold text-gray-700 dark:text-slate-300 mb-2">Các lựa chọn</label>
                                 {editingQuestion.options.map((opt, i) => (
                                     <div key={i} className="flex items-center gap-2 mb-2">
                                         <input type="radio" name="correctOpt" checked={editingQuestion.correctOptionIndex === i}
                                             onChange={() => setEditingQuestion({ ...editingQuestion, correctOptionIndex: i })}
                                             className="w-4 h-4 text-green-600" />
-                                        <span className="font-bold w-6">{String.fromCharCode(65 + i)}.</span>
+                                        <span className="font-bold w-6 text-gray-900 dark:text-slate-100">{String.fromCharCode(65 + i)}.</span>
                                             <div className="flex-1 space-y-1">
                                                 <input value={opt}
                                                     onChange={e => {
@@ -426,8 +426,8 @@ export const ExamMatrix: React.FC = () => {
                                                         newOpts[i] = e.target.value;
                                                         setEditingQuestion({ ...editingQuestion, options: newOpts });
                                                     }}
-                                                    className="w-full border rounded-lg p-2 text-sm bg-white focus:ring-1 focus:ring-emerald-500 outline-none" />
-                                                 <div className="text-[10px] text-gray-400 bg-gray-50 px-2 py-0.5 rounded border border-dashed truncate max-w-full">
+                                                    className="w-full border dark:border-slate-800 rounded-lg p-2 text-sm bg-white dark:bg-slate-950 text-gray-900 dark:text-slate-100 focus:ring-1 focus:ring-emerald-500 outline-none" />
+                                                 <div className="text-[10px] text-gray-400 dark:text-slate-500 bg-gray-50 dark:bg-slate-900 px-2 py-0.5 rounded border border-dashed dark:border-slate-850 truncate max-w-full">
                                                      Xem trước: <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>{wrapMath(opt)}</ReactMarkdown>
                                                  </div>
                                             </div>
@@ -435,8 +435,8 @@ export const ExamMatrix: React.FC = () => {
                                 ))}
                             </div>
                         </div>
-                        <div className="p-5 border-t flex justify-end gap-2 bg-gray-50">
-                            <button onClick={() => setEditingQuestion(null)} className="px-4 py-2 text-gray-600 hover:bg-gray-200 rounded-lg">Hủy</button>
+                        <div className="p-5 border-t dark:border-slate-800 flex justify-end gap-2 bg-gray-50 dark:bg-slate-950/40">
+                            <button onClick={() => setEditingQuestion(null)} className="px-4 py-2 text-gray-600 dark:text-slate-300 hover:bg-gray-200 dark:hover:bg-slate-850 rounded-lg">Hủy</button>
                             <button onClick={saveEditedQuestion} className="px-4 py-2 bg-emerald-600 text-white font-bold rounded-lg hover:bg-emerald-700">Lưu</button>
                         </div>
                     </div>

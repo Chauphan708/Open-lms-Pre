@@ -199,13 +199,13 @@ export const MatrixConfig: React.FC<MatrixConfigProps> = ({ onGenerate, subject,
     return (
         <div className="space-y-4 flex-1 flex flex-col min-h-0">
             <div className="flex justify-between items-center mb-0">
-                <h3 className="font-bold text-gray-800 flex items-center gap-2">
-                    <BarChart3 className="h-4 w-4 text-emerald-600" /> Cấu trúc Ma trận sinh đề
+                <h3 className="font-bold text-gray-800 dark:text-slate-100 flex items-center gap-2">
+                    <BarChart3 className="h-4 w-4 text-emerald-600 dark:text-emerald-400" /> Cấu trúc Ma trận sinh đề
                 </h3>
             </div>
 
             {error && (
-                <div className="bg-red-50 text-red-700 p-3 rounded-lg flex items-start gap-2 text-sm whitespace-pre-wrap flex-shrink-0">
+                <div className="bg-red-50 dark:bg-red-950/20 text-red-700 dark:text-red-400 p-3 rounded-lg flex items-start gap-2 text-sm whitespace-pre-wrap flex-shrink-0 border border-red-250 dark:border-red-900/40">
                     <AlertCircle className="h-4 w-4 flex-shrink-0 mt-0.5" />
                     <div className="flex-1">
                         {error}
@@ -224,35 +224,35 @@ export const MatrixConfig: React.FC<MatrixConfigProps> = ({ onGenerate, subject,
 
             <div className="flex flex-col sm:flex-row gap-4 flex-shrink-0">
                 <div className="flex-1">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Tổng số câu hỏi</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-slate-350 mb-1">Tổng số câu hỏi</label>
                     <input
                         type="number" value={totalQuestions} onChange={e => setTotalQuestions(Number(e.target.value))}
-                        className="w-full border border-gray-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none bg-white text-gray-900"
+                        className="w-full border border-gray-300 dark:border-slate-800 rounded-lg p-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none bg-white dark:bg-slate-950 text-gray-900 dark:text-slate-100"
                         min="1"
                     />
                 </div>
             </div>
 
-            <div className="flex-1 overflow-x-auto overflow-y-auto border border-gray-200 rounded-lg bg-white relative">
+            <div className="flex-1 overflow-x-auto overflow-y-auto border border-gray-200 dark:border-slate-800 rounded-lg bg-white dark:bg-slate-950 relative">
                 <table className="min-w-full text-sm text-left">
-                    <thead className="bg-gray-50 text-gray-700 font-medium sticky top-0 shadow-sm z-10">
+                    <thead className="bg-gray-50 dark:bg-slate-900 text-gray-700 dark:text-slate-300 font-medium sticky top-0 shadow-sm z-10 border-b dark:border-slate-800">
                         <tr>
-                            <th className="px-3 py-2 border-b whitespace-nowrap">Chủ đề</th>
-                            <th className="px-3 py-2 border-b text-center text-blue-700 whitespace-nowrap" title="Nhận biết">N.Biết (%)</th>
-                            <th className="px-3 py-2 border-b text-center text-blue-500 whitespace-nowrap text-xs">% TN</th>
-                            <th className="px-2 py-2 border-b text-center text-blue-500 whitespace-nowrap text-xs">Câu (TN/TL)</th>
-                            <th className="px-3 py-2 border-b text-center text-orange-700 whitespace-nowrap" title="Kết nối">Kết nối (%)</th>
-                            <th className="px-3 py-2 border-b text-center text-orange-500 whitespace-nowrap text-xs">% TN</th>
-                            <th className="px-2 py-2 border-b text-center text-orange-500 whitespace-nowrap text-xs">Câu (TN/TL)</th>
-                            <th className="px-3 py-2 border-b text-center text-red-700 whitespace-nowrap" title="Vận dụng">V.Dụng (%)</th>
-                            <th className="px-3 py-2 border-b text-center text-red-500 whitespace-nowrap text-xs">% TN</th>
-                            <th className="px-2 py-2 border-b text-center text-red-500 whitespace-nowrap text-xs">Câu (TN/TL)</th>
-                            <th className="px-3 py-2 border-b bg-gray-50"></th>
+                            <th className="px-3 py-2 border-b dark:border-slate-800 whitespace-nowrap">Chủ đề</th>
+                            <th className="px-3 py-2 border-b dark:border-slate-800 text-center text-blue-700 dark:text-blue-400 whitespace-nowrap" title="Nhận biết">N.Biết (%)</th>
+                            <th className="px-3 py-2 border-b dark:border-slate-800 text-center text-blue-500 dark:text-blue-400 whitespace-nowrap text-xs">% TN</th>
+                            <th className="px-2 py-2 border-b dark:border-slate-800 text-center text-blue-500 dark:text-blue-400 whitespace-nowrap text-xs">Câu (TN/TL)</th>
+                            <th className="px-3 py-2 border-b dark:border-slate-800 text-center text-orange-700 dark:text-orange-400 whitespace-nowrap" title="Kết nối">Kết nối (%)</th>
+                            <th className="px-3 py-2 border-b dark:border-slate-800 text-center text-orange-500 dark:text-orange-400 whitespace-nowrap text-xs">% TN</th>
+                            <th className="px-2 py-2 border-b dark:border-slate-800 text-center text-orange-500 dark:text-orange-400 whitespace-nowrap text-xs">Câu (TN/TL)</th>
+                            <th className="px-3 py-2 border-b dark:border-slate-800 text-center text-red-700 dark:text-red-400 whitespace-nowrap" title="Vận dụng">V.Dụng (%)</th>
+                            <th className="px-3 py-2 border-b dark:border-slate-800 text-center text-red-500 dark:text-red-400 whitespace-nowrap text-xs">% TN</th>
+                            <th className="px-2 py-2 border-b dark:border-slate-800 text-center text-red-500 dark:text-red-400 whitespace-nowrap text-xs">Câu (TN/TL)</th>
+                            <th className="px-3 py-2 border-b dark:border-slate-800 bg-gray-50 dark:bg-slate-900"></th>
                         </tr>
                     </thead>
                     <tbody>
                         {rows.map((row) => (
-                            <tr key={row.id} className="border-b last:border-0 hover:bg-gray-50 transition-colors">
+                            <tr key={row.id} className="border-b dark:border-slate-800 last:border-0 hover:bg-gray-50 dark:hover:bg-slate-900/50 transition-colors">
                                 <td className="p-2 align-top">
                                     <div className="relative group/topic">
                                         <input 
@@ -261,7 +261,7 @@ export const MatrixConfig: React.FC<MatrixConfigProps> = ({ onGenerate, subject,
                                             placeholder="Chọn hoặc nhập chủ đề" 
                                             value={row.topic} 
                                             onChange={e => updateRow(row.id, 'topic', e.target.value)} 
-                                            className="w-full min-w-[120px] border rounded p-1.5 pr-6 text-xs bg-white text-gray-900 focus:ring-1 focus:ring-emerald-500 outline-none" 
+                                            className="w-full min-w-[120px] border dark:border-slate-800 rounded p-1.5 pr-6 text-xs bg-white dark:bg-slate-950 text-gray-900 dark:text-slate-100 focus:ring-1 focus:ring-emerald-500 outline-none" 
                                         />
                                         <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-500 pointer-events-none" />
                                         <datalist id={`topics-${row.id}`}>
@@ -269,36 +269,36 @@ export const MatrixConfig: React.FC<MatrixConfigProps> = ({ onGenerate, subject,
                                         </datalist>
                                     </div>
                                 </td>
-                                <td className="p-2 align-top"><input type="number" min="0" value={row.level1Percent} onChange={e => updateRow(row.id, 'level1Percent', Number(e.target.value))} className="w-16 border-2 border-blue-200 rounded p-2 text-center text-sm font-bold mx-auto block bg-white text-blue-800 focus:border-blue-500 outline-none" /></td>
-                                <td className="p-2 align-top"><input type="number" min="0" max="100" value={row.level1McqPercent} onChange={e => updateRow(row.id, 'level1McqPercent', Number(e.target.value))} className="w-14 border rounded p-1.5 text-center text-xs font-medium mx-auto block bg-white text-gray-700" title="% Trắc nghiệm của mức Nhận biết" /></td>
-                                <td className="p-1 align-top text-center text-[10px] font-bold text-blue-600">
+                                <td className="p-2 align-top"><input type="number" min="0" value={row.level1Percent} onChange={e => updateRow(row.id, 'level1Percent', Number(e.target.value))} className="w-16 border-2 border-blue-200 dark:border-blue-900/40 rounded p-2 text-center text-sm font-bold mx-auto block bg-white dark:bg-slate-950 text-blue-800 dark:text-blue-300 focus:border-blue-500 outline-none" /></td>
+                                <td className="p-2 align-top"><input type="number" min="0" max="100" value={row.level1McqPercent} onChange={e => updateRow(row.id, 'level1McqPercent', Number(e.target.value))} className="w-14 border dark:border-slate-800 rounded p-1.5 text-center text-xs font-medium mx-auto block bg-white dark:bg-slate-950 text-gray-700 dark:text-slate-350" title="% Trắc nghiệm của mức Nhận biết" /></td>
+                                <td className="p-1 align-top text-center text-[10px] font-bold text-blue-600 dark:text-blue-400">
                                     {Math.round((row.level1McqPercent/100) * getCount(row.level1Percent))}/{getCount(row.level1Percent) - Math.round((row.level1McqPercent/100) * getCount(row.level1Percent))}
                                 </td>
 
-                                <td className="p-2 align-top"><input type="number" min="0" value={row.level2Percent} onChange={e => updateRow(row.id, 'level2Percent', Number(e.target.value))} className="w-16 border-2 border-orange-200 rounded p-2 text-center text-sm font-bold mx-auto block bg-white text-orange-800 focus:border-orange-500 outline-none" /></td>
-                                <td className="p-2 align-top"><input type="number" min="0" max="100" value={row.level2McqPercent} onChange={e => updateRow(row.id, 'level2McqPercent', Number(e.target.value))} className="w-14 border rounded p-1.5 text-center text-xs font-medium mx-auto block bg-white text-gray-700" title="% Trắc nghiệm của mức Kết nối" /></td>
-                                <td className="p-1 align-top text-center text-[10px] font-bold text-orange-600">
+                                <td className="p-2 align-top"><input type="number" min="0" value={row.level2Percent} onChange={e => updateRow(row.id, 'level2Percent', Number(e.target.value))} className="w-16 border-2 border-orange-200 dark:border-orange-900/40 rounded p-2 text-center text-sm font-bold mx-auto block bg-white dark:bg-slate-950 text-orange-850 dark:text-orange-350 focus:border-orange-500 outline-none" /></td>
+                                <td className="p-2 align-top"><input type="number" min="0" max="100" value={row.level2McqPercent} onChange={e => updateRow(row.id, 'level2McqPercent', Number(e.target.value))} className="w-14 border dark:border-slate-800 rounded p-1.5 text-center text-xs font-medium mx-auto block bg-white dark:bg-slate-950 text-gray-700 dark:text-slate-350" title="% Trắc nghiệm của mức Kết nối" /></td>
+                                <td className="p-1 align-top text-center text-[10px] font-bold text-orange-600 dark:text-orange-400">
                                     {Math.round((row.level2McqPercent/100) * getCount(row.level2Percent))}/{getCount(row.level2Percent) - Math.round((row.level2McqPercent/100) * getCount(row.level2Percent))}
                                 </td>
 
-                                <td className="p-2 align-top"><input type="number" min="0" value={row.level3Percent} onChange={e => updateRow(row.id, 'level3Percent', Number(e.target.value))} className="w-16 border-2 border-red-200 rounded p-2 text-center text-sm font-bold mx-auto block bg-white text-red-800 focus:border-red-500 outline-none" /></td>
-                                <td className="p-2 align-top"><input type="number" min="0" max="100" value={row.level3McqPercent} onChange={e => updateRow(row.id, 'level3McqPercent', Number(e.target.value))} className="w-14 border rounded p-1.5 text-center text-xs font-medium mx-auto block bg-white text-gray-700" title="% Trắc nghiệm của mức Vận dụng" /></td>
-                                <td className="p-1 align-top text-center text-[10px] font-bold text-red-600">
+                                <td className="p-2 align-top"><input type="number" min="0" value={row.level3Percent} onChange={e => updateRow(row.id, 'level3Percent', Number(e.target.value))} className="w-16 border-2 border-red-200 dark:border-red-900/40 rounded p-2 text-center text-sm font-bold mx-auto block bg-white dark:bg-slate-950 text-red-800 dark:text-red-300 focus:border-red-500 outline-none" /></td>
+                                <td className="p-2 align-top"><input type="number" min="0" max="100" value={row.level3McqPercent} onChange={e => updateRow(row.id, 'level3McqPercent', Number(e.target.value))} className="w-14 border dark:border-slate-800 rounded p-1.5 text-center text-xs font-medium mx-auto block bg-white dark:bg-slate-950 text-gray-700 dark:text-slate-350" title="% Trắc nghiệm của mức Vận dụng" /></td>
+                                <td className="p-1 align-top text-center text-[10px] font-bold text-red-600 dark:text-red-400">
                                     {Math.round((row.level3McqPercent/100) * getCount(row.level3Percent))}/{getCount(row.level3Percent) - Math.round((row.level3McqPercent/100) * getCount(row.level3Percent))}
                                 </td>
                                 
                                 <td className="p-2 text-center align-top">
-                                    <button onClick={() => handleRemoveRow(row.id)} className="text-red-500 hover:bg-red-50 p-1.5 rounded transition-colors" disabled={rows.length === 1}>
+                                    <button onClick={() => handleRemoveRow(row.id)} className="text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/20 p-1.5 rounded transition-colors" disabled={rows.length === 1}>
                                         <Trash2 className="h-4 w-4" />
                                     </button>
                                 </td>
                             </tr>
                         ))}
                     </tbody>
-                    <tfoot className="bg-gray-50 font-bold sticky bottom-0 border-t shadow-[0_-2px_4px_rgba(0,0,0,0.02)]">
+                    <tfoot className="bg-gray-50 dark:bg-slate-900 font-bold sticky bottom-0 border-t dark:border-slate-800 shadow-[0_-2px_4px_rgba(0,0,0,0.02)]">
                         <tr>
-                            <td className="p-3 text-right text-gray-700">Tổng tỉ lệ:</td>
-                            <td colSpan={8} className={`p-3 text-lg ${totalPercentage === 100 ? 'text-green-600' : 'text-red-600'}`}>
+                            <td className="p-3 text-right text-gray-700 dark:text-slate-300">Tổng tỉ lệ:</td>
+                            <td colSpan={8} className={`p-3 text-lg ${totalPercentage === 100 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-450'}`}>
                                 <span className="font-black">{totalPercentage}%</span> = <span className="underline">{totalQuestions} câu</span> {totalPercentage !== 100 && <span className="text-xs font-normal ml-1">(Yêu cầu = 100%)</span>}
                             </td>
                         </tr>
@@ -307,14 +307,14 @@ export const MatrixConfig: React.FC<MatrixConfigProps> = ({ onGenerate, subject,
             </div>
 
             <div className="flex gap-2 flex-shrink-0 mt-2">
-                <button onClick={handleAddRow} className="flex-1 py-2.5 bg-gray-100 text-gray-700 hover:bg-gray-200 rounded-lg text-sm font-bold flex items-center justify-center gap-1 transition-colors border">
+                <button onClick={handleAddRow} className="flex-1 py-2.5 bg-gray-100 dark:bg-slate-850 text-gray-700 dark:text-slate-350 hover:bg-gray-200 dark:hover:bg-slate-800 rounded-lg text-sm font-bold flex items-center justify-center gap-1 transition-colors border dark:border-slate-800">
                     <Plus className="h-4 w-4" /> Dòng
                 </button>
                 <button
                     onClick={handleGenerate}
                     disabled={isGenerating || totalPercentage !== 100}
                     className={`flex-[3] py-2.5 text-white rounded-lg text-sm font-bold flex items-center justify-center gap-2 transition-all shadow-sm
-             ${isGenerating || totalPercentage !== 100 ? 'bg-emerald-300 cursor-not-allowed' : 'bg-emerald-600 hover:bg-emerald-700 hover:shadow'}
+             ${isGenerating || totalPercentage !== 100 ? 'bg-emerald-350 dark:bg-emerald-950/40 cursor-not-allowed text-white/50' : 'bg-emerald-600 hover:bg-emerald-700 hover:shadow'}
            `}
                 >
                     <Wand2 className="h-4 w-4" /> {isGenerating ? 'Đang bốc câu hỏi...' : 'Rút câu hỏi tự động'}
