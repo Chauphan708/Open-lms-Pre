@@ -343,7 +343,7 @@ export const ClassFunRecord: React.FC = () => {
     if (isLoading) {
         return (
             <div className="flex items-center justify-center p-20">
-                <div className="h-10 w-10 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
+                <div className="h-10 w-10 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin dark:border-slate-800"></div>
             </div>
         );
     }
@@ -362,16 +362,16 @@ export const ClassFunRecord: React.FC = () => {
             {/* Header */}
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div>
-                    <h1 className="text-3xl font-extrabold text-gray-900 flex items-center gap-3">
+                    <h1 className="text-3xl font-extrabold text-gray-900 flex items-center gap-3 dark:text-slate-100">
                         <Zap className="h-8 w-8 text-amber-500" />
                         Ghi Nhận Hành Vi
                     </h1>
-                    <p className="text-gray-500 mt-1">Chọn học sinh → Chọn hành vi → Cộng/trừ điểm</p>
+                    <p className="text-gray-500 mt-1 dark:text-slate-500">Chọn học sinh → Chọn hành vi → Cộng/trừ điểm</p>
                 </div>
                 <div className="flex gap-3">
                     {myClasses.length > 1 && (
                         <select value={selectedClassId} onChange={e => setSelectedClassId(e.target.value)}
-                            className="border border-gray-300 rounded-lg px-4 py-2 text-sm font-medium focus:ring-2 focus:ring-indigo-500 outline-none">
+                            className="border border-gray-300 rounded-lg px-4 py-2 text-sm font-medium focus:ring-2 focus:ring-indigo-500 outline-none dark:border-slate-800">
                             {myClasses.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                         </select>
                     )}
@@ -388,17 +388,17 @@ export const ClassFunRecord: React.FC = () => {
 
             {/* Auto Point Config Panel */}
             {showAutoPointConfig && (
-                <div className="bg-white rounded-xl shadow-sm border p-6 space-y-4 animate-in slide-in-from-top-2">
+                <div className="bg-white rounded-xl shadow-sm border p-6 space-y-4 animate-in slide-in-from-top-2 dark:bg-slate-900 dark:border-slate-800">
                     <div className="flex justify-between items-center">
-                        <h2 className="text-lg font-bold text-gray-800">Cấu hình mốc điểm bài tập</h2>
+                        <h2 className="text-lg font-bold text-gray-800 dark:text-slate-200">Cấu hình mốc điểm bài tập</h2>
                         <p className="text-xs text-gray-500 dark:text-slate-400 italic">* Hệ thống sẽ cộng thêm điểm chênh lệch khi HS đạt mốc cao hơn.</p>
                     </div>
                     
                     <div className="space-y-3">
                         {tempThresholds.map((t, idx) => (
-                            <div key={t.id || idx} className="flex items-center gap-4 bg-gray-50 dark:bg-slate-850 p-3 rounded-xl border border-gray-100">
+                            <div key={t.id || idx} className="flex items-center gap-4 bg-gray-50 dark:bg-slate-850 p-3 rounded-xl border border-gray-100 dark:border-slate-800">
                                 <div className="flex-1 flex items-center gap-2">
-                                    <span className="text-sm font-bold text-gray-600 min-w-20">Đúng từ:</span>
+                                    <span className="text-sm font-bold text-gray-600 min-w-20 dark:text-slate-400">Đúng từ:</span>
                                     <div className="relative flex-1 max-w-[120px]">
                                         <input 
                                             type="number" 
@@ -408,13 +408,13 @@ export const ClassFunRecord: React.FC = () => {
                                                 newThresholds[idx] = { ...newThresholds[idx], percentage: Math.min(100, Math.max(0, parseInt(e.target.value) || 0)) };
                                                 setTempThresholds(newThresholds);
                                             }}
-                                            className="w-full pl-3 pr-8 py-2 border rounded-lg text-sm font-black"
+                                            className="w-full pl-3 pr-8 py-2 border rounded-lg text-sm font-black dark:border-slate-800"
                                         />
                                         <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 font-bold">%</span>
                                     </div>
                                 </div>
                                 <div className="flex-1 flex items-center gap-2">
-                                    <span className="text-sm font-bold text-gray-600 min-w-20">Tổng điểm:</span>
+                                    <span className="text-sm font-bold text-gray-600 min-w-20 dark:text-slate-400">Tổng điểm:</span>
                                     <input 
                                         type="number" 
                                         value={t.points} 
@@ -423,7 +423,7 @@ export const ClassFunRecord: React.FC = () => {
                                             newThresholds[idx] = { ...newThresholds[idx], points: parseInt(e.target.value) || 0 };
                                             setTempThresholds(newThresholds);
                                         }}
-                                        className="w-full max-w-[80px] px-3 py-2 border rounded-lg text-sm font-black text-indigo-600"
+                                        className="w-full max-w-[80px] px-3 py-2 border rounded-lg text-sm font-black text-indigo-600 dark:border-slate-800"
                                     />
                                 </div>
                                 <button 
@@ -438,12 +438,12 @@ export const ClassFunRecord: React.FC = () => {
                         ))}
                     </div>
 
-                    <div className="flex justify-between items-center pt-4 border-t">
+                    <div className="flex justify-between items-center pt-4 border-t dark:border-slate-800">
                         <button 
                             onClick={() => {
                                 setTempThresholds([...tempThresholds, { id: `new_${Date.now()}`, percentage: 0, points: 0 }]);
                             }}
-                            className="flex items-center gap-2 px-4 py-2 border-2 border-dashed border-indigo-200 text-indigo-600 rounded-xl text-sm font-bold hover:bg-indigo-50 transition"
+                            className="flex items-center gap-2 px-4 py-2 border-2 border-dashed border-indigo-200 text-indigo-600 rounded-xl text-sm font-bold hover:bg-indigo-50 transition dark:border-indigo-900/30"
                         >
                             <Plus className="h-4 w-4" /> Thêm mốc mới
                         </button>
@@ -462,9 +462,9 @@ export const ClassFunRecord: React.FC = () => {
 
             {/* Manage Behaviors Panel */}
             {showManageBehaviors && (
-                <div className="bg-white rounded-xl shadow-sm border p-6 space-y-4">
+                <div className="bg-white rounded-xl shadow-sm border p-6 space-y-4 dark:bg-slate-900 dark:border-slate-800">
                     <div className="flex justify-between items-center">
-                        <h2 className="text-lg font-bold text-gray-800">Danh sách hành vi</h2>
+                        <h2 className="text-lg font-bold text-gray-800 dark:text-slate-200">Danh sách hành vi</h2>
                         {behaviors.length === 0 && (
                             <button onClick={seedDefaults} className="text-sm text-indigo-600 hover:underline font-medium">
                                 + Dùng mẫu mặc định
@@ -473,16 +473,16 @@ export const ClassFunRecord: React.FC = () => {
                     </div>
 
                     {/* Add new */}
-                    <div className="flex flex-col sm:flex-row gap-2 p-4 bg-gray-50 dark:bg-slate-850 rounded-lg border">
+                    <div className="flex flex-col sm:flex-row gap-2 p-4 bg-gray-50 dark:bg-slate-850 rounded-lg border dark:border-slate-800">
                         <input value={newBehavior.description} onChange={e => setNewBehavior(p => ({ ...p, description: e.target.value }))}
-                            placeholder="Mô tả hành vi..." className="flex-1 px-3 py-2 border rounded-lg text-sm" />
+                            placeholder="Mô tả hành vi..." className="flex-1 px-3 py-2 border rounded-lg text-sm dark:border-slate-800" />
                         <select value={newBehavior.type} onChange={e => setNewBehavior(p => ({ ...p, type: e.target.value as 'POSITIVE' | 'NEGATIVE' }))}
-                            className="px-3 py-2 border rounded-lg text-sm">
+                            className="px-3 py-2 border rounded-lg text-sm dark:border-slate-800">
                             <option value="POSITIVE">Tích cực</option>
                             <option value="NEGATIVE">Tiêu cực</option>
                         </select>
                         <input type="number" value={newBehavior.points} onChange={e => setNewBehavior(p => ({ ...p, points: parseInt(e.target.value) || 0 }))}
-                            className="w-20 px-3 py-2 border rounded-lg text-sm" />
+                            className="w-20 px-3 py-2 border rounded-lg text-sm dark:border-slate-800" />
                         <button onClick={handleAddBehavior}
                             className="flex items-center gap-1 px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 transition">
                             <Plus className="h-4 w-4" /> Thêm
@@ -498,12 +498,12 @@ export const ClassFunRecord: React.FC = () => {
                                     {editingBehavior?.id === b.id ? (
                                         <div className="flex flex-col gap-2 w-full mt-1">
                                             <input autoFocus value={editingBehavior.description} onChange={e => setEditingBehavior({ ...editingBehavior, description: e.target.value })}
-                                                className="w-full px-2 py-1 text-sm border rounded outline-none focus:border-indigo-500" placeholder="Mô tả" />
+                                                className="w-full px-2 py-1 text-sm border rounded outline-none focus:border-indigo-500 dark:border-slate-800" placeholder="Mô tả" />
                                             <div className="flex gap-2">
                                                 <input type="number" value={editingBehavior.points} onChange={e => setEditingBehavior({ ...editingBehavior, points: parseInt(e.target.value) || 0 })}
-                                                    className="w-16 px-2 py-1 text-sm border rounded outline-none focus:border-indigo-500" />
+                                                    className="w-16 px-2 py-1 text-sm border rounded outline-none focus:border-indigo-500 dark:border-slate-800" />
                                                 <button onClick={handleSaveEditBehavior} className="px-2 py-1 bg-emerald-600 text-white rounded text-xs flex items-center gap-1 hover:bg-emerald-700"><Save className="w-3 h-3" /> Lưu</button>
-                                                <button onClick={() => setEditingBehavior(null)} className="px-2 py-1 bg-gray-200 text-gray-700 rounded text-xs flex items-center gap-1 hover:bg-gray-300"><X className="w-3 h-3" /> Hủy</button>
+                                                <button onClick={() => setEditingBehavior(null)} className="px-2 py-1 bg-gray-200 text-gray-700 rounded text-xs flex items-center gap-1 hover:bg-gray-300 dark:text-slate-300"><X className="w-3 h-3" /> Hủy</button>
                                             </div>
                                         </div>
                                     ) : (
@@ -529,12 +529,12 @@ export const ClassFunRecord: React.FC = () => {
                                     {editingBehavior?.id === b.id ? (
                                         <div className="flex flex-col gap-2 w-full mt-1">
                                             <input autoFocus value={editingBehavior.description} onChange={e => setEditingBehavior({ ...editingBehavior, description: e.target.value })}
-                                                className="w-full px-2 py-1 text-sm border rounded outline-none focus:border-indigo-500" placeholder="Mô tả" />
+                                                className="w-full px-2 py-1 text-sm border rounded outline-none focus:border-indigo-500 dark:border-slate-800" placeholder="Mô tả" />
                                             <div className="flex gap-2">
                                                 <input type="number" value={editingBehavior.points} onChange={e => setEditingBehavior({ ...editingBehavior, points: parseInt(e.target.value) || 0 })}
-                                                    className="w-16 px-2 py-1 text-sm border rounded outline-none focus:border-indigo-500" />
+                                                    className="w-16 px-2 py-1 text-sm border rounded outline-none focus:border-indigo-500 dark:border-slate-800" />
                                                 <button onClick={handleSaveEditBehavior} className="px-2 py-1 bg-red-600 text-white rounded text-xs flex items-center gap-1 hover:bg-red-700"><Save className="w-3 h-3" /> Lưu</button>
-                                                <button onClick={() => setEditingBehavior(null)} className="px-2 py-1 bg-gray-200 text-gray-700 rounded text-xs flex items-center gap-1 hover:bg-gray-300"><X className="w-3 h-3" /> Hủy</button>
+                                                <button onClick={() => setEditingBehavior(null)} className="px-2 py-1 bg-gray-200 text-gray-700 rounded text-xs flex items-center gap-1 hover:bg-gray-300 dark:text-slate-300"><X className="w-3 h-3" /> Hủy</button>
                                             </div>
                                         </div>
                                     ) : (
@@ -559,9 +559,9 @@ export const ClassFunRecord: React.FC = () => {
 
             <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
                 {/* Student Selection Panel */}
-                <div className="lg:col-span-2 bg-white rounded-xl shadow-sm border p-5">
+                <div className="lg:col-span-2 bg-white rounded-xl shadow-sm border p-5 dark:bg-slate-900 dark:border-slate-800">
                     <div className="flex items-center justify-between mb-4">
-                        <h2 className="text-lg font-bold text-gray-800">Chọn Học Sinh</h2>
+                        <h2 className="text-lg font-bold text-gray-800 dark:text-slate-200">Chọn Học Sinh</h2>
                         <span className="text-sm text-indigo-600 font-bold bg-indigo-50 px-3 py-1 rounded-full">
                             {selectedStudentIds.length} đã chọn
                         </span>
@@ -571,11 +571,11 @@ export const ClassFunRecord: React.FC = () => {
                     <div className="relative mb-3">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                         <input value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
-                            placeholder="Tìm học sinh..." className="w-full pl-10 pr-4 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none" />
+                            placeholder="Tìm học sinh..." className="w-full pl-10 pr-4 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none dark:border-slate-800" />
                     </div>
 
                     {/* Tabs filter by Group */}
-                    <div className="flex flex-wrap gap-1 p-1 bg-gray-100/60 rounded-xl mb-3 border border-gray-200/40">
+                    <div className="flex flex-wrap gap-1 p-1 bg-gray-100/60 rounded-xl mb-3 border border-gray-200/40 dark:border-slate-800">
                         <button
                             onClick={() => setActiveGroupFilter('all')}
                             className={`flex-1 min-w-[65px] text-[11px] py-1.5 px-2 rounded-lg font-bold transition-all ${
@@ -615,10 +615,10 @@ export const ClassFunRecord: React.FC = () => {
 
                     {/* Quick select buttons for active items */}
                     <div className="flex justify-between items-center gap-2 mb-3">
-                        <button onClick={selectAllActive} className="flex-1 py-1.5 bg-indigo-50 text-indigo-700 rounded-lg text-xs font-bold hover:bg-indigo-100 transition-all border border-indigo-100/50">
+                        <button onClick={selectAllActive} className="flex-1 py-1.5 bg-indigo-50 text-indigo-700 rounded-lg text-xs font-bold hover:bg-indigo-100 transition-all border border-indigo-100/50 dark:border-slate-800">
                             Chọn cả mục
                         </button>
-                        <button onClick={deselectAllActive} className="flex-1 py-1.5 bg-gray-50 dark:bg-slate-850 text-gray-600 rounded-lg text-xs font-bold hover:bg-gray-100 transition-all border border-gray-200/40">
+                        <button onClick={deselectAllActive} className="flex-1 py-1.5 bg-gray-50 dark:bg-slate-850 text-gray-600 rounded-lg text-xs font-bold hover:bg-gray-100 transition-all border border-gray-200/40 dark:border-slate-800 dark:text-slate-400 dark:hover:bg-slate-800">
                             Bỏ chọn cả mục
                         </button>
                     </div>
@@ -675,7 +675,7 @@ export const ClassFunRecord: React.FC = () => {
                                                     <span className="text-[9px] font-bold text-red-500 bg-red-50 px-1 rounded">Vắng</span>
                                                 ) : (
                                                     group && (
-                                                        <span className="text-[9px] font-bold text-gray-400 bg-gray-100 px-1 py-0.5 rounded">
+                                                        <span className="text-[9px] font-bold text-gray-400 bg-gray-100 px-1 py-0.5 rounded dark:bg-slate-850">
                                                             {group.name}
                                                         </span>
                                                     )
@@ -692,8 +692,8 @@ export const ClassFunRecord: React.FC = () => {
                 {/* Behavior Selection Panel */}
                 <div className="lg:col-span-3 space-y-5">
                     {/* Cộng/Trừ Điểm Nhanh */}
-                    <div className="bg-white rounded-xl shadow-sm border p-5">
-                        <h2 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+                    <div className="bg-white rounded-xl shadow-sm border p-5 dark:bg-slate-900 dark:border-slate-800">
+                        <h2 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2 dark:text-slate-200">
                             <Zap className="h-5 w-5 text-amber-500" /> Cộng / Trừ Điểm Nhanh
                         </h2>
                         
@@ -742,17 +742,17 @@ export const ClassFunRecord: React.FC = () => {
 
                             {/* Note input */}
                             <div>
-                                <label className="block text-xs font-bold text-gray-500 mb-1">Lý do / Ghi chú (không bắt buộc)</label>
+                                <label className="block text-xs font-bold text-gray-500 mb-1 dark:text-slate-500">Lý do / Ghi chú (không bắt buộc)</label>
                                 <input 
                                     value={customReason} 
                                     onChange={e => setCustomReason(e.target.value)}
                                     placeholder="VD: Hăng hái phát biểu, Nói chuyện riêng..."
-                                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:border-indigo-500 focus:ring-4 focus:ring-indigo-50/50 outline-none transition-all font-medium" 
+                                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:border-indigo-500 focus:ring-4 focus:ring-indigo-50/50 outline-none transition-all font-medium dark:border-slate-800" 
                                 />
                             </div>
                             
                             {selectedStudentIds.length === 0 && (
-                                <p className="text-[11px] font-bold text-amber-600 bg-amber-50 border border-amber-100 p-2.5 rounded-lg text-center">
+                                <p className="text-[11px] font-bold text-amber-600 bg-amber-50 border border-amber-100 p-2.5 rounded-lg text-center dark:border-slate-800">
                                     💡 Chọn học sinh ở danh sách bên trái để mở khoá cộng/trừ điểm nhanh.
                                 </p>
                             )}
@@ -760,12 +760,12 @@ export const ClassFunRecord: React.FC = () => {
                     </div>
 
                     {/* Positive behaviors */}
-                    <div className="bg-white rounded-xl shadow-sm border p-5">
+                    <div className="bg-white rounded-xl shadow-sm border p-5 dark:bg-slate-900 dark:border-slate-800">
                         <h2 className="text-lg font-bold text-emerald-700 mb-4 flex items-center gap-2">
                             <ThumbsUp className="h-5 w-5" /> Hành vi tích cực
                         </h2>
                         {positiveBehaviors.length === 0 ? (
-                            <div className="text-center py-6 border border-dashed rounded-xl border-gray-200 bg-gray-50 dark:bg-slate-850/50">
+                            <div className="text-center py-6 border border-dashed rounded-xl border-gray-200 bg-gray-50 dark:bg-slate-850/50 dark:border-slate-800">
                                 <p className="text-gray-400 text-sm mb-3">Chưa có tiêu chí hành vi tích cực nào.</p>
                                 <button 
                                     onClick={seedDefaults}
@@ -784,7 +784,7 @@ export const ClassFunRecord: React.FC = () => {
                                             : 'border-gray-100 bg-gray-50 dark:bg-slate-850 opacity-60 cursor-not-allowed'
                                             }`}>
                                         <div className="text-2xl font-extrabold text-emerald-600">+{b.points}</div>
-                                        <div className="text-sm font-medium text-gray-700 mt-1 line-clamp-2">{b.description}</div>
+                                        <div className="text-sm font-medium text-gray-700 mt-1 line-clamp-2 dark:text-slate-300">{b.description}</div>
                                     </button>
                                 ))}
                             </div>
@@ -792,12 +792,12 @@ export const ClassFunRecord: React.FC = () => {
                     </div>
 
                     {/* Negative behaviors */}
-                    <div className="bg-white rounded-xl shadow-sm border p-5">
+                    <div className="bg-white rounded-xl shadow-sm border p-5 dark:bg-slate-900 dark:border-slate-800">
                         <h2 className="text-lg font-bold text-red-700 mb-4 flex items-center gap-2">
                             <ThumbsDown className="h-5 w-5" /> Hành vi cần nhắc nhở
                         </h2>
                         {negativeBehaviors.length === 0 ? (
-                            <div className="text-center py-6 border border-dashed rounded-xl border-gray-200 bg-gray-50 dark:bg-slate-850/50">
+                            <div className="text-center py-6 border border-dashed rounded-xl border-gray-200 bg-gray-50 dark:bg-slate-850/50 dark:border-slate-800">
                                 <p className="text-gray-400 text-sm mb-3">Chưa có tiêu chí hành vi nhắc nhở nào.</p>
                                 <button 
                                     onClick={seedDefaults}
@@ -816,7 +816,7 @@ export const ClassFunRecord: React.FC = () => {
                                             : 'border-gray-100 bg-gray-50 dark:bg-slate-850 opacity-60 cursor-not-allowed'
                                             }`}>
                                         <div className="text-2xl font-extrabold text-red-600">{b.points}</div>
-                                        <div className="text-sm font-medium text-gray-700 mt-1 line-clamp-2">{b.description}</div>
+                                        <div className="text-sm font-medium text-gray-700 mt-1 line-clamp-2 dark:text-slate-300">{b.description}</div>
                                     </button>
                                 ))}
                             </div>
@@ -824,22 +824,22 @@ export const ClassFunRecord: React.FC = () => {
                     </div>
 
                     {/* Recent History */}
-                    <div className="bg-white rounded-xl shadow-sm border p-5">
+                    <div className="bg-white rounded-xl shadow-sm border p-5 dark:bg-slate-900 dark:border-slate-800">
                         <div className="flex justify-between items-center mb-4">
-                            <h2 className="text-lg font-bold text-gray-800 flex items-center gap-2">
+                            <h2 className="text-lg font-bold text-gray-800 flex items-center gap-2 dark:text-slate-200">
                                 Lịch sử cộng/trừ điểm (Hôm nay)
                             </h2>
                             <div className="flex gap-2">
                                 <button 
                                     onClick={handleExportHistory}
-                                    className="flex items-center gap-1 px-3 py-1.5 text-xs font-bold text-gray-600 bg-gray-50 dark:bg-slate-850 border rounded-lg hover:bg-gray-100 transition-all"
+                                    className="flex items-center gap-1 px-3 py-1.5 text-xs font-bold text-gray-600 bg-gray-50 dark:bg-slate-850 border rounded-lg hover:bg-gray-100 transition-all dark:border-slate-800 dark:text-slate-400 dark:hover:bg-slate-800"
                                     title="Xuất danh sách ra CSV"
                                 >
                                     <Download className="h-3.5 w-3.5" /> Xuất file
                                 </button>
                                 <button 
                                     onClick={() => setShowAllHistory(true)}
-                                    className="flex items-center gap-1 px-3 py-1.5 text-xs font-bold text-indigo-600 bg-indigo-50 border border-indigo-100 rounded-lg hover:bg-indigo-100 transition-all"
+                                    className="flex items-center gap-1 px-3 py-1.5 text-xs font-bold text-indigo-600 bg-indigo-50 border border-indigo-100 rounded-lg hover:bg-indigo-100 transition-all dark:border-indigo-900/30"
                                 >
                                     <List className="h-3.5 w-3.5" /> Xem toàn bộ
                                 </button>
@@ -854,16 +854,16 @@ export const ClassFunRecord: React.FC = () => {
                                     const isEditing = editingLogId === log.id;
 
                                     return (
-                                        <div key={log.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-3 rounded-lg bg-gray-50 dark:bg-slate-850 border gap-2 hover:bg-gray-100 transition group/log">
+                                        <div key={log.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-3 rounded-lg bg-gray-50 dark:bg-slate-850 border gap-2 hover:bg-gray-100 transition group/log dark:border-slate-800 dark:hover:bg-slate-800">
                                             <div className="flex items-center gap-3 flex-1">
                                                 <img src={student?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(student?.name || '')}&background=6366f1&color=fff&size=32`} className="w-8 h-8 rounded-full" />
                                                 <div className="flex-1">
-                                                    <p className="text-sm font-bold text-gray-800">{student?.name}</p>
+                                                    <p className="text-sm font-bold text-gray-800 dark:text-slate-200">{student?.name}</p>
                                                     {isEditing ? (
                                                         <input 
                                                             value={editLogData.reason} 
                                                             onChange={e => setEditLogData({ ...editLogData, reason: e.target.value })}
-                                                            className="text-xs w-full mt-1 px-2 py-1 border rounded"
+                                                            className="text-xs w-full mt-1 px-2 py-1 border rounded dark:border-slate-800"
                                                         />
                                                     ) : (
                                                         <p className="text-xs text-gray-500 dark:text-slate-400 line-clamp-1">{log.reason}</p>
@@ -877,13 +877,13 @@ export const ClassFunRecord: React.FC = () => {
                                                             type="number" 
                                                             value={editLogData.points} 
                                                             onChange={e => setEditLogData({ ...editLogData, points: parseInt(e.target.value) || 0 })}
-                                                            className="w-16 px-2 py-1 text-sm border rounded font-bold"
+                                                            className="w-16 px-2 py-1 text-sm border rounded font-bold dark:border-slate-800"
                                                         />
                                                         <button onClick={() => {
                                                             updateBehaviorLog(log.id, editLogData);
                                                             setEditingLogId(null);
                                                         }} className="p-1 px-2 bg-indigo-600 text-white rounded text-xs">Lưu</button>
-                                                        <button onClick={() => setEditingLogId(null)} className="p-1 px-2 bg-gray-200 text-gray-600 rounded text-xs">Hủy</button>
+                                                        <button onClick={() => setEditingLogId(null)} className="p-1 px-2 bg-gray-200 text-gray-600 rounded text-xs dark:text-slate-400">Hủy</button>
                                                     </div>
                                                 ) : (
                                                     <>
@@ -924,25 +924,25 @@ export const ClassFunRecord: React.FC = () => {
             {/* --- ALL HISTORY MODAL --- */}
             {showAllHistory && (
                 <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
-                    <div className="bg-white rounded-3xl shadow-2xl w-full max-w-4xl flex flex-col max-h-[90vh] overflow-hidden">
-                        <div className="p-6 border-b flex justify-between items-center bg-gray-50 dark:bg-slate-850/50 sticky top-0 z-10">
+                    <div className="bg-white rounded-3xl shadow-2xl w-full max-w-4xl flex flex-col max-h-[90vh] overflow-hidden dark:bg-slate-900">
+                        <div className="p-6 border-b flex justify-between items-center bg-gray-50 dark:bg-slate-850/50 sticky top-0 z-10 dark:border-slate-800">
                             <div className="flex items-center gap-4">
                                 <div className="bg-indigo-600 p-3 rounded-2xl text-white shadow-lg shadow-indigo-200">
                                     <List className="h-6 w-6" />
                                 </div>
                                 <div>
-                                    <h2 className="text-2xl font-black text-gray-900">Toàn bộ lịch sử điểm</h2>
-                                    <p className="text-sm text-gray-500">Lớp: <span className="font-bold text-indigo-600">{selectedClass?.name}</span></p>
+                                    <h2 className="text-2xl font-black text-gray-900 dark:text-slate-100">Toàn bộ lịch sử điểm</h2>
+                                    <p className="text-sm text-gray-500 dark:text-slate-500">Lớp: <span className="font-bold text-indigo-600">{selectedClass?.name}</span></p>
                                 </div>
                             </div>
                             <div className="flex items-center gap-3">
                                 <button 
                                     onClick={handleExportHistory}
-                                    className="flex items-center gap-2 px-5 py-2.5 text-sm font-bold text-gray-700 bg-white border border-gray-200 rounded-2xl hover:bg-gray-50 dark:bg-slate-850 shadow-sm transition-all"
+                                    className="flex items-center gap-2 px-5 py-2.5 text-sm font-bold text-gray-700 bg-white border border-gray-200 rounded-2xl hover:bg-gray-50 dark:bg-slate-850 shadow-sm transition-all dark:border-slate-800 dark:text-slate-300 dark:hover:bg-slate-850/50"
                                 >
                                     <Download className="h-5 w-5 text-indigo-500" /> Xuất CSV
                                 </button>
-                                <button onClick={() => setShowAllHistory(false)} className="hover:bg-gray-100 p-2.5 rounded-full transition-colors">
+                                <button onClick={() => setShowAllHistory(false)} className="hover:bg-gray-100 p-2.5 rounded-full transition-colors dark:hover:bg-slate-800">
                                     <X className="h-7 w-7 text-gray-400" />
                                 </button>
                             </div>
@@ -950,7 +950,7 @@ export const ClassFunRecord: React.FC = () => {
 
                         <div className="flex-1 overflow-y-auto p-6 space-y-3 bg-gray-50 dark:bg-slate-850/30">
                             {(logs || []).length === 0 ? (
-                                <div className="text-center py-24 bg-white rounded-3xl border-2 border-dashed border-gray-100">
+                                <div className="text-center py-24 bg-white rounded-3xl border-2 border-dashed border-gray-100 dark:bg-slate-900 dark:border-slate-800">
                                     <Sparkles className="h-12 w-12 text-gray-200 mx-auto mb-4" />
                                     <p className="text-gray-400 font-medium italic">Chưa có lịch sử ghi nhận điểm nào.</p>
                                 </div>
@@ -958,18 +958,18 @@ export const ClassFunRecord: React.FC = () => {
                                 (logs || []).sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()).map((log: any) => {
                                     const student = users.find(u => u.id === log.student_id);
                                     return (
-                                        <div key={log.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-5 bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md hover:border-indigo-100 transition-all group">
+                                        <div key={log.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-5 bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md hover:border-indigo-100 transition-all group dark:bg-slate-900 dark:border-slate-800">
                                             <div className="flex items-center gap-4">
                                                 <div className={`h-12 w-12 rounded-xl flex items-center justify-center flex-shrink-0 font-black text-lg
                                                     ${log.points >= 0 ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-600'}`}>
                                                     {log.points > 0 ? `+${log.points}` : log.points}
                                                 </div>
                                                 <div className="min-w-0">
-                                                    <p className="font-black text-gray-900 truncate group-hover:text-indigo-600 transition-colors uppercase text-sm tracking-wide">
+                                                    <p className="font-black text-gray-900 truncate group-hover:text-indigo-600 transition-colors uppercase text-sm tracking-wide dark:text-slate-100">
                                                         {student?.name || 'HS ẩn'}
                                                     </p>
                                                     <div className="flex items-center gap-2 mt-0.5">
-                                                        <span className="text-sm text-gray-600 font-medium italic">"{log.reason || 'Khen ngợi/Nhắc nhở'}"</span>
+                                                        <span className="text-sm text-gray-600 font-medium italic dark:text-slate-400">"{log.reason || 'Khen ngợi/Nhắc nhở'}"</span>
                                                         <span className="text-[10px] text-gray-300">•</span>
                                                         <span className="text-xs text-gray-400 flex items-center gap-1">
                                                             <Clock className="h-3 w-3" /> {new Date(log.created_at).toLocaleString('vi-VN')}
@@ -992,7 +992,7 @@ export const ClassFunRecord: React.FC = () => {
                             )}
                         </div>
 
-                        <div className="p-6 border-t bg-gray-50 dark:bg-slate-850/50 text-center rounded-b-3xl">
+                        <div className="p-6 border-t bg-gray-50 dark:bg-slate-850/50 text-center rounded-b-3xl dark:border-slate-800">
                             <button 
                                 onClick={() => setShowAllHistory(false)} 
                                 className="bg-indigo-600 text-white px-12 py-3 rounded-2xl font-black hover:bg-indigo-700 shadow-xl shadow-indigo-100 transition-all active:scale-95"

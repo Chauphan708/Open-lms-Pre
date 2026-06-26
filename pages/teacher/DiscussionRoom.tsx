@@ -301,16 +301,16 @@ export const DiscussionRoom: React.FC = () => {
    return (
       <div className="h-screen bg-gray-50 dark:bg-slate-850 flex flex-col">
          {/* Header */}
-         <div className="bg-white border-b px-4 md:px-6 py-3 flex justify-between items-center shadow-sm z-50 relative">
+         <div className="bg-white border-b px-4 md:px-6 py-3 flex justify-between items-center shadow-sm z-50 relative dark:bg-slate-900 dark:border-slate-800">
             <div className="flex items-center gap-2 md:gap-4">
-               <button onClick={() => navigate('/teacher/discussions')} className="hover:bg-gray-100 p-2 rounded-full transition-colors"><ArrowLeft className="h-5 w-5" /></button>
+               <button onClick={() => navigate('/teacher/discussions')} className="hover:bg-gray-100 p-2 rounded-full transition-colors dark:hover:bg-slate-800"><ArrowLeft className="h-5 w-5" /></button>
                <div>
-                  <h1 className="font-bold text-gray-900 text-base md:text-lg flex items-center gap-2">
+                  <h1 className="font-bold text-gray-900 text-base md:text-lg flex items-center gap-2 dark:text-slate-100">
                      <div className="truncate max-w-[150px] md:max-w-xs">{session.title}</div>
                      {session.status === 'FINISHED' && <span className="bg-red-100 text-red-600 text-xs px-2 py-0.5 rounded flex-shrink-0">Kết thúc</span>}
                   </h1>
-                  <div className="flex items-center gap-3 text-xs text-gray-500 mt-0.5">
-                     <span className="font-mono bg-gray-100 px-2 py-0.5 rounded border">PIN: {session.id}</span>
+                  <div className="flex items-center gap-3 text-xs text-gray-500 mt-0.5 dark:text-slate-500">
+                     <span className="font-mono bg-gray-100 px-2 py-0.5 rounded border dark:border-slate-800 dark:bg-slate-850">PIN: {session.id}</span>
                      <span className="hidden md:inline">• {session.participants.length} thành viên</span>
                   </div>
                </div>
@@ -329,8 +329,8 @@ export const DiscussionRoom: React.FC = () => {
                   </button>
 
                   {isRoundMenuOpen && (
-                     <div className="absolute top-full right-0 mt-2 w-72 bg-white border rounded-xl shadow-xl p-2 z-50 animate-in fade-in zoom-in-95 duration-100">
-                        <h4 className="text-xs font-bold text-gray-500 uppercase mb-2 px-2 py-1">Lịch sử vòng thảo luận</h4>
+                     <div className="absolute top-full right-0 mt-2 w-72 bg-white border rounded-xl shadow-xl p-2 z-50 animate-in fade-in zoom-in-95 duration-100 dark:bg-slate-900 dark:border-slate-800">
+                        <h4 className="text-xs font-bold text-gray-500 uppercase mb-2 px-2 py-1 dark:text-slate-500">Lịch sử vòng thảo luận</h4>
                         <div className="max-h-60 overflow-y-auto space-y-1">
                            {session.rounds.map(r => (
                               <div key={r.id} className="flex items-center gap-1">
@@ -344,7 +344,7 @@ export const DiscussionRoom: React.FC = () => {
                                  {session.activeRoundId !== r.id && session.status === 'ACTIVE' && (
                                     <button
                                        onClick={() => { setActiveRound(session.id, r.id); setViewedRoundId(r.id); setIsRoundMenuOpen(false); }}
-                                       className="text-xs bg-indigo-50 text-indigo-600 px-3 py-2 rounded-lg hover:bg-indigo-100 border border-indigo-100 font-medium"
+                                       className="text-xs bg-indigo-50 text-indigo-600 px-3 py-2 rounded-lg hover:bg-indigo-100 border border-indigo-100 font-medium dark:border-indigo-900/30"
                                        title="Mở lại vòng này"
                                     >
                                        Mở
@@ -354,7 +354,7 @@ export const DiscussionRoom: React.FC = () => {
                            ))}
                         </div>
                         {session.status === 'ACTIVE' && (
-                           <div className="border-t mt-2 pt-2">
+                           <div className="border-t mt-2 pt-2 dark:border-slate-800">
                               <button onClick={() => { setShowRoundModal(true); setIsRoundMenuOpen(false); }} className="w-full text-center text-xs text-indigo-600 font-bold py-2 hover:bg-indigo-50 rounded-lg flex items-center justify-center gap-1 transition-colors">
                                  <Plus className="h-3 w-3" /> Tạo vòng mới
                               </button>
@@ -376,8 +376,8 @@ export const DiscussionRoom: React.FC = () => {
                   </button>
 
                   {isVisibilityMenuOpen && (
-                     <div className="absolute top-full right-0 mt-2 w-60 bg-white border rounded-xl shadow-xl p-2 z-50 animate-in fade-in zoom-in-95 duration-100">
-                        <div className="text-xs font-bold text-gray-500 uppercase mb-2 px-2 py-1">Chế độ xem của HS</div>
+                     <div className="absolute top-full right-0 mt-2 w-60 bg-white border rounded-xl shadow-xl p-2 z-50 animate-in fade-in zoom-in-95 duration-100 dark:bg-slate-900 dark:border-slate-800">
+                        <div className="text-xs font-bold text-gray-500 uppercase mb-2 px-2 py-1 dark:text-slate-500">Chế độ xem của HS</div>
                         {[
                            { id: 'FULL', label: 'Hiện đầy đủ', icon: Eye },
                            { id: 'HIDDEN_ALL', label: 'Ẩn tất cả (Chỉ hiện số)', icon: EyeOff },
@@ -402,15 +402,15 @@ export const DiscussionRoom: React.FC = () => {
                {session.status === 'ACTIVE' ? (
                   <button
                      onClick={handleEndSession}
-                     className="hidden md:flex bg-red-50 text-red-600 border border-red-200 px-4 py-2 rounded-lg text-sm font-bold hover:bg-red-100 hover:border-red-300 items-center gap-2 transition-all shadow-sm hover:shadow"
+                     className="hidden md:flex bg-red-50 text-red-600 border border-red-200 px-4 py-2 rounded-lg text-sm font-bold hover:bg-red-100 hover:border-red-300 items-center gap-2 transition-all shadow-sm hover:shadow dark:border-red-900/30"
                   >
                      <Power className="h-4 w-4" /> Kết thúc
                   </button>
                ) : (
-                  <span className="hidden md:inline text-sm font-bold text-gray-500 bg-gray-100 border border-gray-200 px-4 py-2 rounded-lg">Đã đóng</span>
+                  <span className="hidden md:inline text-sm font-bold text-gray-500 bg-gray-100 border border-gray-200 px-4 py-2 rounded-lg dark:border-slate-800 dark:bg-slate-850 dark:text-slate-500">Đã đóng</span>
                )}
 
-               <button onClick={() => setIsMobileSidebarOpen(true)} className="md:hidden p-2 text-gray-600 hover:bg-gray-100 rounded-lg">
+               <button onClick={() => setIsMobileSidebarOpen(true)} className="md:hidden p-2 text-gray-600 hover:bg-gray-100 rounded-lg dark:text-slate-400 dark:hover:bg-slate-800">
                   <Menu className="h-6 w-6" />
                </button>
             </div>
@@ -418,9 +418,9 @@ export const DiscussionRoom: React.FC = () => {
 
          {/* Body */}
          <div className="flex-1 flex overflow-hidden relative">
-            <div className="flex-1 flex flex-col bg-white relative">
+            <div className="flex-1 flex flex-col bg-white relative dark:bg-slate-900">
                {/* Room Selector & Tab Toggle */}
-               <div className="bg-gray-50 dark:bg-slate-850 border-b px-4 py-2 flex items-center justify-between gap-4 overflow-x-auto no-scrollbar">
+               <div className="bg-gray-50 dark:bg-slate-850 border-b px-4 py-2 flex items-center justify-between gap-4 overflow-x-auto no-scrollbar dark:border-slate-800">
                   <div className="flex gap-2">
                      <button
                         onClick={() => setCurrentViewRoomId('MAIN')}
@@ -440,7 +440,7 @@ export const DiscussionRoom: React.FC = () => {
                   </div>
                   
                   {/* Mode switcher (Chat vs Whiteboard) */}
-                  <div className="flex bg-gray-200/80 p-0.5 rounded-xl border border-gray-300/30 flex-shrink-0 shadow-inner">
+                  <div className="flex bg-gray-200/80 p-0.5 rounded-xl border border-gray-300/30 flex-shrink-0 shadow-inner dark:border-slate-800">
                      <button
                         onClick={() => setMiddleMode('CHAT')}
                         className={`px-3 py-1 rounded-lg text-xs font-bold transition-all ${middleMode === 'CHAT' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-900'}`}
@@ -471,7 +471,7 @@ export const DiscussionRoom: React.FC = () => {
                         </div>
 
                         {session.visibility !== 'FULL' && (
-                           <div className="bg-yellow-50 border border-yellow-200 p-2 rounded-lg text-xs text-center text-yellow-800 font-medium mb-4 mx-auto max-w-md shadow-sm">
+                           <div className="bg-yellow-50 border border-yellow-200 p-2 rounded-lg text-xs text-center text-yellow-800 font-medium mb-4 mx-auto max-w-md shadow-sm dark:border-slate-800">
                               ⚠️ Học sinh đang thấy chế độ: {session.visibility}
                            </div>
                         )}
@@ -480,7 +480,7 @@ export const DiscussionRoom: React.FC = () => {
                            <div key={m.id} className={`flex ${m.senderId === user?.id ? 'justify-end' : 'justify-start'}`}>
                               {m.type === 'SYSTEM' ? (
                                  <div className="w-full text-center my-2">
-                                    <span className="bg-gray-200 text-gray-600 text-xs px-4 py-1.5 rounded-full font-medium">{m.content}</span>
+                                    <span className="bg-gray-200 text-gray-600 text-xs px-4 py-1.5 rounded-full font-medium dark:text-slate-400">{m.content}</span>
                                  </div>
                               ) : (
                                  <div className={`max-w-[85%] md:max-w-[70%] rounded-2xl px-4 py-3 shadow-sm ${m.senderId === user?.id ? 'bg-indigo-600 text-white rounded-br-sm' : 'bg-white text-gray-800 border border-gray-100 rounded-bl-sm'}`}>
@@ -488,7 +488,7 @@ export const DiscussionRoom: React.FC = () => {
                                     {m.type === 'STICKER' ? (
                                        <div className="text-5xl my-1">{m.content}</div>
                                     ) : m.type === 'IMAGE' ? (
-                                       <img src={m.content} alt="Sent" className="max-w-full rounded-lg my-1 border border-white/20" />
+                                       <img src={m.content} alt="Sent" className="max-w-full rounded-lg my-1 border border-white/20 dark:border-slate-800" />
                                     ) : (
                                        <div className="whitespace-pre-wrap text-sm md:text-base">{m.content}</div>
                                     )}
@@ -501,15 +501,15 @@ export const DiscussionRoom: React.FC = () => {
                      </div>
 
                      {/* Input Area */}
-                     <div className="p-3 md:p-4 border-t bg-white">
+                     <div className="p-3 md:p-4 border-t bg-white dark:bg-slate-900 dark:border-slate-800">
                         <input type="file" accept="image/*" className="hidden" ref={fileInputRef} onChange={handleImageUpload} />
                         <div className="flex gap-2 mb-3 overflow-x-auto pb-2 no-scrollbar">
                            {STICKERS.map(s => (
-                              <button key={s} onClick={() => handleSendSticker(s)} className="text-2xl hover:bg-gray-100 p-2 rounded-xl transition-colors">{s}</button>
+                              <button key={s} onClick={() => handleSendSticker(s)} className="text-2xl hover:bg-gray-100 p-2 rounded-xl transition-colors dark:hover:bg-slate-800">{s}</button>
                            ))}
                         </div>
                         <div className="flex gap-2 md:gap-3">
-                           <button onClick={handleTriggerImageUpload} className="p-3 text-gray-500 hover:bg-indigo-50 hover:text-indigo-600 rounded-full transition-colors flex-shrink-0">
+                           <button onClick={handleTriggerImageUpload} className="p-3 text-gray-500 hover:bg-indigo-50 hover:text-indigo-600 rounded-full transition-colors flex-shrink-0 dark:text-slate-500">
                               <ImageIcon className="h-6 w-6" />
                            </button>
                            <input
@@ -517,7 +517,7 @@ export const DiscussionRoom: React.FC = () => {
                               onChange={e => setMsgText(e.target.value)}
                               onKeyDown={e => e.key === 'Enter' && handleSendMessage()}
                               placeholder={`Nhập tin nhắn (${currentViewRoomId === 'MAIN' ? 'Chính' : 'Nhóm'})...`}
-                              className="flex-1 border border-gray-300 bg-white text-gray-900 rounded-full px-4 py-3 text-sm focus:ring-2 focus:ring-indigo-500 outline-none shadow-sm transition-shadow"
+                              className="flex-1 border border-gray-300 bg-white text-gray-900 rounded-full px-4 py-3 text-sm focus:ring-2 focus:ring-indigo-500 outline-none shadow-sm transition-shadow dark:bg-slate-900 dark:border-slate-800 dark:text-slate-100"
                            />
                            <button onClick={handleSendMessage} className="p-3 bg-indigo-600 text-white rounded-full hover:bg-indigo-700 shadow-md hover:scale-105 transition-all flex-shrink-0"><Send className="h-5 w-5" /></button>
                         </div>
@@ -534,30 +534,30 @@ export const DiscussionRoom: React.FC = () => {
              ${isMobileSidebarOpen ? 'translate-x-0' : 'translate-x-full'} md:translate-x-0
           `}>
                {/* Mobile Close */}
-               <div className="md:hidden p-4 border-b flex justify-between items-center bg-gray-50 dark:bg-slate-850">
-                  <h3 className="font-bold text-gray-700">Công cụ quản lý</h3>
-                  <button onClick={() => setIsMobileSidebarOpen(false)} className="p-1 hover:bg-gray-200 rounded-full"><X className="h-6 w-6 text-gray-500" /></button>
+               <div className="md:hidden p-4 border-b flex justify-between items-center bg-gray-50 dark:bg-slate-850 dark:border-slate-800">
+                  <h3 className="font-bold text-gray-700 dark:text-slate-300">Công cụ quản lý</h3>
+                  <button onClick={() => setIsMobileSidebarOpen(false)} className="p-1 hover:bg-gray-200 rounded-full"><X className="h-6 w-6 text-gray-500 dark:text-slate-500" /></button>
                </div>
 
-               <div className="flex border-b">
+               <div className="flex border-b dark:border-slate-800">
                   <button onClick={() => setActiveTab('PARTICIPANTS')} className={`flex-1 py-4 text-sm font-medium border-b-2 transition-colors ${activeTab === 'PARTICIPANTS' ? 'border-indigo-600 text-indigo-600 bg-indigo-50/50' : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50 dark:bg-slate-850'}`}><Users className="h-4 w-4 mx-auto mb-1" /> Danh sách</button>
                   <button onClick={() => setActiveTab('POLLS')} className={`flex-1 py-4 text-sm font-medium border-b-2 transition-colors ${activeTab === 'POLLS' ? 'border-indigo-600 text-indigo-600 bg-indigo-50/50' : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50 dark:bg-slate-850'}`}><PieChart className="h-4 w-4 mx-auto mb-1" /> Bình chọn</button>
                   <button onClick={() => setActiveTab('BREAKOUT')} className={`flex-1 py-4 text-sm font-medium border-b-2 transition-colors ${activeTab === 'BREAKOUT' ? 'border-indigo-600 text-indigo-600 bg-indigo-50/50' : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50 dark:bg-slate-850'}`}><Layers className="h-4 w-4 mx-auto mb-1" /> Chia nhóm</button>
                </div>
 
-               <div className="flex-1 overflow-y-auto p-4 bg-white">
+               <div className="flex-1 overflow-y-auto p-4 bg-white dark:bg-slate-900">
                   {activeTab === 'PARTICIPANTS' && (
                      <div className="space-y-4">
                         {raisedHands.length > 0 && (
-                           <div className="bg-yellow-50 p-3 rounded-lg border border-yellow-200">
+                           <div className="bg-yellow-50 p-3 rounded-lg border border-yellow-200 dark:border-slate-800">
                               <h3 className="text-xs font-bold text-yellow-800 uppercase mb-2 flex items-center gap-1"><Hand className="h-3 w-3" /> Đang giơ tay ({raisedHands.length})</h3>
                               <div className="space-y-2">
                                  {raisedHands.map(p => (
-                                    <div key={p.studentId} className="flex justify-between items-center bg-white p-2 rounded shadow-sm text-sm border">
+                                    <div key={p.studentId} className="flex justify-between items-center bg-white p-2 rounded shadow-sm text-sm border dark:bg-slate-900 dark:border-slate-800">
                                        <span>{p.name}</span>
                                        <div className="flex gap-1">
                                           <button onClick={() => handleInviteSpeak(p.name)} className="text-[10px] bg-indigo-100 text-indigo-600 px-2 py-1 rounded hover:bg-indigo-200">Mời nói</button>
-                                          <button onClick={() => toggleHandRaise(session.id, p.studentId)} className="text-[10px] bg-gray-100 text-gray-600 px-2 py-1 rounded hover:bg-gray-200">Hạ tay</button>
+                                          <button onClick={() => toggleHandRaise(session.id, p.studentId)} className="text-[10px] bg-gray-100 text-gray-600 px-2 py-1 rounded hover:bg-gray-200 dark:bg-slate-850 dark:text-slate-400">Hạ tay</button>
                                        </div>
                                     </div>
                                  ))}
@@ -565,15 +565,15 @@ export const DiscussionRoom: React.FC = () => {
                            </div>
                         )}
 
-                        <h3 className="font-bold text-gray-700 text-sm">Tất cả ({session.participants.length})</h3>
+                        <h3 className="font-bold text-gray-700 text-sm dark:text-slate-300">Tất cả ({session.participants.length})</h3>
                         <div className="space-y-2">
                            {session.participants.map(p => (
-                              <div key={p.studentId} className="flex items-center justify-between p-2 hover:bg-gray-50 dark:bg-slate-850 rounded-lg text-sm transition-colors">
+                              <div key={p.studentId} className="flex items-center justify-between p-2 hover:bg-gray-50 dark:bg-slate-850 rounded-lg text-sm transition-colors dark:hover:bg-slate-850/50">
                                  <div className="flex items-center gap-3">
-                                    <div className="w-8 h-8 rounded-full bg-gray-100 border border-gray-200 flex items-center justify-center text-xs font-bold text-gray-600">{p.name.charAt(0)}</div>
+                                    <div className="w-8 h-8 rounded-full bg-gray-100 border border-gray-200 flex items-center justify-center text-xs font-bold text-gray-600 dark:border-slate-800 dark:bg-slate-850 dark:text-slate-400">{p.name.charAt(0)}</div>
                                     <div>
-                                       <div className="font-medium text-gray-900">{p.name}</div>
-                                       <div className="text-[10px] text-gray-500">{p.currentRoomId === 'MAIN' ? 'Phòng chính' : session.breakoutRooms?.find(r => r.id === p.currentRoomId)?.name}</div>
+                                       <div className="font-medium text-gray-900 dark:text-slate-100">{p.name}</div>
+                                       <div className="text-[10px] text-gray-500 dark:text-slate-500">{p.currentRoomId === 'MAIN' ? 'Phòng chính' : session.breakoutRooms?.find(r => r.id === p.currentRoomId)?.name}</div>
                                     </div>
                                  </div>
                                  {!p.isHandRaised && <button onClick={() => handleInviteSpeak(p.name)} className="text-gray-400 hover:text-indigo-600 p-1 rounded hover:bg-indigo-50"><MessageSquare className="h-4 w-4" /></button>}
@@ -585,24 +585,24 @@ export const DiscussionRoom: React.FC = () => {
 
                   {activeTab === 'POLLS' && (
                      <div className="space-y-6">
-                        <div className="bg-gray-50 dark:bg-slate-850 p-4 rounded-xl border">
-                           <h3 className="font-bold text-sm mb-3 text-gray-800">Tạo bình chọn mới</h3>
-                           <input className="w-full border border-gray-300 bg-white text-gray-900 p-2 rounded-lg text-sm mb-2 focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="Câu hỏi..." value={pollQuestion} onChange={e => setPollQuestion(e.target.value)} />
+                        <div className="bg-gray-50 dark:bg-slate-850 p-4 rounded-xl border dark:border-slate-800">
+                           <h3 className="font-bold text-sm mb-3 text-gray-800 dark:text-slate-200">Tạo bình chọn mới</h3>
+                           <input className="w-full border border-gray-300 bg-white text-gray-900 p-2 rounded-lg text-sm mb-2 focus:ring-2 focus:ring-indigo-500 outline-none dark:bg-slate-900 dark:border-slate-800 dark:text-slate-100" placeholder="Câu hỏi..." value={pollQuestion} onChange={e => setPollQuestion(e.target.value)} />
                            {pollOptions.map((opt, i) => (
-                              <input key={i} className="w-full border border-gray-300 bg-white text-gray-900 p-2 rounded-lg text-sm mb-2 focus:ring-1 focus:ring-indigo-500 outline-none" placeholder={`Lựa chọn ${i + 1}`} value={opt} onChange={e => {
+                              <input key={i} className="w-full border border-gray-300 bg-white text-gray-900 p-2 rounded-lg text-sm mb-2 focus:ring-1 focus:ring-indigo-500 outline-none dark:bg-slate-900 dark:border-slate-800 dark:text-slate-100" placeholder={`Lựa chọn ${i + 1}`} value={opt} onChange={e => {
                                  const newOpts = [...pollOptions]; newOpts[i] = e.target.value; setPollOptions(newOpts);
                               }} />
                            ))}
                            <button onClick={() => setPollOptions([...pollOptions, ''])} className="text-xs text-indigo-600 flex items-center gap-1 mb-4 font-medium"><Plus className="h-3 w-3" /> Thêm lựa chọn</button>
-                           <label className="flex items-center gap-2 text-sm text-gray-600 mb-4 cursor-pointer"><input type="checkbox" checked={pollAnonymous} onChange={e => setPollAnonymous(e.target.checked)} className="rounded text-indigo-600 focus:ring-indigo-500" /> Ẩn danh</label>
+                           <label className="flex items-center gap-2 text-sm text-gray-600 mb-4 cursor-pointer dark:text-slate-400"><input type="checkbox" checked={pollAnonymous} onChange={e => setPollAnonymous(e.target.checked)} className="rounded text-indigo-600 focus:ring-indigo-500" /> Ẩn danh</label>
                            <button onClick={handleCreatePoll} className="w-full bg-indigo-600 text-white py-2.5 rounded-lg text-sm font-bold hover:bg-indigo-700 shadow-sm">Phát hành</button>
                         </div>
 
                         <div className="space-y-4">
                            {session.polls.map(poll => (
-                              <div key={poll.id} className="border rounded-xl p-4 bg-white shadow-sm">
+                              <div key={poll.id} className="border rounded-xl p-4 bg-white shadow-sm dark:bg-slate-900 dark:border-slate-800">
                                  <div className="flex justify-between items-start mb-3">
-                                    <h4 className="font-bold text-sm text-gray-900">{poll.question}</h4>
+                                    <h4 className="font-bold text-sm text-gray-900 dark:text-slate-100">{poll.question}</h4>
                                     <button onClick={() => togglePollStatus(session.id, poll.id, !poll.isActive)} className={`text-[10px] px-2 py-1 rounded-full font-bold ${poll.isActive ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>{poll.isActive ? 'Đang mở' : 'Đã đóng'}</button>
                                  </div>
                                  <div className="space-y-3">
@@ -611,8 +611,8 @@ export const DiscussionRoom: React.FC = () => {
                                        const percent = totalVotes > 0 ? Math.round((opt.voteCount / totalVotes) * 100) : 0;
                                        return (
                                           <div key={opt.id} className="text-xs">
-                                             <div className="flex justify-between mb-1 text-gray-700 font-medium"><span>{opt.text}</span><span>{opt.voteCount} ({percent}%)</span></div>
-                                             <div className="h-2 bg-gray-100 rounded-full overflow-hidden"><div className="h-full bg-indigo-500" style={{ width: `${percent}%` }}></div></div>
+                                             <div className="flex justify-between mb-1 text-gray-700 font-medium dark:text-slate-300"><span>{opt.text}</span><span>{opt.voteCount} ({percent}%)</span></div>
+                                             <div className="h-2 bg-gray-100 rounded-full overflow-hidden dark:bg-slate-850"><div className="h-full bg-indigo-500" style={{ width: `${percent}%` }}></div></div>
                                           </div>
                                        );
                                     })}
@@ -625,25 +625,25 @@ export const DiscussionRoom: React.FC = () => {
 
                   {activeTab === 'BREAKOUT' && (
                      <div className="space-y-4">
-                        <div className="bg-gray-50 dark:bg-slate-850 p-4 rounded-xl border">
-                           <h3 className="font-bold text-sm mb-3 text-gray-800">Chia nhóm tự động</h3>
+                        <div className="bg-gray-50 dark:bg-slate-850 p-4 rounded-xl border dark:border-slate-800">
+                           <h3 className="font-bold text-sm mb-3 text-gray-800 dark:text-slate-200">Chia nhóm tự động</h3>
                            <div className="flex items-center gap-3 mb-4">
-                              <span className="text-sm text-gray-600">Số lượng nhóm:</span>
-                              <input type="number" min="2" max="10" value={newRoomCount} onChange={e => setNewRoomCount(Number(e.target.value))} className="w-20 border border-gray-300 bg-white text-gray-900 rounded-lg p-1.5 text-sm text-center font-bold" />
+                              <span className="text-sm text-gray-600 dark:text-slate-400">Số lượng nhóm:</span>
+                              <input type="number" min="2" max="10" value={newRoomCount} onChange={e => setNewRoomCount(Number(e.target.value))} className="w-20 border border-gray-300 bg-white text-gray-900 rounded-lg p-1.5 text-sm text-center font-bold dark:bg-slate-900 dark:border-slate-800 dark:text-slate-100" />
                            </div>
                            <button onClick={handleCreateRooms} className="w-full bg-indigo-600 text-white py-2.5 rounded-lg text-sm font-bold hover:bg-indigo-700 shadow-sm">Bắt đầu chia nhóm</button>
                         </div>
 
                         {session.breakoutRooms?.length > 0 && (
                            <div className="space-y-2">
-                              <h3 className="font-bold text-sm text-gray-700">Danh sách nhóm</h3>
+                              <h3 className="font-bold text-sm text-gray-700 dark:text-slate-300">Danh sách nhóm</h3>
                               {session.breakoutRooms.map(r => (
-                                 <div key={r.id} className="border rounded-lg p-3 bg-white text-sm hover:border-indigo-300 transition-colors">
+                                 <div key={r.id} className="border rounded-lg p-3 bg-white text-sm hover:border-indigo-300 transition-colors dark:bg-slate-900 dark:border-slate-800">
                                     <div className="font-bold text-indigo-700 flex justify-between items-center">{r.name} <button onClick={() => setCurrentViewRoomId(r.id)} className="text-xs bg-indigo-50 px-3 py-1 rounded-full hover:bg-indigo-100 text-indigo-700 font-medium">Vào xem</button></div>
-                                    <div className="text-xs text-gray-500 mt-2 truncate">{session.participants.filter(p => p.currentRoomId === r.id).map(p => p.name).join(', ') || 'Chưa có thành viên'}</div>
+                                    <div className="text-xs text-gray-500 mt-2 truncate dark:text-slate-500">{session.participants.filter(p => p.currentRoomId === r.id).map(p => p.name).join(', ') || 'Chưa có thành viên'}</div>
                                  </div>
                               ))}
-                              <div className="pt-4 border-t mt-2">
+                              <div className="pt-4 border-t mt-2 dark:border-slate-800">
                                  <button onClick={() => { createBreakoutRooms(session.id, []); session.participants.forEach(p => assignToRoom(session.id, p.studentId, 'MAIN')); setCurrentViewRoomId('MAIN'); }} className="w-full bg-red-50 text-red-600 py-2.5 rounded-lg text-sm font-bold hover:bg-red-100 transition-colors">Giải tán tất cả nhóm</button>
                               </div>
                            </div>
@@ -653,23 +653,23 @@ export const DiscussionRoom: React.FC = () => {
                </div>
 
                {/* Mobile Sidebar Footer */}
-               <div className="p-4 border-t bg-gray-50 dark:bg-slate-850 md:hidden space-y-3">
-                  <button onClick={() => setIsVisibilityMenuOpen(!isVisibilityMenuOpen)} className="w-full flex items-center justify-between bg-white border border-gray-300 px-4 py-3 rounded-lg text-sm font-medium text-gray-700">
+               <div className="p-4 border-t bg-gray-50 dark:bg-slate-850 md:hidden space-y-3 dark:border-slate-800">
+                  <button onClick={() => setIsVisibilityMenuOpen(!isVisibilityMenuOpen)} className="w-full flex items-center justify-between bg-white border border-gray-300 px-4 py-3 rounded-lg text-sm font-medium text-gray-700 dark:bg-slate-900 dark:border-slate-800 dark:text-slate-300">
                      <div className="flex items-center gap-2"><VisibilityIcon className="h-4 w-4" /><span>Hiển thị</span></div>
                      <ChevronDown className={`h-4 w-4 transition-transform ${isVisibilityMenuOpen ? 'rotate-180' : ''}`} />
                   </button>
                   {isVisibilityMenuOpen && (
-                     <div className="bg-white border rounded-lg p-2 space-y-1 animate-in slide-in-from-top-2">
+                     <div className="bg-white border rounded-lg p-2 space-y-1 animate-in slide-in-from-top-2 dark:bg-slate-900 dark:border-slate-800">
                         {[{ id: 'FULL', label: 'Hiện đầy đủ', icon: Eye }, { id: 'HIDDEN_ALL', label: 'Ẩn tất cả', icon: EyeOff }, { id: 'NAME_ONLY', label: 'Chỉ hiện tên', icon: User }, { id: 'CONTENT_ONLY', label: 'Ẩn danh', icon: MessageSquare }].map((mode) => (
                            <button key={mode.id} onClick={() => { setDiscussionVisibility(session.id, mode.id as MessageVisibility); setIsVisibilityMenuOpen(false); }} className={`w-full text-left px-3 py-2 rounded-lg text-sm flex items-center gap-3 ${session.visibility === mode.id ? 'bg-blue-50 text-blue-700 font-bold' : 'text-gray-700'}`}><mode.icon className="h-4 w-4" /> {mode.label}</button>
                         ))}
                      </div>
                   )}
-                  {session.status === 'ACTIVE' && <button onClick={handleEndSession} className="w-full bg-red-100 text-red-600 border border-red-200 px-4 py-3 rounded-lg text-sm font-bold flex items-center justify-center gap-2"><Power className="h-4 w-4" /> Kết thúc phiên</button>}
+                  {session.status === 'ACTIVE' && <button onClick={handleEndSession} className="w-full bg-red-100 text-red-600 border border-red-200 px-4 py-3 rounded-lg text-sm font-bold flex items-center justify-center gap-2 dark:border-red-900/30"><Power className="h-4 w-4" /> Kết thúc phiên</button>}
                </div>
 
                {/* Common Sidebar Actions */}
-               <div className="p-4 border-t bg-gray-50 dark:bg-slate-850 space-y-2">
+               <div className="p-4 border-t bg-gray-50 dark:bg-slate-850 space-y-2 dark:border-slate-800">
                   <button
                      onClick={handleExportPDF}
                      disabled={isExportingPDF}
@@ -679,7 +679,7 @@ export const DiscussionRoom: React.FC = () => {
                   </button>
                   <button
                      onClick={handleDeleteSession}
-                     className="w-full bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 px-4 py-2.5 rounded-lg text-sm font-bold flex items-center justify-center gap-2 transition-all"
+                     className="w-full bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 px-4 py-2.5 rounded-lg text-sm font-bold flex items-center justify-center gap-2 transition-all dark:border-red-900/30"
                   >
                      <Trash2 className="h-4 w-4" /> Xóa phiên thảo luận
                   </button>
@@ -689,11 +689,11 @@ export const DiscussionRoom: React.FC = () => {
 
          {showRoundModal && (
             <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm animate-in fade-in duration-200">
-               <div className="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-sm transform transition-all scale-100">
-                  <h3 className="font-bold text-lg mb-4 text-gray-900">Tạo vòng thảo luận mới</h3>
-                  <input autoFocus className="w-full border border-gray-300 bg-white text-gray-900 rounded-xl p-3 mb-6 focus:ring-2 focus:ring-indigo-500 outline-none shadow-sm" placeholder="Tên vòng (VD: Tranh biện...)" value={newRoundName} onChange={e => setNewRoundName(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleAddRound()} />
+               <div className="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-sm transform transition-all scale-100 dark:bg-slate-900">
+                  <h3 className="font-bold text-lg mb-4 text-gray-900 dark:text-slate-100">Tạo vòng thảo luận mới</h3>
+                  <input autoFocus className="w-full border border-gray-300 bg-white text-gray-900 rounded-xl p-3 mb-6 focus:ring-2 focus:ring-indigo-500 outline-none shadow-sm dark:bg-slate-900 dark:border-slate-800 dark:text-slate-100" placeholder="Tên vòng (VD: Tranh biện...)" value={newRoundName} onChange={e => setNewRoundName(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleAddRound()} />
                   <div className="flex justify-end gap-3">
-                     <button onClick={() => setShowRoundModal(false)} className="px-5 py-2.5 text-gray-600 hover:bg-gray-100 rounded-xl font-medium transition-colors">Hủy</button>
+                     <button onClick={() => setShowRoundModal(false)} className="px-5 py-2.5 text-gray-600 hover:bg-gray-100 rounded-xl font-medium transition-colors dark:text-slate-400 dark:hover:bg-slate-800">Hủy</button>
                      <button onClick={handleAddRound} className="px-5 py-2.5 bg-indigo-600 text-white rounded-xl font-bold shadow-md hover:bg-indigo-700 transition-all hover:scale-105">Tạo & Mở</button>
                   </div>
                </div>
@@ -702,10 +702,10 @@ export const DiscussionRoom: React.FC = () => {
 
          {/* Hidden Report Container for PDF Generation */}
          <div style={{ position: 'absolute', left: '-9999px', top: '-9999px' }}>
-            <div id="discussion-report-pdf" className="w-[800px] bg-white p-8 text-gray-900 border" style={{ fontFamily: 'sans-serif' }}>
-               <div className="border-b-2 border-indigo-600 pb-4 mb-6">
+            <div id="discussion-report-pdf" className="w-[800px] bg-white p-8 text-gray-900 border dark:bg-slate-900 dark:border-slate-800 dark:text-slate-100" style={{ fontFamily: 'sans-serif' }}>
+               <div className="border-b-2 border-indigo-600 pb-4 mb-6 dark:border-slate-800">
                   <h1 className="text-2xl font-bold text-indigo-900 mb-2">BÁO CÁO PHIÊN THẢO LUẬN</h1>
-                  <p className="text-sm text-gray-600">Hệ thống Open LMS - Pre</p>
+                  <p className="text-sm text-gray-600 dark:text-slate-400">Hệ thống Open LMS - Pre</p>
                </div>
                
                <div className="grid grid-cols-2 gap-4 mb-6 text-sm">
@@ -721,10 +721,10 @@ export const DiscussionRoom: React.FC = () => {
                </div>
 
                <div className="mb-6">
-                  <h2 className="text-base font-bold text-gray-800 border-b pb-2 mb-3">Danh sách thành viên tham gia</h2>
+                  <h2 className="text-base font-bold text-gray-800 border-b pb-2 mb-3 dark:border-slate-800 dark:text-slate-200">Danh sách thành viên tham gia</h2>
                   <div className="grid grid-cols-3 gap-2">
                      {session.participants.map((p, idx) => (
-                        <div key={p.studentId} className="text-xs bg-gray-50 dark:bg-slate-850 p-2 rounded border truncate">
+                        <div key={p.studentId} className="text-xs bg-gray-50 dark:bg-slate-850 p-2 rounded border truncate dark:border-slate-800">
                            {idx + 1}. {p.name}
                         </div>
                      ))}
@@ -733,10 +733,10 @@ export const DiscussionRoom: React.FC = () => {
 
                {session.polls && session.polls.length > 0 && (
                   <div className="mb-6">
-                     <h2 className="text-base font-bold text-gray-800 border-b pb-2 mb-3">Kết quả các cuộc bình chọn</h2>
+                     <h2 className="text-base font-bold text-gray-800 border-b pb-2 mb-3 dark:border-slate-800 dark:text-slate-200">Kết quả các cuộc bình chọn</h2>
                      <div className="space-y-4">
                         {session.polls.map((poll, idx) => (
-                           <div key={poll.id} className="p-3 bg-indigo-50/50 rounded-lg border">
+                           <div key={poll.id} className="p-3 bg-indigo-50/50 rounded-lg border dark:border-slate-800">
                               <h3 className="font-bold text-xs text-indigo-900 mb-2">{idx + 1}. {poll.question}</h3>
                               <div className="space-y-2">
                                  {poll.options.map(opt => {
@@ -744,7 +744,7 @@ export const DiscussionRoom: React.FC = () => {
                                     const percent = totalVotes > 0 ? Math.round((opt.voteCount / totalVotes) * 100) : 0;
                                     return (
                                        <div key={opt.id} className="text-[11px]">
-                                          <div className="flex justify-between font-medium text-gray-700">
+                                          <div className="flex justify-between font-medium text-gray-700 dark:text-slate-300">
                                              <span>{opt.text}</span>
                                              <span>{opt.voteCount} lượt ({percent}%)</span>
                                           </div>
@@ -762,23 +762,23 @@ export const DiscussionRoom: React.FC = () => {
                )}
 
                <div className="mb-6">
-                  <h2 className="text-base font-bold text-gray-800 border-b pb-2 mb-3">Lịch sử trò chuyện</h2>
+                  <h2 className="text-base font-bold text-gray-800 border-b pb-2 mb-3 dark:border-slate-800 dark:text-slate-200">Lịch sử trò chuyện</h2>
                   <div className="space-y-3">
                      {session.messages.map(m => {
                         const roundName = session.rounds.find(r => r.id === m.roundId)?.name || 'Vòng chung';
                         const roomName = m.roomId === 'MAIN' ? 'Phòng chính' : session.breakoutRooms?.find(r => r.id === m.roomId)?.name || 'Nhóm';
                         return (
-                           <div key={m.id} className="text-xs border-b pb-2">
-                              <div className="flex justify-between text-gray-500 mb-1">
+                           <div key={m.id} className="text-xs border-b pb-2 dark:border-slate-800">
+                              <div className="flex justify-between text-gray-500 mb-1 dark:text-slate-500">
                                  <span className="font-bold text-indigo-700">{m.senderName} ({roomName} - {roundName})</span>
                                  <span>{new Date(m.timestamp).toLocaleTimeString('vi-VN')}</span>
                               </div>
                               {m.type === 'IMAGE' ? (
                                  <div className="mt-1">
-                                    <img src={m.content} alt="Attachment" className="max-w-[200px] rounded border" />
+                                    <img src={m.content} alt="Attachment" className="max-w-[200px] rounded border dark:border-slate-800" />
                                  </div>
                               ) : (
-                                 <p className="whitespace-pre-wrap text-gray-800 mt-1">{m.content}</p>
+                                 <p className="whitespace-pre-wrap text-gray-800 mt-1 dark:text-slate-200">{m.content}</p>
                               )}
                            </div>
                         );

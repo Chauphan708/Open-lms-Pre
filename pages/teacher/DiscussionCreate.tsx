@@ -52,12 +52,12 @@ export const DiscussionCreate: React.FC = () => {
         <div className="max-w-2xl mx-auto p-4 md:p-8">
             <button
                 onClick={() => navigate('/teacher/discussions')}
-                className="flex items-center gap-2 text-gray-500 hover:text-indigo-600 mb-6 transition-colors"
+                className="flex items-center gap-2 text-gray-500 hover:text-indigo-600 mb-6 transition-colors dark:text-slate-500"
             >
                 <ArrowLeft className="h-5 w-5" /> Quay lại danh sách
             </button>
 
-            <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+            <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden dark:bg-slate-900 dark:border-slate-800">
                 <div className="bg-indigo-600 p-6 text-white text-center">
                     <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center mx-auto mb-4 backdrop-blur-sm">
                         <MessageSquare className="h-8 w-8 text-white" />
@@ -69,7 +69,7 @@ export const DiscussionCreate: React.FC = () => {
                 <div className="p-8">
                     <form onSubmit={handleCreate} className="space-y-6">
                         <div>
-                            <label className="block text-sm font-bold text-gray-700 mb-2">
+                            <label className="block text-sm font-bold text-gray-700 mb-2 dark:text-slate-300">
                                 Tên chủ đề thảo luận
                             </label>
                             <input
@@ -78,7 +78,7 @@ export const DiscussionCreate: React.FC = () => {
                                 value={title}
                                 onChange={e => setTitle(e.target.value)}
                                 placeholder="VD: Tranh biện về AI trong giáo dục..."
-                                className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-indigo-500 outline-none transition-all text-lg"
+                                className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-indigo-500 outline-none transition-all text-lg dark:border-slate-800"
                                 required
                             />
                         </div>

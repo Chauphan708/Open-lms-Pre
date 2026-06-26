@@ -1251,7 +1251,7 @@ export const TowerMode: React.FC = () => {
     return (
       <div className="min-h-[70vh] flex flex-col items-center justify-center bg-[#030712] text-gray-100">
         <div className="relative w-16 h-16 mb-4">
-          <div className="absolute inset-0 rounded-full border-t-2 border-amber-500 animate-spin"></div>
+          <div className="absolute inset-0 rounded-full border-t-2 border-amber-500 animate-spin dark:border-slate-800"></div>
           <GraduationCap className="absolute inset-0 m-auto h-8 w-8 text-amber-500 animate-pulse" />
         </div>
         <p className="text-gray-400 text-sm font-bold">Đang cấu hình đấu trường thích ứng...</p>
@@ -1269,7 +1269,7 @@ export const TowerMode: React.FC = () => {
     const techTopics = availableTopics.filter(t => t.subject === 'technology');
 
     return (
-      <div className="max-w-2xl lg:max-w-6xl xl:max-w-7xl mx-auto pb-12 px-4 md:px-8 bg-[#030712] text-gray-100 rounded-3xl border border-white/5 shadow-2xl relative overflow-hidden min-h-[85vh]">
+      <div className="max-w-2xl lg:max-w-6xl xl:max-w-7xl mx-auto pb-12 px-4 md:px-8 bg-[#030712] text-gray-100 rounded-3xl border border-white/5 shadow-2xl relative overflow-hidden min-h-[85vh] dark:border-slate-800">
         <style>{`
           @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
           .animate-fade-in { animation: fadeIn 0.4s ease-out forwards; }
@@ -1280,7 +1280,7 @@ export const TowerMode: React.FC = () => {
         <div className="absolute top-0 right-1/4 w-72 h-72 rounded-full opacity-[0.03] blur-[90px] pointer-events-none bg-amber-500"></div>
 
         {/* Header */}
-        <div className="flex items-center gap-3 mb-6 bg-white/5 p-4 lg:p-5 rounded-2xl border border-white/5 mt-4 animate-fade-in">
+        <div className="flex items-center gap-3 mb-6 bg-white/5 p-4 lg:p-5 rounded-2xl border border-white/5 mt-4 animate-fade-in dark:border-slate-800">
           <button onClick={() => navigate('/arena')} className="p-2 hover:bg-white/10 rounded-full transition-colors text-gray-400 hover:text-white">
             <ArrowLeft className="h-5 w-5 lg:h-6 lg:w-6" />
           </button>
@@ -1303,17 +1303,17 @@ export const TowerMode: React.FC = () => {
                 <div className={`p-4 lg:p-5 rounded-2xl bg-[#080d16] border ${league.border} flex items-center gap-3 lg:gap-4`}>
                   <span className="text-3xl lg:text-4xl">{league.badge}</span>
                   <div>
-                    <p className="text-[10px] lg:text-xs text-gray-500 uppercase font-black">Xếp hạng Võ Đài</p>
+                    <p className="text-[10px] lg:text-xs text-gray-500 uppercase font-black dark:text-slate-500">Xếp hạng Võ Đài</p>
                     <p className="font-bold text-white text-sm lg:text-base truncate">{league.name.split(' ')[0]}</p>
                     <p className="text-xs lg:text-sm font-semibold text-amber-400">{arenaProfile.elo_rating} Elo</p>
                   </div>
                 </div>
-                <div className="p-4 lg:p-5 rounded-2xl bg-[#080d16] border border-white/5 flex items-center gap-3 lg:gap-4">
+                <div className="p-4 lg:p-5 rounded-2xl bg-[#080d16] border border-white/5 flex items-center gap-3 lg:gap-4 dark:border-slate-800">
                   <span className="text-3xl lg:text-4xl">
                     {arenaProfile.avatar_class === 'scholar' ? '📖' : arenaProfile.avatar_class === 'scientist' ? '🔬' : arenaProfile.avatar_class === 'artist' ? '🎨' : '🌍'}
                   </span>
                   <div>
-                    <p className="text-[10px] lg:text-xs text-gray-500 uppercase font-black">Lớp nhân vật</p>
+                    <p className="text-[10px] lg:text-xs text-gray-500 uppercase font-black dark:text-slate-500">Lớp nhân vật</p>
                     <p className="font-bold text-white text-sm lg:text-base truncate">
                       {arenaProfile.avatar_class === 'scholar' ? 'Nhà Thông Thái' : arenaProfile.avatar_class === 'scientist' ? 'Nhà Khoa Học' : arenaProfile.avatar_class === 'artist' ? 'Nghệ Sĩ' : 'Nhà Thám Hiểm'}
                     </p>
@@ -1324,7 +1324,7 @@ export const TowerMode: React.FC = () => {
             )}
 
             {/* Selectors Card */}
-            <div className="bg-[#080d16] rounded-2xl p-5 lg:p-6 border border-white/5 space-y-6">
+            <div className="bg-[#080d16] rounded-2xl p-5 lg:p-6 border border-white/5 space-y-6 dark:border-slate-800">
               {/* Grade Selector */}
               <div>
                 <h3 className="font-bold text-white mb-3 flex items-center gap-2 text-sm lg:text-base">
@@ -1437,9 +1437,9 @@ export const TowerMode: React.FC = () => {
           </div>
 
           {/* Column Right: Chuyên đề & Nút bắt đầu (7 cols) */}
-          <div className="lg:col-span-7 bg-[#080d16] rounded-2xl p-5 lg:p-6 border border-white/5 space-y-6 flex flex-col justify-between min-h-[50vh] lg:min-h-[58vh]">
+          <div className="lg:col-span-7 bg-[#080d16] rounded-2xl p-5 lg:p-6 border border-white/5 space-y-6 flex flex-col justify-between min-h-[50vh] lg:min-h-[58vh] dark:border-slate-800">
             <div className="space-y-4">
-              <h3 className="font-bold text-white flex items-center gap-2 text-sm lg:text-base border-b border-white/5 pb-2">
+              <h3 className="font-bold text-white flex items-center gap-2 text-sm lg:text-base border-b border-white/5 pb-2 dark:border-slate-800">
                 <Trophy className="h-4 w-4 lg:h-5 lg:w-5 text-amber-500" />
                 3. Chọn Chuyên đề leo tháp
               </h3>
@@ -1466,13 +1466,13 @@ export const TowerMode: React.FC = () => {
                         </div>
                       </div>
                       {mastery >= 100 && (
-                        <span className="text-xl lg:text-2xl bg-yellow-500/10 p-1.5 lg:p-2 rounded-lg border border-yellow-500/20" title="Đã làm chủ">🏆</span>
+                        <span className="text-xl lg:text-2xl bg-yellow-500/10 p-1.5 lg:p-2 rounded-lg border border-yellow-500/20 dark:border-slate-800" title="Đã làm chủ">🏆</span>
                       )}
                     </button>
                   );
                 })}
                 {availableTopics.filter(t => t.subject === selectedSubject).length === 0 && (
-                  <div className="text-center py-10 text-gray-500 text-sm italic">
+                  <div className="text-center py-10 text-gray-500 text-sm italic dark:text-slate-500">
                     Chưa có chuyên đề nào được mở cho môn học này ở Khối ${selectedGrade}.
                   </div>
                 )}
@@ -1481,7 +1481,7 @@ export const TowerMode: React.FC = () => {
 
             <div className="space-y-4">
               {/* AI Info Card */}
-              <div className="bg-gradient-to-r from-indigo-950/20 to-purple-950/20 border border-indigo-500/20 rounded-xl p-3 lg:p-4 flex gap-3 text-xs lg:text-sm text-indigo-300">
+              <div className="bg-gradient-to-r from-indigo-950/20 to-purple-950/20 border border-indigo-500/20 rounded-xl p-3 lg:p-4 flex gap-3 text-xs lg:text-sm text-indigo-300 dark:border-slate-800">
                 <Bot className="h-4 w-4 lg:h-5 lg:w-5 text-indigo-400 flex-shrink-0 animate-bounce mt-0.5" />
                 <p className="leading-relaxed">
                   <strong>Gia sư AI gợi ý:</strong> Sau khi bắt đầu, bạn cần trả lời đúng liên tiếp số câu quy định để thăng cấp <strong>(Mức 1: 4 câu, Mức 2: 5 câu, Mức 3: 4 câu)</strong>. Bất kỳ câu sai nào cũng reset chuỗi, hạ độ khó và kích hoạt gợi ý chẩn đoán lý thuyết của AI ngay lập tức!
@@ -1514,7 +1514,7 @@ export const TowerMode: React.FC = () => {
   if (victory || gameOver) {
     const league = getLeagueInfo(arenaProfile?.elo_rating || 1000);
     return (
-      <div className="max-w-2xl lg:max-w-5xl xl:max-w-6xl mx-auto pb-12 px-6 md:px-8 bg-[#030712] text-gray-100 rounded-3xl border border-white/5 shadow-2xl relative overflow-hidden min-h-[85vh]">
+      <div className="max-w-2xl lg:max-w-5xl xl:max-w-6xl mx-auto pb-12 px-6 md:px-8 bg-[#030712] text-gray-100 rounded-3xl border border-white/5 shadow-2xl relative overflow-hidden min-h-[85vh] dark:border-slate-800">
         <style>{`
           @keyframes popIn { 0% { transform: scale(0.9); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
           .animate-pop { animation: popIn 0.4s ease-out forwards; }
@@ -1537,26 +1537,26 @@ export const TowerMode: React.FC = () => {
           <p className="text-gray-400 text-sm mt-1">Chuyên đề: <strong className="text-white">{selectedTopic}</strong></p>
 
           {unlockedBadgeSession && (
-            <div className="mt-4 inline-flex items-center gap-2 px-4 py-1.5 bg-yellow-500/10 border border-yellow-500/30 text-yellow-400 rounded-full text-xs font-black animate-pulse">
+            <div className="mt-4 inline-flex items-center gap-2 px-4 py-1.5 bg-yellow-500/10 border border-yellow-500/30 text-yellow-400 rounded-full text-xs font-black animate-pulse dark:border-slate-800">
               <Award className="h-4 w-4" /> Mở khóa danh hiệu: {unlockedBadgeSession}
             </div>
           )}
         </div>
 
         {/* Stats card */}
-        <div className="bg-[#080d16] rounded-2xl p-5 border border-white/5 grid grid-cols-2 gap-4 mb-6">
-          <div className="text-center border-r border-white/5 py-2">
-            <span className="text-xs text-gray-500 uppercase font-bold block mb-1">XP Nhận được</span>
+        <div className="bg-[#080d16] rounded-2xl p-5 border border-white/5 grid grid-cols-2 gap-4 mb-6 dark:border-slate-800">
+          <div className="text-center border-r border-white/5 py-2 dark:border-slate-800">
+            <span className="text-xs text-gray-500 uppercase font-bold block mb-1 dark:text-slate-500">XP Nhận được</span>
             <span className="text-2xl font-black text-emerald-400">+{victory ? 100 : 20} XP</span>
           </div>
           <div className="text-center py-2">
-            <span className="text-xs text-gray-500 uppercase font-bold block mb-1">Xếp Hạng Võ Đài</span>
+            <span className="text-xs text-gray-500 uppercase font-bold block mb-1 dark:text-slate-500">Xếp Hạng Võ Đài</span>
             <span className="text-2xl font-black text-amber-400">{arenaProfile?.elo_rating || 1000} Elo</span>
           </div>
         </div>
 
         {/* AI Recommendations */}
-        <div className="bg-[#080d16] rounded-2xl p-6 border border-white/5 space-y-4 mb-6">
+        <div className="bg-[#080d16] rounded-2xl p-6 border border-white/5 space-y-4 mb-6 dark:border-slate-800">
           <h3 className="font-bold text-white text-base flex items-center gap-2">
             <Bot className="h-5 w-5 text-indigo-400 animate-pulse" />
             Báo cáo sư phạm từ Cố vấn AI
@@ -1568,7 +1568,7 @@ export const TowerMode: React.FC = () => {
               Đang lập báo cáo và kiến thức bổ trợ...
             </div>
           ) : (
-            <div className="bg-white/5 rounded-xl p-5 border border-white/5 text-sm leading-relaxed prose prose-invert text-gray-300">
+            <div className="bg-white/5 rounded-xl p-5 border border-white/5 text-sm leading-relaxed prose prose-invert text-gray-300 dark:border-slate-800">
               <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>
                 {aiGuide}
               </ReactMarkdown>
@@ -1591,7 +1591,7 @@ export const TowerMode: React.FC = () => {
           <div className="grid grid-cols-2 gap-3">
             <button
               onClick={handleRestart}
-              className="py-4 bg-[#080d16] border border-white/10 hover:bg-white/5 rounded-xl font-bold text-sm text-gray-300 transition-all"
+              className="py-4 bg-[#080d16] border border-white/10 hover:bg-white/5 rounded-xl font-bold text-sm text-gray-300 transition-all dark:border-slate-800"
             >
               🔄 Leo tháp tiếp
             </button>
@@ -1607,13 +1607,13 @@ export const TowerMode: React.FC = () => {
         {/* AI Revenge Challenge overlay */}
         {revengeActive && (
           <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
-            <div className="bg-[#090d16] border border-white/10 rounded-3xl shadow-2xl w-full max-w-xl p-6" onClick={e => e.stopPropagation()}>
-              <div className="flex items-center justify-between border-b border-white/10 pb-4 mb-4">
+            <div className="bg-[#090d16] border border-white/10 rounded-3xl shadow-2xl w-full max-w-xl p-6 dark:border-slate-800" onClick={e => e.stopPropagation()}>
+              <div className="flex items-center justify-between border-b border-white/10 pb-4 mb-4 dark:border-slate-800">
                 <h3 className="font-bold text-lg text-white flex items-center gap-2">
                   <Sparkles className="h-5 w-5 text-purple-400 animate-pulse" />
                   Thử thách AI nâng cao (Mức 3)
                 </h3>
-                <span className="text-xs bg-purple-500/10 px-3 py-1 rounded-full text-purple-400 border border-purple-500/20 font-black">
+                <span className="text-xs bg-purple-500/10 px-3 py-1 rounded-full text-purple-400 border border-purple-500/20 font-black dark:border-slate-800">
                   Câu hỏi {revengeIndex + 1}/3
                 </span>
               </div>
@@ -1631,7 +1631,7 @@ export const TowerMode: React.FC = () => {
                 </div>
               ) : revengeQuestions[revengeIndex] ? (
                 <div>
-                  <div className="bg-white/5 rounded-2xl p-5 border border-white/5 mb-5 text-base font-bold text-white leading-relaxed">
+                  <div className="bg-white/5 rounded-2xl p-5 border border-white/5 mb-5 text-base font-bold text-white leading-relaxed dark:border-slate-800">
                     <MathText>{revengeQuestions[revengeIndex].content}</MathText>
                   </div>
                   <div className="space-y-2.5">
@@ -1639,7 +1639,7 @@ export const TowerMode: React.FC = () => {
                       <button
                         key={idx}
                         onClick={() => handleRevengeAnswer(idx)}
-                        className="w-full p-4 rounded-xl border border-white/5 bg-white/5 hover:border-purple-500/30 hover:bg-purple-950/10 text-left font-medium text-gray-300 transition-all"
+                        className="w-full p-4 rounded-xl border border-white/5 bg-white/5 hover:border-purple-500/30 hover:bg-purple-950/10 text-left font-medium text-gray-300 transition-all dark:border-slate-800"
                       >
                         {String.fromCharCode(65 + idx)}. <MathText>{ans}</MathText>
                       </button>
@@ -1659,7 +1659,7 @@ export const TowerMode: React.FC = () => {
   const charClass = arenaProfile?.avatar_class || 'scholar';
 
   return (
-    <div className="max-w-2xl lg:max-w-5xl xl:max-w-6xl mx-auto pb-12 px-6 md:px-8 bg-[#030712] text-gray-100 rounded-3xl border border-white/5 shadow-2xl relative overflow-hidden min-h-[85vh]">
+    <div className="max-w-2xl lg:max-w-5xl xl:max-w-6xl mx-auto pb-12 px-6 md:px-8 bg-[#030712] text-gray-100 rounded-3xl border border-white/5 shadow-2xl relative overflow-hidden min-h-[85vh] dark:border-slate-800">
       <style>{`
         @keyframes slideIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
         .animate-slide { animation: slideIn 0.3s ease-out forwards; }
@@ -1672,7 +1672,7 @@ export const TowerMode: React.FC = () => {
       <div className="absolute top-0 right-1/4 w-80 h-80 rounded-full opacity-[0.03] blur-[90px] pointer-events-none bg-indigo-500"></div>
 
       {/* Header HUD */}
-      <div className="flex items-center justify-between py-4 border-b border-white/5 mb-5 relative z-10">
+      <div className="flex items-center justify-between py-4 border-b border-white/5 mb-5 relative z-10 dark:border-slate-800">
         <button onClick={handleRestart} className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-white transition-colors">
           <ArrowLeft className="h-4 w-4" /> Thoát
         </button>
@@ -1699,7 +1699,7 @@ export const TowerMode: React.FC = () => {
           <span className="font-black text-gray-300 uppercase tracking-wider">Làm chủ Chuyên đề: {selectedTopic}</span>
           <span className="text-amber-400 font-black text-lg md:text-xl lg:text-2xl">{masteryScore}% Mastery</span>
         </div>
-        <div className="h-3.5 bg-white/5 rounded-full overflow-hidden border border-white/5 p-0.5">
+        <div className="h-3.5 bg-white/5 rounded-full overflow-hidden border border-white/5 p-0.5 dark:border-slate-800">
           <div 
             className="h-full rounded-full bg-gradient-to-r from-amber-500 via-orange-500 to-yellow-400 transition-all duration-500 ease-out" 
             style={{ width: `${masteryScore}%` }}
@@ -1728,7 +1728,7 @@ export const TowerMode: React.FC = () => {
             </div>
           </div>
           {streakCombo >= 2 && (
-            <span className="text-sm font-black bg-orange-500/10 border border-orange-500/20 px-3 py-1 rounded-xl text-orange-400 animate-bounce">
+            <span className="text-sm font-black bg-orange-500/10 border border-orange-500/20 px-3 py-1 rounded-xl text-orange-400 animate-bounce dark:border-slate-800">
               🔥 Combo x{streakCombo >= 4 ? 3.0 : streakCombo === 3 ? 2.0 : 1.5}
             </span>
           )}
@@ -1773,10 +1773,10 @@ export const TowerMode: React.FC = () => {
                 <span className="text-base md:text-lg lg:text-xl font-black">🌍 Kỹ năng Explorer: Sơ Cứu (+1 ❤️)</span>
               </>
             )}
-            {skillUsed && <span className="text-sm bg-white/5 px-2 py-0.5 rounded text-gray-500">Đã dùng</span>}
+            {skillUsed && <span className="text-sm bg-white/5 px-2 py-0.5 rounded text-gray-500 dark:text-slate-500">Đã dùng</span>}
           </button>
           {shieldActive && (
-            <div className="px-5 py-3.5 bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 rounded-2xl flex items-center gap-1.5 text-base font-black animate-pulse">
+            <div className="px-5 py-3.5 bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 rounded-2xl flex items-center gap-1.5 text-base font-black animate-pulse dark:border-slate-800">
               <ShieldCheck className="h-6 w-6" /> Khiên bảo vệ
             </div>
           )}
@@ -1784,7 +1784,7 @@ export const TowerMode: React.FC = () => {
 
         {/* Consumable Items HUD */}
         {((inventoryItems['small_hp_potion'] || 0) > 0 || (inventoryItems['hourglass_5s'] || 0) > 0) && (
-          <div className="flex gap-3 bg-white/[0.02] border border-white/5 p-3 rounded-2xl">
+          <div className="flex gap-3 bg-white/[0.02] border border-white/5 p-3 rounded-2xl dark:border-slate-800">
             {(inventoryItems['small_hp_potion'] || 0) > 0 && (
               <button
                 onClick={handleUseHpPotion}
@@ -1819,7 +1819,7 @@ export const TowerMode: React.FC = () => {
       {/* Timer Bar */}
       {currentQ && !showResult && (
         <div className="mb-5 relative z-10">
-          <div className="h-1.5 bg-white/5 rounded-full overflow-hidden border border-white/5">
+          <div className="h-1.5 bg-white/5 rounded-full overflow-hidden border border-white/5 dark:border-slate-800">
             <div 
               className="h-full rounded-full transition-all duration-1000 ease-linear" 
               style={{ 
@@ -1837,16 +1837,16 @@ export const TowerMode: React.FC = () => {
 
       {/* Main Question Display */}
       {aiGeneratingFallback ? (
-        <div className="py-12 text-center text-amber-500 font-bold animate-pulse flex flex-col items-center justify-center gap-2 relative z-10 bg-[#080d16] border border-white/5 rounded-2xl">
+        <div className="py-12 text-center text-amber-500 font-bold animate-pulse flex flex-col items-center justify-center gap-2 relative z-10 bg-[#080d16] border border-white/5 rounded-2xl dark:border-slate-800">
           <Clock className="h-8 w-8 animate-spin" />
           <p>AI đang biên soạn câu hỏi thích ứng tiếp theo...</p>
         </div>
       ) : currentQ ? (
         <div className="animate-slide relative z-10">
           {/* Question Stem */}
-          <div className="bg-[#080d16] border border-white/5 rounded-2xl p-6 mb-5">
+          <div className="bg-[#080d16] border border-white/5 rounded-2xl p-6 mb-5 dark:border-slate-800">
             <div className="flex items-center justify-between mb-4">
-              <span className="bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 px-4 py-1.5 rounded-full text-sm md:text-base lg:text-lg font-black uppercase">
+              <span className="bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 px-4 py-1.5 rounded-full text-sm md:text-base lg:text-lg font-black uppercase dark:border-slate-800">
                 {selectedSubject === 'math' ? '📐 Toán' : selectedSubject === 'science' ? '🔬 Khoa học' : selectedSubject === 'technology' ? '💻 Công nghệ' : selectedSubject === 'vietnamese' ? '📝 Tiếng Việt' : selectedSubject === 'english' ? '🇬🇧 Tiếng Anh' : '🌍 Lịch sử & Địa lí'}
               </span>
               <span className="text-sm md:text-base lg:text-lg font-black text-gray-300">
@@ -1857,12 +1857,12 @@ export const TowerMode: React.FC = () => {
               <MathText>{currentQ.content}</MathText>
             </div>
             {hint && !showResult && (
-              <div className="mt-4 border-t border-white/5 pt-3">
+              <div className="mt-4 border-t border-white/5 pt-3 dark:border-slate-800">
                 <details className="group cursor-pointer select-none">
                   <summary className="text-sm md:text-base font-black text-indigo-400 hover:text-indigo-300 flex items-center gap-1 outline-none">
                     <span>💡 Xem gợi ý cách làm</span>
                   </summary>
-                  <div className="text-sm md:text-base lg:text-lg text-gray-300 mt-2 pl-4 border-l border-indigo-500/30 leading-relaxed font-bold">
+                  <div className="text-sm md:text-base lg:text-lg text-gray-300 mt-2 pl-4 border-l border-indigo-500/30 leading-relaxed font-bold dark:border-slate-800">
                     <MathText>{hint}</MathText>
                   </div>
                 </details>
@@ -1872,7 +1872,7 @@ export const TowerMode: React.FC = () => {
 
           {/* Options / Input Field */}
           {(currentQ.type === 'SHORT_ANSWER' || !currentQ.answers || currentQ.answers.length === 0) ? (
-            <div className="bg-[#080d16] border border-white/5 rounded-2xl p-6 mb-5">
+            <div className="bg-[#080d16] border border-white/5 rounded-2xl p-6 mb-5 dark:border-slate-800">
               <div className="mb-4">
                 <label className="block text-base md:text-lg font-bold text-gray-300 mb-3">Nhập đáp án của bạn:</label>
                 <input
@@ -1881,7 +1881,7 @@ export const TowerMode: React.FC = () => {
                   onChange={(e) => setShortAnswerText(e.target.value)}
                   disabled={showResult}
                   placeholder="Điền từ, số hoặc cụm từ đáp án chính xác..."
-                  className="w-full px-5 py-4 rounded-xl bg-white/5 border border-white/10 text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all font-black text-lg md:text-xl lg:text-2xl"
+                  className="w-full px-5 py-4 rounded-xl bg-white/5 border border-white/10 text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all font-black text-lg md:text-xl lg:text-2xl dark:border-slate-800"
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' && shortAnswerText.trim() && !showResult) {
                       handleAnswer(shortAnswerText);
@@ -1891,7 +1891,7 @@ export const TowerMode: React.FC = () => {
               </div>
 
               {showResult && (
-                <div className="p-4 rounded-xl mb-4 bg-white/5 border border-white/5 flex flex-col gap-2">
+                <div className="p-4 rounded-xl mb-4 bg-white/5 border border-white/5 flex flex-col gap-2 dark:border-slate-800">
                   <div className="flex justify-between items-center text-sm">
                     <span className="text-gray-400">Đáp án của bạn:</span>
                     <span className={`font-bold ${isCorrect ? 'text-emerald-400' : 'text-rose-400'}`}>
@@ -2011,7 +2011,7 @@ export const TowerMode: React.FC = () => {
                 {!isCorrect && (
                   <button 
                     onClick={handleAskAi}
-                    className="px-3 py-1.5 rounded-lg bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 border border-indigo-500/20 text-xs font-black flex items-center gap-1 transition-colors"
+                    className="px-3 py-1.5 rounded-lg bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 border border-indigo-500/20 text-xs font-black flex items-center gap-1 transition-colors dark:border-slate-800"
                   >
                     <Bot className="h-4 w-4" /> Trợ lý AI giải thích
                   </button>
@@ -2020,7 +2020,7 @@ export const TowerMode: React.FC = () => {
 
               {/* Quick AI explanation box */}
               {showAiExplanation && (
-                <div className="bg-[#080d16] border border-indigo-500/20 rounded-2xl p-5 space-y-3 animate-slide">
+                <div className="bg-[#080d16] border border-indigo-500/20 rounded-2xl p-5 space-y-3 animate-slide dark:border-slate-800">
                   <h4 className="font-bold text-white text-sm md:text-base lg:text-lg flex items-center gap-1.5">
                     <Bot className="h-5 w-5 text-indigo-400 animate-bounce" />
                     AI Gia Sư giải thích nhanh
@@ -2030,7 +2030,7 @@ export const TowerMode: React.FC = () => {
                       <Clock className="h-5 w-5 animate-spin mb-1" /> Đang chuẩn bị chẩn đoán lý thuyết...
                     </div>
                   ) : (
-                    <div className="text-sm md:text-base lg:text-lg text-gray-200 leading-relaxed bg-white/5 p-4 rounded-xl border border-white/5">
+                    <div className="text-sm md:text-base lg:text-lg text-gray-200 leading-relaxed bg-white/5 p-4 rounded-xl border border-white/5 dark:border-slate-800">
                       <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>
                         {aiExplanation}
                       </ReactMarkdown>
@@ -2041,13 +2041,13 @@ export const TowerMode: React.FC = () => {
 
               {/* Solution/Explanation */}
               {explanation ? (
-                <div className="bg-indigo-950/20 border border-indigo-500/20 rounded-2xl p-5 text-sm md:text-base lg:text-lg">
+                <div className="bg-indigo-950/20 border border-indigo-500/20 rounded-2xl p-5 text-sm md:text-base lg:text-lg dark:border-slate-800">
                   <p className="font-black text-indigo-400 text-base md:text-lg lg:text-xl mb-2">📖 Lời giải chi tiết:</p>
                   <p className="mt-1.5 text-gray-200 leading-relaxed whitespace-pre-wrap"><MathText>{explanation}</MathText></p>
                 </div>
               ) : (
                 !isCorrect && (
-                  <div className="bg-white/5 border border-white/5 rounded-2xl p-5 text-sm md:text-base lg:text-lg text-gray-300">
+                  <div className="bg-white/5 border border-white/5 rounded-2xl p-5 text-sm md:text-base lg:text-lg text-gray-300 dark:border-slate-800">
                     <p className="font-black text-gray-200 text-base md:text-lg lg:text-xl mb-2">Lời giải tham chiếu:</p>
                     <div className="mt-1 leading-relaxed font-bold">
                       {(currentQ.type === 'SHORT_ANSWER' || !currentQ.answers || currentQ.answers.length === 0) ? (

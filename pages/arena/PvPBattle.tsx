@@ -403,7 +403,7 @@ export const PvPBattle: React.FC = () => {
             <div className="min-h-[60vh] flex items-center justify-center">
                 <div className="text-center">
                     <Brain className="h-12 w-12 text-indigo-500 mx-auto mb-4" style={{ animation: 'pulse 1s ease-in-out infinite' }} />
-                    <p className="text-gray-500 font-bold">Đang tải trận đấu...</p>
+                    <p className="text-gray-500 font-bold dark:text-slate-500">Đang tải trận đấu...</p>
                     <p className="text-sm text-indigo-400 mt-2 italic">✨ {battleLore}</p>
                 </div>
                 <style>{`@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }`}</style>
@@ -465,7 +465,7 @@ export const PvPBattle: React.FC = () => {
       `}</style>
 
             {/* Lore Banner */}
-            <div className="bg-gradient-to-r from-indigo-50 to-purple-50 border border-indigo-100 rounded-xl px-4 py-2 mb-4 text-center" style={{ animation: 'fadeIn 0.3s ease-out' }}>
+            <div className="bg-gradient-to-r from-indigo-50 to-purple-50 border border-indigo-100 rounded-xl px-4 py-2 mb-4 text-center dark:border-indigo-900/30" style={{ animation: 'fadeIn 0.3s ease-out' }}>
                 <p className="text-xs text-indigo-600 italic">✨ {battleLore}</p>
             </div>
 
@@ -478,7 +478,7 @@ export const PvPBattle: React.FC = () => {
                         style={{ background: 'linear-gradient(135deg, #312e81, #4c1d95)' }}>
                         {AVATAR_EMOJIS[arenaProfile?.avatar_class || 'scholar']}
                     </div>
-                    <p className="text-sm font-bold text-gray-900 truncate">{user?.name}</p>
+                    <p className="text-sm font-bold text-gray-900 truncate dark:text-slate-100">{user?.name}</p>
                     <div className="mt-2">
                         <div className="h-4 bg-gray-200 rounded-full overflow-hidden relative"
                             style={myHp < 30 ? { animation: 'hp-glow 1s ease-in-out infinite' } : {}}>
@@ -488,7 +488,7 @@ export const PvPBattle: React.FC = () => {
                                     background: myHp > 60 ? 'linear-gradient(90deg, #10b981, #059669)' : myHp > 30 ? 'linear-gradient(90deg, #f59e0b, #d97706)' : 'linear-gradient(90deg, #ef4444, #dc2626)'
                                 }}></div>
                         </div>
-                        <p className="text-xs font-bold text-gray-500 mt-1">{myHp} HP</p>
+                        <p className="text-xs font-bold text-gray-500 mt-1 dark:text-slate-500">{myHp} HP</p>
                     </div>
                 </div>
 
@@ -514,7 +514,7 @@ export const PvPBattle: React.FC = () => {
                     <div className="w-16 h-16 mx-auto rounded-xl flex items-center justify-center text-3xl mb-2 bg-gray-800">
                         {AVATAR_EMOJIS[opponentAvatar.current]}
                     </div>
-                    <p className="text-sm font-bold text-gray-900 truncate">{opponentName.current}</p>
+                    <p className="text-sm font-bold text-gray-900 truncate dark:text-slate-100">{opponentName.current}</p>
                     <div className="mt-2">
                         <div className="h-4 bg-gray-200 rounded-full overflow-hidden relative"
                             style={opHp < 30 ? { animation: 'hp-glow 1s ease-in-out infinite' } : {}}>
@@ -524,7 +524,7 @@ export const PvPBattle: React.FC = () => {
                                     background: opHp > 60 ? 'linear-gradient(90deg, #10b981, #059669)' : opHp > 30 ? 'linear-gradient(90deg, #f59e0b, #d97706)' : 'linear-gradient(90deg, #ef4444, #dc2626)'
                                 }}></div>
                         </div>
-                        <p className="text-xs font-bold text-gray-500 mt-1">{opHp} HP</p>
+                        <p className="text-xs font-bold text-gray-500 mt-1 dark:text-slate-500">{opHp} HP</p>
                     </div>
                     {opDamageAnim && lastDamage > 0 && (
                         <div className="text-red-500 font-black text-lg" style={{ animation: 'pop 0.3s ease-out' }}>
@@ -568,7 +568,7 @@ export const PvPBattle: React.FC = () => {
             {currentQuestion && (
                 <>
                     {/* Question type tag */}
-                    <div className="bg-white rounded-2xl shadow-sm border p-6 mb-4" style={{ animation: 'fadeIn 0.4s ease-out' }}>
+                    <div className="bg-white rounded-2xl shadow-sm border p-6 mb-4 dark:bg-slate-900 dark:border-slate-800" style={{ animation: 'fadeIn 0.4s ease-out' }}>
                         <div className="flex items-center gap-2 mb-3">
                             <span className="bg-indigo-100 text-indigo-700 px-2.5 py-0.5 rounded-full text-xs font-bold">
                                 {currentQuestion.subject === 'math' ? '📐 Toán' : currentQuestion.subject === 'science' ? '🔬 Khoa học' : currentQuestion.subject === 'technology' ? '💻 Công nghệ' : '📋 ' + currentQuestion.subject}
@@ -577,16 +577,16 @@ export const PvPBattle: React.FC = () => {
                                 {currentQuestion.type === 'MCQ_MULTIPLE' ? '☑ Chọn nhiều đáp án' : currentQuestion.type === 'SHORT_ANSWER' ? '✏ Trả lời ngắn' : '🔘 Trắc nghiệm 1 đáp án'}
                             </span>
                         </div>
-                        <div className="text-lg font-bold text-gray-900 leading-relaxed">
+                        <div className="text-lg font-bold text-gray-900 leading-relaxed dark:text-slate-100">
                             <MathText>{currentQuestion.content}</MathText>
                         </div>
                         {hint && !showResult && (
-                            <div className="mt-4 border-t pt-3">
+                            <div className="mt-4 border-t pt-3 dark:border-slate-800">
                                 <details className="group cursor-pointer select-none">
                                     <summary className="text-xs font-bold text-indigo-600 hover:text-indigo-700 flex items-center gap-1 outline-none">
                                         <span>💡 Xem gợi ý cách làm</span>
                                     </summary>
-                                    <div className="text-xs text-gray-500 mt-2 pl-4 border-l-2 border-indigo-500 leading-relaxed">
+                                    <div className="text-xs text-gray-500 mt-2 pl-4 border-l-2 border-indigo-500 leading-relaxed dark:border-slate-800 dark:text-slate-500">
                                         <MathText>{hint}</MathText>
                                     </div>
                                 </details>
@@ -686,16 +686,16 @@ export const PvPBattle: React.FC = () => {
 
                     {/* RENDER SHORT_ANSWER */}
                     {currentQuestion.type === 'SHORT_ANSWER' && (
-                        <div className="bg-white rounded-2xl shadow-sm border p-6">
+                        <div className="bg-white rounded-2xl shadow-sm border p-6 dark:bg-slate-900 dark:border-slate-800">
                             <div className="mb-4">
-                                <label className="block text-sm font-semibold text-gray-600 mb-2">Nhập đáp án của bạn:</label>
+                                <label className="block text-sm font-semibold text-gray-600 mb-2 dark:text-slate-400">Nhập đáp án của bạn:</label>
                                 <input
                                     type="text"
                                     value={shortAnswerText}
                                     onChange={(e) => setShortAnswerText(e.target.value)}
                                     disabled={showResult || answeredThisQ}
                                     placeholder="Điền từ, số hoặc cụm từ đáp án chính xác..."
-                                    className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all font-semibold"
+                                    className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all font-semibold dark:border-slate-800"
                                     onKeyDown={(e) => {
                                         if (e.key === 'Enter' && shortAnswerText.trim()) {
                                             handleAnswer(shortAnswerText);
@@ -705,15 +705,15 @@ export const PvPBattle: React.FC = () => {
                             </div>
 
                             {showResult && (
-                                <div className="p-4 rounded-xl mb-4 bg-gray-50 border border-gray-100 flex flex-col gap-2">
+                                <div className="p-4 rounded-xl mb-4 bg-gray-50 border border-gray-100 flex flex-col gap-2 dark:border-slate-800 dark:bg-slate-900/50">
                                     <div className="flex justify-between items-center text-sm">
-                                        <span className="text-gray-500">Đáp án của bạn:</span>
+                                        <span className="text-gray-500 dark:text-slate-500">Đáp án của bạn:</span>
                                         <span className={`font-bold ${isCorrect ? 'text-emerald-600' : 'text-red-600'}`}>
                                             {shortAnswerText || '(Không trả lời)'}
                                         </span>
                                     </div>
                                     <div className="flex justify-between items-center text-sm">
-                                        <span className="text-gray-500">Đáp án đúng:</span>
+                                        <span className="text-gray-500 dark:text-slate-500">Đáp án đúng:</span>
                                         <span className="font-bold text-emerald-600">
                                             {currentQuestion.correct_answer_string}
                                         </span>
@@ -735,7 +735,7 @@ export const PvPBattle: React.FC = () => {
 
                     {/* Detailed solution */}
                     {showResult && explanation && (
-                        <div className="mt-4 bg-indigo-50 border border-indigo-150 p-4 rounded-xl text-xs text-gray-700" style={{ animation: 'fadeIn 0.3s ease-out' }}>
+                        <div className="mt-4 bg-indigo-50 border border-indigo-150 p-4 rounded-xl text-xs text-gray-700 dark:border-slate-800 dark:text-slate-300" style={{ animation: 'fadeIn 0.3s ease-out' }}>
                             <p className="font-bold text-indigo-900 flex items-center gap-1.5 mb-1.5">📖 Lời giải chi tiết:</p>
                             <p className="leading-relaxed whitespace-pre-wrap"><MathText>{explanation}</MathText></p>
                         </div>

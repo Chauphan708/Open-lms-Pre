@@ -130,15 +130,15 @@ export const StudentXPStats: React.FC = () => {
         <div className="max-w-6xl mx-auto pb-10">
             {/* Header */}
             <div className="mb-6">
-                <button onClick={() => navigate('/')} className="text-gray-500 hover:text-gray-900 flex items-center gap-2 mb-2 transition-colors">
+                <button onClick={() => navigate('/')} className="text-gray-500 hover:text-gray-900 flex items-center gap-2 mb-2 transition-colors dark:text-slate-500">
                     <ArrowLeft className="h-4 w-4" /> Quay lại Dashboard
                 </button>
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div>
-                        <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+                        <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2 dark:text-slate-100">
                             <Zap className="h-6 w-6 text-yellow-500" /> Thống kê XP Học sinh
                         </h1>
-                        <p className="text-gray-500 text-sm">Theo dõi, đôn đốc, nhắc nhở và khen thưởng học sinh</p>
+                        <p className="text-gray-500 text-sm dark:text-slate-500">Theo dõi, đôn đốc, nhắc nhở và khen thưởng học sinh</p>
                     </div>
                 </div>
             </div>
@@ -148,7 +148,7 @@ export const StudentXPStats: React.FC = () => {
                 <select
                     value={selectedClassId}
                     onChange={e => setSelectedClassId(e.target.value)}
-                    className="border border-gray-300 rounded-lg px-4 py-2.5 text-sm bg-white text-gray-900 focus:ring-2 focus:ring-indigo-500 outline-none shadow-sm"
+                    className="border border-gray-300 rounded-lg px-4 py-2.5 text-sm bg-white text-gray-900 focus:ring-2 focus:ring-indigo-500 outline-none shadow-sm dark:bg-slate-900 dark:border-slate-800 dark:text-slate-100"
                 >
                     <option value="ALL">Tất cả lớp ({teacherClasses.length} lớp)</option>
                     {teacherClasses.map(c => (
@@ -163,40 +163,40 @@ export const StudentXPStats: React.FC = () => {
                         value={searchQuery}
                         onChange={e => setSearchQuery(e.target.value)}
                         placeholder="Tìm kiếm học sinh..."
-                        className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg text-sm bg-white text-gray-900 focus:ring-2 focus:ring-indigo-500 outline-none shadow-sm"
+                        className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg text-sm bg-white text-gray-900 focus:ring-2 focus:ring-indigo-500 outline-none shadow-sm dark:bg-slate-900 dark:border-slate-800 dark:text-slate-100"
                     />
                 </div>
             </div>
 
             {/* Summary Cards */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                <div className="bg-white p-5 rounded-xl border shadow-sm">
-                    <p className="text-sm font-medium text-gray-500 mb-1">Tổng học sinh</p>
-                    <p className="text-3xl font-bold text-gray-900">{summaryStats.totalStudents}</p>
+                <div className="bg-white p-5 rounded-xl border shadow-sm dark:bg-slate-900 dark:border-slate-800">
+                    <p className="text-sm font-medium text-gray-500 mb-1 dark:text-slate-500">Tổng học sinh</p>
+                    <p className="text-3xl font-bold text-gray-900 dark:text-slate-100">{summaryStats.totalStudents}</p>
                     <div className="mt-2 text-xs text-gray-400 flex items-center gap-1"><Users className="h-3 w-3" /> Trong lớp</div>
                 </div>
-                <div className="bg-white p-5 rounded-xl border shadow-sm">
-                    <p className="text-sm font-medium text-gray-500 mb-1">XP Trung bình</p>
+                <div className="bg-white p-5 rounded-xl border shadow-sm dark:bg-slate-900 dark:border-slate-800">
+                    <p className="text-sm font-medium text-gray-500 mb-1 dark:text-slate-500">XP Trung bình</p>
                     <p className="text-3xl font-bold text-indigo-600">{summaryStats.avgXP}</p>
                     <div className="mt-2 text-xs text-gray-400">Điểm kinh nghiệm</div>
                 </div>
-                <div className="bg-white p-5 rounded-xl border shadow-sm">
-                    <p className="text-sm font-medium text-gray-500 mb-1">XP Cao nhất</p>
+                <div className="bg-white p-5 rounded-xl border shadow-sm dark:bg-slate-900 dark:border-slate-800">
+                    <p className="text-sm font-medium text-gray-500 mb-1 dark:text-slate-500">XP Cao nhất</p>
                     <p className="text-3xl font-bold text-green-600">{summaryStats.maxXP}</p>
                     <div className="mt-2 text-xs text-gray-400 flex items-center gap-1"><TrendingUp className="h-3 w-3" /> Xuất sắc</div>
                 </div>
-                <div className="bg-white p-5 rounded-xl border shadow-sm">
-                    <p className="text-sm font-medium text-gray-500 mb-1">XP Thấp nhất</p>
+                <div className="bg-white p-5 rounded-xl border shadow-sm dark:bg-slate-900 dark:border-slate-800">
+                    <p className="text-sm font-medium text-gray-500 mb-1 dark:text-slate-500">XP Thấp nhất</p>
                     <p className="text-3xl font-bold text-red-500">{summaryStats.minXP}</p>
                     <div className="mt-2 text-xs text-gray-400 flex items-center gap-1"><TrendingDown className="h-3 w-3" /> Cần đôn đốc</div>
                 </div>
             </div>
 
             {/* Student Table */}
-            <div className="bg-white rounded-xl border shadow-sm overflow-hidden">
+            <div className="bg-white rounded-xl border shadow-sm overflow-hidden dark:bg-slate-900 dark:border-slate-800">
                 <div className="overflow-x-auto">
                     <table className="w-full text-left text-sm">
-                        <thead className="bg-gray-50 dark:bg-slate-850 text-gray-600 border-b">
+                        <thead className="bg-gray-50 dark:bg-slate-850 text-gray-600 border-b dark:border-slate-800 dark:text-slate-400">
                             <tr>
                                 <th className="px-4 py-3 font-medium w-10 text-center">#</th>
                                 <th className="px-4 py-3 font-medium cursor-pointer hover:text-indigo-600" onClick={() => handleSort('name')}>
@@ -242,7 +242,7 @@ export const StudentXPStats: React.FC = () => {
                                     else if (s.totalXP < 50) xpColor = 'text-red-500';
 
                                     return (
-                                        <tr key={s.id} className="hover:bg-gray-50 dark:bg-slate-850 transition-colors">
+                                        <tr key={s.id} className="hover:bg-gray-50 dark:bg-slate-850 transition-colors dark:hover:bg-slate-850/50">
                                             <td className="px-4 py-3 text-center">
                                                 <div className={`w-7 h-7 rounded-full flex items-center justify-center font-bold text-xs mx-auto ${rankBg}`}>
                                                     {sortField === 'xp' && sortDir === 'desc' && rank <= 3 ? (
@@ -252,11 +252,11 @@ export const StudentXPStats: React.FC = () => {
                                             </td>
                                             <td className="px-4 py-3">
                                                 <div className="flex items-center gap-3">
-                                                    <img src={s.avatar} alt="" className="w-8 h-8 rounded-full border bg-gray-100" />
-                                                    <span className="font-medium text-gray-900">{s.name}</span>
+                                                    <img src={s.avatar} alt="" className="w-8 h-8 rounded-full border bg-gray-100 dark:border-slate-800 dark:bg-slate-850" />
+                                                    <span className="font-medium text-gray-900 dark:text-slate-100">{s.name}</span>
                                                 </div>
                                             </td>
-                                            <td className="px-4 py-3 text-gray-500 text-xs">{s.className}</td>
+                                            <td className="px-4 py-3 text-gray-500 text-xs dark:text-slate-500">{s.className}</td>
                                             <td className="px-4 py-3 text-center">
                                                 <span className="bg-gradient-to-r from-indigo-500 to-purple-500 text-white text-xs font-bold px-2.5 py-1 rounded-full">
                                                     Lv.{s.level}
@@ -267,7 +267,7 @@ export const StudentXPStats: React.FC = () => {
                                             </td>
                                             <td className="px-4 py-3">
                                                 <div className="flex items-center gap-2">
-                                                    <div className="flex-1 bg-gray-100 rounded-full h-2 max-w-[100px]">
+                                                    <div className="flex-1 bg-gray-100 rounded-full h-2 max-w-[100px] dark:bg-slate-850">
                                                         <div
                                                             className="bg-gradient-to-r from-indigo-500 to-purple-500 h-2 rounded-full transition-all"
                                                             style={{ width: `${s.currentLevelXP}%` }}
@@ -276,7 +276,7 @@ export const StudentXPStats: React.FC = () => {
                                                     <span className="text-[10px] text-gray-400 whitespace-nowrap">{s.currentLevelXP}/100</span>
                                                 </div>
                                             </td>
-                                            <td className="px-4 py-3 text-center text-gray-700">{s.attemptCount}</td>
+                                            <td className="px-4 py-3 text-center text-gray-700 dark:text-slate-300">{s.attemptCount}</td>
                                             <td className="px-4 py-3 text-center">
                                                 <span className={`font-medium ${s.avgScore >= 8 ? 'text-green-600' : s.avgScore >= 5 ? 'text-yellow-600' : 'text-red-500'}`}>
                                                     {fmt(s.avgScore)}
@@ -295,7 +295,7 @@ export const StudentXPStats: React.FC = () => {
             </div>
 
             {/* Legend */}
-            <div className="mt-4 bg-indigo-50 border border-indigo-100 rounded-xl p-4 text-sm text-indigo-800">
+            <div className="mt-4 bg-indigo-50 border border-indigo-100 rounded-xl p-4 text-sm text-indigo-800 dark:border-indigo-900/30">
                 <p className="font-bold mb-1 flex items-center gap-2"><Award className="h-4 w-4" /> Cách tính XP:</p>
                 <p>Mỗi 1 điểm bài tập = 10 XP. Mỗi 100 XP tăng 1 Level. Học sinh có XP thấp (đỏ) cần được đôn đốc, nhắc nhở.</p>
             </div>

@@ -303,20 +303,20 @@ export const AIGrading: React.FC = () => {
 
     return (
         <div className="max-w-6xl mx-auto space-y-6">
-            <div className="flex justify-between items-center bg-white p-6 rounded-2xl shadow-sm border border-indigo-100">
+            <div className="flex justify-between items-center bg-white p-6 rounded-2xl shadow-sm border border-indigo-100 dark:bg-slate-900 dark:border-indigo-900/30">
                 <div>
-                    <h1 className="text-3xl font-extrabold text-gray-900 flex items-center gap-3">
+                    <h1 className="text-3xl font-extrabold text-gray-900 flex items-center gap-3 dark:text-slate-100">
                         <Bot className="h-8 w-8 text-indigo-500" />
                         Trợ Lý Chấm Bài Bằng AI
                     </h1>
-                    <p className="text-gray-500 mt-2">EduQuest AI quét chữ viết tay, phân tích điểm mạnh yếu theo chỉ đạo của Giáo viên.</p>
+                    <p className="text-gray-500 mt-2 dark:text-slate-500">EduQuest AI quét chữ viết tay, phân tích điểm mạnh yếu theo chỉ đạo của Giáo viên.</p>
                 </div>
                 <div className="w-1/3">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Chọn Lớp</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-300">Chọn Lớp</label>
                     <select
                         value={selectedClassId}
                         onChange={e => setSelectedClassId(e.target.value)}
-                        className="w-full border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 bg-gray-50 dark:bg-slate-850"
+                        className="w-full border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 bg-gray-50 dark:bg-slate-850 dark:border-slate-800"
                     >
                         {myClasses.map(c => (
                             <option key={c.id} value={c.id}>{c.name}</option>
@@ -329,17 +329,17 @@ export const AIGrading: React.FC = () => {
 
                 {/* Khu Vực Tải Ảnh & Thiết lập AI */}
                 <div className="space-y-6">
-                    <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 space-y-4">
-                        <h2 className="text-xl font-bold flex items-center gap-2 border-b pb-3">
+                    <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 space-y-4 dark:bg-slate-900 dark:border-slate-800">
+                        <h2 className="text-xl font-bold flex items-center gap-2 border-b pb-3 dark:border-slate-800">
                             <FileImage className="h-5 w-5 text-indigo-500" /> Hồ sơ Nộp Bài
                         </h2>
 
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Chọn Học Sinh *</label>
+                            <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-300">Chọn Học Sinh *</label>
                             <select
                                 value={selectedStudentId}
                                 onChange={e => setSelectedStudentId(e.target.value)}
-                                className="w-full border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                                className="w-full border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 dark:border-slate-800"
                             >
                                 <option value="">-- Thuộc về Học Sinh --</option>
                                 {classStudents.map(s => (
@@ -349,11 +349,11 @@ export const AIGrading: React.FC = () => {
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Chủ đề Môn học *</label>
+                            <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-300">Chủ đề Môn học *</label>
                             <select
                                 value={subject}
                                 onChange={e => setSubject(e.target.value)}
-                                className="w-full border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                                className="w-full border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 dark:border-slate-800"
                             >
                                 {['Toán', 'Tiếng Việt', 'Khoa học', 'Lịch sử và Địa lí', 'Công nghệ', 'Tiếng Anh', 'Tin học'].map(s => <option key={s} value={s}>{s}</option>)}
                             </select>
@@ -361,21 +361,21 @@ export const AIGrading: React.FC = () => {
 
                         <div className="grid grid-cols-2 gap-4">
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Tiêu đề bài làm *</label>
+                                <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-300">Tiêu đề bài làm *</label>
                                 <input
                                     type="text"
                                     value={title}
                                     onChange={e => setTitle(e.target.value)}
                                     placeholder="Vd: Bài tập về nhà Hệ Tọa Độ..."
-                                    className="w-full border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                                    className="w-full border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 dark:border-slate-800"
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Phân loại (Tag) *</label>
+                                <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-300">Phân loại (Tag) *</label>
                                 <select
                                     value={category}
                                     onChange={e => setCategory(e.target.value)}
-                                    className="w-full border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                                    className="w-full border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 dark:border-slate-800"
                                 >
                                     <option value="Bài tập về nhà">Bài tập về nhà</option>
                                     <option value="Bài kiểm tra">Bài kiểm tra</option>
@@ -385,38 +385,38 @@ export const AIGrading: React.FC = () => {
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">Lời nhắc AI (Custom Prompt)</label>
+                            <label className="block text-sm font-medium text-gray-700 mb-2 dark:text-slate-300">Lời nhắc AI (Custom Prompt)</label>
                             <textarea
                                 value={customPrompt}
                                 onChange={e => setCustomPrompt(e.target.value)}
                                 rows={2}
-                                className="w-full border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm"
+                                className="w-full border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm dark:border-slate-800"
                                 placeholder="Vd: Lưu ý cẩn thận phần dấu âm dương..."
                             />
                         </div>
 
                         {/* Đề bài gốc */}
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-1">
+                            <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-1 dark:text-slate-300">
                                 <BookOpen className="h-4 w-4 text-blue-500" /> Đề bài gốc / Đáp án chuẩn (Tùy chọn)
                             </label>
                             <textarea
                                 value={referenceExam}
                                 onChange={e => setReferenceExam(e.target.value)}
                                 rows={3}
-                                className="w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm font-mono"
+                                className="w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm font-mono dark:border-slate-800"
                                 placeholder="Dán đề bài và/hoặc đáp án chuẩn ở đây. AI sẽ so sánh bài HS với nội dung này để chấm chính xác hơn."
                             />
                         </div>
 
                         {/* Custom Rubric */}
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">Tiêu chí Rubric (Tùy chọn)</label>
+                            <label className="block text-sm font-medium text-gray-700 mb-2 dark:text-slate-300">Tiêu chí Rubric (Tùy chọn)</label>
                             <textarea
                                 value={rubric}
                                 onChange={e => setRubric(e.target.value)}
                                 rows={2}
-                                className="w-full border-gray-300 rounded-lg shadow-sm focus:ring-amber-500 focus:border-amber-500 text-sm"
+                                className="w-full border-gray-300 rounded-lg shadow-sm focus:ring-amber-500 focus:border-amber-500 text-sm dark:border-slate-800"
                                 placeholder="VD: Trình bày 20đ, Nội dung 60đ, Sáng tạo 20đ"
                             />
                         </div>
@@ -435,8 +435,8 @@ export const AIGrading: React.FC = () => {
 
                         {inputMode === 'IMAGE' ? (
                             <div className="mt-2">
-                                <label className="block text-sm font-medium text-gray-700 mb-2">Tải Ảnh / PDF Bài Làm</label>
-                                <div className="border-2 border-dashed border-gray-300 rounded-xl p-6 hover:bg-gray-50 dark:bg-slate-850 transition relative">
+                                <label className="block text-sm font-medium text-gray-700 mb-2 dark:text-slate-300">Tải Ảnh / PDF Bài Làm</label>
+                                <div className="border-2 border-dashed border-gray-300 rounded-xl p-6 hover:bg-gray-50 dark:bg-slate-850 transition relative dark:border-slate-800 dark:hover:bg-slate-850/50">
                                     <input
                                         type="file"
                                         multiple
@@ -449,19 +449,19 @@ export const AIGrading: React.FC = () => {
                                             {selectedFiles.map((file, idx) => (
                                                 <div key={idx} className="relative group pointer-events-auto">
                                                     {previewUrls[idx] ? (
-                                                        <img src={previewUrls[idx]} alt="Preview" className="h-28 w-full object-cover rounded-lg shadow-sm border border-gray-200" />
+                                                        <img src={previewUrls[idx]} alt="Preview" className="h-28 w-full object-cover rounded-lg shadow-sm border border-gray-200 dark:border-slate-800" />
                                                     ) : (
-                                                        <div className="h-28 w-full flex items-center justify-center bg-gray-100 rounded-lg shadow-sm border border-gray-200">
+                                                        <div className="h-28 w-full flex items-center justify-center bg-gray-100 rounded-lg shadow-sm border border-gray-200 dark:border-slate-800 dark:bg-slate-850">
                                                             <FileText className="h-8 w-8 text-indigo-400" />
                                                         </div>
                                                     )}
                                                     <button onClick={(e) => { e.stopPropagation(); handleRemoveFile(idx); }} className="absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 text-white rounded-full p-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition shadow-md">
                                                         <X className="h-4 w-4" />
                                                     </button>
-                                                    <div className="text-xs text-gray-500 font-medium text-center mt-1 truncate px-1">Trang {idx + 1}</div>
+                                                    <div className="text-xs text-gray-500 font-medium text-center mt-1 truncate px-1 dark:text-slate-500">Trang {idx + 1}</div>
                                                 </div>
                                             ))}
-                                            <div className="h-28 flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-lg text-gray-400 pointer-events-none">
+                                            <div className="h-28 flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-lg text-gray-400 pointer-events-none dark:border-slate-800">
                                                 <Upload className="h-6 w-6 mb-1" />
                                                 <span className="text-xs font-semibold">Thêm mặt sau</span>
                                             </div>
@@ -469,22 +469,22 @@ export const AIGrading: React.FC = () => {
                                     ) : (
                                         <div className="flex flex-col items-center justify-center pointer-events-none py-4 text-center">
                                             <Upload className="h-10 w-10 text-gray-400 mb-2" />
-                                            <p className="text-sm font-medium text-gray-700">Nhấp hoặc quét chọn nhiều File cùng lúc</p>
-                                            <p className="text-xs text-gray-500 mt-1">Gộp mặt trước/mặt sau làm 1 bài AI chấm</p>
+                                            <p className="text-sm font-medium text-gray-700 dark:text-slate-300">Nhấp hoặc quét chọn nhiều File cùng lúc</p>
+                                            <p className="text-xs text-gray-500 mt-1 dark:text-slate-500">Gộp mặt trước/mặt sau làm 1 bài AI chấm</p>
                                         </div>
                                     )}
                                 </div>
                             </div>
                         ) : (
                             <div className="mt-2">
-                                <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-1">
+                                <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-1 dark:text-slate-300">
                                     <Type className="h-4 w-4 text-purple-500" /> Nội dung bài làm của HS (dạng text)
                                 </label>
                                 <textarea
                                     value={studentText}
                                     onChange={e => setStudentText(e.target.value)}
                                     rows={10}
-                                    className="w-full border-gray-300 rounded-lg shadow-sm focus:ring-purple-500 focus:border-purple-500 text-sm font-mono"
+                                    className="w-full border-gray-300 rounded-lg shadow-sm focus:ring-purple-500 focus:border-purple-500 text-sm font-mono dark:border-slate-800"
                                     placeholder={"Dán hoặc gõ nội dung bài làm của học sinh vào đây...\n\nVD:\nCâu 1: 3+5=8 (đúng)\nCâu 2: 7x3=22 (sai, đáp án đúng 21)\nCâu 3: Viết đoạn văn..."}
                                     style={{ minHeight: '200px' }}
                                 />
@@ -494,10 +494,10 @@ export const AIGrading: React.FC = () => {
                         <button
                             onClick={handleScanWithAI}
                             disabled={(inputMode === 'IMAGE' ? selectedFiles.length === 0 : !studentText.trim()) || isScanning}
-                            className="w-full mt-4 flex justify-center items-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-bold text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="w-full mt-4 flex justify-center items-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-bold text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed dark:border-slate-800"
                         >
                             {isScanning ? (
-                                <><div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div> Đang quét & Phân Tích...</>
+                                <><div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2 dark:border-slate-800"></div> Đang quét & Phân Tích...</>
                             ) : (
                                 <><Zap className="h-5 w-5 mr-2" /> Quét AI Trợ Lý</>
                             )}
@@ -507,8 +507,8 @@ export const AIGrading: React.FC = () => {
 
                 {/* Khu Vực Kết Quả AI & Chỉnh Sửa */}
                 <div className="space-y-6">
-                    <div className="bg-white p-6 rounded-2xl shadow-sm border border-emerald-100 flex flex-col h-full">
-                        <h2 className="text-xl font-bold flex items-center gap-2 border-b pb-3 mb-4 text-emerald-800">
+                    <div className="bg-white p-6 rounded-2xl shadow-sm border border-emerald-100 flex flex-col h-full dark:bg-slate-900 dark:border-emerald-900/30">
+                        <h2 className="text-xl font-bold flex items-center gap-2 border-b pb-3 mb-4 text-emerald-800 dark:border-slate-800">
                             <Star className="h-5 w-5 text-emerald-500" /> Kết Quả Phân Tích & Chấm Điểm
                         </h2>
 
@@ -519,7 +519,7 @@ export const AIGrading: React.FC = () => {
                             </div>
                         ) : (
                             <div className="flex-1 space-y-5 overflow-y-auto pr-2">
-                                <div className="bg-emerald-50 p-4 rounded-xl border border-emerald-100 flex items-center justify-between">
+                                <div className="bg-emerald-50 p-4 rounded-xl border border-emerald-100 flex items-center justify-between dark:border-emerald-900/30">
                                     <div>
                                         <h3 className="font-bold text-emerald-800">Điểm Đánh Giá (Thang 100)</h3>
                                         <div className="flex items-center gap-2 mt-1">
@@ -540,7 +540,7 @@ export const AIGrading: React.FC = () => {
                                                 min="0" max="100"
                                                 value={score}
                                                 onChange={e => setScore(Number(e.target.value))}
-                                                className="w-20 text-center font-black text-2xl text-emerald-600 border-emerald-200 rounded-lg focus:ring-emerald-500"
+                                                className="w-20 text-center font-black text-2xl text-emerald-600 border-emerald-200 rounded-lg focus:ring-emerald-500 dark:border-slate-800"
                                             />
                                             <span className="font-bold text-gray-400">/ 100</span>
                                         </div>
@@ -553,7 +553,7 @@ export const AIGrading: React.FC = () => {
                                         value={aiResult.advantages}
                                         onChange={e => setAiResult({ ...aiResult, advantages: e.target.value })}
                                         rows={4}
-                                        className="w-full border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500"
+                                        className="w-full border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 dark:border-slate-800"
                                     />
                                 </div>
 
@@ -563,7 +563,7 @@ export const AIGrading: React.FC = () => {
                                         value={aiResult.limitations}
                                         onChange={e => setAiResult({ ...aiResult, limitations: e.target.value })}
                                         rows={4}
-                                        className="w-full border-gray-300 rounded-lg shadow-sm focus:ring-red-500"
+                                        className="w-full border-gray-300 rounded-lg shadow-sm focus:ring-red-500 dark:border-slate-800"
                                     />
                                 </div>
 
@@ -573,14 +573,14 @@ export const AIGrading: React.FC = () => {
                                         value={aiResult.improvements}
                                         onChange={e => setAiResult({ ...aiResult, improvements: e.target.value })}
                                         rows={4}
-                                        className="w-full border-gray-300 rounded-lg shadow-sm focus:ring-amber-500"
+                                        className="w-full border-gray-300 rounded-lg shadow-sm focus:ring-amber-500 dark:border-slate-800"
                                     />
                                 </div>
 
                                 <button
                                     onClick={handleSubmitAndSave}
                                     disabled={isLoading}
-                                    className="w-full mt-4 flex items-center justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-bold text-white bg-emerald-600 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 disabled:opacity-50"
+                                    className="w-full mt-4 flex items-center justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-bold text-white bg-emerald-600 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 disabled:opacity-50 dark:border-slate-800"
                                 >
                                     <Save className="h-5 w-5 mr-2" /> {isLoading ? 'Đang Lưu...' : 'Lưu Điểm & Gửi Cho Học Sinh'}
                                 </button>
@@ -591,17 +591,17 @@ export const AIGrading: React.FC = () => {
             </div>
 
             {/* Lịch Sử Chấm Bài (A4) + Scan Hàng Loạt (A2) */}
-            <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 mt-8">
+            <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 mt-8 dark:bg-slate-900 dark:border-slate-800">
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
                     <h2 className="text-xl font-bold flex items-center gap-2">
-                        <Filter className="h-5 w-5 text-gray-500" /> Lịch Sử Chấm Bài ({gradingHistory.length})
+                        <Filter className="h-5 w-5 text-gray-500 dark:text-slate-500" /> Lịch Sử Chấm Bài ({gradingHistory.length})
                     </h2>
                     <div className="flex gap-2 items-center">
                         <div className="relative">
                             <Search className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                             <input type="text" value={historySearch} onChange={e => setHistorySearch(e.target.value)}
                                 placeholder="Tìm Tên, Tiêu đề..."
-                                className="pl-9 pr-4 py-2 border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 w-64 text-sm" />
+                                className="pl-9 pr-4 py-2 border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 w-64 text-sm dark:border-slate-800" />
                         </div>
                         <button onClick={handleBatchScan} disabled={batchScanning || classStudents.length === 0}
                             className="px-4 py-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-lg font-bold text-sm hover:shadow-lg disabled:opacity-50 flex items-center gap-2 whitespace-nowrap">
@@ -622,18 +622,18 @@ export const AIGrading: React.FC = () => {
                         <table className="min-w-full divide-y dark:divide-slate-800 divide-gray-200">
                             <thead className="bg-gray-50 dark:bg-slate-850">
                                 <tr>
-                                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Học sinh</th>
-                                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Bài làm</th>
-                                    <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Điểm</th>
-                                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Thời gian</th>
-                                    <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Chi tiết</th>
+                                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase dark:text-slate-500">Học sinh</th>
+                                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase dark:text-slate-500">Bài làm</th>
+                                    <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase dark:text-slate-500">Điểm</th>
+                                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase dark:text-slate-500">Thời gian</th>
+                                    <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase dark:text-slate-500">Chi tiết</th>
                                 </tr>
                             </thead>
-                            <tbody className="bg-white divide-y dark:divide-slate-800 divide-gray-200">
+                            <tbody className="bg-white divide-y dark:divide-slate-800 divide-gray-200 dark:bg-slate-900">
                                 {gradingHistory.filter(h =>
                                     !historySearch || h.studentName.toLowerCase().includes(historySearch.toLowerCase()) || h.title.toLowerCase().includes(historySearch.toLowerCase())
                                 ).map((h, i) => (
-                                    <tr key={i} className="hover:bg-gray-50 dark:bg-slate-850 transition">
+                                    <tr key={i} className="hover:bg-gray-50 dark:bg-slate-850 transition dark:hover:bg-slate-850/50">
                                         <td className="px-4 py-3 whitespace-nowrap">
                                             <div className="flex items-center gap-2">
                                                 <div className="h-8 w-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700 font-bold text-xs">
@@ -643,14 +643,14 @@ export const AIGrading: React.FC = () => {
                                             </div>
                                         </td>
                                         <td className="px-4 py-3">
-                                            <p className="text-sm font-semibold text-gray-900 truncate max-w-[200px]">{h.title}</p>
+                                            <p className="text-sm font-semibold text-gray-900 truncate max-w-[200px] dark:text-slate-100">{h.title}</p>
                                             <span className="text-[10px] bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded">{h.category}</span>
                                         </td>
                                         <td className="px-4 py-3 text-center">
                                             <span className="text-lg font-black text-emerald-600">{h.score}</span>
                                             <span className="text-xs text-gray-400">/100</span>
                                         </td>
-                                        <td className="px-4 py-3 text-xs text-gray-500">{new Date(h.timestamp).toLocaleString('vi-VN')}</td>
+                                        <td className="px-4 py-3 text-xs text-gray-500 dark:text-slate-500">{new Date(h.timestamp).toLocaleString('vi-VN')}</td>
                                         <td className="px-4 py-3 text-center">
                                             <button onClick={() => { setExpandedHistory(expandedHistory === i ? null : i); }}
                                                 className="text-indigo-600 hover:bg-indigo-50 p-1.5 rounded transition">
@@ -663,10 +663,10 @@ export const AIGrading: React.FC = () => {
                         </table>
                         {/* Expanded detail */}
                         {expandedHistory !== null && gradingHistory[expandedHistory] && (
-                            <div className="mt-3 p-4 bg-gray-50 dark:bg-slate-850 rounded-xl border space-y-2 text-sm">
-                                <div><strong className="text-green-700">✅ Ưu điểm:</strong> <span className="text-gray-700">{gradingHistory[expandedHistory].advantages}</span></div>
-                                <div><strong className="text-red-600">❌ Hạn chế:</strong> <span className="text-gray-700">{gradingHistory[expandedHistory].limitations}</span></div>
-                                <div><strong className="text-amber-600">💡 Cải thiện:</strong> <span className="text-gray-700">{gradingHistory[expandedHistory].improvements}</span></div>
+                            <div className="mt-3 p-4 bg-gray-50 dark:bg-slate-850 rounded-xl border space-y-2 text-sm dark:border-slate-800">
+                                <div><strong className="text-green-700">✅ Ưu điểm:</strong> <span className="text-gray-700 dark:text-slate-300">{gradingHistory[expandedHistory].advantages}</span></div>
+                                <div><strong className="text-red-600">❌ Hạn chế:</strong> <span className="text-gray-700 dark:text-slate-300">{gradingHistory[expandedHistory].limitations}</span></div>
+                                <div><strong className="text-amber-600">💡 Cải thiện:</strong> <span className="text-gray-700 dark:text-slate-300">{gradingHistory[expandedHistory].improvements}</span></div>
                             </div>
                         )}
                     </div>

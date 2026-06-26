@@ -232,41 +232,41 @@ export const ClassManage: React.FC = () => {
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6 h-[calc(100vh-100px)]">
 
       {/* List Classes */}
-      <div className="bg-white rounded-xl border shadow-sm flex flex-col h-full">
-        <div className="p-4 border-b flex justify-between items-center bg-white rounded-t-xl">
-          <h2 className="font-bold text-gray-800 flex items-center gap-2">
+      <div className="bg-white rounded-xl border shadow-sm flex flex-col h-full dark:bg-slate-900 dark:border-slate-800">
+        <div className="p-4 border-b flex justify-between items-center bg-white rounded-t-xl dark:bg-slate-900 dark:border-slate-800">
+          <h2 className="font-bold text-gray-800 flex items-center gap-2 dark:text-slate-200">
             <School className="h-5 w-5" /> Lớp của tôi
           </h2>
-          <button onClick={() => setIsCreating(true)} className="p-1 hover:bg-gray-100 rounded">
+          <button onClick={() => setIsCreating(true)} className="p-1 hover:bg-gray-100 rounded dark:hover:bg-slate-800">
             <Plus className="h-5 w-5 text-indigo-600" />
           </button>
         </div>
 
         {isCreating && (
-          <div className="p-4 border-b bg-white border-indigo-100 space-y-3 shadow-inner">
-            <label className="block text-xs font-bold text-gray-700">Tên lớp mới</label>
+          <div className="p-4 border-b bg-white border-indigo-100 space-y-3 shadow-inner dark:bg-slate-900 dark:border-indigo-900/30">
+            <label className="block text-xs font-bold text-gray-700 dark:text-slate-300">Tên lớp mới</label>
             <input
-              className="w-full p-2 border border-gray-300 rounded text-sm bg-white text-gray-900"
+              className="w-full p-2 border border-gray-300 rounded text-sm bg-white text-gray-900 dark:bg-slate-900 dark:border-slate-800 dark:text-slate-100"
               placeholder="VD: 10A1"
               value={newClassName}
               onChange={e => setNewClassName(e.target.value)}
             />
-            <label className="block text-xs font-bold text-gray-700">Năm học</label>
+            <label className="block text-xs font-bold text-gray-700 dark:text-slate-300">Năm học</label>
             <select
-              className="w-full p-2 border border-gray-300 rounded text-sm bg-white text-gray-900"
+              className="w-full p-2 border border-gray-300 rounded text-sm bg-white text-gray-900 dark:bg-slate-900 dark:border-slate-800 dark:text-slate-100"
               value={selectedYear}
               onChange={e => setSelectedYear(e.target.value)}
             >
               {academicYears.map(y => <option key={y.id} value={y.id}>{y.name}</option>)}
             </select>
             <div className="flex gap-2">
-              <button onClick={() => setIsCreating(false)} className="flex-1 bg-gray-100 text-gray-600 text-xs py-2 rounded font-medium">Hủy</button>
+              <button onClick={() => setIsCreating(false)} className="flex-1 bg-gray-100 text-gray-600 text-xs py-2 rounded font-medium dark:bg-slate-850 dark:text-slate-400">Hủy</button>
               <button onClick={handleCreateClass} className="flex-1 bg-indigo-600 text-white text-xs py-2 rounded font-medium">Lưu Lớp</button>
             </div>
           </div>
         )}
 
-        <div className="flex-1 overflow-y-auto p-2 space-y-2 bg-white">
+        <div className="flex-1 overflow-y-auto p-2 space-y-2 bg-white dark:bg-slate-900">
           {myClasses.length === 0 && <p className="text-center text-gray-400 text-sm mt-4">Chưa có lớp nào</p>}
           {myClasses.map(c => (
             <div
@@ -281,7 +281,7 @@ export const ClassManage: React.FC = () => {
                   <div className="flex items-center gap-1 flex-1 mr-2" onClick={e => e.stopPropagation()}>
                     <input
                       type="text"
-                      className="w-full px-2 py-1 text-xs border rounded bg-white text-gray-900 focus:outline-indigo-500 font-bold"
+                      className="w-full px-2 py-1 text-xs border rounded bg-white text-gray-900 focus:outline-indigo-500 font-bold dark:bg-slate-900 dark:border-slate-800 dark:text-slate-100"
                       value={editingClassName}
                       onChange={e => setEditingClassName(e.target.value)}
                       autoFocus
@@ -298,13 +298,13 @@ export const ClassManage: React.FC = () => {
                     </button>
                     <button
                       onClick={() => setEditingClassId(null)}
-                      className="p-1 bg-gray-100 hover:bg-gray-200 text-gray-500 rounded text-[10px]"
+                      className="p-1 bg-gray-100 hover:bg-gray-200 text-gray-500 rounded text-[10px] dark:bg-slate-850 dark:text-slate-500"
                     >
                       Hủy
                     </button>
                   </div>
                 ) : (
-                  <span className="font-bold text-gray-800 flex-1 truncate">{c.name}</span>
+                  <span className="font-bold text-gray-800 flex-1 truncate dark:text-slate-200">{c.name}</span>
                 )}
                 <div className="flex items-center gap-1.5">
                   {editingClassId !== c.id && (
@@ -339,7 +339,7 @@ export const ClassManage: React.FC = () => {
                       <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-4v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                     </svg>
                   </button>
-                  <span className="text-xs bg-gray-100 px-2 py-1 rounded text-gray-600 flex items-center gap-1">
+                  <span className="text-xs bg-gray-100 px-2 py-1 rounded text-gray-600 flex items-center gap-1 dark:bg-slate-850 dark:text-slate-400">
                     <Users className="h-3 w-3" /> {
                       allStudents.filter(s => {
                         const inStudentIds = c.studentIds?.includes(s.id);
@@ -360,7 +360,7 @@ export const ClassManage: React.FC = () => {
       </div>
 
       {/* Class Details */}
-      <div className="md:col-span-2 bg-white rounded-xl border shadow-sm flex flex-col h-full min-h-0 relative">
+      <div className="md:col-span-2 bg-white rounded-xl border shadow-sm flex flex-col h-full min-h-0 relative dark:bg-slate-900 dark:border-slate-800">
         {!selectedClassData ? (
           <div className="flex-1 flex items-center justify-center text-gray-400 flex-col">
             <School className="h-12 w-12 mb-2 opacity-50" />
@@ -368,10 +368,10 @@ export const ClassManage: React.FC = () => {
           </div>
         ) : (
           <>
-            <div className="p-4 border-b flex justify-between items-center bg-white rounded-t-xl flex-wrap gap-2">
+            <div className="p-4 border-b flex justify-between items-center bg-white rounded-t-xl flex-wrap gap-2 dark:bg-slate-900 dark:border-slate-800">
               <div className="flex flex-col gap-2">
                 <div className="flex items-center gap-3">
-                  <h2 className="text-xl font-bold text-gray-900">{selectedClassData.name}</h2>
+                  <h2 className="text-xl font-bold text-gray-900 dark:text-slate-100">{selectedClassData.name}</h2>
                   <button 
                     onClick={async () => {
                       if (confirm(`Bạn có chắc chắn muốn xóa lớp ${selectedClassData.name}? Hành động này sẽ không thể hoàn tác.`)) {
@@ -389,7 +389,7 @@ export const ClassManage: React.FC = () => {
                     </svg>
                   </button>
                 </div>
-                <div className="flex bg-gray-100 p-1 rounded-lg w-fit">
+                <div className="flex bg-gray-100 p-1 rounded-lg w-fit dark:bg-slate-850">
                   <button 
                     onClick={() => setActiveTab('students')}
                     className={`px-4 py-1.5 text-sm font-bold rounded-md transition-all ${activeTab === 'students' ? 'bg-white shadow text-gray-900' : 'text-gray-500 hover:text-gray-700'}`}
@@ -408,23 +408,23 @@ export const ClassManage: React.FC = () => {
               {/* Random Controls & Group Manage (chỉ hiện bên tab Học sinh) */}
               {activeTab === 'students' && (
               <div className="flex items-center flex-wrap gap-2 mt-2 md:mt-0">
-                <button onClick={() => setShowRandomGroup(true)} className="text-sm bg-emerald-50 text-emerald-700 px-4 py-2 rounded-lg hover:bg-emerald-100 font-bold transition border border-emerald-100 flex items-center gap-2">
+                <button onClick={() => setShowRandomGroup(true)} className="text-sm bg-emerald-50 text-emerald-700 px-4 py-2 rounded-lg hover:bg-emerald-100 font-bold transition border border-emerald-100 flex items-center gap-2 dark:border-emerald-900/30">
                   <Users className="h-4 w-4" /> Chia Nhóm
                 </button>
                 <div className="w-px h-5 bg-gray-200 mx-1 hidden sm:block"></div>
-                <button onClick={() => setShowGroupModal(true)} className="text-sm bg-indigo-50 text-indigo-700 px-4 py-2 rounded-lg hover:bg-indigo-100 font-bold transition border border-indigo-100 flex items-center gap-2">
+                <button onClick={() => setShowGroupModal(true)} className="text-sm bg-indigo-50 text-indigo-700 px-4 py-2 rounded-lg hover:bg-indigo-100 font-bold transition border border-indigo-100 flex items-center gap-2 dark:border-indigo-900/30">
                   <span className="flex items-center gap-2 leading-none"><Users className="h-4 w-4" /> Quản lý Tổ</span>
                 </button>
                 <div className="w-px h-5 bg-gray-200 mx-1 hidden sm:block"></div>
-                <button onClick={() => setShowRoulette(true)} className="text-sm bg-purple-50 text-purple-700 px-4 py-2 rounded-lg hover:bg-purple-100 font-bold transition border border-purple-100 flex items-center gap-2">
+                <button onClick={() => setShowRoulette(true)} className="text-sm bg-purple-50 text-purple-700 px-4 py-2 rounded-lg hover:bg-purple-100 font-bold transition border border-purple-100 flex items-center gap-2 dark:border-slate-800">
                   <Dices className="h-4 w-4" /> Gọi Ngẫu Nhiên
                 </button>
                 <div className="w-px h-5 bg-gray-200 mx-1 hidden sm:block"></div>
-                <button onClick={startDuckRace} className="text-sm bg-amber-100 text-amber-700 px-4 py-2 rounded-lg hover:bg-amber-200 font-bold flex items-center gap-2 transition shadow-sm border border-amber-200">
+                <button onClick={startDuckRace} className="text-sm bg-amber-100 text-amber-700 px-4 py-2 rounded-lg hover:bg-amber-200 font-bold flex items-center gap-2 transition shadow-sm border border-amber-200 dark:border-slate-800">
                   <span className="text-lg leading-none">🦆</span> Đua Vịt
                 </button>
                 <div className="w-px h-5 bg-gray-200 mx-1 hidden sm:block"></div>
-                <button onClick={() => setShowSeatingModal(true)} className="text-sm bg-blue-50 text-blue-700 px-4 py-2 rounded-lg hover:bg-blue-100 font-bold flex items-center gap-2 transition shadow-sm border border-blue-200">
+                <button onClick={() => setShowSeatingModal(true)} className="text-sm bg-blue-50 text-blue-700 px-4 py-2 rounded-lg hover:bg-blue-100 font-bold flex items-center gap-2 transition shadow-sm border border-blue-200 dark:border-slate-800">
                   <LayoutGrid className="h-4 w-4" /> Sơ đồ Lớp
                 </button>
               </div>
@@ -435,7 +435,7 @@ export const ClassManage: React.FC = () => {
                 <div className="relative flex-1 md:w-64">
                   <button
                     onClick={() => setIsAddDropdownOpen(!isAddDropdownOpen)}
-                    className="w-full bg-white border border-gray-300 rounded-lg text-sm px-3 py-2 text-left flex justify-between items-center text-gray-700 hover:border-indigo-300 focus:ring-2 focus:ring-indigo-500 outline-none"
+                    className="w-full bg-white border border-gray-300 rounded-lg text-sm px-3 py-2 text-left flex justify-between items-center text-gray-700 hover:border-indigo-300 focus:ring-2 focus:ring-indigo-500 outline-none dark:bg-slate-900 dark:border-slate-800 dark:text-slate-300"
                   >
                     <span className="truncate">
                       {studentsToAdd.length === 0
@@ -451,11 +451,11 @@ export const ClassManage: React.FC = () => {
                         className="fixed inset-0 z-10"
                         onClick={() => setIsAddDropdownOpen(false)}
                       ></div>
-                      <div className="absolute z-20 w-full md:w-80 right-0 mt-1 bg-white border rounded-lg shadow-xl overflow-hidden flex flex-col">
-                        <div className="p-2 border-b bg-gray-50 dark:bg-slate-850">
+                      <div className="absolute z-20 w-full md:w-80 right-0 mt-1 bg-white border rounded-lg shadow-xl overflow-hidden flex flex-col dark:bg-slate-900 dark:border-slate-800">
+                        <div className="p-2 border-b bg-gray-50 dark:bg-slate-850 dark:border-slate-800">
                           <input
                             type="text"
-                            className="w-full px-3 py-1.5 text-sm border rounded outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 mb-2"
+                            className="w-full px-3 py-1.5 text-sm border rounded outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 mb-2 dark:border-slate-800"
                             placeholder="Tìm kiếm..."
                             value={studentSearchTerm}
                             onChange={(e) => setStudentSearchTerm(e.target.value)}
@@ -473,19 +473,19 @@ export const ClassManage: React.FC = () => {
                                   .filter(s => s.name.toLowerCase().includes(studentSearchTerm.toLowerCase()) || s.email.toLowerCase().includes(studentSearchTerm.toLowerCase()));
                                 setStudentsToAdd(availableStudents.map(s => s.id));
                               }}
-                              className="flex-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-xs py-1.5 rounded font-medium border border-indigo-200 transition-colors"
+                              className="flex-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-xs py-1.5 rounded font-medium border border-indigo-200 transition-colors dark:border-indigo-900/30"
                             >
                               Chọn tất cả
                             </button>
                             <button
                               onClick={() => setStudentsToAdd([])}
-                              className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs py-1.5 rounded font-medium border border-gray-300 transition-colors"
+                              className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs py-1.5 rounded font-medium border border-gray-300 transition-colors dark:border-slate-800 dark:bg-slate-850 dark:text-slate-300"
                             >
                               Bỏ chọn
                             </button>
                           </div>
                         </div>
-                        <div className="max-h-60 overflow-y-auto p-1 bg-white">
+                        <div className="max-h-60 overflow-y-auto p-1 bg-white dark:bg-slate-900">
                           {allStudents
                             .filter(s => {
                               const inStudentIds = selectedClassData.studentIds?.includes(s.id);
@@ -499,11 +499,11 @@ export const ClassManage: React.FC = () => {
                               return (
                                 <label
                                   key={s.id}
-                                  className="flex items-center gap-3 px-3 py-2 hover:bg-gray-100 rounded cursor-pointer transition-colors"
+                                  className="flex items-center gap-3 px-3 py-2 hover:bg-gray-100 rounded cursor-pointer transition-colors dark:hover:bg-slate-800"
                                 >
                                   <input
                                     type="checkbox"
-                                    className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 h-4 w-4 cursor-pointer"
+                                    className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 h-4 w-4 cursor-pointer dark:border-slate-800"
                                     checked={isSelected}
                                     onChange={(e) => {
                                       if (e.target.checked) {
@@ -514,7 +514,7 @@ export const ClassManage: React.FC = () => {
                                     }}
                                   />
                                   <div className="flex flex-col min-w-0">
-                                    <span className="text-sm font-medium text-gray-900 truncate">{s.name}</span>
+                                    <span className="text-sm font-medium text-gray-900 truncate dark:text-slate-100">{s.name}</span>
                                     <span className="text-xs text-gray-500 dark:text-slate-400 truncate font-mono">{s.email}</span>
                                   </div>
                                 </label>
@@ -527,7 +527,7 @@ export const ClassManage: React.FC = () => {
                             const classNameMatch = sClassName && sClassName === selectedClassData.name.trim().toLowerCase();
                             return !inStudentIds && !classNameMatch;
                           }).length === 0 && (
-                            <div className="p-4 text-sm text-center text-gray-500 italic">
+                            <div className="p-4 text-sm text-center text-gray-500 italic dark:text-slate-500">
                               Đã thêm tất cả học sinh vào lớp.
                             </div>
                           )}
@@ -557,14 +557,14 @@ export const ClassManage: React.FC = () => {
                     {groupedStudents.groups.map(g => g.students.length > 0 && (
                       <div 
                         key={g.id} 
-                        className="bg-white border rounded-xl overflow-hidden shadow-sm hover:border-indigo-200 transition-colors"
+                        className="bg-white border rounded-xl overflow-hidden shadow-sm hover:border-indigo-200 transition-colors dark:bg-slate-900 dark:border-slate-800"
                         onDragOver={handleDragOver}
                         onDrop={(e) => handleDrop(e, g.id)}
                       >
-                        <div className="px-4 py-3 bg-gray-50 dark:bg-slate-850 border-b flex justify-between items-center">
+                        <div className="px-4 py-3 bg-gray-50 dark:bg-slate-850 border-b flex justify-between items-center dark:border-slate-800">
                           <div className="flex items-center gap-2">
                             <div className="w-3 h-3 rounded-full" style={{ backgroundColor: g.color || '#6366f1' }}></div>
-                            <h3 className="font-bold text-gray-800">{g.name} <span className="text-gray-500 font-normal">({g.students.length})</span></h3>
+                            <h3 className="font-bold text-gray-800 dark:text-slate-200">{g.name} <span className="text-gray-500 font-normal dark:text-slate-500">({g.students.length})</span></h3>
                           </div>
                           <div className="flex items-center gap-2">
                             <button onClick={(e) => { e.stopPropagation(); sortGroupByName(g.id, 'first'); }} 
@@ -590,7 +590,7 @@ export const ClassManage: React.FC = () => {
                                 onClick={() => setSelectedStudentIds(p => p.includes(s.id) ? p.filter(id => id !== s.id) : [...p, s.id])}
                                 className={`p-3 flex items-center gap-3 cursor-grab active:cursor-grabbing transition-colors group ${selected ? 'bg-indigo-50/70 border-l-4 border-indigo-500' : 'hover:bg-gray-50 dark:bg-slate-850 border-l-4 border-transparent'}`}>
                                 <GripVertical className="h-4 w-4 text-gray-300 group-hover:text-indigo-400 opacity-0 group-hover:opacity-100 transition-all flex-shrink-0" />
-                                {selected ? <CheckSquare className="h-5 w-5 text-indigo-600 flex-shrink-0" /> : <div className="h-5 w-5 border-2 rounded text-transparent flex-shrink-0" />}
+                                {selected ? <CheckSquare className="h-5 w-5 text-indigo-600 flex-shrink-0" /> : <div className="h-5 w-5 border-2 rounded text-transparent flex-shrink-0 dark:border-slate-800" />}
                                 <div className="flex-1 min-w-0">
                                   <p className={`font-bold text-sm truncate ${selected ? 'text-indigo-900' : 'text-gray-900'}`}>{s.name}</p>
                                   <p className="text-xs text-gray-500 dark:text-slate-400 truncate font-mono">{s.email}</p>
@@ -604,9 +604,9 @@ export const ClassManage: React.FC = () => {
 
                     {/* Ungrouped */}
                     {groupedStudents.ungrouped.length > 0 && (
-                      <div className="bg-white border rounded-xl overflow-hidden shadow-sm border-dashed">
-                        <div className="px-4 py-3 bg-gray-50 dark:bg-slate-850/50 border-b">
-                          <h3 className="font-bold text-gray-500 italic">Chưa phân tổ <span className="font-normal">({groupedStudents.ungrouped.length})</span></h3>
+                      <div className="bg-white border rounded-xl overflow-hidden shadow-sm border-dashed dark:bg-slate-900 dark:border-slate-800">
+                        <div className="px-4 py-3 bg-gray-50 dark:bg-slate-850/50 border-b dark:border-slate-800">
+                          <h3 className="font-bold text-gray-500 italic dark:text-slate-500">Chưa phân tổ <span className="font-normal">({groupedStudents.ungrouped.length})</span></h3>
                         </div>
                         <div className="divide-y divide-gray-100">
                           {groupedStudents.ungrouped.map(s => {
@@ -619,7 +619,7 @@ export const ClassManage: React.FC = () => {
                                 onClick={() => setSelectedStudentIds(p => p.includes(s.id) ? p.filter(id => id !== s.id) : [...p, s.id])}
                                 className={`p-3 flex items-center gap-3 cursor-grab active:cursor-grabbing transition-colors group ${selected ? 'bg-indigo-50/70 border-l-4 border-indigo-500' : 'hover:bg-gray-50 dark:bg-slate-850 border-l-4 border-transparent'}`}>
                                 <GripVertical className="h-4 w-4 text-gray-300 group-hover:text-indigo-400 opacity-0 group-hover:opacity-100 transition-all flex-shrink-0" />
-                                {selected ? <CheckSquare className="h-5 w-5 text-indigo-600 flex-shrink-0" /> : <div className="h-5 w-5 border-2 rounded text-transparent flex-shrink-0" />}
+                                {selected ? <CheckSquare className="h-5 w-5 text-indigo-600 flex-shrink-0" /> : <div className="h-5 w-5 border-2 rounded text-transparent flex-shrink-0 dark:border-slate-800" />}
                                 <div className="flex-1">
                                   <p className={`font-bold text-sm ${selected ? 'text-indigo-900' : 'text-gray-800'}`}>{s.name}</p>
                                   <p className="text-xs text-gray-400 font-mono">{s.email}</p>

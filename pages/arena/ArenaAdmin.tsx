@@ -1367,7 +1367,7 @@ export const ArenaAdmin: React.FC = () => {
             <div className="min-h-[60vh] flex items-center justify-center">
                 <div className="text-center">
                     <Loader2 className="h-10 w-10 text-indigo-600 animate-spin mx-auto mb-4" />
-                    <p className="mt-4 text-gray-500 font-medium">Đang tải câu hỏi...</p>
+                    <p className="mt-4 text-gray-500 font-medium dark:text-slate-500">Đang tải câu hỏi...</p>
                 </div>
             </div>
         );
@@ -1378,14 +1378,14 @@ export const ArenaAdmin: React.FC = () => {
             {/* Header */}
             <div className="flex items-center justify-between mb-6 flex-wrap gap-4">
                 <div className="flex items-center gap-3">
-                    <button onClick={() => navigate('/arena')} className="p-2 hover:bg-gray-100 rounded-xl transition-colors text-gray-400 hover:text-gray-600">
+                    <button onClick={() => navigate('/arena')} className="p-2 hover:bg-gray-100 rounded-xl transition-colors text-gray-400 hover:text-gray-600 dark:hover:bg-slate-800">
                         <ArrowLeft className="h-5 w-5" />
                     </button>
                     <div>
-                        <h1 className="text-2xl font-black text-gray-900 flex items-center gap-2">
+                        <h1 className="text-2xl font-black text-gray-900 flex items-center gap-2 dark:text-slate-100">
                             <Brain className="h-7 w-7 text-indigo-500" /> Ngân Hàng Bài Tập Đấu Trí
                         </h1>
-                        <p className="text-sm text-gray-500 font-medium mt-0.5">Soạn thảo, quản lý và tổ chức kho tài nguyên đấu trí đỉnh cao.</p>
+                        <p className="text-sm text-gray-500 font-medium mt-0.5 dark:text-slate-500">Soạn thảo, quản lý và tổ chức kho tài nguyên đấu trí đỉnh cao.</p>
                     </div>
                 </div>
                 <div className="flex gap-2 flex-wrap">
@@ -1429,7 +1429,7 @@ export const ArenaAdmin: React.FC = () => {
             </div>
 
             {/* Tabs Selector */}
-            <div className="flex border-b mb-6 gap-6 text-sm font-semibold">
+            <div className="flex border-b mb-6 gap-6 text-sm font-semibold dark:border-slate-800">
                 <button 
                     onClick={() => setActiveTab('questions')} 
                     className={`pb-3 relative transition-all ${activeTab === 'questions' ? 'text-indigo-600 font-bold' : 'text-gray-400 hover:text-gray-600'}`}
@@ -1452,9 +1452,9 @@ export const ArenaAdmin: React.FC = () => {
                 <>
                     {/* B2: Thống kê nhanh */}
                     <div className="grid grid-cols-2 sm:grid-cols-5 gap-4 mb-6">
-                <div className="bg-white rounded-2xl border p-4 shadow-sm text-center">
+                <div className="bg-white rounded-2xl border p-4 shadow-sm text-center dark:bg-slate-900 dark:border-slate-800">
                     <div className="text-3xl font-black text-indigo-600">{arenaTotalCount}</div>
-                    <div className="text-xs text-gray-500 font-bold uppercase tracking-wider mt-1">Tổng câu hỏi</div>
+                    <div className="text-xs text-gray-500 font-bold uppercase tracking-wider mt-1 dark:text-slate-500">Tổng câu hỏi</div>
                 </div>
                 {DIFFICULTIES.map(d => {
                     const count = arenaDifficultyCounts[d.value] || 0;
@@ -1463,14 +1463,14 @@ export const ArenaAdmin: React.FC = () => {
                     return (
                         <div key={d.value} className={`bg-white rounded-2xl border p-4 shadow-sm text-center transition-all ${bgColors[d.value]}`}>
                             <div className={`text-3xl font-black ${colors[d.value]}`}>{count}</div>
-                            <div className="text-xs text-gray-500 font-bold uppercase tracking-wider mt-1">{d.label}</div>
+                            <div className="text-xs text-gray-500 font-bold uppercase tracking-wider mt-1 dark:text-slate-500">{d.label}</div>
                         </div>
                     );
                 })}
             </div>
 
             {/* Filters & Keyword Search Bar */}
-            <div className="flex flex-col gap-4 mb-6 bg-white rounded-2xl border p-5 shadow-sm">
+            <div className="flex flex-col gap-4 mb-6 bg-white rounded-2xl border p-5 shadow-sm dark:bg-slate-900 dark:border-slate-800">
                 {/* Search Input - Full Width */}
                 <div className="relative w-full">
                     <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
@@ -1479,7 +1479,7 @@ export const ArenaAdmin: React.FC = () => {
                         placeholder="Tìm kiếm theo từ khoá câu hỏi hoặc chủ đề..."
                         value={searchQuery}
                         onChange={e => setSearchQuery(e.target.value)}
-                        className="w-full pl-12 pr-10 py-3 border border-gray-200 rounded-xl text-sm outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-50/50 bg-gray-50 dark:bg-slate-850/30 hover:bg-gray-50 dark:bg-slate-850/60 transition-all font-medium"
+                        className="w-full pl-12 pr-10 py-3 border border-gray-200 rounded-xl text-sm outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-50/50 bg-gray-50 dark:bg-slate-850/30 hover:bg-gray-50 dark:bg-slate-850/60 transition-all font-medium dark:border-slate-800 dark:hover:bg-slate-850/50"
                     />
                     {searchQuery && (
                         <button onClick={() => setSearchQuery('')} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 p-0.5 rounded-full hover:bg-gray-200 transition-colors">
@@ -1489,42 +1489,42 @@ export const ArenaAdmin: React.FC = () => {
                 </div>
 
                 {/* Filters Row */}
-                <div className="flex flex-wrap items-center gap-2.5 border-t pt-4 border-gray-100">
-                    <div className="flex items-center gap-1 bg-gray-50 dark:bg-slate-850 px-2 py-1 rounded-lg border border-gray-200/50 text-gray-500 text-[10px] font-black uppercase tracking-wider">
+                <div className="flex flex-wrap items-center gap-2.5 border-t pt-4 border-gray-100 dark:border-slate-800">
+                    <div className="flex items-center gap-1 bg-gray-50 dark:bg-slate-850 px-2 py-1 rounded-lg border border-gray-200/50 text-gray-500 text-[10px] font-black uppercase tracking-wider dark:border-slate-800 dark:text-slate-500">
                         Bộ lọc
                     </div>
 
-                    <select value={filterSubject} onChange={e => handleSubjectChange(e.target.value)} className="border border-gray-200 rounded-lg px-2.5 py-1.5 text-xs outline-none focus:ring-2 focus:ring-indigo-500 bg-white font-bold text-gray-700 cursor-pointer hover:border-gray-300">
+                    <select value={filterSubject} onChange={e => handleSubjectChange(e.target.value)} className="border border-gray-200 rounded-lg px-2.5 py-1.5 text-xs outline-none focus:ring-2 focus:ring-indigo-500 bg-white font-bold text-gray-700 cursor-pointer hover:border-gray-300 dark:bg-slate-900 dark:border-slate-800 dark:text-slate-300">
                         <option value="">Tất cả môn</option>
                         {SUBJECTS.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
                     </select>
  
-                    <select value={filterDifficulty} onChange={e => setFilterDifficulty(Number(e.target.value))} className="border border-gray-200 rounded-lg px-2.5 py-1.5 text-xs outline-none focus:ring-2 focus:ring-indigo-500 bg-white font-bold text-gray-700 cursor-pointer hover:border-gray-300">
+                    <select value={filterDifficulty} onChange={e => setFilterDifficulty(Number(e.target.value))} className="border border-gray-200 rounded-lg px-2.5 py-1.5 text-xs outline-none focus:ring-2 focus:ring-indigo-500 bg-white font-bold text-gray-700 cursor-pointer hover:border-gray-300 dark:bg-slate-900 dark:border-slate-800 dark:text-slate-300">
                         <option value={0}>Tất cả độ khó</option>
                         {DIFFICULTIES.map(d => <option key={d.value} value={d.value}>{d.label}</option>)}
                     </select>
  
-                    <select value={filterGrade} onChange={e => handleGradeChange(e.target.value)} className="border border-gray-200 rounded-lg px-2.5 py-1.5 text-xs outline-none focus:ring-2 focus:ring-indigo-500 bg-white font-bold text-gray-700 cursor-pointer hover:border-gray-300">
+                    <select value={filterGrade} onChange={e => handleGradeChange(e.target.value)} className="border border-gray-200 rounded-lg px-2.5 py-1.5 text-xs outline-none focus:ring-2 focus:ring-indigo-500 bg-white font-bold text-gray-700 cursor-pointer hover:border-gray-300 dark:bg-slate-900 dark:border-slate-800 dark:text-slate-300">
                         <option value="">Tất cả lớp</option>
                         {['1', '2', '3', '4', '5'].map(g => <option key={g} value={g}>Lớp {g}</option>)}
                     </select>
 
-                    <select value={filterTopic} onChange={e => setFilterTopic(e.target.value)} className="border border-gray-200 rounded-lg px-2.5 py-1.5 text-xs outline-none focus:ring-2 focus:ring-indigo-500 bg-white font-bold text-gray-700 cursor-pointer hover:border-gray-300 max-w-[150px] truncate">
+                    <select value={filterTopic} onChange={e => setFilterTopic(e.target.value)} className="border border-gray-200 rounded-lg px-2.5 py-1.5 text-xs outline-none focus:ring-2 focus:ring-indigo-500 bg-white font-bold text-gray-700 cursor-pointer hover:border-gray-300 max-w-[150px] truncate dark:bg-slate-900 dark:border-slate-800 dark:text-slate-300">
                         <option value="">Tất cả chủ đề</option>
                         {uniqueTopics.map(topic => <option key={topic} value={topic}>{topic}</option>)}
                     </select>
 
-                    <label className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 dark:bg-slate-850 px-3 py-1.5 rounded-lg border border-gray-200 transition-colors bg-white text-xs font-bold text-gray-600 select-none">
+                    <label className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 dark:bg-slate-850 px-3 py-1.5 rounded-lg border border-gray-200 transition-colors bg-white text-xs font-bold text-gray-600 select-none dark:border-slate-800 dark:text-slate-400 dark:hover:bg-slate-850/50">
                         <input
                             type="checkbox"
-                            className="w-3.5 h-3.5 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
+                            className="w-3.5 h-3.5 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer dark:border-slate-800"
                             checked={selectedIds.size === filteredQuestions.length && filteredQuestions.length > 0}
                             onChange={() => handleSelectAll(filteredQuestions)}
                         />
                         <span>Chọn tất cả</span>
                     </label>
 
-                    <span className="text-xs font-black text-indigo-600 bg-indigo-50/80 border border-indigo-100/50 px-3.5 py-1.5 rounded-lg ml-auto">
+                    <span className="text-xs font-black text-indigo-600 bg-indigo-50/80 border border-indigo-100/50 px-3.5 py-1.5 rounded-lg ml-auto dark:border-slate-800">
                         Đang hiển thị {filteredQuestions.length} / {arenaFilteredCount} kết quả
                     </span>
                 </div>
@@ -1537,7 +1537,7 @@ export const ArenaAdmin: React.FC = () => {
                         <div className="flex-shrink-0 pt-1.5">
                             <input
                                 type="checkbox"
-                                className="w-4.5 h-4.5 rounded-lg border-gray-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
+                                className="w-4.5 h-4.5 rounded-lg border-gray-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer dark:border-slate-800"
                                 checked={selectedIds.has(q.id)}
                                 onChange={() => toggleSelect(q.id)}
                             />
@@ -1549,7 +1549,7 @@ export const ArenaAdmin: React.FC = () => {
                                         <span className="bg-indigo-50 text-indigo-700 px-2.5 py-0.5 rounded-lg text-xs font-bold">
                                             {SUBJECTS.find(s => s.value === normalizeSubject(q.subject))?.label || q.subject}
                                         </span>
-                                        <span className="bg-gray-100 text-gray-600 px-2.5 py-0.5 rounded-lg text-xs font-bold">
+                                        <span className="bg-gray-100 text-gray-600 px-2.5 py-0.5 rounded-lg text-xs font-bold dark:bg-slate-850 dark:text-slate-400">
                                             {DIFFICULTIES.find(d => d.value === q.difficulty)?.label || 'N/A'}
                                         </span>
                                         {q.topic && q.topic !== 'general' && (
@@ -1568,7 +1568,7 @@ export const ArenaAdmin: React.FC = () => {
                                             ⚡ +{q.xp_reward || 10} XP
                                         </span>
                                     </div>
-                                    <MathText className="font-bold text-gray-900 text-sm md:text-base leading-relaxed" inline>{q.content}</MathText>
+                                    <MathText className="font-bold text-gray-900 text-sm md:text-base leading-relaxed dark:text-slate-100" inline>{q.content}</MathText>
                                 </div>
                                 <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                                     <button onClick={() => openEdit(q)} className="p-2 text-indigo-600 hover:bg-indigo-50 rounded-xl transition-colors" title="Sửa câu hỏi"><Pencil className="h-4.5 w-4.5" /></button>
@@ -1578,7 +1578,7 @@ export const ArenaAdmin: React.FC = () => {
 
                             {/* Render answer details dynamically by type */}
                             {q.type === 'SHORT_ANSWER' ? (
-                                <div className="mt-2 bg-emerald-55/10 border border-emerald-200/50 p-3 rounded-xl max-w-md">
+                                <div className="mt-2 bg-emerald-55/10 border border-emerald-200/50 p-3 rounded-xl max-w-md dark:border-slate-800">
                                     <p className="text-xs font-black text-emerald-800 uppercase tracking-widest">Đáp án đúng điền từ:</p>
                                     <p className="text-sm font-bold text-emerald-950 mt-1 italic">"{q.correct_answer_string}"</p>
                                 </div>
@@ -1600,7 +1600,7 @@ export const ArenaAdmin: React.FC = () => {
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mt-3">
                                     {q.answers?.map((a, i) => (
                                         <div key={i} className={`text-xs md:text-sm px-3.5 py-2.5 rounded-xl flex items-center gap-2 transition-all ${i === q.correct_index ? 'bg-emerald-50 text-emerald-800 font-bold border border-emerald-200 shadow-sm shadow-emerald-50' : 'bg-gray-50 dark:bg-slate-850 text-gray-600 border border-transparent'}`}>
-                                            <span className="flex-shrink-0 bg-white shadow-xs rounded-md w-5 h-5 flex items-center justify-center font-bold text-[10px] uppercase border tracking-wider">
+                                            <span className="flex-shrink-0 bg-white shadow-xs rounded-md w-5 h-5 flex items-center justify-center font-bold text-[10px] uppercase border tracking-wider dark:bg-slate-900 dark:border-slate-800">
                                                 {String.fromCharCode(65 + i)}
                                             </span>
                                             <MathText inline>{a}</MathText>
@@ -1611,15 +1611,15 @@ export const ArenaAdmin: React.FC = () => {
 
                             {/* Render Guide and Explanation if available */}
                             {(q.guide || q.explanation) && (
-                                <div className="mt-3 bg-indigo-50/20 border border-indigo-100/30 p-3 rounded-xl space-y-2 text-xs">
+                                <div className="mt-3 bg-indigo-50/20 border border-indigo-100/30 p-3 rounded-xl space-y-2 text-xs dark:border-slate-800">
                                     {q.guide && (
-                                        <div className="text-gray-700">
+                                        <div className="text-gray-700 dark:text-slate-300">
                                             <span className="font-bold text-indigo-750">💡 Hướng dẫn: </span>
                                             <MathText inline>{q.guide}</MathText>
                                         </div>
                                     )}
                                     {q.explanation && (
-                                        <div className="text-gray-700">
+                                        <div className="text-gray-700 dark:text-slate-300">
                                             <span className="font-bold text-indigo-750">📖 Lời giải chi tiết: </span>
                                             <MathText inline>{q.explanation}</MathText>
                                         </div>
@@ -1631,7 +1631,7 @@ export const ArenaAdmin: React.FC = () => {
                 ))}
                 
                 {filteredQuestions.length === 0 && (
-                    <div className="text-center py-20 bg-white rounded-2xl border border-dashed border-gray-200 shadow-sm">
+                    <div className="text-center py-20 bg-white rounded-2xl border border-dashed border-gray-200 shadow-sm dark:bg-slate-900 dark:border-slate-800">
                         <FileText className="h-12 w-12 text-gray-300 mx-auto mb-3" />
                         <p className="text-gray-400 font-medium italic">Không tìm thấy câu hỏi đấu trí nào phù hợp với bộ lọc hiện tại.</p>
                     </div>
@@ -1666,12 +1666,12 @@ export const ArenaAdmin: React.FC = () => {
             {/* Bulk Delete Confirm */}
             {bulkDeleteConfirm && (
                 <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4" onClick={() => setBulkDeleteConfirm(false)}>
-                    <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm p-6 text-center" onClick={e => e.stopPropagation()}>
+                    <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm p-6 text-center dark:bg-slate-900" onClick={e => e.stopPropagation()}>
                         <AlertTriangle className="h-12 w-12 text-red-500 mx-auto mb-4" />
-                        <h3 className="text-lg font-bold text-gray-900 mb-2">Xoá {selectedIds.size} câu hỏi đã chọn?</h3>
-                        <p className="text-sm text-gray-500 mb-6">Hành động này sẽ xoá vĩnh viễn các câu hỏi này và không thể hoàn tác.</p>
+                        <h3 className="text-lg font-bold text-gray-900 mb-2 dark:text-slate-100">Xoá {selectedIds.size} câu hỏi đã chọn?</h3>
+                        <p className="text-sm text-gray-500 mb-6 dark:text-slate-500">Hành động này sẽ xoá vĩnh viễn các câu hỏi này và không thể hoàn tác.</p>
                         <div className="flex gap-3">
-                            <button onClick={() => setBulkDeleteConfirm(false)} className="flex-1 py-2 bg-gray-100 text-gray-700 rounded-xl font-bold">Quay lại</button>
+                            <button onClick={() => setBulkDeleteConfirm(false)} className="flex-1 py-2 bg-gray-100 text-gray-700 rounded-xl font-bold dark:bg-slate-850 dark:text-slate-300">Quay lại</button>
                             <button onClick={handleBulkDelete} className="flex-1 py-2 bg-red-600 text-white rounded-xl font-bold">Xác nhận xoá</button>
                         </div>
                     </div>
@@ -1681,19 +1681,19 @@ export const ArenaAdmin: React.FC = () => {
             {/* Edit / New Modal */}
             {editing && (
                 <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4" onClick={() => setEditing(null)}>
-                    <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
-                        <div className="p-5 border-b flex items-center justify-between sticky top-0 bg-white z-10 rounded-t-2xl">
+                    <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto dark:bg-slate-900" onClick={e => e.stopPropagation()}>
+                        <div className="p-5 border-b flex items-center justify-between sticky top-0 bg-white z-10 rounded-t-2xl dark:bg-slate-900 dark:border-slate-800">
                             <h3 className="font-bold text-lg">{isNew ? '➕ Thêm Câu Hỏi Đấu Trí' : '✏️ Cấu Hình Câu Hỏi'}</h3>
-                            <button onClick={() => setEditing(null)} className="text-gray-400 hover:bg-gray-100 p-2 rounded-full transition-colors"><X className="h-5 w-5" /></button>
+                            <button onClick={() => setEditing(null)} className="text-gray-400 hover:bg-gray-100 p-2 rounded-full transition-colors dark:hover:bg-slate-800"><X className="h-5 w-5" /></button>
                         </div>
                         <div className="p-5 space-y-4">
                             {/* Question Type Selection */}
                             <div>
-                                <label className="block text-sm font-bold text-gray-700 mb-1">Loại câu hỏi *</label>
+                                <label className="block text-sm font-bold text-gray-700 mb-1 dark:text-slate-300">Loại câu hỏi *</label>
                                 <select 
                                     value={formType} 
                                     onChange={e => setFormType(e.target.value as any)}
-                                    className="w-full border rounded-xl px-3 py-2.5 text-sm font-bold text-indigo-700 bg-indigo-50/50 cursor-pointer outline-none focus:ring-2 focus:ring-indigo-500"
+                                    className="w-full border rounded-xl px-3 py-2.5 text-sm font-bold text-indigo-700 bg-indigo-50/50 cursor-pointer outline-none focus:ring-2 focus:ring-indigo-500 dark:border-slate-800"
                                 >
                                     <option value="MCQ">🔘 Trắc nghiệm chọn một đáp án (MCQ)</option>
                                     <option value="MCQ_MULTIPLE">🗂️ Trắc nghiệm chọn nhiều đáp án đúng (MCQ Multiple)</option>
@@ -1702,13 +1702,13 @@ export const ArenaAdmin: React.FC = () => {
                             </div>
 
                             <div>
-                                <label className="block text-sm font-bold text-gray-700 mb-1">Nội dung câu hỏi *</label>
-                                <textarea value={formContent} onChange={e => setFormContent(e.target.value)} rows={3} className="w-full border rounded-xl px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-indigo-500 font-medium" placeholder="Nhập nội dung câu hỏi..." />
+                                <label className="block text-sm font-bold text-gray-700 mb-1 dark:text-slate-300">Nội dung câu hỏi *</label>
+                                <textarea value={formContent} onChange={e => setFormContent(e.target.value)} rows={3} className="w-full border rounded-xl px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-indigo-500 font-medium dark:border-slate-800" placeholder="Nhập nội dung câu hỏi..." />
                             </div>
 
                             {/* Render different answer options by selected type */}
                             {formType === 'SHORT_ANSWER' ? (
-                                <div className="bg-emerald-50/30 border border-emerald-100 p-4 rounded-xl space-y-3">
+                                <div className="bg-emerald-50/30 border border-emerald-100 p-4 rounded-xl space-y-3 dark:border-emerald-900/30">
                                     <div>
                                         <label className="block text-xs font-black text-emerald-800 uppercase tracking-widest mb-1.5">Đáp án chính xác (Điền từ) *</label>
                                         <input 
@@ -1716,7 +1716,7 @@ export const ArenaAdmin: React.FC = () => {
                                             value={formCorrectAnswerString}
                                             onChange={e => setFormCorrectAnswerString(e.target.value)}
                                             placeholder="Nhập chuỗi/từ đáp án đúng chính xác..."
-                                            className="w-full border rounded-xl px-3.5 py-2.5 text-sm outline-none focus:ring-2 focus:ring-emerald-500 bg-white font-bold text-emerald-950"
+                                            className="w-full border rounded-xl px-3.5 py-2.5 text-sm outline-none focus:ring-2 focus:ring-emerald-500 bg-white font-bold text-emerald-950 dark:bg-slate-900 dark:border-slate-800"
                                         />
                                     </div>
                                     <label className="flex items-center gap-2 cursor-pointer select-none">
@@ -1739,10 +1739,10 @@ export const ArenaAdmin: React.FC = () => {
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                                         {formAnswers.map((a, i) => (
                                             <div key={i} className="relative">
-                                                <label className="block text-xs font-bold text-gray-500 mb-1">Đáp án {String.fromCharCode(65 + i)} *</label>
+                                                <label className="block text-xs font-bold text-gray-500 mb-1 dark:text-slate-500">Đáp án {String.fromCharCode(65 + i)} *</label>
                                                 <input value={a} onChange={e => {
                                                     const cp = [...formAnswers]; cp[i] = e.target.value; setFormAnswers(cp);
-                                                }} className="w-full border rounded-xl px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-indigo-500 font-medium" />
+                                                }} className="w-full border rounded-xl px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-indigo-500 font-medium dark:border-slate-800" />
                                                 
                                                 {/* If MCQ_MULTIPLE, render checkboxes next to input */}
                                                 {formType === 'MCQ_MULTIPLE' && (
@@ -1763,8 +1763,8 @@ export const ArenaAdmin: React.FC = () => {
                                     {/* MCQ single correct dropdown */}
                                     {formType === 'MCQ' && (
                                         <div>
-                                            <label className="block text-xs font-bold text-gray-500 mb-1">Đáp án đúng</label>
-                                            <select value={formCorrect} onChange={e => setFormCorrect(Number(e.target.value))} className="w-full border rounded-xl px-3 py-2 text-sm font-bold text-gray-700 bg-white">
+                                            <label className="block text-xs font-bold text-gray-500 mb-1 dark:text-slate-500">Đáp án đúng</label>
+                                            <select value={formCorrect} onChange={e => setFormCorrect(Number(e.target.value))} className="w-full border rounded-xl px-3 py-2 text-sm font-bold text-gray-700 bg-white dark:bg-slate-900 dark:border-slate-800 dark:text-slate-300">
                                                 {[0, 1, 2, 3].map(i => <option key={i} value={i}>{String.fromCharCode(65 + i)}</option>)}
                                             </select>
                                         </div>
@@ -1774,30 +1774,30 @@ export const ArenaAdmin: React.FC = () => {
 
                             <div className="grid grid-cols-4 gap-3">
                                 <div>
-                                    <label className="block text-xs font-bold text-gray-500 mb-1">Độ khó</label>
-                                    <select value={formDifficulty} onChange={e => setFormDifficulty(Number(e.target.value))} className="w-full border rounded-xl px-3 py-2 text-sm font-bold text-gray-700 bg-white">
+                                    <label className="block text-xs font-bold text-gray-500 mb-1 dark:text-slate-500">Độ khó</label>
+                                    <select value={formDifficulty} onChange={e => setFormDifficulty(Number(e.target.value))} className="w-full border rounded-xl px-3 py-2 text-sm font-bold text-gray-700 bg-white dark:bg-slate-900 dark:border-slate-800 dark:text-slate-300">
                                         {DIFFICULTIES.map(d => <option key={d.value} value={d.value}>{d.label}</option>)}
                                     </select>
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-bold text-gray-500 mb-1">Môn học</label>
-                                    <select value={formSubject} onChange={e => setFormSubject(e.target.value)} className="w-full border rounded-xl px-3 py-2 text-sm font-bold text-gray-700 bg-white">
+                                    <label className="block text-xs font-bold text-gray-500 mb-1 dark:text-slate-500">Môn học</label>
+                                    <select value={formSubject} onChange={e => setFormSubject(e.target.value)} className="w-full border rounded-xl px-3 py-2 text-sm font-bold text-gray-700 bg-white dark:bg-slate-900 dark:border-slate-800 dark:text-slate-300">
                                         {SUBJECTS.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
                                     </select>
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-bold text-gray-500 mb-1">Chủ đề</label>
-                                    <input value={formTopic} onChange={e => setFormTopic(e.target.value)} className="w-full border rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500 font-medium" placeholder="VD: Phân số, Hình học..." />
+                                    <label className="block text-xs font-bold text-gray-500 mb-1 dark:text-slate-500">Chủ đề</label>
+                                    <input value={formTopic} onChange={e => setFormTopic(e.target.value)} className="w-full border rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500 font-medium dark:border-slate-800" placeholder="VD: Phân số, Hình học..." />
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-bold text-gray-500 mb-1">Lớp</label>
-                                    <select value={formGrade} onChange={e => setFormGrade(e.target.value)} className="w-full border rounded-xl px-3 py-2 text-sm font-bold text-gray-700 bg-white">
+                                    <label className="block text-xs font-bold text-gray-500 mb-1 dark:text-slate-500">Lớp</label>
+                                    <select value={formGrade} onChange={e => setFormGrade(e.target.value)} className="w-full border rounded-xl px-3 py-2 text-sm font-bold text-gray-700 bg-white dark:bg-slate-900 dark:border-slate-800 dark:text-slate-300">
                                         {['1', '2', '3', '4', '5'].map(g => <option key={g} value={g}>Lớp {g}</option>)}
                                     </select>
                                 </div>
                             </div>
                             
-                            <div className="grid grid-cols-2 gap-3 bg-gray-50 dark:bg-slate-850 border p-3 rounded-xl">
+                            <div className="grid grid-cols-2 gap-3 bg-gray-50 dark:bg-slate-850 border p-3 rounded-xl dark:border-slate-800">
                                 <div>
                                     <label className="block text-xs font-bold text-indigo-700 mb-1">⏱️ Giới hạn thời gian (giây)</label>
                                     <input 
@@ -1806,7 +1806,7 @@ export const ArenaAdmin: React.FC = () => {
                                         max="300"
                                         value={formTimeLimit} 
                                         onChange={e => setFormTimeLimit(Number(e.target.value))}
-                                        className="w-full border rounded-xl px-3 py-2 text-sm font-bold text-gray-700 bg-white"
+                                        className="w-full border rounded-xl px-3 py-2 text-sm font-bold text-gray-700 bg-white dark:bg-slate-900 dark:border-slate-800 dark:text-slate-300"
                                     />
                                 </div>
                                 <div>
@@ -1817,36 +1817,36 @@ export const ArenaAdmin: React.FC = () => {
                                         max="500"
                                         value={formXpReward} 
                                         onChange={e => setFormXpReward(Number(e.target.value))}
-                                        className="w-full border rounded-xl px-3 py-2 text-sm font-bold text-gray-700 bg-white"
+                                        className="w-full border rounded-xl px-3 py-2 text-sm font-bold text-gray-700 bg-white dark:bg-slate-900 dark:border-slate-800 dark:text-slate-300"
                                     />
                                 </div>
                             </div>
 
-                            <div className="space-y-3 border p-3 rounded-xl bg-gray-50 dark:bg-slate-850/50">
+                            <div className="space-y-3 border p-3 rounded-xl bg-gray-50 dark:bg-slate-850/50 dark:border-slate-800">
                                 <div>
-                                    <label className="block text-xs font-bold text-gray-700 mb-1">💡 Hướng dẫn (Chỉ gợi ý cách tính, cách làm, không nêu đáp án)</label>
+                                    <label className="block text-xs font-bold text-gray-700 mb-1 dark:text-slate-300">💡 Hướng dẫn (Chỉ gợi ý cách tính, cách làm, không nêu đáp án)</label>
                                     <textarea 
                                         value={formGuide} 
                                         onChange={e => setFormGuide(e.target.value)} 
                                         rows={2} 
-                                        className="w-full border rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500 font-medium bg-white" 
+                                        className="w-full border rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500 font-medium bg-white dark:bg-slate-900 dark:border-slate-800" 
                                         placeholder="Nhập gợi ý cách giải..." 
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-bold text-gray-700 mb-1">📖 Lời giải chi tiết (Ghi ra từng bước kèm đáp án)</label>
+                                    <label className="block text-xs font-bold text-gray-700 mb-1 dark:text-slate-300">📖 Lời giải chi tiết (Ghi ra từng bước kèm đáp án)</label>
                                     <textarea 
                                         value={formExplanation} 
                                         onChange={e => setFormExplanation(e.target.value)} 
                                         rows={3} 
-                                        className="w-full border rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500 font-medium bg-white" 
+                                        className="w-full border rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500 font-medium bg-white dark:bg-slate-900 dark:border-slate-800" 
                                         placeholder="Nhập lời giải chi tiết..." 
                                     />
                                 </div>
                             </div>
                         </div>
-                        <div className="p-5 border-t flex gap-3 sticky bottom-0 bg-white">
-                            <button onClick={() => setEditing(null)} className="flex-1 py-3 bg-gray-100 text-gray-700 rounded-xl font-bold hover:bg-gray-200">Huỷ</button>
+                        <div className="p-5 border-t flex gap-3 sticky bottom-0 bg-white dark:bg-slate-900 dark:border-slate-800">
+                            <button onClick={() => setEditing(null)} className="flex-1 py-3 bg-gray-100 text-gray-700 rounded-xl font-bold hover:bg-gray-200 dark:bg-slate-850 dark:text-slate-300">Huỷ</button>
                             <button onClick={handleSave} className="flex-1 py-3 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 flex items-center justify-center gap-2 shadow-md shadow-indigo-100">
                                 <Save className="h-4 w-4" /> Lưu câu hỏi
                             </button>
@@ -1858,12 +1858,12 @@ export const ArenaAdmin: React.FC = () => {
             {/* Delete Confirm */}
             {deleteConfirm && (
                 <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4" onClick={() => setDeleteConfirm(null)}>
-                    <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm p-6 text-center" onClick={e => e.stopPropagation()}>
+                    <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm p-6 text-center dark:bg-slate-900" onClick={e => e.stopPropagation()}>
                         <AlertTriangle className="h-12 w-12 text-amber-500 mx-auto mb-4" />
-                        <h3 className="text-lg font-bold text-gray-900 mb-2">Xoá câu hỏi này?</h3>
-                        <p className="text-sm text-gray-500 mb-6">Hành động này không thể hoàn tác</p>
+                        <h3 className="text-lg font-bold text-gray-900 mb-2 dark:text-slate-100">Xoá câu hỏi này?</h3>
+                        <p className="text-sm text-gray-500 mb-6 dark:text-slate-500">Hành động này không thể hoàn tác</p>
                         <div className="flex gap-3">
-                            <button onClick={() => setDeleteConfirm(null)} className="flex-1 py-2 bg-gray-100 text-gray-700 rounded-xl font-bold">Hủy</button>
+                            <button onClick={() => setDeleteConfirm(null)} className="flex-1 py-2 bg-gray-100 text-gray-700 rounded-xl font-bold dark:bg-slate-850 dark:text-slate-300">Hủy</button>
                             <button onClick={() => handleDelete(deleteConfirm)} className="flex-1 py-2 bg-red-600 text-white rounded-xl font-bold">Xoá</button>
                         </div>
                     </div>
@@ -1873,8 +1873,8 @@ export const ArenaAdmin: React.FC = () => {
             {/* Import Modal */}
             {showImport && (
                 <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4" onClick={() => { setShowImport(false); setImportPreview([]); setImportErrors([]); setImportResult(null); }}>
-                    <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
-                        <div className="p-5 border-b flex items-center justify-between">
+                    <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto dark:bg-slate-900" onClick={e => e.stopPropagation()}>
+                        <div className="p-5 border-b flex items-center justify-between dark:border-slate-800">
                             <h3 className="font-bold text-lg flex items-center gap-2"><Upload className="h-5 w-5 text-emerald-500" /> Import câu hỏi từ CSV</h3>
                             <button onClick={() => { setShowImport(false); setImportPreview([]); setImportErrors([]); setImportResult(null); }} className="text-gray-400 hover:text-gray-600"><X className="h-5 w-5" /></button>
                         </div>
@@ -1882,8 +1882,8 @@ export const ArenaAdmin: React.FC = () => {
                             {importResult ? (
                                 <div className="text-center py-8">
                                     <CheckCircle className="h-16 w-16 text-emerald-500 mx-auto mb-4" />
-                                    <h3 className="text-xl font-bold text-gray-900 mb-2">Import thành công!</h3>
-                                    <p className="text-gray-500">
+                                    <h3 className="text-xl font-bold text-gray-900 mb-2 dark:text-slate-100">Import thành công!</h3>
+                                    <p className="text-gray-500 dark:text-slate-500">
                                         Đã thêm <strong className="text-emerald-600">{importResult.count}</strong> câu hỏi
                                         {importResult.skipped !== undefined && importResult.skipped > 0 && (
                                             <> (đã tự động bỏ qua <strong className="text-amber-600">{importResult.skipped}</strong> câu trùng lặp)</>
@@ -1894,7 +1894,7 @@ export const ArenaAdmin: React.FC = () => {
                             ) : (
                                 <>
                                     {/* Instructions */}
-                                    <div className="bg-indigo-50 border border-indigo-100 rounded-xl p-4 text-sm text-indigo-700 flex flex-col gap-2.5">
+                                    <div className="bg-indigo-50 border border-indigo-100 rounded-xl p-4 text-sm text-indigo-700 flex flex-col gap-2.5 dark:border-indigo-900/30">
                                         <div>
                                             <p className="font-bold mb-1">📋 Hướng dẫn:</p>
                                             <ol className="list-decimal pl-5 space-y-1 text-xs">
@@ -1916,16 +1916,16 @@ export const ArenaAdmin: React.FC = () => {
                                     <div>
                                         <input ref={fileInputRef} type="file" accept=".csv,.txt" onChange={handleFileSelect} className="hidden" />
                                         <button onClick={() => fileInputRef.current?.click()}
-                                            className="w-full py-8 border-2 border-dashed border-gray-300 rounded-xl hover:border-indigo-400 hover:bg-indigo-50 transition-all text-center">
+                                            className="w-full py-8 border-2 border-dashed border-gray-300 rounded-xl hover:border-indigo-400 hover:bg-indigo-50 transition-all text-center dark:border-slate-800">
                                             <FileText className="h-8 w-8 mx-auto text-gray-400 mb-2" />
-                                            <p className="text-sm font-bold text-gray-700">Chọn file CSV</p>
+                                            <p className="text-sm font-bold text-gray-700 dark:text-slate-300">Chọn file CSV</p>
                                             <p className="text-xs text-gray-400 mt-1">Hỗ trợ .csv, .txt (UTF-8)</p>
                                         </button>
                                     </div>
 
                                     {/* Errors */}
                                     {importErrors.length > 0 && (
-                                        <div className="bg-red-50 border border-red-200 rounded-xl p-3 max-h-32 overflow-y-auto">
+                                        <div className="bg-red-50 border border-red-200 rounded-xl p-3 max-h-32 overflow-y-auto dark:border-red-900/30">
                                             <p className="text-xs font-bold text-red-700 mb-1">⚠️ Lỗi ({importErrors.length}):</p>
                                             {importErrors.map((e, i) => (
                                                 <p key={i} className="text-xs text-red-600">{e}</p>
@@ -1936,17 +1936,17 @@ export const ArenaAdmin: React.FC = () => {
                                     {/* Preview */}
                                     {importPreview.length > 0 && (
                                         <div>
-                                            <p className="text-sm font-bold text-gray-700 mb-2">✅ Preview ({importPreview.length} câu hỏi hợp lệ)</p>
-                                            <div className="border rounded-xl divide-y max-h-48 overflow-y-auto">
+                                            <p className="text-sm font-bold text-gray-700 mb-2 dark:text-slate-300">✅ Preview ({importPreview.length} câu hỏi hợp lệ)</p>
+                                            <div className="border rounded-xl divide-y max-h-48 overflow-y-auto dark:border-slate-800">
                                                 {importPreview.slice(0, 10).map((q, i) => (
                                                     <div key={i} className="p-2.5 text-xs">
                                                         <div className="flex gap-1.5 mb-1">
                                                             <span className="bg-indigo-50 text-indigo-700 px-1.5 py-0.5 rounded">{q.subject}</span>
-                                                            <span className="bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded">Lv.{q.difficulty}</span>
+                                                            <span className="bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded dark:bg-slate-850 dark:text-slate-400">Lv.{q.difficulty}</span>
                                                             {q.topic && q.topic !== 'general' && <span className="bg-purple-50 text-purple-600 px-1.5 py-0.5 rounded">{q.topic}</span>}
                                                             <span className="bg-pink-50 text-pink-700 px-1.5 py-0.5 rounded font-black tracking-wider">{q.type}</span>
                                                         </div>
-                                                        <p className="text-gray-800 font-medium">{q.content}</p>
+                                                        <p className="text-gray-800 font-medium dark:text-slate-200">{q.content}</p>
                                                     </div>
                                                 ))}
                                                 {importPreview.length > 10 && <div className="p-2.5 text-xs text-gray-400 text-center">... và {importPreview.length - 10} câu nữa</div>}
@@ -1967,15 +1967,15 @@ export const ArenaAdmin: React.FC = () => {
             {/* Word / Text Import Modal (Deterministic Parser) */}
             {showAiScan && (
                 <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4" onClick={() => { if (!aiScanning) setShowAiScan(false); }}>
-                    <div className="bg-white rounded-3xl shadow-xl w-full max-w-2xl max-h-[90vh] flex flex-col" onClick={e => e.stopPropagation()}>
-                        <div className="p-5 border-b flex items-center justify-between bg-purple-50/50 rounded-t-3xl">
+                    <div className="bg-white rounded-3xl shadow-xl w-full max-w-2xl max-h-[90vh] flex flex-col dark:bg-slate-900" onClick={e => e.stopPropagation()}>
+                        <div className="p-5 border-b flex items-center justify-between bg-purple-50/50 rounded-t-3xl dark:border-slate-800">
                             <h3 className="font-black text-lg text-purple-950 flex items-center gap-2">
                                 <FileText className="h-5 w-5 text-purple-600" /> Nhập từ file Word (.docx) / Văn bản
                             </h3>
                             <button disabled={aiScanning} onClick={() => setShowAiScan(false)} className="text-gray-400 hover:text-gray-600 disabled:opacity-50"><X className="h-5 w-5" /></button>
                         </div>
                         <div className="p-5 flex-1 overflow-y-auto space-y-4">
-                            <div className="bg-purple-50 border border-purple-100 rounded-xl p-4 text-xs text-purple-800 space-y-2">
+                            <div className="bg-purple-50 border border-purple-100 rounded-xl p-4 text-xs text-purple-800 space-y-2 dark:border-slate-800">
                                 <p className="font-bold">📋 Hướng dẫn soạn đề chuẩn:</p>
                                 <p>1. Tải file Word (.docx) mẫu về máy để tham khảo cấu trúc soạn đề.</p>
                                 <p>2. Dán đề hoặc tải file Word lên, hệ thống sẽ tự động kiểm tra cú pháp tự động và không dùng AI.</p>
@@ -1991,7 +1991,7 @@ export const ArenaAdmin: React.FC = () => {
                             </div>
 
                             <div className="flex gap-2 items-center">
-                                <label className="cursor-pointer px-4 py-2 bg-purple-50 hover:bg-purple-100 border border-purple-200 text-purple-700 rounded-xl font-bold text-xs flex items-center gap-1.5 transition-colors">
+                                <label className="cursor-pointer px-4 py-2 bg-purple-50 hover:bg-purple-100 border border-purple-200 text-purple-700 rounded-xl font-bold text-xs flex items-center gap-1.5 transition-colors dark:border-slate-800">
                                     <input type="file" accept=".docx" onChange={handleWordFileSelect} className="hidden" />
                                     {aiScanFileLoading ? '⏳ Đang đọc file...' : <><FileText className="h-4 w-4" /> Tải lên File Word (.docx)</>}
                                 </label>
@@ -1999,19 +1999,19 @@ export const ArenaAdmin: React.FC = () => {
                             </div>
 
                             <div className="flex flex-col gap-1.5">
-                                <label className="text-xs font-bold text-gray-500">Nội dung câu hỏi soạn thảo:</label>
+                                <label className="text-xs font-bold text-gray-500 dark:text-slate-500">Nội dung câu hỏi soạn thảo:</label>
                                 <textarea
                                     disabled={aiScanning}
                                     value={aiScanText}
                                     onChange={e => setAiScanText(e.target.value)}
                                     placeholder="Soạn theo mẫu:&#10;Môn: Toán&#10;Chủ đề: Phân số & Số thập phân&#10;&#10;Câu 1: Phân số 3/4 viết dưới dạng số thập phân là bao nhiêu?&#10;A. 0,75&#10;B. 0,5&#10;C. 0,25&#10;D. 0,8&#10;Đáp án: A&#10;Độ khó: 1"
-                                    className="w-full h-64 border rounded-2xl p-4 text-sm font-medium outline-none focus:ring-2 focus:ring-purple-500 bg-gray-50 dark:bg-slate-850/50 resize-none font-mono"
+                                    className="w-full h-64 border rounded-2xl p-4 text-sm font-medium outline-none focus:ring-2 focus:ring-purple-500 bg-gray-50 dark:bg-slate-850/50 resize-none font-mono dark:border-slate-800"
                                 />
                             </div>
 
                             {/* Errors list for direct correction */}
                             {importErrors.length > 0 && (
-                                <div className="bg-red-50 border border-red-200 rounded-xl p-3.5 max-h-40 overflow-y-auto">
+                                <div className="bg-red-50 border border-red-200 rounded-xl p-3.5 max-h-40 overflow-y-auto dark:border-red-900/30">
                                     <p className="text-xs font-bold text-red-700 mb-1 flex items-center gap-1">
                                         <AlertTriangle className="h-3.5 w-3.5" /> Phát hiện lỗi định dạng ({importErrors.length}):
                                     </p>
@@ -2021,7 +2021,7 @@ export const ArenaAdmin: React.FC = () => {
                                         ))}
                                     </div>
                                     {validParsedQuestions.length > 0 && (
-                                        <p className="text-[11px] text-emerald-700 mt-2 font-bold bg-emerald-50 p-2 rounded-lg border border-emerald-100">
+                                        <p className="text-[11px] text-emerald-700 mt-2 font-bold bg-emerald-50 p-2 rounded-lg border border-emerald-100 dark:border-emerald-900/30">
                                             💡 Gợi ý: Bạn có {validParsedQuestions.length} câu hỏi hợp lệ. Bạn có thể nhấn nút màu xanh bên dưới để chỉ đẩy các câu hợp lệ lên hệ thống. Các câu lỗi sẽ được giữ lại trong khung nhập liệu để bạn tiếp tục chỉnh sửa.
                                         </p>
                                     )}
@@ -2029,7 +2029,7 @@ export const ArenaAdmin: React.FC = () => {
                             )}
                         </div>
 
-                        <div className="p-4 border-t bg-gray-50 dark:bg-slate-850/50 flex justify-end gap-2 rounded-b-3xl">
+                        <div className="p-4 border-t bg-gray-50 dark:bg-slate-850/50 flex justify-end gap-2 rounded-b-3xl dark:border-slate-800">
                             {importErrors.length > 0 && validParsedQuestions.length > 0 && (
                                 <button
                                     disabled={importing || aiScanning}
@@ -2042,7 +2042,7 @@ export const ArenaAdmin: React.FC = () => {
                             <button
                                 disabled={aiScanning}
                                 onClick={() => { setShowAiScan(false); setImportErrors([]); setValidParsedQuestions([]); }}
-                                className="px-5 py-2 bg-white border text-gray-700 rounded-xl font-bold hover:bg-gray-50 dark:bg-slate-850 text-sm active:scale-95 transition-all"
+                                className="px-5 py-2 bg-white border text-gray-700 rounded-xl font-bold hover:bg-gray-50 dark:bg-slate-850 text-sm active:scale-95 transition-all dark:border-slate-800 dark:text-slate-300 dark:hover:bg-slate-850/50"
                             >
                                 Hủy bỏ
                             </button>
@@ -2065,8 +2065,8 @@ export const ArenaAdmin: React.FC = () => {
             {/* Bank Import Modal */}
             {showBankImport && (
                 <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4" onClick={() => { setShowBankImport(false); setImportResult(null); }}>
-                    <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
-                        <div className="p-5 border-b flex items-center justify-between sticky top-0 bg-white z-10 rounded-t-2xl">
+                    <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto dark:bg-slate-900" onClick={e => e.stopPropagation()}>
+                        <div className="p-5 border-b flex items-center justify-between sticky top-0 bg-white z-10 rounded-t-2xl dark:bg-slate-900 dark:border-slate-800">
                             <h3 className="font-bold text-lg flex items-center gap-2"><BookOpen className="h-5 w-5 text-purple-500" /> Import từ Ngân hàng đề</h3>
                             <button onClick={() => { setShowBankImport(false); setImportResult(null); }} className="text-gray-400 hover:text-gray-600"><X className="h-5 w-5" /></button>
                         </div>
@@ -2074,8 +2074,8 @@ export const ArenaAdmin: React.FC = () => {
                             {importResult ? (
                                 <div className="text-center py-8">
                                     <CheckCircle className="h-16 w-16 text-emerald-500 mx-auto mb-4" />
-                                    <h3 className="text-xl font-bold text-gray-900 mb-2">Import thành công!</h3>
-                                    <p className="text-gray-500">
+                                    <h3 className="text-xl font-bold text-gray-900 mb-2 dark:text-slate-100">Import thành công!</h3>
+                                    <p className="text-gray-500 dark:text-slate-500">
                                         Đã thêm <strong className="text-emerald-600">{importResult.count}</strong> câu hỏi vào Đấu Trí
                                         {importResult.skipped !== undefined && importResult.skipped > 0 && (
                                             <> (đã tự động bỏ qua <strong className="text-amber-600">{importResult.skipped}</strong> câu trùng lặp)</>
@@ -2085,12 +2085,12 @@ export const ArenaAdmin: React.FC = () => {
                                 </div>
                             ) : (
                                 <>
-                                    <div className="bg-purple-50 border border-purple-100 rounded-xl p-3 text-sm text-purple-700">
+                                    <div className="bg-purple-50 border border-purple-100 rounded-xl p-3 text-sm text-purple-700 dark:border-slate-800">
                                         <p>Chọn câu hỏi trắc nghiệm (MCQ, MCQ Multiple hoặc Điền từ Short Answer) từ Ngân hàng đề để thêm vào kho Đấu Trí. Hệ thống sẽ tự động đồng bộ hóa cấu trúc.</p>
                                     </div>
 
                                     <div className="flex items-center gap-3">
-                                        <select value={bankFilterSubject} onChange={e => setBankFilterSubject(e.target.value)} className="border rounded-lg px-3 py-1.5 text-sm bg-white cursor-pointer font-medium text-gray-700">
+                                        <select value={bankFilterSubject} onChange={e => setBankFilterSubject(e.target.value)} className="border rounded-lg px-3 py-1.5 text-sm bg-white cursor-pointer font-medium text-gray-700 dark:bg-slate-900 dark:border-slate-800 dark:text-slate-300">
                                             <option value="">Tất cả môn</option>
                                             <option value="Toán">Toán</option>
                                             <option value="Tiếng Việt">Tiếng Việt</option>
@@ -2106,9 +2106,9 @@ export const ArenaAdmin: React.FC = () => {
                                         <span className="text-xs text-gray-400 ml-auto">Đã chọn: <strong className="text-purple-600">{bankSelectedIds.size}</strong></span>
                                     </div>
 
-                                    <div className="border rounded-xl divide-y max-h-[40vh] overflow-y-auto bg-gray-50 dark:bg-slate-850/50">
+                                    <div className="border rounded-xl divide-y max-h-[40vh] overflow-y-auto bg-gray-50 dark:bg-slate-850/50 dark:border-slate-800">
                                         {bankMCQs.length === 0 ? (
-                                            <div className="p-6 text-center text-gray-400 bg-white">
+                                            <div className="p-6 text-center text-gray-400 bg-white dark:bg-slate-900">
                                                 <p className="font-medium">Ngân hàng đề chưa có câu hỏi phù hợp.</p>
                                                 <p className="text-xs mt-1">Hãy tạo bài tập trước rồi quay lại đây.</p>
                                             </div>
@@ -2121,9 +2121,9 @@ export const ArenaAdmin: React.FC = () => {
                                                             {q.subject && <span className="bg-indigo-50 text-indigo-700 px-1.5 py-0.5 rounded text-[10px]">{q.subject}</span>}
                                                             {q.level && <span className="bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded text-[10px]">{q.level}</span>}
                                                             <span className="bg-pink-50 text-pink-700 px-1.5 py-0.5 rounded text-[10px] uppercase tracking-wider">{q.type === 'SHORT_ANSWER' ? 'Điền Từ' : q.type === 'MCQ_MULTIPLE' ? 'Chọn Nhiều' : 'MCQ'}</span>
-                                                            {q.topic && <span className="bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded text-[10px]">{q.topic}</span>}
+                                                            {q.topic && <span className="bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded text-[10px] dark:bg-slate-850 dark:text-slate-500">{q.topic}</span>}
                                                         </div>
-                                                        <p className="text-gray-800 text-xs font-medium truncate">{q.content}</p>
+                                                        <p className="text-gray-800 text-xs font-medium truncate dark:text-slate-200">{q.content}</p>
                                                     </div>
                                                 </label>
                                             ))
@@ -2146,37 +2146,37 @@ export const ArenaAdmin: React.FC = () => {
             {/* AI Generate Modal */}
             {showAiGen && (
                 <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4" onClick={() => setShowAiGen(false)}>
-                    <div className="bg-white rounded-2xl shadow-xl w-full max-w-md animate-in zoom-in-95" onClick={e => e.stopPropagation()}>
-                        <div className="p-5 border-b flex items-center justify-between">
+                    <div className="bg-white rounded-2xl shadow-xl w-full max-w-md animate-in zoom-in-95 dark:bg-slate-900" onClick={e => e.stopPropagation()}>
+                        <div className="p-5 border-b flex items-center justify-between dark:border-slate-800">
                             <h3 className="font-bold text-lg flex items-center gap-2"><Sparkles className="h-5 w-5 text-purple-500 animate-pulse" /> AI Tạo Câu Hỏi Đấu Trí</h3>
-                            <button onClick={() => setShowAiGen(false)} className="text-gray-400 hover:bg-gray-100 p-2 rounded-full transition-colors"><X className="h-5 w-5" /></button>
+                            <button onClick={() => setShowAiGen(false)} className="text-gray-400 hover:bg-gray-100 p-2 rounded-full transition-colors dark:hover:bg-slate-800"><X className="h-5 w-5" /></button>
                         </div>
                         <div className="p-5 space-y-4">
                             <div>
-                                <label className="block text-sm font-bold text-gray-700 mb-1">Môn học</label>
-                                <select value={aiGenSubject} onChange={e => setAiGenSubject(e.target.value)} className="w-full border rounded-xl px-3 py-2 text-sm font-bold text-gray-700 bg-white cursor-pointer">
+                                <label className="block text-sm font-bold text-gray-700 mb-1 dark:text-slate-300">Môn học</label>
+                                <select value={aiGenSubject} onChange={e => setAiGenSubject(e.target.value)} className="w-full border rounded-xl px-3 py-2 text-sm font-bold text-gray-700 bg-white cursor-pointer dark:bg-slate-900 dark:border-slate-800 dark:text-slate-300">
                                     {SUBJECTS.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
                                 </select>
                             </div>
                             <div>
-                                <label className="block text-sm font-bold text-gray-700 mb-1">Chủ đề *</label>
-                                <input value={aiGenTopic} onChange={e => setAiGenTopic(e.target.value)} className="w-full border rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500 font-medium" placeholder="VD: Phân số, Từ vựng Unit 5..." />
+                                <label className="block text-sm font-bold text-gray-700 mb-1 dark:text-slate-300">Chủ đề *</label>
+                                <input value={aiGenTopic} onChange={e => setAiGenTopic(e.target.value)} className="w-full border rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500 font-medium dark:border-slate-800" placeholder="VD: Phân số, Từ vựng Unit 5..." />
                             </div>
                             <div className="grid grid-cols-2 gap-3">
                                 <div>
-                                    <label className="block text-sm font-bold text-gray-700 mb-1">Số câu</label>
-                                    <input type="number" min="1" max="20" value={aiGenCount} onChange={e => setAiGenCount(Number(e.target.value))} className="w-full border rounded-xl px-3 py-2 text-sm font-bold" />
+                                    <label className="block text-sm font-bold text-gray-700 mb-1 dark:text-slate-300">Số câu</label>
+                                    <input type="number" min="1" max="20" value={aiGenCount} onChange={e => setAiGenCount(Number(e.target.value))} className="w-full border rounded-xl px-3 py-2 text-sm font-bold dark:border-slate-800" />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-bold text-gray-700 mb-1">Độ khó</label>
-                                    <select value={aiGenDifficulty} onChange={e => setAiGenDifficulty(Number(e.target.value))} className="w-full border rounded-xl px-3 py-2 text-sm font-bold text-gray-700">
+                                    <label className="block text-sm font-bold text-gray-700 mb-1 dark:text-slate-300">Độ khó</label>
+                                    <select value={aiGenDifficulty} onChange={e => setAiGenDifficulty(Number(e.target.value))} className="w-full border rounded-xl px-3 py-2 text-sm font-bold text-gray-700 dark:border-slate-800 dark:text-slate-300">
                                         {DIFFICULTIES.map(d => <option key={d.value} value={d.value}>{d.label}</option>)}
                                     </select>
                                 </div>
                             </div>
                         </div>
-                        <div className="p-5 border-t flex gap-3">
-                            <button onClick={() => setShowAiGen(false)} className="flex-1 py-2.5 bg-gray-100 text-gray-700 rounded-xl font-bold hover:bg-gray-200">Hủy</button>
+                        <div className="p-5 border-t flex gap-3 dark:border-slate-800">
+                            <button onClick={() => setShowAiGen(false)} className="flex-1 py-2.5 bg-gray-100 text-gray-700 rounded-xl font-bold hover:bg-gray-200 dark:bg-slate-850 dark:text-slate-300">Hủy</button>
                             <button onClick={handleAiGenerate} disabled={aiGenerating || !aiGenTopic.trim()}
                                 className="flex-1 py-2.5 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-xl font-bold hover:shadow-lg disabled:opacity-50 flex items-center justify-center gap-2 shadow-md active:scale-95 transition-all">
                                 {aiGenerating ? <><Loader2 className="h-4 w-4 animate-spin" /> Đang tạo...</> : <><Sparkles className="h-4 w-4" /> Tạo {aiGenCount} câu</>}
@@ -2189,8 +2189,8 @@ export const ArenaAdmin: React.FC = () => {
             {/* AI Preview & Edit Modal */}
             {showAiPreviewModal && (
                 <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 backdrop-blur-xs" onClick={() => setShowAiPreviewModal(false)}>
-                    <div className="bg-white rounded-3xl shadow-2xl w-full max-w-4xl max-h-[85vh] flex flex-col animate-in zoom-in-95 duration-200" onClick={e => e.stopPropagation()}>
-                        <div className="p-6 border-b flex justify-between items-center bg-indigo-50/50 rounded-t-3xl">
+                    <div className="bg-white rounded-3xl shadow-2xl w-full max-w-4xl max-h-[85vh] flex flex-col animate-in zoom-in-95 duration-200 dark:bg-slate-900" onClick={e => e.stopPropagation()}>
+                        <div className="p-6 border-b flex justify-between items-center bg-indigo-50/50 rounded-t-3xl dark:border-slate-800">
                             <div className="flex items-center gap-3">
                                 <div className="bg-indigo-100 p-2 rounded-2xl text-indigo-600">
                                     <Sparkles className="h-6 w-6" />
@@ -2205,11 +2205,11 @@ export const ArenaAdmin: React.FC = () => {
 
                         <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-gray-50 dark:bg-slate-850/30 custom-scrollbar">
                             {aiPreviewList.map((item, index) => (
-                                <div key={index} className="bg-white rounded-2xl border p-4 shadow-sm relative group hover:border-indigo-100 transition-colors">
+                                <div key={index} className="bg-white rounded-2xl border p-4 shadow-sm relative group hover:border-indigo-100 transition-colors dark:bg-slate-900 dark:border-slate-800">
                                     <div className="flex justify-between items-start mb-2 flex-wrap gap-2">
                                         <div className="flex gap-1.5 flex-wrap">
                                             <span className="bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded-lg text-[10px] font-bold uppercase">{item.subject}</span>
-                                            <span className="bg-gray-100 text-gray-600 px-2 py-0.5 rounded-lg text-[10px] font-bold">Cấp độ {item.difficulty}</span>
+                                            <span className="bg-gray-100 text-gray-600 px-2 py-0.5 rounded-lg text-[10px] font-bold dark:bg-slate-850 dark:text-slate-400">Cấp độ {item.difficulty}</span>
                                             {item.topic && <span className="bg-purple-50 text-purple-600 px-2 py-0.5 rounded-lg text-[10px] font-bold">{item.topic}</span>}
                                             <span className="bg-pink-50 text-pink-700 px-2 py-0.5 rounded-lg text-[10px] font-black uppercase tracking-wider">{item.type || 'MCQ'}</span>
                                             <span className="bg-blue-50 text-blue-600 px-2 py-0.5 rounded-lg text-[10px] font-bold">⏱️ {item.time_limit_seconds || 30}s</span>
@@ -2231,7 +2231,7 @@ export const ArenaAdmin: React.FC = () => {
                                     <p className="font-bold text-gray-800 dark:text-slate-200 text-sm mb-3">{item.content}</p>
                                     
                                     {item.type === 'SHORT_ANSWER' ? (
-                                        <div className="bg-emerald-50 border p-3 rounded-xl text-xs max-w-sm">
+                                        <div className="bg-emerald-50 border p-3 rounded-xl text-xs max-w-sm dark:border-slate-800">
                                             <span className="font-black text-emerald-800 uppercase block tracking-wider">Đáp án điền từ:</span>
                                             <span className="font-bold text-emerald-950 block mt-1">"{item.correct_answer_string}"</span>
                                         </div>
@@ -2243,7 +2243,7 @@ export const ArenaAdmin: React.FC = () => {
                                                     : ansIdx === item.correct_index;
                                                 return (
                                                     <div key={ansIdx} className={`text-xs px-3 py-2 rounded-xl flex items-center gap-2 border ${isCorrect ? 'bg-emerald-50 text-emerald-800 font-bold border-emerald-200' : 'bg-gray-50 dark:bg-slate-850 text-gray-500 border-transparent'}`}>
-                                                        <span className="bg-white border rounded shadow-xs w-4 h-4 flex items-center justify-center font-bold text-[9px]">{String.fromCharCode(65 + ansIdx)}</span>
+                                                        <span className="bg-white border rounded shadow-xs w-4 h-4 flex items-center justify-center font-bold text-[9px] dark:bg-slate-900 dark:border-slate-800">{String.fromCharCode(65 + ansIdx)}</span>
                                                         <span>{ans}</span>
                                                     </div>
                                                 );
@@ -2254,17 +2254,17 @@ export const ArenaAdmin: React.FC = () => {
                             ))}
 
                             {aiPreviewList.length === 0 && (
-                                <div className="text-center py-16 bg-white border rounded-2xl border-dashed">
+                                <div className="text-center py-16 bg-white border rounded-2xl border-dashed dark:bg-slate-900 dark:border-slate-800">
                                     <FileText className="h-10 w-10 text-gray-300 mx-auto mb-2" />
                                     <p className="text-gray-400 font-medium italic">Danh sách xem trước trống.</p>
                                 </div>
                             )}
                         </div>
 
-                        <div className="p-4 border-t bg-gray-50 dark:bg-slate-850/50 flex justify-between items-center rounded-b-3xl">
-                            <span className="text-xs font-bold text-gray-500 ml-2">Tổng số: {aiPreviewList.length} câu hỏi hợp lệ</span>
+                        <div className="p-4 border-t bg-gray-50 dark:bg-slate-850/50 flex justify-between items-center rounded-b-3xl dark:border-slate-800">
+                            <span className="text-xs font-bold text-gray-500 ml-2 dark:text-slate-500">Tổng số: {aiPreviewList.length} câu hỏi hợp lệ</span>
                             <div className="flex gap-2">
-                                <button onClick={() => { setAiPreviewList([]); setShowAiPreviewModal(false); }} className="px-5 py-2.5 bg-white border text-gray-700 rounded-xl font-bold hover:bg-gray-50 dark:bg-slate-850 shadow-sm active:scale-95 transition-all text-sm">Hủy bỏ</button>
+                                <button onClick={() => { setAiPreviewList([]); setShowAiPreviewModal(false); }} className="px-5 py-2.5 bg-white border text-gray-700 rounded-xl font-bold hover:bg-gray-50 dark:bg-slate-850 shadow-sm active:scale-95 transition-all text-sm dark:border-slate-800 dark:text-slate-300 dark:hover:bg-slate-850/50">Hủy bỏ</button>
                                 <button onClick={handleSaveAiPreview} disabled={importing || aiPreviewList.length === 0} className="px-6 py-2.5 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 disabled:opacity-50 flex items-center gap-2 shadow-md shadow-indigo-100 active:scale-95 transition-all text-sm">
                                     {importing ? '⏳ Đang lưu...' : <><CheckCircle className="h-4.5 w-4.5" /> Xác nhận chèn {aiPreviewList.length} câu vào Đấu Trí</>}
                                 </button>
@@ -2277,19 +2277,19 @@ export const ArenaAdmin: React.FC = () => {
             {/* Nested Preview Item Editor Modal */}
             {editingPreviewIndex !== null && (
                 <div className="fixed inset-0 bg-black/60 z-[60] flex items-center justify-center p-4 backdrop-blur-xs">
-                    <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[85vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
-                        <div className="p-5 border-b flex justify-between items-center bg-gray-50 dark:bg-slate-850 rounded-t-2xl">
-                            <h4 className="font-black text-gray-800 flex items-center gap-2"><Pencil className="h-5 w-5 text-indigo-600" /> Hiệu Chỉnh Câu Hỏi AI</h4>
+                    <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[85vh] overflow-y-auto dark:bg-slate-900" onClick={e => e.stopPropagation()}>
+                        <div className="p-5 border-b flex justify-between items-center bg-gray-50 dark:bg-slate-850 rounded-t-2xl dark:border-slate-800">
+                            <h4 className="font-black text-gray-800 flex items-center gap-2 dark:text-slate-200"><Pencil className="h-5 w-5 text-indigo-600" /> Hiệu Chỉnh Câu Hỏi AI</h4>
                             <button onClick={() => setEditingPreviewIndex(null)} className="text-gray-400 hover:bg-gray-200 p-2 rounded-full"><X className="h-5 w-5" /></button>
                         </div>
                         
                         <div className="p-5 space-y-4">
                             <div>
-                                <label className="block text-sm font-bold text-gray-700 mb-1">Loại câu hỏi *</label>
+                                <label className="block text-sm font-bold text-gray-700 mb-1 dark:text-slate-300">Loại câu hỏi *</label>
                                 <select 
                                     value={formType} 
                                     onChange={e => setFormType(e.target.value as any)}
-                                    className="w-full border rounded-xl px-3 py-2.5 text-sm font-bold text-indigo-700 bg-indigo-50/50 cursor-pointer outline-none focus:ring-2 focus:ring-indigo-500"
+                                    className="w-full border rounded-xl px-3 py-2.5 text-sm font-bold text-indigo-700 bg-indigo-50/50 cursor-pointer outline-none focus:ring-2 focus:ring-indigo-500 dark:border-slate-800"
                                 >
                                     <option value="MCQ">🔘 Trắc nghiệm chọn một đáp án (MCQ)</option>
                                     <option value="MCQ_MULTIPLE">🗂️ Trắc nghiệm chọn nhiều đáp án đúng (MCQ Multiple)</option>
@@ -2298,19 +2298,19 @@ export const ArenaAdmin: React.FC = () => {
                             </div>
 
                             <div>
-                                <label className="block text-sm font-bold text-gray-700 mb-1">Nội dung câu hỏi *</label>
-                                <textarea value={formContent} onChange={e => setFormContent(e.target.value)} rows={3} className="w-full border rounded-xl px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-indigo-500 font-medium" />
+                                <label className="block text-sm font-bold text-gray-700 mb-1 dark:text-slate-300">Nội dung câu hỏi *</label>
+                                <textarea value={formContent} onChange={e => setFormContent(e.target.value)} rows={3} className="w-full border rounded-xl px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-indigo-500 font-medium dark:border-slate-800" />
                             </div>
 
                             {formType === 'SHORT_ANSWER' ? (
-                                <div className="bg-emerald-50 border p-3 rounded-xl space-y-3">
+                                <div className="bg-emerald-50 border p-3 rounded-xl space-y-3 dark:border-slate-800">
                                     <div>
                                         <label className="block text-xs font-black text-emerald-800 uppercase tracking-widest mb-1.5">Đáp án đúng điền từ *</label>
                                         <input 
                                             type="text"
                                             value={formCorrectAnswerString}
                                             onChange={e => setFormCorrectAnswerString(e.target.value)}
-                                            className="w-full border rounded-xl px-3.5 py-2.5 text-sm outline-none focus:ring-2 focus:ring-emerald-500 bg-white font-bold text-emerald-950"
+                                            className="w-full border rounded-xl px-3.5 py-2.5 text-sm outline-none focus:ring-2 focus:ring-emerald-500 bg-white font-bold text-emerald-950 dark:bg-slate-900 dark:border-slate-800"
                                         />
                                     </div>
                                     <label className="flex items-center gap-2 cursor-pointer select-none">
@@ -2328,10 +2328,10 @@ export const ArenaAdmin: React.FC = () => {
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                                         {formAnswers.map((a, i) => (
                                             <div key={i} className="relative">
-                                                <label className="block text-xs font-bold text-gray-500 mb-1">Đáp án {String.fromCharCode(65 + i)} *</label>
+                                                <label className="block text-xs font-bold text-gray-500 mb-1 dark:text-slate-500">Đáp án {String.fromCharCode(65 + i)} *</label>
                                                 <input value={a} onChange={e => {
                                                     const cp = [...formAnswers]; cp[i] = e.target.value; setFormAnswers(cp);
-                                                }} className="w-full border rounded-xl px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-indigo-500 font-medium" />
+                                                }} className="w-full border rounded-xl px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-indigo-500 font-medium dark:border-slate-800" />
                                                 
                                                 {formType === 'MCQ_MULTIPLE' && (
                                                     <label className="absolute right-3.5 bottom-2.5 flex items-center gap-1.5 cursor-pointer select-none">
@@ -2350,8 +2350,8 @@ export const ArenaAdmin: React.FC = () => {
 
                                     {formType === 'MCQ' && (
                                         <div>
-                                            <label className="block text-xs font-bold text-gray-500 mb-1">Đáp án đúng</label>
-                                            <select value={formCorrect} onChange={e => setFormCorrect(Number(e.target.value))} className="w-full border rounded-xl px-3 py-2 text-sm font-bold text-gray-700">
+                                            <label className="block text-xs font-bold text-gray-500 mb-1 dark:text-slate-500">Đáp án đúng</label>
+                                            <select value={formCorrect} onChange={e => setFormCorrect(Number(e.target.value))} className="w-full border rounded-xl px-3 py-2 text-sm font-bold text-gray-700 dark:border-slate-800 dark:text-slate-300">
                                                 {[0, 1, 2, 3].map(i => <option key={i} value={i}>{String.fromCharCode(65 + i)}</option>)}
                                             </select>
                                         </div>
@@ -2361,30 +2361,30 @@ export const ArenaAdmin: React.FC = () => {
 
                             <div className="grid grid-cols-4 gap-3">
                                 <div>
-                                    <label className="block text-xs font-bold text-gray-500 mb-1">Độ khó</label>
-                                    <select value={formDifficulty} onChange={e => setFormDifficulty(Number(e.target.value))} className="w-full border rounded-xl px-3 py-2 text-sm font-bold text-gray-700 bg-white">
+                                    <label className="block text-xs font-bold text-gray-500 mb-1 dark:text-slate-500">Độ khó</label>
+                                    <select value={formDifficulty} onChange={e => setFormDifficulty(Number(e.target.value))} className="w-full border rounded-xl px-3 py-2 text-sm font-bold text-gray-700 bg-white dark:bg-slate-900 dark:border-slate-800 dark:text-slate-300">
                                         {DIFFICULTIES.map(d => <option key={d.value} value={d.value}>{d.label}</option>)}
                                     </select>
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-bold text-gray-500 mb-1">Môn học</label>
-                                    <select value={formSubject} onChange={e => setFormSubject(e.target.value)} className="w-full border rounded-xl px-3 py-2 text-sm font-bold text-gray-700 bg-white">
+                                    <label className="block text-xs font-bold text-gray-500 mb-1 dark:text-slate-500">Môn học</label>
+                                    <select value={formSubject} onChange={e => setFormSubject(e.target.value)} className="w-full border rounded-xl px-3 py-2 text-sm font-bold text-gray-700 bg-white dark:bg-slate-900 dark:border-slate-800 dark:text-slate-300">
                                         {SUBJECTS.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
                                     </select>
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-bold text-gray-500 mb-1">Chủ đề</label>
-                                    <input value={formTopic} onChange={e => setFormTopic(e.target.value)} className="w-full border rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500 font-medium" />
+                                    <label className="block text-xs font-bold text-gray-500 mb-1 dark:text-slate-500">Chủ đề</label>
+                                    <input value={formTopic} onChange={e => setFormTopic(e.target.value)} className="w-full border rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500 font-medium dark:border-slate-800" />
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-bold text-gray-500 mb-1">Lớp</label>
-                                    <select value={formGrade} onChange={e => setFormGrade(e.target.value)} className="w-full border rounded-xl px-3 py-2 text-sm font-bold text-gray-700 bg-white">
+                                    <label className="block text-xs font-bold text-gray-500 mb-1 dark:text-slate-500">Lớp</label>
+                                    <select value={formGrade} onChange={e => setFormGrade(e.target.value)} className="w-full border rounded-xl px-3 py-2 text-sm font-bold text-gray-700 bg-white dark:bg-slate-900 dark:border-slate-800 dark:text-slate-300">
                                         {['1', '2', '3', '4', '5'].map(g => <option key={g} value={g}>Lớp {g}</option>)}
                                     </select>
                                 </div>
                             </div>
                             
-                            <div className="grid grid-cols-2 gap-3 bg-gray-50 dark:bg-slate-850 border p-3 rounded-xl">
+                            <div className="grid grid-cols-2 gap-3 bg-gray-50 dark:bg-slate-850 border p-3 rounded-xl dark:border-slate-800">
                                 <div>
                                     <label className="block text-xs font-bold text-indigo-700 mb-1">⏱️ Thời gian làm bài (giây)</label>
                                     <input 
@@ -2393,7 +2393,7 @@ export const ArenaAdmin: React.FC = () => {
                                         max="300"
                                         value={formTimeLimit} 
                                         onChange={e => setFormTimeLimit(Number(e.target.value))}
-                                        className="w-full border rounded-xl px-3 py-2 text-sm font-bold text-gray-700"
+                                        className="w-full border rounded-xl px-3 py-2 text-sm font-bold text-gray-700 dark:border-slate-800 dark:text-slate-300"
                                     />
                                 </div>
                                 <div>
@@ -2404,37 +2404,37 @@ export const ArenaAdmin: React.FC = () => {
                                         max="500"
                                         value={formXpReward} 
                                         onChange={e => setFormXpReward(Number(e.target.value))}
-                                        className="w-full border rounded-xl px-3 py-2 text-sm font-bold text-gray-700"
+                                        className="w-full border rounded-xl px-3 py-2 text-sm font-bold text-gray-700 dark:border-slate-800 dark:text-slate-300"
                                     />
                                 </div>
                             </div>
 
-                            <div className="space-y-3 border p-3 rounded-xl bg-gray-50 dark:bg-slate-850/50">
+                            <div className="space-y-3 border p-3 rounded-xl bg-gray-50 dark:bg-slate-850/50 dark:border-slate-800">
                                 <div>
-                                    <label className="block text-xs font-bold text-gray-700 mb-1">💡 Hướng dẫn (Chỉ gợi ý cách tính, cách làm, không nêu đáp án)</label>
+                                    <label className="block text-xs font-bold text-gray-700 mb-1 dark:text-slate-300">💡 Hướng dẫn (Chỉ gợi ý cách tính, cách làm, không nêu đáp án)</label>
                                     <textarea 
                                         value={formGuide} 
                                         onChange={e => setFormGuide(e.target.value)} 
                                         rows={2} 
-                                        className="w-full border rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500 font-medium bg-white text-gray-900" 
+                                        className="w-full border rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500 font-medium bg-white text-gray-900 dark:bg-slate-900 dark:border-slate-800 dark:text-slate-100" 
                                         placeholder="Nhập gợi ý cách giải..." 
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-bold text-gray-700 mb-1">📖 Lời giải chi tiết (Ghi ra từng bước kèm đáp án)</label>
+                                    <label className="block text-xs font-bold text-gray-700 mb-1 dark:text-slate-300">📖 Lời giải chi tiết (Ghi ra từng bước kèm đáp án)</label>
                                     <textarea 
                                         value={formExplanation} 
                                         onChange={e => setFormExplanation(e.target.value)} 
                                         rows={3} 
-                                        className="w-full border rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500 font-medium bg-white text-gray-900" 
+                                        className="w-full border rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500 font-medium bg-white text-gray-900 dark:bg-slate-900 dark:border-slate-800 dark:text-slate-100" 
                                         placeholder="Nhập lời giải chi tiết..." 
                                     />
                                 </div>
                             </div>
                         </div>
                         
-                        <div className="p-5 border-t flex gap-3 sticky bottom-0 bg-white">
-                            <button onClick={() => setEditingPreviewIndex(null)} className="flex-1 py-3 bg-gray-100 text-gray-700 rounded-xl font-bold hover:bg-gray-200">Quay lại</button>
+                        <div className="p-5 border-t flex gap-3 sticky bottom-0 bg-white dark:bg-slate-900 dark:border-slate-800">
+                            <button onClick={() => setEditingPreviewIndex(null)} className="flex-1 py-3 bg-gray-100 text-gray-700 rounded-xl font-bold hover:bg-gray-200 dark:bg-slate-850 dark:text-slate-300">Quay lại</button>
                             <button onClick={handleSavePreviewItem} className="flex-1 py-3 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 flex items-center justify-center gap-2 shadow-md shadow-indigo-100">
                                 <CheckCircle className="h-4.5 w-4.5" /> Áp dụng thay đổi
                             </button>
@@ -2445,8 +2445,8 @@ export const ArenaAdmin: React.FC = () => {
             {/* Topic Manager Modal */}
             {showTopicManager && (
                 <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4" onClick={() => setShowTopicManager(false)}>
-                    <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
-                        <div className="p-5 border-b flex items-center justify-between">
+                    <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto dark:bg-slate-900" onClick={e => e.stopPropagation()}>
+                        <div className="p-5 border-b flex items-center justify-between dark:border-slate-800">
                             <h3 className="font-bold text-lg flex items-center gap-2">
                                 <BookOpen className="h-5 w-5 text-purple-500" /> Quản lý chuyên đề tùy chỉnh
                             </h3>
@@ -2456,18 +2456,18 @@ export const ArenaAdmin: React.FC = () => {
                         </div>
                         <div className="p-5 space-y-4">
                             {/* Add Topic Form */}
-                            <div className="bg-purple-50 border border-purple-100 rounded-xl p-4 space-y-3">
+                            <div className="bg-purple-50 border border-purple-100 rounded-xl p-4 space-y-3 dark:border-slate-800">
                                 <h4 className="font-bold text-xs text-purple-800 uppercase tracking-wider">Thêm chuyên đề mới</h4>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                     <div>
-                                        <label className="block text-xs text-gray-500 mb-1 font-bold">Môn học</label>
-                                        <select value={newTopicSubject} onChange={e => setNewTopicSubject(e.target.value)} className="w-full border rounded-xl px-3 py-2 text-sm font-bold bg-white">
+                                        <label className="block text-xs text-gray-500 mb-1 font-bold dark:text-slate-500">Môn học</label>
+                                        <select value={newTopicSubject} onChange={e => setNewTopicSubject(e.target.value)} className="w-full border rounded-xl px-3 py-2 text-sm font-bold bg-white dark:bg-slate-900 dark:border-slate-800">
                                             {SUBJECTS.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
                                         </select>
                                     </div>
                                     <div>
-                                        <label className="block text-xs text-gray-500 mb-1 font-bold">Tên chuyên đề</label>
-                                        <input type="text" value={newTopicName} onChange={e => setNewTopicName(e.target.value)} placeholder="VD: Phân số, Từ vựng..." className="w-full border rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-purple-500 font-medium" />
+                                        <label className="block text-xs text-gray-500 mb-1 font-bold dark:text-slate-500">Tên chuyên đề</label>
+                                        <input type="text" value={newTopicName} onChange={e => setNewTopicName(e.target.value)} placeholder="VD: Phân số, Từ vựng..." className="w-full border rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-purple-500 font-medium dark:border-slate-800" />
                                     </div>
                                 </div>
                                 <button onClick={handleAddTopic} className="w-full py-2.5 bg-purple-600 text-white rounded-xl font-bold text-sm hover:bg-purple-700 transition-colors shadow-md shadow-purple-100 flex items-center justify-center gap-1.5">
@@ -2477,18 +2477,18 @@ export const ArenaAdmin: React.FC = () => {
 
                             {/* Topics List */}
                             <div className="space-y-2">
-                                <h4 className="font-bold text-xs text-gray-500 uppercase tracking-wider">Danh sách chuyên đề tùy chỉnh ({customTopics.length})</h4>
+                                <h4 className="font-bold text-xs text-gray-500 uppercase tracking-wider dark:text-slate-500">Danh sách chuyên đề tùy chỉnh ({customTopics.length})</h4>
                                 {customTopics.length === 0 ? (
                                     <p className="text-sm text-gray-400 text-center py-6">Chưa có chuyên đề tùy chỉnh nào được tạo.</p>
                                 ) : (
-                                    <div className="divide-y max-h-[40vh] overflow-y-auto border rounded-xl pr-1">
+                                    <div className="divide-y max-h-[40vh] overflow-y-auto border rounded-xl pr-1 dark:border-slate-800">
                                         {customTopics.map(t => (
-                                            <div key={t.id} className="p-3 flex items-center justify-between hover:bg-gray-50 dark:bg-slate-850 transition-colors">
+                                            <div key={t.id} className="p-3 flex items-center justify-between hover:bg-gray-50 dark:bg-slate-850 transition-colors dark:hover:bg-slate-850/50">
                                                 <div>
                                                     <span className="text-[10px] bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded-full font-bold uppercase mr-2">
                                                         {SUBJECTS.find(s => s.value === normalizeSubject(t.subject))?.label || t.subject}
                                                     </span>
-                                                    <span className="text-sm font-semibold text-gray-800">{t.topic}</span>
+                                                    <span className="text-sm font-semibold text-gray-800 dark:text-slate-200">{t.topic}</span>
                                                 </div>
                                                 <button onClick={() => handleDeleteTopic(t.id)} className="p-1 text-red-500 hover:bg-red-50 rounded-lg transition-colors">
                                                     <Trash2 className="h-4 w-4" />

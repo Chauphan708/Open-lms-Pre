@@ -38,8 +38,8 @@ export const ArenaHome: React.FC = () => {
         return (
             <div className="min-h-[60vh] flex items-center justify-center">
                 <div className="text-center">
-                    <div className="inline-block w-12 h-12 border-4 border-purple-500 border-t-transparent rounded-full" style={{ animation: 'spin 1s linear infinite' }}></div>
-                    <p className="mt-4 text-gray-500">Đang tải Đấu Trí...</p>
+                    <div className="inline-block w-12 h-12 border-4 border-purple-500 border-t-transparent rounded-full dark:border-slate-800" style={{ animation: 'spin 1s linear infinite' }}></div>
+                    <p className="mt-4 text-gray-500 dark:text-slate-500">Đang tải Đấu Trí...</p>
                 </div>
             </div>
         );
@@ -57,12 +57,12 @@ export const ArenaHome: React.FC = () => {
         `}</style>
                 <div className="w-full max-w-2xl px-4" style={{ animation: 'fadeIn 0.6s ease-out' }}>
                     <div className="text-center mb-4">
-                        <h1 className="text-3xl font-black text-gray-900 mb-2">🧠 Chọn Vai Trò Học Tập</h1>
-                        <p className="text-gray-500">Hãy chọn vai trò để bắt đầu Hành Trình Tri Thức!</p>
+                        <h1 className="text-3xl font-black text-gray-900 mb-2 dark:text-slate-100">🧠 Chọn Vai Trò Học Tập</h1>
+                        <p className="text-gray-500 dark:text-slate-500">Hãy chọn vai trò để bắt đầu Hành Trình Tri Thức!</p>
                     </div>
 
                     {/* Lore intro */}
-                    <div className="bg-gradient-to-r from-indigo-50 to-purple-50 border border-indigo-100 rounded-xl p-4 mb-6 text-center" style={{ animation: 'fadeIn 0.4s ease-out' }}>
+                    <div className="bg-gradient-to-r from-indigo-50 to-purple-50 border border-indigo-100 rounded-xl p-4 mb-6 text-center dark:border-indigo-900/30" style={{ animation: 'fadeIn 0.4s ease-out' }}>
                         <p className="text-sm text-indigo-700 italic">
                             ✨ Trên đỉnh núi Thông Thái, có một ngôi trường huyền thoại nơi các học giả từ khắp nơi đến để thi tài kiến thức...
                         </p>
@@ -91,8 +91,8 @@ export const ArenaHome: React.FC = () => {
                                     >
                                         {cls.emoji}
                                     </div>
-                                    <h3 className="font-bold text-gray-900 text-lg">{cls.name}</h3>
-                                    <p className="text-sm text-gray-500 mt-1">{cls.desc}</p>
+                                    <h3 className="font-bold text-gray-900 text-lg dark:text-slate-100">{cls.name}</h3>
+                                    <p className="text-sm text-gray-500 mt-1 dark:text-slate-500">{cls.desc}</p>
                                     <p className="text-xs text-indigo-500 mt-2 italic">{cls.lore}</p>
                                 </button>
                             );
@@ -118,7 +118,7 @@ export const ArenaHome: React.FC = () => {
     const avatarInfo = AVATAR_CLASSES.find(c => c.id === arenaProfile.avatar_class) || AVATAR_CLASSES[0];
 
     return (
-        <div className="max-w-4xl mx-auto bg-[#030712] rounded-3xl p-6 md:p-8 text-gray-100 relative border border-white/5 shadow-2xl shadow-purple-950/20 overflow-hidden min-h-[85vh]">
+        <div className="max-w-4xl mx-auto bg-[#030712] rounded-3xl p-6 md:p-8 text-gray-100 relative border border-white/5 shadow-2xl shadow-purple-950/20 overflow-hidden min-h-[85vh] dark:border-slate-800">
             <style>{`
         @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes float { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-8px); } }
@@ -135,7 +135,7 @@ export const ArenaHome: React.FC = () => {
 
             {/* Hero Card */}
             <div
-                className="relative overflow-hidden rounded-2xl mb-8 p-8 border border-white/10"
+                className="relative overflow-hidden rounded-2xl mb-8 p-8 border border-white/10 dark:border-slate-800"
                 style={{
                     background: 'linear-gradient(135deg, #090d16 0%, #1e1b4b 50%, #4c1d95 100%)',
                     animation: 'fadeIn 0.5s ease-out',
@@ -147,13 +147,13 @@ export const ArenaHome: React.FC = () => {
                 }}></div>
 
                 {/* Help button */}
-                <button onClick={() => setShowHelp(true)} className="absolute top-4 right-4 z-10 w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-all border border-white/5" title="Hướng dẫn">
+                <button onClick={() => setShowHelp(true)} className="absolute top-4 right-4 z-10 w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-all border border-white/5 dark:border-slate-800" title="Hướng dẫn">
                     <HelpCircle className="h-5 w-5 text-white/80" />
                 </button>
 
                 <div className="relative flex items-center gap-6">
                     <div
-                        className="w-24 h-24 rounded-2xl flex items-center justify-center text-5xl shadow-lg border border-white/15"
+                        className="w-24 h-24 rounded-2xl flex items-center justify-center text-5xl shadow-lg border border-white/15 dark:border-slate-800"
                         style={{ backgroundColor: avatarInfo.color, animation: 'float 3s ease-in-out infinite', boxShadow: `0 0 25px ${avatarInfo.color}40` }}
                     >
                         {avatarInfo.emoji}
@@ -161,21 +161,21 @@ export const ArenaHome: React.FC = () => {
                     <div className="flex-1">
                         <div className="flex items-center gap-2 mb-1">
                             <p className="text-purple-300 text-sm font-semibold tracking-wider uppercase" style={{ color: avatarInfo.color }}>{avatarInfo.name}</p>
-                            <span className="text-[10px] bg-white/10 px-2.5 py-0.5 rounded border border-white/10 text-purple-300 font-bold uppercase">
+                            <span className="text-[10px] bg-white/10 px-2.5 py-0.5 rounded border border-white/10 text-purple-300 font-bold uppercase dark:border-slate-800">
                                 {arenaProfile.active_title || 'Học Giả Tập Sự'}
                             </span>
                         </div>
                         <h1 className="text-2xl font-black mb-3 text-white tracking-wide">{user?.name}</h1>
                         <div className="flex flex-wrap gap-3 text-sm">
-                            <span className="flex items-center gap-1.5 bg-white/5 px-3.5 py-1.5 rounded-full border border-white/5">
+                            <span className="flex items-center gap-1.5 bg-white/5 px-3.5 py-1.5 rounded-full border border-white/5 dark:border-slate-800">
                                 <span className="text-sm">{getLeagueInfo(arenaProfile.elo_rating).badge}</span>
                                 <span className="font-bold text-yellow-400">{arenaProfile.elo_rating}</span> Elo ({getLeagueInfo(arenaProfile.elo_rating).name})
                             </span>
-                            <span className="flex items-center gap-1.5 bg-white/5 px-3.5 py-1.5 rounded-full border border-white/5">
+                            <span className="flex items-center gap-1.5 bg-white/5 px-3.5 py-1.5 rounded-full border border-white/5 dark:border-slate-800">
                                 <Star className="h-4 w-4 text-emerald-400" />
                                 <span className="font-bold text-emerald-400">{arenaProfile.total_xp}</span> XP
                             </span>
-                            <span className="flex items-center gap-1.5 bg-white/5 px-3.5 py-1.5 rounded-full border border-white/5">
+                            <span className="flex items-center gap-1.5 bg-white/5 px-3.5 py-1.5 rounded-full border border-white/5 dark:border-slate-800">
                                 <Zap className="h-4 w-4 text-blue-400" />
                                 <span className="font-semibold text-blue-300">{arenaProfile.wins}W / {arenaProfile.losses}L</span>
                             </span>
@@ -189,7 +189,7 @@ export const ArenaHome: React.FC = () => {
                 {/* AI Dashboard */}
                 <button
                     onClick={() => navigate('/arena/dashboard')}
-                    className="relative overflow-hidden p-6 rounded-2xl text-left group transition-all duration-300 hover:shadow-xl hover:-translate-y-1.5 border border-pink-500/10 glass-card neon-border"
+                    className="relative overflow-hidden p-6 rounded-2xl text-left group transition-all duration-300 hover:shadow-xl hover:-translate-y-1.5 border border-pink-500/10 glass-card neon-border dark:border-slate-800"
                     style={{ '--neon-color': 'rgba(244,63,94,0.3)', animation: 'fadeIn 0.5s ease-out 0.05s both' } as any}
                 >
                     <div className="absolute top-0 right-0 w-32 h-32 opacity-[0.03] group-hover:opacity-10 transition-opacity">
@@ -207,7 +207,7 @@ export const ArenaHome: React.FC = () => {
                 {/* PvP */}
                 <button
                     onClick={() => navigate('/arena/pvp')}
-                    className="relative overflow-hidden p-6 rounded-2xl text-left group transition-all duration-300 hover:shadow-xl hover:-translate-y-1.5 border border-indigo-500/10 glass-card neon-border"
+                    className="relative overflow-hidden p-6 rounded-2xl text-left group transition-all duration-300 hover:shadow-xl hover:-translate-y-1.5 border border-indigo-500/10 glass-card neon-border dark:border-slate-800"
                     style={{ '--neon-color': 'rgba(99,102,241,0.3)', animation: 'fadeIn 0.5s ease-out 0.1s both' } as any}
                 >
                     <div className="absolute top-0 right-0 w-32 h-32 opacity-[0.03] group-hover:opacity-10 transition-opacity">
@@ -225,7 +225,7 @@ export const ArenaHome: React.FC = () => {
                 {/* Tower */}
                 <button
                     onClick={() => navigate('/arena/tower')}
-                    className="relative overflow-hidden p-6 rounded-2xl text-left group transition-all duration-300 hover:shadow-xl hover:-translate-y-1.5 border border-amber-500/10 glass-card neon-border"
+                    className="relative overflow-hidden p-6 rounded-2xl text-left group transition-all duration-300 hover:shadow-xl hover:-translate-y-1.5 border border-amber-500/10 glass-card neon-border dark:border-slate-800"
                     style={{ '--neon-color': 'rgba(245,158,11,0.3)', animation: 'fadeIn 0.5s ease-out 0.2s both' } as any}
                 >
                     <div className="absolute top-0 right-0 w-32 h-32 opacity-[0.03] group-hover:opacity-10 transition-opacity">
@@ -243,7 +243,7 @@ export const ArenaHome: React.FC = () => {
                 {/* Shop */}
                 <button
                     onClick={() => navigate('/arena/shop')}
-                    className="relative overflow-hidden p-6 rounded-2xl text-left group transition-all duration-300 hover:shadow-xl hover:-translate-y-1.5 border border-purple-500/10 glass-card neon-border"
+                    className="relative overflow-hidden p-6 rounded-2xl text-left group transition-all duration-300 hover:shadow-xl hover:-translate-y-1.5 border border-purple-500/10 glass-card neon-border dark:border-slate-800"
                     style={{ '--neon-color': 'rgba(168,85,247,0.3)', animation: 'fadeIn 0.5s ease-out 0.25s both' } as any}
                 >
                     <div className="absolute top-0 right-0 w-32 h-32 opacity-[0.03] group-hover:opacity-10 transition-opacity">
@@ -261,7 +261,7 @@ export const ArenaHome: React.FC = () => {
                 {/* Leaderboard */}
                 <button
                     onClick={() => navigate('/arena/leaderboard')}
-                    className="relative overflow-hidden p-6 rounded-2xl text-left group transition-all duration-300 hover:shadow-xl hover:-translate-y-1.5 border border-emerald-500/10 glass-card neon-border"
+                    className="relative overflow-hidden p-6 rounded-2xl text-left group transition-all duration-300 hover:shadow-xl hover:-translate-y-1.5 border border-emerald-500/10 glass-card neon-border dark:border-slate-800"
                     style={{ '--neon-color': 'rgba(16,185,129,0.3)', animation: 'fadeIn 0.5s ease-out 0.3s both' } as any}
                 >
                     <div className="absolute top-0 right-0 w-32 h-32 opacity-[0.03] group-hover:opacity-10 transition-opacity">
@@ -280,7 +280,7 @@ export const ArenaHome: React.FC = () => {
             {/* Daily Quests & Badge Collection */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8 animate-fade-in" style={{ animationDelay: '0.4s' }}>
                 {/* Column 1: Daily Quests */}
-                <div className="glass-card rounded-2xl p-6 border border-white/5">
+                <div className="glass-card rounded-2xl p-6 border border-white/5 dark:border-slate-800">
                     <h3 className="text-lg font-black text-white mb-4 flex items-center gap-2">
                         🎯 Nhiệm Vụ Hàng Ngày
                     </h3>
@@ -290,7 +290,7 @@ export const ArenaHome: React.FC = () => {
                             { id: 'q2', text: 'Tích lũy tri thức: Đạt 100% Mastery ở chuyên đề bất kỳ', target: 1, current: 0, reward_xp: 50, completed: false, type: 'mastery_100' },
                             { id: 'q3', text: 'Quyết chiến võ đài: Tham gia 1 trận PvP 1v1', target: 1, current: 0, reward_xp: 30, completed: false, type: 'pvp_match' }
                         ]).map((quest: any) => (
-                            <div key={quest.id} className="p-3 bg-[#080d16] rounded-xl border border-white/5 space-y-2">
+                            <div key={quest.id} className="p-3 bg-[#080d16] rounded-xl border border-white/5 space-y-2 dark:border-slate-800">
                                 <div className="flex justify-between items-start gap-2">
                                     <p className={`text-xs font-bold leading-relaxed ${quest.completed ? 'text-gray-500 line-through' : 'text-gray-200'}`}>
                                         {quest.text}
@@ -311,7 +311,7 @@ export const ArenaHome: React.FC = () => {
                 </div>
 
                 {/* Column 2: Badge Collection */}
-                <div className="glass-card rounded-2xl p-6 border border-white/5">
+                <div className="glass-card rounded-2xl p-6 border border-white/5 dark:border-slate-800">
                     <h3 className="text-lg font-black text-white mb-4 flex items-center gap-2">
                         🏆 Bộ Sưu Tập Huy Hiệu
                     </h3>
@@ -338,7 +338,7 @@ export const ArenaHome: React.FC = () => {
                                     {isUnlocked ? (
                                         <span className="text-[8px] bg-purple-500/20 text-purple-400 px-1.5 py-0.5 rounded mt-1.5 font-bold uppercase">Đã mở khóa</span>
                                     ) : (
-                                        <span className="text-[8px] bg-white/5 text-gray-500 px-1.5 py-0.5 rounded mt-1.5 font-bold uppercase">Chưa mở khóa</span>
+                                        <span className="text-[8px] bg-white/5 text-gray-500 px-1.5 py-0.5 rounded mt-1.5 font-bold uppercase dark:text-slate-500">Chưa mở khóa</span>
                                     )}
                                 </div>
                             );
@@ -350,8 +350,8 @@ export const ArenaHome: React.FC = () => {
             {/* Help Modal */}
             {showHelp && (
                 <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4 backdrop-blur-sm" onClick={() => setShowHelp(false)}>
-                    <div className="bg-[#090d16] border border-white/10 rounded-2xl shadow-2xl w-full max-w-md max-h-[85vh] overflow-y-auto" onClick={e => e.stopPropagation()} style={{ animation: 'fadeIn 0.3s ease-out' }}>
-                        <div className="p-5 border-b border-white/10 flex items-center justify-between sticky top-0 bg-[#090d16] z-10 rounded-t-2xl">
+                    <div className="bg-[#090d16] border border-white/10 rounded-2xl shadow-2xl w-full max-w-md max-h-[85vh] overflow-y-auto dark:border-slate-800" onClick={e => e.stopPropagation()} style={{ animation: 'fadeIn 0.3s ease-out' }}>
+                        <div className="p-5 border-b border-white/10 flex items-center justify-between sticky top-0 bg-[#090d16] z-10 rounded-t-2xl dark:border-slate-800">
                             <h3 className="font-bold text-lg text-white flex items-center gap-2">
                                 <HelpCircle className="h-5 w-5 text-purple-400" /> Hướng dẫn Đấu Trường
                             </h3>
@@ -361,7 +361,7 @@ export const ArenaHome: React.FC = () => {
                         </div>
                         <div className="p-5 space-y-4 text-gray-300">
                             {/* Elo */}
-                            <div className="bg-yellow-950/30 border border-yellow-500/20 rounded-xl p-4">
+                            <div className="bg-yellow-950/30 border border-yellow-500/20 rounded-xl p-4 dark:border-slate-800">
                                 <div className="flex items-center gap-2 mb-2">
                                     <Trophy className="h-5 w-5 text-yellow-400" />
                                     <h4 className="font-bold text-yellow-300">Elo — Điểm Xếp Hạng</h4>
@@ -374,7 +374,7 @@ export const ArenaHome: React.FC = () => {
                             </div>
 
                             {/* XP */}
-                            <div className="bg-emerald-950/30 border border-emerald-500/20 rounded-xl p-4">
+                            <div className="bg-emerald-950/30 border border-emerald-500/20 rounded-xl p-4 dark:border-slate-800">
                                 <div className="flex items-center gap-2 mb-2">
                                     <Star className="h-5 w-5 text-emerald-400" />
                                     <h4 className="font-bold text-emerald-300">XP — Điểm Kinh Nghiệm</h4>
@@ -386,7 +386,7 @@ export const ArenaHome: React.FC = () => {
                             </div>
 
                             {/* W/L */}
-                            <div className="bg-blue-950/30 border border-blue-500/20 rounded-xl p-4">
+                            <div className="bg-blue-950/30 border border-blue-500/20 rounded-xl p-4 dark:border-slate-800">
                                 <div className="flex items-center gap-2 mb-2">
                                     <Zap className="h-5 w-5 text-blue-400" />
                                     <h4 className="font-bold text-blue-300">W / L — Thắng / Thua</h4>
@@ -395,7 +395,7 @@ export const ArenaHome: React.FC = () => {
                             </div>
 
                             {/* Streak Combo */}
-                            <div className="bg-orange-950/30 border border-orange-500/20 rounded-xl p-4">
+                            <div className="bg-orange-950/30 border border-orange-500/20 rounded-xl p-4 dark:border-slate-800">
                                 <div className="flex items-center gap-2 mb-2">
                                     <span className="text-lg">🔥</span>
                                     <h4 className="font-bold text-orange-300">Streak Combo — Chuỗi đúng</h4>
@@ -409,7 +409,7 @@ export const ArenaHome: React.FC = () => {
                             </div>
 
                             {/* Speed Bonus */}
-                            <div className="bg-cyan-950/30 border border-cyan-500/20 rounded-xl p-4">
+                            <div className="bg-cyan-950/30 border border-cyan-500/20 rounded-xl p-4 dark:border-slate-800">
                                 <div className="flex items-center gap-2 mb-2">
                                     <span className="text-lg">⚡</span>
                                     <h4 className="font-bold text-cyan-300">Speed Bonus — Tốc độ</h4>
@@ -422,7 +422,7 @@ export const ArenaHome: React.FC = () => {
                             </div>
 
                             {/* Skill theo vai trò */}
-                            <div className="bg-violet-950/30 border border-violet-500/20 rounded-xl p-4">
+                            <div className="bg-violet-950/30 border border-violet-500/20 rounded-xl p-4 dark:border-slate-800">
                                 <div className="flex items-center gap-2 mb-2">
                                     <span className="text-lg">🃏</span>
                                     <h4 className="font-bold text-violet-300">Kỹ năng đặc biệt (1 lần/trận)</h4>

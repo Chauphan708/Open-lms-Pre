@@ -551,7 +551,7 @@ export const UserManage: React.FC<Props> = ({ targetRole, title }) => {
     return (
         <div className="space-y-6">
             <div className="flex justify-between items-center">
-                <h1 className="text-xl md:text-2xl font-bold text-gray-900 flex items-center gap-2">
+                <h1 className="text-xl md:text-2xl font-bold text-gray-900 flex items-center gap-2 dark:text-slate-100">
                     <Users /> {title}
                 </h1>
                 <button
@@ -563,9 +563,9 @@ export const UserManage: React.FC<Props> = ({ targetRole, title }) => {
             </div>
 
             {isCreating && (
-                <div className="bg-white rounded-xl border shadow-lg animate-fade-in overflow-hidden">
-                    <div className="bg-gray-50 dark:bg-slate-850 border-b px-4 md:px-6 py-3 flex justify-between items-center">
-                        <h3 className="font-bold text-gray-800">Thêm {targetRole === 'TEACHER' ? 'Giáo viên' : 'Học sinh'} mới</h3>
+                <div className="bg-white rounded-xl border shadow-lg animate-fade-in overflow-hidden dark:bg-slate-900 dark:border-slate-800">
+                    <div className="bg-gray-50 dark:bg-slate-850 border-b px-4 md:px-6 py-3 flex justify-between items-center dark:border-slate-800">
+                        <h3 className="font-bold text-gray-800 dark:text-slate-200">Thêm {targetRole === 'TEACHER' ? 'Giáo viên' : 'Học sinh'} mới</h3>
                         <button onClick={() => setIsCreating(false)} className="text-gray-400 hover:text-gray-600">
                             <X className="h-5 w-5" />
                         </button>
@@ -573,7 +573,7 @@ export const UserManage: React.FC<Props> = ({ targetRole, title }) => {
 
                     <div className="p-4 md:p-6">
                         {/* Mode Switcher */}
-                        <div className="flex gap-4 border-b mb-6 overflow-x-auto no-scrollbar">
+                        <div className="flex gap-4 border-b mb-6 overflow-x-auto no-scrollbar dark:border-slate-800">
                             <button
                                 onClick={() => setMode('SINGLE')}
                                 className={`pb-2 text-sm font-bold transition-colors border-b-2 whitespace-nowrap ${mode === 'SINGLE' ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
@@ -593,11 +593,11 @@ export const UserManage: React.FC<Props> = ({ targetRole, title }) => {
                             <div className="space-y-4 animate-in slide-in-from-left-2">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">Họ và tên <span className="text-red-500">*</span></label>
-                                        <input className="w-full border border-gray-300 rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-indigo-500" value={name} onChange={e => setName(e.target.value)} placeholder="Nguyễn Văn A" />
+                                        <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-300">Họ và tên <span className="text-red-500">*</span></label>
+                                        <input className="w-full border border-gray-300 rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-indigo-500 dark:border-slate-800" value={name} onChange={e => setName(e.target.value)} placeholder="Nguyễn Văn A" />
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">{targetRole === 'STUDENT' ? 'Tên đăng nhập (VD: an5a1)' : 'Email'} <span className="text-red-500">*</span></label>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-300">{targetRole === 'STUDENT' ? 'Tên đăng nhập (VD: an5a1)' : 'Email'} <span className="text-red-500">*</span></label>
                                         <input className={`w-full border rounded-lg px-3 py-2 outline-none focus:ring-2 ${duplicateWarning ? 'border-red-500 focus:ring-red-500 bg-red-50' : 'border-gray-300 focus:ring-indigo-500'}`} value={email} onChange={e => { setEmail(e.target.value.replace(/\s/g, '')); setIsAutoEmail(false); }} placeholder={targetRole === 'STUDENT' ? "an5a1" : "a@example.com"} />
                                         {duplicateWarning && (
                                             <p className="text-xs font-medium text-red-600 mt-1 flex items-center gap-1 animate-in fade-in">
@@ -607,9 +607,9 @@ export const UserManage: React.FC<Props> = ({ targetRole, title }) => {
                                     </div>
                                     {targetRole === 'STUDENT' && (
                                         <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-1">Cần xếp vào lớp <span className="text-red-500">*</span></label>
+                                            <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-300">Cần xếp vào lớp <span className="text-red-500">*</span></label>
                                             <select
-                                                className="w-full border border-gray-300 rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-indigo-500 bg-white"
+                                                className="w-full border border-gray-300 rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-indigo-500 bg-white dark:bg-slate-900 dark:border-slate-800"
                                                 value={className}
                                                 onChange={e => setClassName(e.target.value)}
                                             >
@@ -622,9 +622,9 @@ export const UserManage: React.FC<Props> = ({ targetRole, title }) => {
                                     )}
                                     {targetRole === 'STUDENT' && (
                                         <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-1">Giới tính</label>
+                                            <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-300">Giới tính</label>
                                             <select
-                                                className="w-full border border-gray-300 rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-indigo-500 bg-white"
+                                                className="w-full border border-gray-300 rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-indigo-500 bg-white dark:bg-slate-900 dark:border-slate-800"
                                                 value={gender}
                                                 onChange={e => setGender(e.target.value as any)}
                                             >
@@ -636,7 +636,7 @@ export const UserManage: React.FC<Props> = ({ targetRole, title }) => {
                                     )}
                                 </div>
                                 <div className="flex justify-end gap-2 pt-2">
-                                    <button onClick={() => setIsCreating(false)} className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg">Hủy</button>
+                                    <button onClick={() => setIsCreating(false)} className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg dark:text-slate-400 dark:hover:bg-slate-800">Hủy</button>
                                     <button onClick={handleCreateSingle} className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-medium">Lưu lại</button>
                                 </div>
                             </div>
@@ -645,7 +645,7 @@ export const UserManage: React.FC<Props> = ({ targetRole, title }) => {
                         {/* BULK MODE */}
                         {mode === 'BULK' && (
                             <div className="space-y-4 animate-in slide-in-from-right-2">
-                                <div className="bg-blue-50 border border-blue-100 p-4 rounded-lg text-sm text-blue-800 flex items-start gap-3">
+                                <div className="bg-blue-50 border border-blue-100 p-4 rounded-lg text-sm text-blue-800 flex items-start gap-3 dark:border-slate-800">
                                     <AlertCircle className="h-5 w-5 flex-shrink-0 mt-0.5" />
                                     <div>
                                         <p className="font-bold mb-1">Hướng dẫn nhập nhanh:</p>
@@ -661,11 +661,11 @@ export const UserManage: React.FC<Props> = ({ targetRole, title }) => {
                                     {/* Left: Input */}
                                     <div className="flex flex-col h-full">
                                         <div className="flex justify-between items-center mb-2">
-                                            <label className="text-sm font-bold text-gray-700">Dữ liệu thô</label>
+                                            <label className="text-sm font-bold text-gray-700 dark:text-slate-300">Dữ liệu thô</label>
                                             <div className="flex gap-2">
                                                 {targetRole === 'STUDENT' && (
                                                     <select
-                                                        className="text-xs border border-gray-300 rounded px-2 py-1 outline-none focus:ring-1 focus:ring-indigo-500 max-w-[120px]"
+                                                        className="text-xs border border-gray-300 rounded px-2 py-1 outline-none focus:ring-1 focus:ring-indigo-500 max-w-[120px] dark:border-slate-800"
                                                         value={className}
                                                         onChange={e => setClassName(e.target.value)}
                                                     >
@@ -691,7 +691,7 @@ export const UserManage: React.FC<Props> = ({ targetRole, title }) => {
                                             </div>
                                         </div>
                                         <textarea
-                                            className="flex-1 w-full border border-gray-300 rounded-lg p-3 text-sm font-mono focus:ring-2 focus:ring-indigo-500 outline-none min-h-[200px]"
+                                            className="flex-1 w-full border border-gray-300 rounded-lg p-3 text-sm font-mono focus:ring-2 focus:ring-indigo-500 outline-none min-h-[200px] dark:border-slate-800"
                                             placeholder={`Nguyễn Văn A\ta@school.com\t5A\nTrần Thị B\tb@school.com\t5B`}
                                             value={bulkText}
                                             onChange={e => setBulkText(e.target.value)}
@@ -706,9 +706,9 @@ export const UserManage: React.FC<Props> = ({ targetRole, title }) => {
                                     </div>
 
                                     {/* Right: Preview */}
-                                    <div className="flex flex-col h-full border rounded-lg bg-gray-50 dark:bg-slate-850 overflow-hidden">
-                                        <div className="bg-gray-100 px-4 py-2 border-b flex justify-between items-center">
-                                            <span className="text-sm font-bold text-gray-700">Xem trước ({previewUsers.length})</span>
+                                    <div className="flex flex-col h-full border rounded-lg bg-gray-50 dark:bg-slate-850 overflow-hidden dark:border-slate-800">
+                                        <div className="bg-gray-100 px-4 py-2 border-b flex justify-between items-center dark:border-slate-800 dark:bg-slate-850">
+                                            <span className="text-sm font-bold text-gray-700 dark:text-slate-300">Xem trước ({previewUsers.length})</span>
                                             {previewUsers.length > 0 && (
                                                 <button onClick={() => setPreviewUsers([])} className="text-gray-400 hover:text-red-500">
                                                     <Trash2 className="h-4 w-4" />
@@ -722,20 +722,20 @@ export const UserManage: React.FC<Props> = ({ targetRole, title }) => {
                                                 </div>
                                             ) : (
                                                 previewUsers.map((u, i) => (
-                                                    <div key={i} className="bg-white p-2 rounded border flex items-center justify-between text-sm">
+                                                    <div key={i} className="bg-white p-2 rounded border flex items-center justify-between text-sm dark:bg-slate-900 dark:border-slate-800">
                                                         <div>
-                                                            <p className="font-bold text-gray-900">{u.name}</p>
+                                                            <p className="font-bold text-gray-900 dark:text-slate-100">{u.name}</p>
                                                             <p className="text-xs text-indigo-600 font-mono font-bold">ID: {u.email} {u.gender === 'MALE' ? '👦 (Nam)' : u.gender === 'FEMALE' ? '👧 (Nữ)' : '❓ (Chưa rõ)'}</p>
                                                         </div>
                                                         <div className="flex items-center gap-2">
-                                                            {u.className && <span className="bg-gray-100 px-2 py-0.5 rounded text-xs font-bold font-mono">{u.className}</span>}
+                                                            {u.className && <span className="bg-gray-100 px-2 py-0.5 rounded text-xs font-bold font-mono dark:bg-slate-850">{u.className}</span>}
                                                             <CheckCircle className="h-4 w-4 text-green-500" />
                                                         </div>
                                                     </div>
                                                 ))
                                             )}
                                         </div>
-                                        <div className="p-3 border-t bg-white">
+                                        <div className="p-3 border-t bg-white dark:bg-slate-900 dark:border-slate-800">
                                             <button
                                                 onClick={handleBulkSubmit}
                                                 disabled={previewUsers.length === 0}
@@ -755,33 +755,33 @@ export const UserManage: React.FC<Props> = ({ targetRole, title }) => {
             {/* Edit User Modal */}
             {editingUser && (
                 <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
-                    <div className="bg-white rounded-xl shadow-lg w-full max-w-lg p-6 animate-fade-in">
-                        <h3 className="text-lg font-bold text-gray-900 mb-4">Chỉnh sửa thông tin</h3>
+                    <div className="bg-white rounded-xl shadow-lg w-full max-w-lg p-6 animate-fade-in dark:bg-slate-900">
+                        <h3 className="text-lg font-bold text-gray-900 mb-4 dark:text-slate-100">Chỉnh sửa thông tin</h3>
 
                         <div className="space-y-4">
                             <div>
-                                <label className="block text-sm font-bold text-gray-700 mb-1">Họ và tên</label>
+                                <label className="block text-sm font-bold text-gray-700 mb-1 dark:text-slate-300">Họ và tên</label>
                                 <input
                                     type="text"
-                                    className="w-full border border-gray-300 rounded-lg p-2 bg-white text-gray-900 focus:ring-2 focus:ring-indigo-500"
+                                    className="w-full border border-gray-300 rounded-lg p-2 bg-white text-gray-900 focus:ring-2 focus:ring-indigo-500 dark:bg-slate-900 dark:border-slate-800 dark:text-slate-100"
                                     value={editName}
                                     onChange={e => setEditName(e.target.value)}
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-bold text-gray-700 mb-1">{editingUser.role === 'STUDENT' ? 'Tên đăng nhập' : 'Email'}</label>
+                                <label className="block text-sm font-bold text-gray-700 mb-1 dark:text-slate-300">{editingUser.role === 'STUDENT' ? 'Tên đăng nhập' : 'Email'}</label>
                                 <input
                                     type="text"
-                                    className="w-full border border-gray-300 rounded-lg p-2 bg-white text-gray-900 focus:ring-2 focus:ring-indigo-500"
+                                    className="w-full border border-gray-300 rounded-lg p-2 bg-white text-gray-900 focus:ring-2 focus:ring-indigo-500 dark:bg-slate-900 dark:border-slate-800 dark:text-slate-100"
                                     value={editEmail}
                                     onChange={e => setEditEmail(e.target.value.replace(/\s/g, ''))}
                                 />
                             </div>
                             {editingUser.role === 'STUDENT' && (
                                 <div>
-                                    <label className="block text-sm font-bold text-gray-700 mb-1">Cần xếp vào lớp</label>
+                                    <label className="block text-sm font-bold text-gray-700 mb-1 dark:text-slate-300">Cần xếp vào lớp</label>
                                     <select
-                                        className="w-full border border-gray-300 rounded-lg p-2 bg-white text-gray-900 focus:ring-2 focus:ring-indigo-500"
+                                        className="w-full border border-gray-300 rounded-lg p-2 bg-white text-gray-900 focus:ring-2 focus:ring-indigo-500 dark:bg-slate-900 dark:border-slate-800 dark:text-slate-100"
                                         value={editClassName}
                                         onChange={e => setEditClassName(e.target.value)}
                                     >
@@ -795,9 +795,9 @@ export const UserManage: React.FC<Props> = ({ targetRole, title }) => {
                             )}
                             {editingUser.role === 'STUDENT' && (
                                 <div>
-                                    <label className="block text-sm font-bold text-gray-700 mb-1">Giới tính</label>
+                                    <label className="block text-sm font-bold text-gray-700 mb-1 dark:text-slate-300">Giới tính</label>
                                     <select
-                                        className="w-full border border-gray-300 rounded-lg p-2 bg-white text-gray-900 focus:ring-2 focus:ring-indigo-500"
+                                        className="w-full border border-gray-300 rounded-lg p-2 bg-white text-gray-900 focus:ring-2 focus:ring-indigo-500 dark:bg-slate-900 dark:border-slate-800 dark:text-slate-100"
                                         value={editGender}
                                         onChange={e => setEditGender(e.target.value as any)}
                                     >
@@ -808,13 +808,13 @@ export const UserManage: React.FC<Props> = ({ targetRole, title }) => {
                                 </div>
                             )}
                             <div className="bg-gray-50 dark:bg-slate-850 p-3 rounded-lg">
-                                <p className="text-xs text-gray-500 dark:text-slate-400">ID: <span className="font-mono text-gray-700">{editingUser.id}</span></p>
+                                <p className="text-xs text-gray-500 dark:text-slate-400">ID: <span className="font-mono text-gray-700 dark:text-slate-300">{editingUser.id}</span></p>
                                 <p className="text-xs text-gray-500 dark:text-slate-400">Vai trò: <span className="font-bold">{editingUser.role}</span></p>
                             </div>
                         </div>
 
                         <div className="flex justify-end gap-2 mt-6">
-                            <button onClick={() => setEditingUser(null)} className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg font-medium">Hủy</button>
+                            <button onClick={() => setEditingUser(null)} className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg font-medium dark:text-slate-400 dark:hover:bg-slate-800">Hủy</button>
                             <button onClick={handleUpdateUser} className="px-4 py-2 bg-indigo-600 text-white rounded-lg font-bold hover:bg-indigo-700">Lưu thay đổi</button>
                         </div>
                     </div>
@@ -824,21 +824,21 @@ export const UserManage: React.FC<Props> = ({ targetRole, title }) => {
             {/* Reset Password Modal */}
             {resetUser && (
                 <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
-                    <div className="bg-white rounded-xl shadow-lg w-full max-w-sm p-6 animate-fade-in">
-                        <h3 className="text-lg font-bold text-gray-900 mb-2">Đổi mật khẩu</h3>
-                        <p className="text-sm text-gray-500 mb-4">Cập nhật mật khẩu mới cho tài khoản: <b>{resetUser.name}</b></p>
+                    <div className="bg-white rounded-xl shadow-lg w-full max-w-sm p-6 animate-fade-in dark:bg-slate-900">
+                        <h3 className="text-lg font-bold text-gray-900 mb-2 dark:text-slate-100">Đổi mật khẩu</h3>
+                        <p className="text-sm text-gray-500 mb-4 dark:text-slate-500">Cập nhật mật khẩu mới cho tài khoản: <b>{resetUser.name}</b></p>
 
-                        <label className="block text-sm font-bold text-gray-700 mb-1">Mật khẩu mới</label>
+                        <label className="block text-sm font-bold text-gray-700 mb-1 dark:text-slate-300">Mật khẩu mới</label>
                         <input
                             type="text"
-                            className="w-full border border-gray-300 rounded-lg p-2 mb-4 bg-white text-gray-900 focus:ring-2 focus:ring-indigo-500"
+                            className="w-full border border-gray-300 rounded-lg p-2 mb-4 bg-white text-gray-900 focus:ring-2 focus:ring-indigo-500 dark:bg-slate-900 dark:border-slate-800 dark:text-slate-100"
                             value={newPassword}
                             onChange={e => setNewPassword(e.target.value)}
                             placeholder="Nhập mật khẩu..."
                         />
 
                         <div className="flex justify-end gap-2">
-                            <button onClick={() => setResetUser(null)} className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg font-medium">Hủy</button>
+                            <button onClick={() => setResetUser(null)} className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg font-medium dark:text-slate-400 dark:hover:bg-slate-800">Hủy</button>
                             <button onClick={handleResetPassword} disabled={!newPassword} className="px-4 py-2 bg-indigo-600 text-white rounded-lg font-bold hover:bg-indigo-700 disabled:opacity-50">Lưu</button>
                         </div>
                     </div>
@@ -846,11 +846,11 @@ export const UserManage: React.FC<Props> = ({ targetRole, title }) => {
             )}
 
             {/* SEARCH BAR */}
-            <div className="bg-white rounded-xl border shadow-sm p-4 flex flex-col sm:flex-row gap-3">
+            <div className="bg-white rounded-xl border shadow-sm p-4 flex flex-col sm:flex-row gap-3 dark:bg-slate-900 dark:border-slate-800">
                 <div className="relative flex-1">
                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
                     <input
-                        className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none bg-white text-gray-950 font-medium"
+                        className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none bg-white text-gray-950 font-medium dark:bg-slate-900 dark:border-slate-800"
                         placeholder="Tìm kiếm theo tên hoặc tên đăng nhập..."
                         value={searchTerm}
                         onChange={e => setSearchTerm(e.target.value)}
@@ -859,7 +859,7 @@ export const UserManage: React.FC<Props> = ({ targetRole, title }) => {
                 {targetRole === 'STUDENT' && (
                     <div className="w-full sm:w-48 flex-shrink-0">
                         <select
-                            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500 bg-white text-gray-950 font-medium"
+                            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500 bg-white text-gray-950 font-medium dark:bg-slate-900 dark:border-slate-800"
                             value={selectedClassFilter}
                             onChange={e => setSelectedClassFilter(e.target.value)}
                         >
@@ -881,28 +881,28 @@ export const UserManage: React.FC<Props> = ({ targetRole, title }) => {
             </div>
 
             {filteredUsers.length === 0 && (
-                <div className="text-center py-8 text-gray-400 bg-white rounded-xl border border-dashed">
+                <div className="text-center py-8 text-gray-400 bg-white rounded-xl border border-dashed dark:bg-slate-900 dark:border-slate-800">
                     Không tìm thấy kết quả nào.
                 </div>
             )}
 
             {/* RANDOM CONTROLS (Only for students) */}
             {targetRole === 'STUDENT' && filteredUsers.length > 0 && (
-                <div className="bg-white p-3 rounded-xl border shadow-sm flex flex-wrap items-center gap-3">
-                    <button onClick={() => setShowRandomGroup(true)} className="px-4 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 rounded-lg text-sm font-bold flex items-center gap-2 transition border border-emerald-100 shadow-sm">
+                <div className="bg-white p-3 rounded-xl border shadow-sm flex flex-wrap items-center gap-3 dark:bg-slate-900 dark:border-slate-800">
+                    <button onClick={() => setShowRandomGroup(true)} className="px-4 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 rounded-lg text-sm font-bold flex items-center gap-2 transition border border-emerald-100 shadow-sm dark:border-emerald-900/30">
                         <Users className="h-5 w-5" /> Chia Nhóm
                     </button>
-                    <button onClick={() => setShowRoulette(true)} className="px-4 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-lg text-sm font-bold flex items-center gap-2 transition border border-indigo-100 shadow-sm">
+                    <button onClick={() => setShowRoulette(true)} className="px-4 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-lg text-sm font-bold flex items-center gap-2 transition border border-indigo-100 shadow-sm dark:border-indigo-900/30">
                         <Dices className="h-5 w-5" /> Gọi Ngẫu Nhiên
                     </button>
                     <div className="w-px h-5 bg-gray-300 mx-1"></div>
-                    <button onClick={startDuckRace} className="px-4 py-2 bg-amber-100 hover:bg-amber-200 text-amber-700 rounded-lg text-sm font-bold flex items-center gap-2 transition border border-amber-200 shadow-sm">
+                    <button onClick={startDuckRace} className="px-4 py-2 bg-amber-100 hover:bg-amber-200 text-amber-700 rounded-lg text-sm font-bold flex items-center gap-2 transition border border-amber-200 shadow-sm dark:border-slate-800">
                         🦆 Đua Vịt
                     </button>
                     {selectedStudentIds.length > 0 && (
                         <>
                             <div className="w-px h-5 bg-gray-300 mx-1"></div>
-                            <button onClick={() => setShowBulkTopicModal(true)} className="px-4 py-2 bg-purple-50 hover:bg-purple-100 text-purple-700 rounded-lg text-sm font-bold flex items-center gap-2 transition border border-purple-100 shadow-sm animate-fade-in">
+                            <button onClick={() => setShowBulkTopicModal(true)} className="px-4 py-2 bg-purple-50 hover:bg-purple-100 text-purple-700 rounded-lg text-sm font-bold flex items-center gap-2 transition border border-purple-100 shadow-sm animate-fade-in dark:border-slate-800">
                                 <GraduationCap className="h-5 w-5" /> Ẩn/Hiện Chủ Đề
                             </button>
                             <button onClick={() => setSelectedStudentIds([])} className="text-xs text-gray-500 dark:text-slate-400 hover:text-gray-700 underline ml-auto">
@@ -914,15 +914,15 @@ export const UserManage: React.FC<Props> = ({ targetRole, title }) => {
             )}
 
             {/* DESKTOP TABLE VIEW */}
-            <div className="hidden md:block bg-white rounded-xl border shadow-sm overflow-hidden animate-fade-in relative">
-                <table className="w-full text-left text-sm text-gray-500">
-                    <thead className="bg-gray-50 dark:bg-slate-850 text-gray-700 uppercase">
+            <div className="hidden md:block bg-white rounded-xl border shadow-sm overflow-hidden animate-fade-in relative dark:bg-slate-900 dark:border-slate-800">
+                <table className="w-full text-left text-sm text-gray-500 dark:text-slate-500">
+                    <thead className="bg-gray-50 dark:bg-slate-850 text-gray-700 uppercase dark:text-slate-300">
                         <tr>
                             {targetRole === 'STUDENT' && (
                                 <th className="px-4 py-3 w-12 text-center">
                                     <input 
                                         type="checkbox" 
-                                        className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 h-4 w-4 cursor-pointer bg-white"
+                                        className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 h-4 w-4 cursor-pointer bg-white dark:bg-slate-900 dark:border-slate-800"
                                         checked={filteredUsers.length > 0 && filteredUsers.every(u => selectedStudentIds.includes(u.id))}
                                         onChange={e => {
                                             if (e.target.checked) {
@@ -960,7 +960,7 @@ export const UserManage: React.FC<Props> = ({ targetRole, title }) => {
                                         <td className="px-4 py-4 text-center" onClick={e => e.stopPropagation()}>
                                             <input 
                                                 type="checkbox"
-                                                className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 h-4 w-4 cursor-pointer bg-white"
+                                                className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 h-4 w-4 cursor-pointer bg-white dark:bg-slate-900 dark:border-slate-800"
                                                 checked={isSelected}
                                                 onChange={() => {
                                                     setSelectedStudentIds(p => p.includes(u.id) ? p.filter(id => id !== u.id) : [...p, u.id]);
@@ -1042,7 +1042,7 @@ export const UserManage: React.FC<Props> = ({ targetRole, title }) => {
                                     <div className="pt-1" onClick={e => e.stopPropagation()}>
                                         <input 
                                             type="checkbox"
-                                            className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 h-4 w-4 cursor-pointer bg-white"
+                                            className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 h-4 w-4 cursor-pointer bg-white dark:bg-slate-900 dark:border-slate-800"
                                             checked={isSelected}
                                             onChange={() => {
                                                 setSelectedStudentIds(p => p.includes(u.id) ? p.filter(id => id !== u.id) : [...p, u.id]);
@@ -1065,7 +1065,7 @@ export const UserManage: React.FC<Props> = ({ targetRole, title }) => {
                                     {targetRole === 'STUDENT' && (
                                         <div className="mt-1">
                                             {u.className ? (
-                                                <span className="bg-gray-100 text-gray-600 px-2 py-0.5 rounded text-xs font-bold font-mono">Lớp: {u.className.includes('|') ? u.className.split('|')[1] : u.className}</span>
+                                                <span className="bg-gray-100 text-gray-600 px-2 py-0.5 rounded text-xs font-bold font-mono dark:bg-slate-850 dark:text-slate-400">Lớp: {u.className.includes('|') ? u.className.split('|')[1] : u.className}</span>
                                             ) : (
                                                 <span className="text-xs text-gray-400 italic">Chưa xếp lớp</span>
                                             )}
@@ -1074,7 +1074,7 @@ export const UserManage: React.FC<Props> = ({ targetRole, title }) => {
                                 </div>
                             </div>
 
-                            <div className="flex border-t pt-3 gap-2" onClick={e => e.stopPropagation()}>
+                            <div className="flex border-t pt-3 gap-2 dark:border-slate-800" onClick={e => e.stopPropagation()}>
                                 <button
                                     onClick={() => openEditModal(u)}
                                     className="flex-1 py-2 text-xs font-bold text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 flex items-center justify-center gap-1"
@@ -1124,12 +1124,12 @@ export const UserManage: React.FC<Props> = ({ targetRole, title }) => {
 
             {showBulkTopicModal && (
                 <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
-                    <div className="bg-white rounded-xl shadow-lg w-full max-w-2xl p-6 animate-fade-in flex flex-col max-h-[85vh]">
-                        <h3 className="text-lg font-bold text-gray-900 mb-2">Ẩn/Hiện Chủ Đề Leo Tháp cho {selectedStudentIds.length} học sinh</h3>
+                    <div className="bg-white rounded-xl shadow-lg w-full max-w-2xl p-6 animate-fade-in flex flex-col max-h-[85vh] dark:bg-slate-900">
+                        <h3 className="text-lg font-bold text-gray-900 mb-2 dark:text-slate-100">Ẩn/Hiện Chủ Đề Leo Tháp cho {selectedStudentIds.length} học sinh</h3>
                         <p className="text-xs text-gray-500 dark:text-slate-400 mb-4">Cấu hình hiển thị hoặc ẩn hàng loạt chủ đề cho các học sinh đã chọn.</p>
 
                         <div className="mb-4 bg-gray-50 dark:bg-slate-850 p-3 rounded-lg flex items-center gap-3">
-                            <span className="text-sm font-bold text-gray-700">Hành động áp dụng:</span>
+                            <span className="text-sm font-bold text-gray-700 dark:text-slate-300">Hành động áp dụng:</span>
                             <label className="flex items-center gap-1.5 text-sm cursor-pointer">
                                 <input
                                     type="radio"
@@ -1138,7 +1138,7 @@ export const UserManage: React.FC<Props> = ({ targetRole, title }) => {
                                     onChange={() => setBulkTopicAction('SHOW')}
                                     className="text-indigo-600 focus:ring-indigo-500"
                                 />
-                                <span className="font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 px-2 py-0.5 rounded-md text-xs">Hiện chủ đề</span>
+                                <span className="font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 px-2 py-0.5 rounded-md text-xs dark:border-indigo-900/30">Hiện chủ đề</span>
                             </label>
                             <label className="flex items-center gap-1.5 text-sm cursor-pointer">
                                 <input
@@ -1148,14 +1148,14 @@ export const UserManage: React.FC<Props> = ({ targetRole, title }) => {
                                     onChange={() => setBulkTopicAction('HIDE')}
                                     className="text-indigo-600 focus:ring-indigo-500"
                                 />
-                                <span className="font-bold text-red-700 bg-red-50 border border-red-200 px-2 py-0.5 rounded-md text-xs">Ẩn chủ đề</span>
+                                <span className="font-bold text-red-700 bg-red-50 border border-red-200 px-2 py-0.5 rounded-md text-xs dark:border-red-900/30">Ẩn chủ đề</span>
                             </label>
                         </div>
 
                         <div className="flex-1 overflow-y-auto pr-1 space-y-4 mb-4">
                             {Object.entries(bulkTopicsBySubject).map(([subj, tList]) => (
-                                <div key={subj} className="space-y-2 border-b last:border-0 pb-3 last:pb-0">
-                                    <h4 className="text-sm font-bold text-gray-700 bg-gray-50 dark:bg-slate-850 px-2 py-1 rounded w-fit">{subj}</h4>
+                                <div key={subj} className="space-y-2 border-b last:border-0 pb-3 last:pb-0 dark:border-slate-800">
+                                    <h4 className="text-sm font-bold text-gray-700 bg-gray-50 dark:bg-slate-850 px-2 py-1 rounded w-fit dark:text-slate-300">{subj}</h4>
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                         {tList.map(t => {
                                             const isSelected = bulkTopicSelectedTopics.includes(t.topic);
@@ -1176,13 +1176,13 @@ export const UserManage: React.FC<Props> = ({ targetRole, title }) => {
                             ))}
                         </div>
 
-                        <div className="flex justify-end gap-2 pt-2 border-t">
+                        <div className="flex justify-end gap-2 pt-2 border-t dark:border-slate-800">
                             <button
                                 onClick={() => {
                                     setShowBulkTopicModal(false);
                                     setBulkTopicSelectedTopics([]);
                                 }}
-                                className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg font-medium text-sm"
+                                className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg font-medium text-sm dark:text-slate-400 dark:hover:bg-slate-800"
                             >
                                 Hủy
                             </button>

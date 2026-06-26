@@ -94,18 +94,18 @@ export const ClassFunWarning: React.FC = () => {
         <div className="space-y-6">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div>
-                    <h1 className="text-3xl font-extrabold text-gray-900 flex items-center gap-3">
+                    <h1 className="text-3xl font-extrabold text-gray-900 flex items-center gap-3 dark:text-slate-100">
                         <AlertTriangle className="h-8 w-8 text-rose-500" />
                         Cảnh Báo Hành Vi
                     </h1>
-                    <p className="text-gray-500 mt-1">Phân tích học sinh có nhiều vi phạm tiêu cực & AI Tư vấn tâm lý</p>
+                    <p className="text-gray-500 mt-1 dark:text-slate-500">Phân tích học sinh có nhiều vi phạm tiêu cực & AI Tư vấn tâm lý</p>
                 </div>
                 <div className="flex gap-3">
                     {myClasses.length > 1 && (
                         <select
                             value={selectedClassId}
                             onChange={e => setSelectedClassId(e.target.value)}
-                            className="border border-gray-300 rounded-lg px-4 py-2 text-sm font-medium focus:ring-2 focus:ring-indigo-500 outline-none bg-white shadow-sm"
+                            className="border border-gray-300 rounded-lg px-4 py-2 text-sm font-medium focus:ring-2 focus:ring-indigo-500 outline-none bg-white shadow-sm dark:bg-slate-900 dark:border-slate-800"
                         >
                             {myClasses.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                         </select>
@@ -118,12 +118,12 @@ export const ClassFunWarning: React.FC = () => {
                     <Loader2 className="h-10 w-10 text-rose-500 animate-spin" />
                 </div>
             ) : warningList.length === 0 ? (
-                <div className="bg-white rounded-xl shadow-sm border p-12 text-center flex flex-col items-center">
+                <div className="bg-white rounded-xl shadow-sm border p-12 text-center flex flex-col items-center dark:bg-slate-900 dark:border-slate-800">
                     <div className="h-20 w-20 bg-emerald-100 rounded-full flex items-center justify-center mb-4">
                         <History className="h-10 w-10 text-emerald-500" />
                     </div>
-                    <h3 className="text-xl font-bold text-gray-800 mb-2">Lớp học rất ngoan!</h3>
-                    <p className="text-gray-500">Tuyệt vời! Hiện không có học sinh nào dính chuỗi vi phạm tiêu cực đáng lưu ý.</p>
+                    <h3 className="text-xl font-bold text-gray-800 mb-2 dark:text-slate-200">Lớp học rất ngoan!</h3>
+                    <p className="text-gray-500 dark:text-slate-500">Tuyệt vời! Hiện không có học sinh nào dính chuỗi vi phạm tiêu cực đáng lưu ý.</p>
                 </div>
             ) : (
                 <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
@@ -132,36 +132,36 @@ export const ClassFunWarning: React.FC = () => {
                         if (!student) return null;
 
                         return (
-                            <div key={item.studentId} className="bg-white rounded-xl border shadow-sm flex flex-col overflow-hidden">
-                                <div className="p-4 border-b bg-rose-50 flex justify-between items-start">
+                            <div key={item.studentId} className="bg-white rounded-xl border shadow-sm flex flex-col overflow-hidden dark:bg-slate-900 dark:border-slate-800">
+                                <div className="p-4 border-b bg-rose-50 flex justify-between items-start dark:border-slate-800">
                                     <div className="flex items-center gap-3">
-                                        <img src={student.avatar || "https://via.placeholder.com/40"} alt={student.name} className="w-12 h-12 rounded-full border-2 border-white shadow-sm" />
+                                        <img src={student.avatar || "https://via.placeholder.com/40"} alt={student.name} className="w-12 h-12 rounded-full border-2 border-white shadow-sm dark:border-slate-800" />
                                         <div>
-                                            <h3 className="font-bold text-gray-900 text-lg">{student.name}</h3>
+                                            <h3 className="font-bold text-gray-900 text-lg dark:text-slate-100">{student.name}</h3>
                                             <p className="text-rose-600 text-sm font-medium flex items-center gap-1">
                                                 <AlertTriangle className="h-3.5 w-3.5" />
                                                 {item.reason}
                                             </p>
                                         </div>
                                     </div>
-                                    <div className="bg-white border text-gray-500 px-3 py-1 rounded-full text-xs font-bold shadow-sm">
+                                    <div className="bg-white border text-gray-500 px-3 py-1 rounded-full text-xs font-bold shadow-sm dark:bg-slate-900 dark:border-slate-800 dark:text-slate-500">
                                         Mã: {student.id.substring(0, 6)}
                                     </div>
                                 </div>
 
                                 <div className="p-4 flex-1 bg-gray-50 dark:bg-slate-850">
-                                    <h4 className="text-xs font-bold text-gray-500 uppercase mb-2">Chi tiết vi phạm:</h4>
+                                    <h4 className="text-xs font-bold text-gray-500 uppercase mb-2 dark:text-slate-500">Chi tiết vi phạm:</h4>
                                     <ul className="space-y-2 mb-4 max-h-48 overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-gray-200 hover:scrollbar-thumb-gray-300 transition-colors">
                                         {item.logs.map((log: any) => (
-                                            <li key={log.id} className="text-sm bg-white p-2 rounded border border-gray-100 shadow-sm flex items-start justify-between gap-2">
-                                                <span className="text-gray-700 leading-snug">{log.reason}</span>
+                                            <li key={log.id} className="text-sm bg-white p-2 rounded border border-gray-100 shadow-sm flex items-start justify-between gap-2 dark:bg-slate-900 dark:border-slate-800">
+                                                <span className="text-gray-700 leading-snug dark:text-slate-300">{log.reason}</span>
                                                 <span className="text-rose-500 font-bold whitespace-nowrap shrink-0">{log.points}</span>
                                             </li>
                                         ))}
                                     </ul>
 
                                     {/* AI Section */}
-                                    <div className="bg-indigo-50 border border-indigo-100 rounded-lg p-3">
+                                    <div className="bg-indigo-50 border border-indigo-100 rounded-lg p-3 dark:border-indigo-900/30">
                                         <div className="font-bold text-indigo-800 mb-2 flex items-center justify-between">
                                             <span className="flex items-center gap-2"><Brain className="h-4 w-4" /> Chuyên gia Tâm lý AI</span>
                                         </div>
@@ -171,7 +171,7 @@ export const ClassFunWarning: React.FC = () => {
                                                 <div className="mb-3">
                                                     <label className="text-xs font-medium text-indigo-700 mb-1 block">Context cá nhân hóa (GV ghi chú thêm):</label>
                                                     <textarea
-                                                        className="w-full text-sm p-2 rounded border border-indigo-200 focus:ring-2 focus:ring-indigo-500 outline-none resize-none"
+                                                        className="w-full text-sm p-2 rounded border border-indigo-200 focus:ring-2 focus:ring-indigo-500 outline-none resize-none dark:border-indigo-900/30"
                                                         placeholder="VD: Gia đình em dạo này có chuyện buồn, em hay ngủ gục..."
                                                         rows={2}
                                                         value={customPrompts[item.studentId] || ''}
@@ -196,12 +196,12 @@ export const ClassFunWarning: React.FC = () => {
 
                                         {adviceData[item.studentId] && (
                                             <div className="relative">
-                                                <div className="prose prose-sm prose-indigo max-w-none bg-white p-4 rounded border text-gray-800 max-h-60 overflow-y-auto shadow-inner text-sm leading-relaxed">
+                                                <div className="prose prose-sm prose-indigo max-w-none bg-white p-4 rounded border text-gray-800 max-h-60 overflow-y-auto shadow-inner text-sm leading-relaxed dark:bg-slate-900 dark:border-slate-800 dark:text-slate-200">
                                                     <ReactMarkdown>{adviceData[item.studentId]}</ReactMarkdown>
                                                 </div>
                                                 <button
                                                     onClick={() => handleAskAI(item.studentId, student.name, item.logs)}
-                                                    className="absolute text-xs top-2 right-2 p-1.5 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded"
+                                                    className="absolute text-xs top-2 right-2 p-1.5 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded dark:bg-slate-850 dark:text-slate-400"
                                                     title="Phân tích lại"
                                                 >
                                                     <RefreshCw className="h-3 w-3" />

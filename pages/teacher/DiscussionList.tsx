@@ -117,10 +117,10 @@ export const DiscussionList: React.FC = () => {
         <div className="max-w-5xl mx-auto p-4 md:p-8">
             <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
                 <div>
-                    <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+                    <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2 dark:text-slate-100">
                         <MessageSquare className="h-8 w-8 text-indigo-600" /> Quản lý Thảo luận
                     </h1>
-                    <p className="text-gray-500 mt-1">Danh sách các phòng thảo luận đã tạo</p>
+                    <p className="text-gray-500 mt-1 dark:text-slate-500">Danh sách các phòng thảo luận đã tạo</p>
                 </div>
                 <button
                     onClick={() => navigate('/teacher/discussions/create')}
@@ -130,11 +130,11 @@ export const DiscussionList: React.FC = () => {
                 </button>
             </div>
 
-            <div className="bg-white rounded-2xl shadow-sm border p-4 mb-6">
+            <div className="bg-white rounded-2xl shadow-sm border p-4 mb-6 dark:bg-slate-900 dark:border-slate-800">
                 <div className="relative">
                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
                     <input
-                        className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
+                        className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500 transition-all dark:border-slate-800"
                         placeholder="Tìm kiếm theo tên phòng..."
                         value={searchTerm}
                         onChange={e => setSearchTerm(e.target.value)}
@@ -144,30 +144,30 @@ export const DiscussionList: React.FC = () => {
 
             <div className="grid gap-4">
                 {sessions.length === 0 && (
-                    <div className="text-center py-12 bg-gray-50 rounded-2xl border border-dashed text-gray-400">
+                    <div className="text-center py-12 bg-gray-50 rounded-2xl border border-dashed text-gray-400 dark:border-slate-800 dark:bg-slate-900/50">
                         Chưa có phiên thảo luận nào. Hãy tạo mới!
                     </div>
                 )}
 
                 {sessions.map(session => (
-                    <div key={session.id} className="bg-white p-5 rounded-2xl border hover:border-indigo-300 shadow-sm hover:shadow-md transition-all group">
+                    <div key={session.id} className="bg-white p-5 rounded-2xl border hover:border-indigo-300 shadow-sm hover:shadow-md transition-all group dark:bg-slate-900 dark:border-slate-800">
                         <div className="flex flex-col md:flex-row justify-between gap-4">
                             <div className="flex-1">
                                 <div className="flex items-center gap-3 mb-2">
-                                    <h3 className="font-bold text-lg text-gray-900">{session.title}</h3>
+                                    <h3 className="font-bold text-lg text-gray-900 dark:text-slate-100">{session.title}</h3>
                                     <span className={`px-2 py-0.5 rounded text-xs font-bold ${session.status === 'ACTIVE' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'}`}>
                                         {session.status === 'ACTIVE' ? 'Đang diễn ra' : 'Đã kết thúc'}
                                     </span>
                                 </div>
-                                <div className="flex items-center gap-4 text-sm text-gray-500">
-                                    <span className="flex items-center gap-1 bg-gray-100 px-2 py-1 rounded font-mono text-xs">PIN: {session.id}</span>
+                                <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-slate-500">
+                                    <span className="flex items-center gap-1 bg-gray-100 px-2 py-1 rounded font-mono text-xs dark:bg-slate-850">PIN: {session.id}</span>
                                     <span className="flex items-center gap-1"><Calendar className="h-4 w-4" /> {new Date(session.rounds[0]?.createdAt || Date.now()).toLocaleDateString()}</span>
                                     <span>• {session.messages.length} tin nhắn</span>
                                     <span>• {session.participants.length} thành viên</span>
                                 </div>
                             </div>
 
-                            <div className="flex items-center gap-2 border-t md:border-t-0 pt-3 md:pt-0">
+                            <div className="flex items-center gap-2 border-t md:border-t-0 pt-3 md:pt-0 dark:border-slate-800">
                                 <button
                                     onClick={() => navigate(`/discussion/room/${session.id}`)}
                                     className="flex-1 md:flex-none bg-indigo-50 text-indigo-700 px-4 py-2 rounded-lg font-bold hover:bg-indigo-100 transition-colors flex items-center justify-center gap-2"
@@ -179,7 +179,7 @@ export const DiscussionList: React.FC = () => {
 
                                 <button
                                     onClick={() => handleExportDocx(session)}
-                                    className="p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                                    className="p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors dark:text-slate-500"
                                     title="Tải biên bản (Word)"
                                 >
                                     <FileText className="h-5 w-5" />
@@ -187,7 +187,7 @@ export const DiscussionList: React.FC = () => {
 
                                 <button
                                     onClick={() => handleDelete(session.id)}
-                                    className="p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                    className="p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors dark:text-slate-500"
                                     title="Xóa vĩnh viễn"
                                 >
                                     <Trash2 className="h-5 w-5" />

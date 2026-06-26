@@ -146,7 +146,7 @@ export const MatchResult: React.FC = () => {
     };
 
     return (
-        <div className="max-w-md mx-auto text-center py-12 px-4 bg-[#030712] rounded-3xl border border-white/5 shadow-2xl relative overflow-hidden min-h-[80vh] flex flex-col justify-center">
+        <div className="max-w-md mx-auto text-center py-12 px-4 bg-[#030712] rounded-3xl border border-white/5 shadow-2xl relative overflow-hidden min-h-[80vh] flex flex-col justify-center dark:border-slate-800">
             <style>{`
                 @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
                 @keyframes pop { 0% { transform: scale(0.5); opacity: 0; } 60% { transform: scale(1.2); } 100% { transform: scale(1); opacity: 1; } }
@@ -182,17 +182,17 @@ export const MatchResult: React.FC = () => {
                     {/* Stats Card */}
                     <div className="glass-panel rounded-2xl p-6 mb-6 text-left" style={{ animation: 'fadeIn 0.5s ease-out 0.2s both' }}>
                         <div className="grid grid-cols-2 gap-4 mb-4">
-                            <div className="bg-white/5 border border-white/5 rounded-xl p-3">
+                            <div className="bg-white/5 border border-white/5 rounded-xl p-3 dark:border-slate-800">
                                 <p className="text-xs text-gray-400">HP còn lại</p>
                                 <p className="text-2xl font-black text-white">{myHp}</p>
                             </div>
-                            <div className="bg-white/5 border border-white/5 rounded-xl p-3">
+                            <div className="bg-white/5 border border-white/5 rounded-xl p-3 dark:border-slate-800">
                                 <p className="text-xs text-gray-400">HP đối thủ</p>
                                 <p className="text-2xl font-black text-white">{opHp}</p>
                             </div>
                         </div>
 
-                        <div className="border-t border-white/10 pt-4 space-y-3">
+                        <div className="border-t border-white/10 pt-4 space-y-3 dark:border-slate-800">
                             <div className="flex items-center justify-between">
                                 <span className="flex items-center gap-2 text-sm text-gray-300">
                                     {isWin ? <TrendingUp className="h-4 w-4 text-emerald-400" /> : <TrendingDown className="h-4 w-4 text-rose-400" />}
@@ -225,10 +225,10 @@ export const MatchResult: React.FC = () => {
                         )}
 
                         <div className="flex gap-3">
-                            <button onClick={() => navigate('/arena/pvp')} className="flex-1 py-3.5 bg-white/10 hover:bg-white/15 text-white font-bold rounded-xl transition-all flex items-center justify-center gap-2 border border-white/5">
+                            <button onClick={() => navigate('/arena/pvp')} className="flex-1 py-3.5 bg-white/10 hover:bg-white/15 text-white font-bold rounded-xl transition-all flex items-center justify-center gap-2 border border-white/5 dark:border-slate-800">
                                 <Brain className="h-5 w-5" /> Chơi lại
                             </button>
-                            <button onClick={() => navigate('/arena')} className="flex-1 py-3.5 bg-white/5 hover:bg-white/10 text-gray-300 font-bold rounded-xl transition-all flex items-center justify-center gap-2 border border-white/5">
+                            <button onClick={() => navigate('/arena')} className="flex-1 py-3.5 bg-white/5 hover:bg-white/10 text-gray-300 font-bold rounded-xl transition-all flex items-center justify-center gap-2 border border-white/5 dark:border-slate-800">
                                 <Home className="h-5 w-5" /> Sảnh đấu
                             </button>
                         </div>
@@ -236,7 +236,7 @@ export const MatchResult: React.FC = () => {
                 </div>
             ) : (
                 <div style={{ animation: 'fadeIn 0.4s ease-out' }}>
-                    <div className="flex items-center gap-2 mb-4 text-left border-b border-white/10 pb-3">
+                    <div className="flex items-center gap-2 mb-4 text-left border-b border-white/10 pb-3 dark:border-slate-800">
                         <Bot className="h-6 w-6 text-red-500 animate-pulse" />
                         <div>
                             <h2 className="text-lg font-black text-white">AI Phục Thù</h2>
@@ -267,7 +267,7 @@ export const MatchResult: React.FC = () => {
                             </p>
 
                             {showConfetti && (
-                                <div className="bg-emerald-950/40 border border-emerald-500/20 rounded-2xl p-4 flex items-center justify-between text-left max-w-sm mx-auto">
+                                <div className="bg-emerald-950/40 border border-emerald-500/20 rounded-2xl p-4 flex items-center justify-between text-left max-w-sm mx-auto dark:border-slate-800">
                                     <div className="flex items-center gap-3">
                                         <div className="h-12 w-12 rounded-xl bg-emerald-500/20 flex items-center justify-center text-emerald-400 text-xl font-bold">
                                             🌟
@@ -289,7 +289,7 @@ export const MatchResult: React.FC = () => {
                         <div className="text-left space-y-5 animate-in fade-in">
                             {/* AI Summary Concept */}
                             {currentRevengeIndex === 0 && (
-                                <div className="bg-red-950/20 border border-red-500/25 rounded-2xl p-5 mb-2">
+                                <div className="bg-red-950/20 border border-red-500/25 rounded-2xl p-5 mb-2 dark:border-slate-800">
                                     <h4 className="font-bold text-red-400 text-sm flex items-center gap-1.5 mb-2">
                                         <Sparkles className="h-4 w-4" /> Điểm yếu phát hiện: {revengeData.topic}
                                     </h4>
@@ -400,7 +400,7 @@ export const MatchResult: React.FC = () => {
 
                                         <button 
                                             onClick={handleNextRevenge}
-                                            className="w-full py-4 bg-white text-gray-900 hover:bg-gray-100 rounded-xl font-black transition-all flex items-center justify-center gap-2 text-sm tracking-wider uppercase"
+                                            className="w-full py-4 bg-white text-gray-900 hover:bg-gray-100 rounded-xl font-black transition-all flex items-center justify-center gap-2 text-sm tracking-wider uppercase dark:bg-slate-900 dark:text-slate-100 dark:hover:bg-slate-800"
                                         >
                                             {currentRevengeIndex < revengeData.questions.length - 1 ? 'Câu tiếp theo' : 'Hoàn thành thử thách'}
                                             <ArrowRight className="h-5 w-5" />

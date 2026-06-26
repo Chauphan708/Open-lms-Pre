@@ -91,12 +91,12 @@ const CommentInput: React.FC<{
         onChange={e => onChange(e.target.value)}
         onFocus={() => setShowSuggestions(true)}
         placeholder={placeholder || 'Nhập nhận xét...'}
-        className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-400 focus:border-transparent outline-none transition-all"
+        className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-400 focus:border-transparent outline-none transition-all dark:border-slate-800"
       />
       {showSuggestions && filteredSuggestions.length > 0 && (
         <div
           ref={dropdownRef}
-          className="absolute z-50 top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-xl max-h-40 overflow-y-auto"
+          className="absolute z-50 top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-xl max-h-40 overflow-y-auto dark:bg-slate-900 dark:border-slate-800"
         >
           {filteredSuggestions.map((s, i) => (
             <button
@@ -106,7 +106,7 @@ const CommentInput: React.FC<{
                 onChange(s);
                 setShowSuggestions(false);
               }}
-              className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-indigo-50 hover:text-indigo-700 transition-colors truncate flex items-center gap-2"
+              className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-indigo-50 hover:text-indigo-700 transition-colors truncate flex items-center gap-2 dark:text-slate-300"
             >
               <Sparkles className="h-3 w-3 text-indigo-400 flex-shrink-0" />
               <span className="truncate">{s}</span>
@@ -130,7 +130,7 @@ const RatingSelect: React.FC<{
     <select
       value={value}
       onChange={e => onChange(e.target.value)}
-      className="border border-gray-200 rounded-lg px-2 py-1.5 text-xs focus:ring-2 focus:ring-indigo-400 outline-none bg-white font-medium min-w-[120px]"
+      className="border border-gray-200 rounded-lg px-2 py-1.5 text-xs focus:ring-2 focus:ring-indigo-400 outline-none bg-white font-medium min-w-[120px] dark:bg-slate-900 dark:border-slate-800"
     >
       {options.map(opt => (
         <option key={opt.value} value={opt.value}>
@@ -270,11 +270,11 @@ const EvaluationModal: React.FC<{
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[9999] flex items-center justify-center p-4" onClick={onClose}>
       <div
-        className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col animate-in fade-in zoom-in-95"
+        className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col animate-in fade-in zoom-in-95 dark:bg-slate-900"
         onClick={e => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between p-5 border-b bg-gradient-to-r from-indigo-500 to-purple-600 rounded-t-2xl">
+        <div className="flex items-center justify-between p-5 border-b bg-gradient-to-r from-indigo-500 to-purple-600 rounded-t-2xl dark:border-slate-800">
           <div className="text-white">
             <h2 className="text-lg font-bold flex items-center gap-2">
               <FileText className="h-5 w-5" />
@@ -289,9 +289,9 @@ const EvaluationModal: React.FC<{
 
         {/* Student Names (for batch) */}
         {isBatch && (
-          <div className="px-5 py-3 bg-indigo-50 border-b flex flex-wrap gap-1.5">
+          <div className="px-5 py-3 bg-indigo-50 border-b flex flex-wrap gap-1.5 dark:border-slate-800">
             {studentNames.map((name, i) => (
-              <span key={i} className="bg-white px-2 py-1 rounded-lg text-xs font-medium text-indigo-700 border border-indigo-200 shadow-sm">
+              <span key={i} className="bg-white px-2 py-1 rounded-lg text-xs font-medium text-indigo-700 border border-indigo-200 shadow-sm dark:bg-slate-900 dark:border-indigo-900/30">
                 {name}
               </span>
             ))}
@@ -299,7 +299,7 @@ const EvaluationModal: React.FC<{
         )}
 
         {/* Quick Presets Panel */}
-        <div className="px-5 py-3.5 bg-gradient-to-r from-indigo-50 to-purple-50 border-b flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div className="px-5 py-3.5 bg-gradient-to-r from-indigo-50 to-purple-50 border-b flex flex-col sm:flex-row sm:items-center justify-between gap-3 dark:border-slate-800">
           <div className="flex items-center gap-1.5">
             <Sparkles className="h-4 w-4 text-indigo-600 animate-pulse" />
             <span className="text-xs font-black text-indigo-900 uppercase tracking-wider">Đánh giá nhanh 1-chạm:</span>
@@ -352,7 +352,7 @@ const EvaluationModal: React.FC<{
                 setQualities(empty.qualities);
                 setGeneralComment('');
               }}
-              className="px-2.5 py-1.5 bg-gray-100 dark:bg-slate-800 hover:bg-gray-200 text-gray-700 rounded-lg text-xs font-bold transition-all border"
+              className="px-2.5 py-1.5 bg-gray-100 dark:bg-slate-800 hover:bg-gray-200 text-gray-700 rounded-lg text-xs font-bold transition-all border dark:border-slate-800 dark:text-slate-300"
             >
               Xoá sạch
             </button>
@@ -360,7 +360,7 @@ const EvaluationModal: React.FC<{
         </div>
 
         {/* Tabs */}
-        <div className="flex border-b bg-gray-50 dark:bg-slate-850">
+        <div className="flex border-b bg-gray-50 dark:bg-slate-850 dark:border-slate-800">
           {TABS.map(tab => {
             const Icon = tab.icon;
             return (
@@ -375,7 +375,7 @@ const EvaluationModal: React.FC<{
               >
                 <Icon className="h-4 w-4" />
                 <span>{tab.label}</span>
-                <span className="text-[10px] bg-gray-200 text-gray-600 rounded-full px-1.5">{tab.count}</span>
+                <span className="text-[10px] bg-gray-200 text-gray-600 rounded-full px-1.5 dark:text-slate-400">{tab.count}</span>
               </button>
             );
           })}
@@ -384,9 +384,9 @@ const EvaluationModal: React.FC<{
         {/* Content */}
         <div className="flex-1 overflow-y-auto p-5 space-y-3">
           {items.list.map(item => (
-            <div key={item.key} className="bg-gray-50 dark:bg-slate-850 border border-gray-100 rounded-xl p-4 space-y-2 hover:border-indigo-200 transition-colors">
+            <div key={item.key} className="bg-gray-50 dark:bg-slate-850 border border-gray-100 rounded-xl p-4 space-y-2 hover:border-indigo-200 transition-colors dark:border-slate-800">
               <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
-                <label className="text-sm font-bold text-gray-800 min-w-[160px]">{item.label}</label>
+                <label className="text-sm font-bold text-gray-800 min-w-[160px] dark:text-slate-200">{item.label}</label>
                 <RatingSelect
                   value={items.data[item.key]?.rating || 'None'}
                   onChange={val => updateItem(items.group, item.key, 'rating', val)}
@@ -403,7 +403,7 @@ const EvaluationModal: React.FC<{
           ))}
 
           {/* General comment */}
-          <div className="mt-6 bg-indigo-50/50 border border-indigo-100 rounded-xl p-4 space-y-2">
+          <div className="mt-6 bg-indigo-50/50 border border-indigo-100 rounded-xl p-4 space-y-2 dark:border-indigo-900/30">
             <label className="text-sm font-bold text-indigo-800 flex items-center gap-2">
               <MessageSquare className="h-4 w-4" />
               Nhận xét chung
@@ -428,7 +428,7 @@ const EvaluationModal: React.FC<{
                     key={idx}
                     type="button"
                     onClick={() => setGeneralComment(sug)}
-                    className="text-[11px] text-gray-600 bg-white hover:bg-indigo-50 hover:text-indigo-700 px-2.5 py-1 rounded-md border text-left transition-all truncate max-w-[320px] font-medium"
+                    className="text-[11px] text-gray-600 bg-white hover:bg-indigo-50 hover:text-indigo-700 px-2.5 py-1 rounded-md border text-left transition-all truncate max-w-[320px] font-medium dark:bg-slate-900 dark:border-slate-800 dark:text-slate-400"
                     title={sug}
                   >
                     {sug}
@@ -440,10 +440,10 @@ const EvaluationModal: React.FC<{
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-end gap-3 p-5 border-t bg-gray-50 dark:bg-slate-850 rounded-b-2xl">
+        <div className="flex items-center justify-end gap-3 p-5 border-t bg-gray-50 dark:bg-slate-850 rounded-b-2xl dark:border-slate-800">
           <button
             onClick={onClose}
-            className="px-5 py-2.5 text-sm font-medium text-gray-600 bg-white border border-gray-200 rounded-xl hover:bg-gray-100 dark:bg-slate-800 transition-colors"
+            className="px-5 py-2.5 text-sm font-medium text-gray-600 bg-white border border-gray-200 rounded-xl hover:bg-gray-100 dark:bg-slate-800 transition-colors dark:border-slate-800 dark:text-slate-400 dark:hover:bg-slate-800"
           >
             Hủy
           </button>
@@ -717,17 +717,17 @@ export const DailyEvaluation: React.FC = () => {
     <div className="max-w-6xl mx-auto">
       {/* Page Header */}
       <div className="mb-6">
-        <h1 className="text-2xl font-extrabold text-gray-900 flex items-center gap-3">
+        <h1 className="text-2xl font-extrabold text-gray-900 flex items-center gap-3 dark:text-slate-100">
           <div className="bg-gradient-to-br from-indigo-500 to-purple-600 p-2.5 rounded-xl shadow-lg shadow-indigo-200">
             <FileText className="h-6 w-6 text-white" />
           </div>
           Nhận xét Thường xuyên
         </h1>
-        <p className="text-gray-500 mt-1 text-sm">Đánh giá học sinh theo Thông tư 27/2021/TT-BGDĐT</p>
+        <p className="text-gray-500 mt-1 text-sm dark:text-slate-500">Đánh giá học sinh theo Thông tư 27/2021/TT-BGDĐT</p>
       </div>
 
       {/* Filters Bar */}
-      <div className="bg-white rounded-2xl shadow-sm border p-4 mb-6">
+      <div className="bg-white rounded-2xl shadow-sm border p-4 mb-6 dark:bg-slate-900 dark:border-slate-800">
         <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
           {/* Chọn lớp */}
           <div className="flex items-center gap-2 flex-1 min-w-[200px]">
@@ -735,7 +735,7 @@ export const DailyEvaluation: React.FC = () => {
             <select
               value={selectedClassId}
               onChange={e => { setSelectedClassId(e.target.value); setSelectedStudents([]); }}
-              className="flex-1 border border-gray-200 rounded-xl px-3 py-2.5 text-sm font-medium focus:ring-2 focus:ring-indigo-400 outline-none bg-white"
+              className="flex-1 border border-gray-200 rounded-xl px-3 py-2.5 text-sm font-medium focus:ring-2 focus:ring-indigo-400 outline-none bg-white dark:bg-slate-900 dark:border-slate-800"
             >
               <option value="">Chọn lớp...</option>
               {teacherClasses.map(c => (
@@ -751,7 +751,7 @@ export const DailyEvaluation: React.FC = () => {
               type="date"
               value={selectedDate}
               onChange={e => setSelectedDate(e.target.value)}
-              className="border border-gray-200 rounded-xl px-3 py-2.5 text-sm font-medium focus:ring-2 focus:ring-indigo-400 outline-none"
+              className="border border-gray-200 rounded-xl px-3 py-2.5 text-sm font-medium focus:ring-2 focus:ring-indigo-400 outline-none dark:border-slate-800"
             />
           </div>
 
@@ -763,7 +763,7 @@ export const DailyEvaluation: React.FC = () => {
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
               placeholder="Tìm học sinh..."
-              className="w-full border border-gray-200 rounded-xl pl-9 pr-3 py-2.5 text-sm focus:ring-2 focus:ring-indigo-400 outline-none"
+              className="w-full border border-gray-200 rounded-xl pl-9 pr-3 py-2.5 text-sm focus:ring-2 focus:ring-indigo-400 outline-none dark:border-slate-800"
             />
           </div>
 
@@ -771,7 +771,7 @@ export const DailyEvaluation: React.FC = () => {
           {selectedClassId && (
             <button
               onClick={toggleAllStudents}
-              className="px-4 py-2.5 text-xs font-bold text-gray-700 hover:text-indigo-600 bg-gray-50 dark:bg-slate-850 border rounded-xl hover:bg-gray-100 dark:bg-slate-800 transition-all flex items-center gap-1.5 whitespace-nowrap select-none"
+              className="px-4 py-2.5 text-xs font-bold text-gray-700 hover:text-indigo-600 bg-gray-50 dark:bg-slate-850 border rounded-xl hover:bg-gray-100 dark:bg-slate-800 transition-all flex items-center gap-1.5 whitespace-nowrap select-none dark:border-slate-800 dark:text-slate-300 dark:hover:bg-slate-800"
             >
               <CheckSquare className="h-4 w-4 text-indigo-600" />
               {selectedStudents.length === filteredStudents.length ? 'Bỏ chọn cả lớp' : 'Chọn cả lớp'}
@@ -781,7 +781,7 @@ export const DailyEvaluation: React.FC = () => {
 
         {/* Progress stats */}
         {selectedClassId && (
-          <div className="flex items-center gap-4 mt-4 pt-4 border-t">
+          <div className="flex items-center gap-4 mt-4 pt-4 border-t dark:border-slate-800">
             <div className="flex items-center gap-2">
               <div className="h-8 w-8 bg-green-100 rounded-lg flex items-center justify-center">
                 <CheckCircle className="h-4 w-4 text-green-600" />
@@ -797,14 +797,14 @@ export const DailyEvaluation: React.FC = () => {
                 style={{ width: `${stats.total > 0 ? (stats.evaluated / stats.total) * 100 : 0}%` }}
               />
             </div>
-            <span className="text-xs font-bold text-gray-500">{stats.total > 0 ? Math.round((stats.evaluated / stats.total) * 100) : 0}%</span>
+            <span className="text-xs font-bold text-gray-500 dark:text-slate-500">{stats.total > 0 ? Math.round((stats.evaluated / stats.total) * 100) : 0}%</span>
           </div>
         )}
       </div>
 
       {/* Batch Action Bar */}
       {selectedStudents.length > 0 && (
-        <div className="bg-indigo-50 border border-indigo-200 rounded-2xl p-4 mb-4 flex flex-col md:flex-row md:items-center justify-between gap-3 animate-in slide-in-from-top">
+        <div className="bg-indigo-50 border border-indigo-200 rounded-2xl p-4 mb-4 flex flex-col md:flex-row md:items-center justify-between gap-3 animate-in slide-in-from-top dark:border-indigo-900/30">
           <p className="text-sm font-bold text-indigo-800">
             Đã chọn <span className="bg-indigo-600 text-white px-2 py-0.5 rounded-full text-xs mx-1">{selectedStudents.length}</span> học sinh
           </p>
@@ -823,7 +823,7 @@ export const DailyEvaluation: React.FC = () => {
             </button>
             <button
               onClick={openBatchModal}
-              className="px-4 py-2 text-xs font-bold text-indigo-700 bg-white border border-indigo-200 hover:bg-indigo-50 rounded-xl transition-all flex items-center gap-1.5"
+              className="px-4 py-2 text-xs font-bold text-indigo-700 bg-white border border-indigo-200 hover:bg-indigo-50 rounded-xl transition-all flex items-center gap-1.5 dark:bg-slate-900 dark:border-indigo-900/30"
             >
               <FileText className="h-4.5 w-4.5" />
               Tùy chỉnh nhận xét
@@ -834,19 +834,19 @@ export const DailyEvaluation: React.FC = () => {
 
       {/* Student List */}
       {!selectedClassId ? (
-        <div className="bg-white rounded-2xl shadow-sm border p-12 text-center">
+        <div className="bg-white rounded-2xl shadow-sm border p-12 text-center dark:bg-slate-900 dark:border-slate-800">
           <Users className="h-12 w-12 text-gray-300 mx-auto mb-3" />
-          <p className="text-gray-500 font-medium">Chọn một lớp để bắt đầu nhận xét</p>
+          <p className="text-gray-500 font-medium dark:text-slate-500">Chọn một lớp để bắt đầu nhận xét</p>
         </div>
       ) : isLoading ? (
-        <div className="bg-white rounded-2xl shadow-sm border p-12 text-center">
+        <div className="bg-white rounded-2xl shadow-sm border p-12 text-center dark:bg-slate-900 dark:border-slate-800">
           <Loader2 className="h-8 w-8 text-indigo-600 animate-spin mx-auto mb-3" />
-          <p className="text-gray-500">Đang tải dữ liệu...</p>
+          <p className="text-gray-500 dark:text-slate-500">Đang tải dữ liệu...</p>
         </div>
       ) : filteredStudents.length === 0 && searchQuery.trim() ? (
-        <div className="bg-white rounded-2xl shadow-sm border p-12 text-center">
+        <div className="bg-white rounded-2xl shadow-sm border p-12 text-center dark:bg-slate-900 dark:border-slate-800">
           <Users className="h-12 w-12 text-gray-300 mx-auto mb-3" />
-          <p className="text-gray-500 font-medium">
+          <p className="text-gray-500 font-medium dark:text-slate-500">
             Không tìm thấy học sinh phù hợp với từ khóa "{searchQuery}"
           </p>
         </div>
@@ -859,8 +859,8 @@ export const DailyEvaluation: React.FC = () => {
             );
 
             return (
-              <div key={group.id} className="bg-white rounded-2xl shadow-sm border overflow-hidden flex flex-col hover:border-indigo-300 transition-colors">
-                <div className="bg-gray-50 dark:bg-slate-850 px-4 py-2.5 border-b flex items-center justify-between">
+              <div key={group.id} className="bg-white rounded-2xl shadow-sm border overflow-hidden flex flex-col hover:border-indigo-300 transition-colors dark:bg-slate-900 dark:border-slate-800">
+                <div className="bg-gray-50 dark:bg-slate-850 px-4 py-2.5 border-b flex items-center justify-between dark:border-slate-800">
                   <button 
                     onClick={() => selectGroupStudents(group.id)} 
                     className="text-[10px] font-extrabold text-indigo-700 uppercase tracking-wider flex items-center gap-2 hover:text-indigo-900 select-none text-left"
@@ -870,7 +870,7 @@ export const DailyEvaluation: React.FC = () => {
                   </button>
                   <button 
                     onClick={() => selectGroupStudents(group.id)}
-                    className="text-[10px] font-black text-indigo-600 hover:text-indigo-800 bg-indigo-50 border border-indigo-100/60 px-2 py-0.5 rounded-md transition-colors"
+                    className="text-[10px] font-black text-indigo-600 hover:text-indigo-800 bg-indigo-50 border border-indigo-100/60 px-2 py-0.5 rounded-md transition-colors dark:border-slate-800"
                   >
                     Chọn cả tổ ({studentsInGroup.length})
                   </button>
@@ -895,10 +895,10 @@ export const DailyEvaluation: React.FC = () => {
                               )}
                             </button>
                             <div className="min-w-0 flex-1">
-                              <p className="text-sm font-bold text-gray-900 truncate" title={student.name}>{student.name}</p>
+                              <p className="text-sm font-bold text-gray-900 truncate dark:text-slate-100" title={student.name}>{student.name}</p>
                               {hasEval && (
                                 <div className="flex items-center gap-1.5 mt-1">
-                                  <span className="inline-flex bg-indigo-50 border border-indigo-200 text-indigo-700 font-bold px-1.5 py-0.5 rounded text-[10px]">
+                                  <span className="inline-flex bg-indigo-50 border border-indigo-200 text-indigo-700 font-bold px-1.5 py-0.5 rounded text-[10px] dark:border-indigo-900/30">
                                     {studentEvals.length} nhận xét
                                   </span>
                                 </div>
@@ -914,20 +914,20 @@ export const DailyEvaluation: React.FC = () => {
                           <div className="flex items-center gap-1 mt-1">
                             <button
                               onClick={() => openSingleModal(student.id)}
-                              className="flex-1 py-1 text-[10px] font-bold text-center text-indigo-600 bg-indigo-50/50 hover:bg-indigo-100 rounded-lg transition-all border border-indigo-100/50"
+                              className="flex-1 py-1 text-[10px] font-bold text-center text-indigo-600 bg-indigo-50/50 hover:bg-indigo-100 rounded-lg transition-all border border-indigo-100/50 dark:border-slate-800"
                             >
                               + Thêm / Sửa
                             </button>
                             <button
                               onClick={() => handleQuickEvaluate(student.id, 'T')}
-                              className="px-2 py-1 text-[9px] font-extrabold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 rounded-lg border border-emerald-100/60"
+                              className="px-2 py-1 text-[9px] font-extrabold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 rounded-lg border border-emerald-100/60 dark:border-slate-800"
                               title="Tạo nhanh 1 đánh giá Tốt kèm nhận xét mẫu"
                             >
                               🌟 Tốt
                             </button>
                             <button
                               onClick={() => handleQuickEvaluate(student.id, 'H_Đ')}
-                              className="px-2 py-1 text-[9px] font-extrabold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 rounded-lg border border-indigo-100/60"
+                              className="px-2 py-1 text-[9px] font-extrabold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 rounded-lg border border-indigo-100/60 dark:border-slate-800"
                               title="Tạo nhanh 1 đánh giá Đạt kèm nhận xét mẫu"
                             >
                               ⭐ Đạt
@@ -944,9 +944,9 @@ export const DailyEvaluation: React.FC = () => {
 
           {/* Cột cho HS chưa phân tổ (nếu có) */}
           {studentsByGroup['ungrouped']?.length > 0 && (
-            <div className="bg-white rounded-2xl shadow-sm border border-dashed overflow-hidden flex flex-col hover:border-gray-400 transition-colors">
-               <div className="bg-gray-50 dark:bg-slate-850 px-4 py-2.5 border-b">
-                  <span className="text-[10px] font-extrabold text-gray-500 uppercase">Chưa phân tổ</span>
+            <div className="bg-white rounded-2xl shadow-sm border border-dashed overflow-hidden flex flex-col hover:border-gray-400 transition-colors dark:bg-slate-900 dark:border-slate-800">
+               <div className="bg-gray-50 dark:bg-slate-850 px-4 py-2.5 border-b dark:border-slate-800">
+                  <span className="text-[10px] font-extrabold text-gray-500 uppercase dark:text-slate-500">Chưa phân tổ</span>
                </div>
                <div className="flex-1 divide-y divide-gray-50">
                  {studentsByGroup['ungrouped'].filter(s => !searchQuery.trim() || s.name.toLowerCase().includes(searchQuery.toLowerCase())).map(student => {
@@ -959,7 +959,7 @@ export const DailyEvaluation: React.FC = () => {
                         <button onClick={() => toggleStudent(student.id)}>
                           {isChecked ? <CheckSquare className="h-4 w-4 text-indigo-600" /> : <Square className="h-4 w-4 text-gray-300" />}
                         </button>
-                        <p className="text-sm font-bold text-gray-800 truncate flex-1">{student.name}</p>
+                        <p className="text-sm font-bold text-gray-800 truncate flex-1 dark:text-slate-200">{student.name}</p>
                         {hasEval && (
                           <span className="text-[10px] font-bold text-indigo-600 bg-indigo-50 px-1 rounded">
                             {studentEvals.length}

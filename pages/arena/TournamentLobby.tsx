@@ -100,8 +100,8 @@ export const TournamentLobby: React.FC = () => {
     if (loading) {
         return (
             <div className="max-w-md mx-auto text-center py-16">
-                <div className="w-16 h-16 mx-auto border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin mb-4"></div>
-                <p className="text-gray-500 font-medium">Đang tải đấu trường...</p>
+                <div className="w-16 h-16 mx-auto border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin mb-4 dark:border-slate-800"></div>
+                <p className="text-gray-500 font-medium dark:text-slate-500">Đang tải đấu trường...</p>
             </div>
         );
     }
@@ -110,8 +110,8 @@ export const TournamentLobby: React.FC = () => {
         return (
             <div className="max-w-md mx-auto text-center py-16">
                 <div className="text-4xl mb-4">😕</div>
-                <p className="text-gray-500 font-medium">Đấu trường không tồn tại</p>
-                <button onClick={() => navigate('/arena')} className="mt-4 px-4 py-2 bg-gray-100 text-gray-700 font-bold rounded-lg hover:bg-gray-200">Quay lại</button>
+                <p className="text-gray-500 font-medium dark:text-slate-500">Đấu trường không tồn tại</p>
+                <button onClick={() => navigate('/arena')} className="mt-4 px-4 py-2 bg-gray-100 text-gray-700 font-bold rounded-lg hover:bg-gray-200 dark:bg-slate-850 dark:text-slate-300">Quay lại</button>
             </div>
         );
     }
@@ -127,7 +127,7 @@ export const TournamentLobby: React.FC = () => {
             {/* Header */}
             <div className="flex items-center gap-3 mb-6">
                 <button onClick={() => navigate('/arena')} className="text-gray-400 hover:text-gray-600"><ArrowLeft className="h-5 w-5" /></button>
-                <h1 className="text-xl font-black text-gray-900 flex items-center gap-2">⚔️ {tournament.title}</h1>
+                <h1 className="text-xl font-black text-gray-900 flex items-center gap-2 dark:text-slate-100">⚔️ {tournament.title}</h1>
                 <span className={`text-xs font-bold px-2 py-1 rounded-full ${tournament.status === 'active' ? 'bg-emerald-100 text-emerald-700' : tournament.status === 'finished' ? 'bg-gray-100 text-gray-600' : 'bg-amber-100 text-amber-700'}`}>
                     {tournament.status === 'active' ? '🟢 Đang diễn ra' : tournament.status === 'finished' ? '🏆 Kết thúc' : '⏳ Chờ bắt đầu'}
                 </span>
@@ -140,7 +140,7 @@ export const TournamentLobby: React.FC = () => {
                     <h2 className="text-2xl font-black mb-2">{tournament.title}</h2>
                     <p className="text-white/60 mb-6 text-sm">Tham gia đấu trường với biệt danh bí ẩn. Đánh bại tất cả để trở thành Nhà Vô Địch!</p>
                     <button onClick={handleJoin} disabled={joining}
-                        className="px-8 py-3 bg-white text-purple-900 font-black rounded-xl hover:shadow-lg hover:scale-105 transition-all disabled:opacity-50">
+                        className="px-8 py-3 bg-white text-purple-900 font-black rounded-xl hover:shadow-lg hover:scale-105 transition-all disabled:opacity-50 dark:bg-slate-900">
                         {joining ? 'Đang vào...' : '⚔️ Tham gia Đấu Trường'}
                     </button>
                 </div>
@@ -152,32 +152,32 @@ export const TournamentLobby: React.FC = () => {
                     style={!isEliminated && !isChampion ? { animation: 'glow-border 2s ease-in-out infinite' } : {}}>
                     <span className="text-3xl">{myParticipant.alias_emoji}</span>
                     <div className="flex-1">
-                        <div className="font-bold text-gray-900">{myParticipant.alias} <span className="text-xs text-purple-500">(Bạn)</span></div>
-                        <div className="text-xs text-gray-500">
+                        <div className="font-bold text-gray-900 dark:text-slate-100">{myParticipant.alias} <span className="text-xs text-purple-500">(Bạn)</span></div>
+                        <div className="text-xs text-gray-500 dark:text-slate-500">
                             {myParticipant.wins}W · {isChampion ? '👑 Nhà Vô Địch!' : isEliminated ? '❌ Đã bị loại - Chế độ Khán giả' : '⚔️ Sẵn sàng chiến đấu'}
                         </div>
                     </div>
-                    {isEliminated && <span className="text-xs bg-gray-200 text-gray-600 font-bold px-3 py-1 rounded-full flex items-center gap-1"><Eye className="h-3 w-3" /> Khán giả</span>}
+                    {isEliminated && <span className="text-xs bg-gray-200 text-gray-600 font-bold px-3 py-1 rounded-full flex items-center gap-1 dark:text-slate-400"><Eye className="h-3 w-3" /> Khán giả</span>}
                 </div>
             )}
 
             {/* Choose opponent */}
             {myParticipant && !isEliminated && !isChampion && tournament.status === 'active' && (
                 <div className="mb-6">
-                    <h2 className="font-bold text-gray-900 mb-3 flex items-center gap-2"><Swords className="h-5 w-5 text-purple-500" /> Chọn đối thủ ({activeParticipants.length})</h2>
+                    <h2 className="font-bold text-gray-900 mb-3 flex items-center gap-2 dark:text-slate-100"><Swords className="h-5 w-5 text-purple-500" /> Chọn đối thủ ({activeParticipants.length})</h2>
                     {activeParticipants.length === 0 ? (
-                        <div className="bg-white border-2 border-dashed border-gray-200 rounded-2xl p-8 text-center">
+                        <div className="bg-white border-2 border-dashed border-gray-200 rounded-2xl p-8 text-center dark:bg-slate-900 dark:border-slate-800">
                             <div className="text-3xl mb-3">⏳</div>
-                            <p className="text-gray-500 font-medium">Đang chờ đối thủ sẵn sàng...</p>
+                            <p className="text-gray-500 font-medium dark:text-slate-500">Đang chờ đối thủ sẵn sàng...</p>
                         </div>
                     ) : (
                         <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                             {activeParticipants.map(p => (
                                 <button key={p.id} onClick={() => handleChallenge(p)} disabled={challengingId === p.id}
-                                    className="bg-white border-2 rounded-2xl p-4 text-center hover:border-purple-400 hover:bg-purple-50 hover:shadow-md transition-all group active:scale-95"
+                                    className="bg-white border-2 rounded-2xl p-4 text-center hover:border-purple-400 hover:bg-purple-50 hover:shadow-md transition-all group active:scale-95 dark:bg-slate-900 dark:border-slate-800"
                                     style={{ animation: 'fadeIn 0.3s ease-out' }}>
                                     <div className="text-3xl mb-2 group-hover:scale-110 transition-transform" style={{ animation: 'float 3s ease-in-out infinite' }}>{p.alias_emoji}</div>
-                                    <div className="font-bold text-sm text-gray-900">{p.alias}</div>
+                                    <div className="font-bold text-sm text-gray-900 dark:text-slate-100">{p.alias}</div>
                                     <div className="text-xs text-gray-400 mb-2">{p.wins}W</div>
                                     <div className="text-xs font-bold text-purple-600 bg-purple-50 px-2 py-1 rounded-full group-hover:bg-purple-100">
                                         {challengingId === p.id ? '⏳...' : '⚔️ Thách đấu'}
@@ -190,9 +190,9 @@ export const TournamentLobby: React.FC = () => {
             )}
 
             {/* Ranking */}
-            <div className="bg-white rounded-2xl border shadow-sm">
-                <div className="p-4 border-b">
-                    <h2 className="font-bold text-gray-900 flex items-center gap-2"><Crown className="h-5 w-5 text-yellow-500" /> Bảng Xếp Hạng</h2>
+            <div className="bg-white rounded-2xl border shadow-sm dark:bg-slate-900 dark:border-slate-800">
+                <div className="p-4 border-b dark:border-slate-800">
+                    <h2 className="font-bold text-gray-900 flex items-center gap-2 dark:text-slate-100"><Crown className="h-5 w-5 text-yellow-500" /> Bảng Xếp Hạng</h2>
                 </div>
                 <div className="divide-y">
                     {ranking.slice(0, 8).map((p, i) => (
@@ -202,7 +202,7 @@ export const TournamentLobby: React.FC = () => {
                             </div>
                             <span className="text-lg">{p.alias_emoji}</span>
                             <div className="flex-1">
-                                <span className="font-bold text-sm text-gray-900">{p.alias}</span>
+                                <span className="font-bold text-sm text-gray-900 dark:text-slate-100">{p.alias}</span>
                                 <span className="text-xs text-gray-400 ml-2">{p.wins}W</span>
                             </div>
                             <span className="text-xs font-bold">

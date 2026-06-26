@@ -177,17 +177,17 @@ export const TournamentHost: React.FC = () => {
                 <style>{`@keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }`}</style>
                 <div className="flex items-center gap-3 mb-6">
                     <button onClick={() => navigate('/arena/admin')} className="text-gray-400 hover:text-gray-600"><ArrowLeft className="h-5 w-5" /></button>
-                    <h1 className="text-xl font-black text-gray-900 flex items-center gap-2">⚔️ Tạo Đấu Trường</h1>
+                    <h1 className="text-xl font-black text-gray-900 flex items-center gap-2 dark:text-slate-100">⚔️ Tạo Đấu Trường</h1>
                 </div>
 
                 <div className="bg-white dark:bg-slate-900 rounded-2xl border dark:border-slate-800 shadow-sm p-6 space-y-5" style={{ animation: 'fadeIn 0.5s ease-out' }}>
                     <div>
-                        <label className="block text-sm font-bold text-gray-700 mb-1">Tên đấu trường</label>
-                        <input value={title} onChange={e => setTitle(e.target.value)} className="w-full border rounded-xl px-3 py-2.5 text-sm focus:ring-2 focus:ring-purple-500 outline-none" />
+                        <label className="block text-sm font-bold text-gray-700 mb-1 dark:text-slate-300">Tên đấu trường</label>
+                        <input value={title} onChange={e => setTitle(e.target.value)} className="w-full border rounded-xl px-3 py-2.5 text-sm focus:ring-2 focus:ring-purple-500 outline-none dark:border-slate-800" />
                     </div>
 
                     <div>
-                        <label className="block text-sm font-bold text-gray-700 mb-2">Nguồn câu hỏi</label>
+                        <label className="block text-sm font-bold text-gray-700 mb-2 dark:text-slate-300">Nguồn câu hỏi</label>
                         <div className="grid grid-cols-2 gap-2">
                             <button onClick={() => setSource('exam')} className={`p-3 rounded-xl border-2 text-sm font-bold transition-all ${source === 'exam' ? 'border-purple-500 bg-purple-50 text-purple-700' : 'border-gray-200 text-gray-600'}`}>📋 Ngân hàng bài tập</button>
                             <button onClick={() => setSource('arena')} className={`p-3 rounded-xl border-2 text-sm font-bold transition-all ${source === 'arena' ? 'border-purple-500 bg-purple-50 text-purple-700' : 'border-gray-200 text-gray-600'}`}>🧠 Bộ câu hỏi Arena</button>
@@ -195,24 +195,24 @@ export const TournamentHost: React.FC = () => {
                     </div>
 
                     <div>
-                        <label className="block text-sm font-bold text-gray-700 mb-1">Môn học</label>
-                        <select value={subject} onChange={e => setSubject(e.target.value)} className="w-full border rounded-xl px-3 py-2.5 text-sm focus:ring-2 focus:ring-purple-500 outline-none">
+                        <label className="block text-sm font-bold text-gray-700 mb-1 dark:text-slate-300">Môn học</label>
+                        <select value={subject} onChange={e => setSubject(e.target.value)} className="w-full border rounded-xl px-3 py-2.5 text-sm focus:ring-2 focus:ring-purple-500 outline-none dark:border-slate-800">
                             {SUBJECTS.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
                         </select>
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
                         <div>
-                            <label className="block text-sm font-bold text-gray-700 mb-1">Câu hỏi/trận</label>
-                            <input type="number" min={3} max={10} value={questionsPerMatch} onChange={e => setQuestionsPerMatch(Number(e.target.value))} className="w-full border rounded-xl px-3 py-2.5 text-sm focus:ring-2 focus:ring-purple-500 outline-none" />
+                            <label className="block text-sm font-bold text-gray-700 mb-1 dark:text-slate-300">Câu hỏi/trận</label>
+                            <input type="number" min={3} max={10} value={questionsPerMatch} onChange={e => setQuestionsPerMatch(Number(e.target.value))} className="w-full border rounded-xl px-3 py-2.5 text-sm focus:ring-2 focus:ring-purple-500 outline-none dark:border-slate-800" />
                         </div>
                         <div>
-                            <label className="block text-sm font-bold text-gray-700 mb-1">Thời gian/câu (s)</label>
-                            <input type="number" min={5} max={60} value={timePerQuestion} onChange={e => setTimePerQuestion(Number(e.target.value))} className="w-full border rounded-xl px-3 py-2.5 text-sm focus:ring-2 focus:ring-purple-500 outline-none" />
+                            <label className="block text-sm font-bold text-gray-700 mb-1 dark:text-slate-300">Thời gian/câu (s)</label>
+                            <input type="number" min={5} max={60} value={timePerQuestion} onChange={e => setTimePerQuestion(Number(e.target.value))} className="w-full border rounded-xl px-3 py-2.5 text-sm focus:ring-2 focus:ring-purple-500 outline-none dark:border-slate-800" />
                         </div>
                     </div>
 
-                    <div className="bg-purple-50 border border-purple-100 rounded-xl p-4 space-y-3">
+                    <div className="bg-purple-50 border border-purple-100 rounded-xl p-4 space-y-3 dark:border-slate-800">
                         <div className="flex items-center justify-between">
                             <h3 className="text-xs font-bold text-purple-700">Dòng câu hỏi: {selectedIds.length > 0 ? `${selectedIds.length} câu đã chọn` : 'Ngẫu nhiên theo môn'}</h3>
                             <button onClick={() => setShowSelector(true)} className="text-xs font-black text-purple-600 underline">
@@ -222,7 +222,7 @@ export const TournamentHost: React.FC = () => {
                         {selectedIds.length > 0 && (
                             <div className="flex flex-wrap gap-1 max-h-20 overflow-y-auto pr-2">
                                 {selectedIds.map(qid => (
-                                    <div key={qid} className="bg-white px-2 py-0.5 rounded border border-purple-200 text-[10px] flex items-center gap-1">
+                                    <div key={qid} className="bg-white px-2 py-0.5 rounded border border-purple-200 text-[10px] flex items-center gap-1 dark:bg-slate-900 dark:border-slate-800">
                                         ID: {qid.split('_').pop()}
                                         <button onClick={() => setSelectedIds(prev => prev.filter(id => id !== qid))} className="text-red-400 hover:text-red-600">×</button>
                                     </div>
@@ -231,7 +231,7 @@ export const TournamentHost: React.FC = () => {
                         )}
 
                         {/* Round setup */}
-                        <div className="pt-2 border-t border-purple-100 flex flex-col gap-2">
+                        <div className="pt-2 border-t border-purple-100 flex flex-col gap-2 dark:border-slate-800">
                             <h4 className="text-[10px] font-bold text-purple-700 uppercase">Phân bổ theo Vòng (Tùy chọn)</h4>
                             <div className="grid grid-cols-2 gap-2">
                                 {roundIds.map(r => (
@@ -241,7 +241,7 @@ export const TournamentHost: React.FC = () => {
                                                 setSelectingRound(r);
                                                 setShowSelector(true);
                                             }}
-                                            className="w-full bg-white p-2 rounded-lg border border-purple-200 text-left hover:border-purple-400 transition-all"
+                                            className="w-full bg-white p-2 rounded-lg border border-purple-200 text-left hover:border-purple-400 transition-all dark:bg-slate-900 dark:border-slate-800"
                                         >
                                             <div className="text-[10px] font-bold text-gray-400">VÒNG {r}</div>
                                             <div className="text-xs font-medium text-purple-600">{(roundQuestions[r] || []).length} câu hỏi</div>
@@ -256,7 +256,7 @@ export const TournamentHost: React.FC = () => {
                                 ))}
                                 <button 
                                     onClick={addRound}
-                                    className="p-2 rounded-lg border-2 border-dashed border-purple-200 text-purple-400 flex items-center justify-center gap-1 hover:border-purple-400 hover:text-purple-600 transition-all font-bold text-xs"
+                                    className="p-2 rounded-lg border-2 border-dashed border-purple-200 text-purple-400 flex items-center justify-center gap-1 hover:border-purple-400 hover:text-purple-600 transition-all font-bold text-xs dark:border-slate-800"
                                 >
                                     <Plus className="h-4 w-4" /> Thêm vòng
                                 </button>
@@ -271,32 +271,32 @@ export const TournamentHost: React.FC = () => {
                     {/* Question Selector Modal */}
                     {showSelector && (
                         <div className="fixed inset-0 bg-black/60 z-[100] flex items-center justify-center p-4">
-                            <div className="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] flex flex-col shadow-2xl animate-fade-in">
-                                <div className="p-4 border-b flex items-center justify-between">
-                                    <h3 className="font-bold text-gray-900 flex items-center gap-2">
+                            <div className="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] flex flex-col shadow-2xl animate-fade-in dark:bg-slate-900">
+                                <div className="p-4 border-b flex items-center justify-between dark:border-slate-800">
+                                    <h3 className="font-bold text-gray-900 flex items-center gap-2 dark:text-slate-100">
                                         {source === 'arena' ? <Brain className="h-5 w-5 text-purple-500" /> : <BookOpen className="h-5 w-5 text-indigo-500" />}
                                         {selectingRound ? `Vòng ${selectingRound}: Chọn câu hỏi (${(roundQuestions[selectingRound] || []).length})` : `Chọn kho câu hỏi (${selectedIds.length})`}
                                     </h3>
                                     <button onClick={() => { setShowSelector(false); setSelectingRound(null); }} className="text-gray-400 hover:text-gray-600"><X className="h-5 w-5" /></button>
                                 </div>
 
-                                <div className="p-4 border-b">
+                                <div className="p-4 border-b dark:border-slate-800">
                                     <div className="relative">
                                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                                         <input 
                                             placeholder="Tiềm kiếm nội dung câu hỏi..."
                                             value={searchQuery}
                                             onChange={e => setSearchQuery(e.target.value)}
-                                            className="w-full pl-10 pr-4 py-2 bg-gray-50 dark:bg-slate-850 border rounded-xl text-sm outline-none focus:ring-2 focus:ring-purple-500"
+                                            className="w-full pl-10 pr-4 py-2 bg-gray-50 dark:bg-slate-850 border rounded-xl text-sm outline-none focus:ring-2 focus:ring-purple-500 dark:border-slate-800"
                                         />
                                     </div>
                                 </div>
 
-                                <div className="px-4 pb-4 border-b flex gap-2">
+                                <div className="px-4 pb-4 border-b flex gap-2 dark:border-slate-800">
                                     <select 
                                         value={filterTopic} 
                                         onChange={e => setFilterTopic(e.target.value)}
-                                        className="flex-1 bg-gray-50 dark:bg-slate-850 border rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-purple-500"
+                                        className="flex-1 bg-gray-50 dark:bg-slate-850 border rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-purple-500 dark:border-slate-800"
                                     >
                                         <option value="">Tất cả chủ đề</option>
                                         {Array.from(new Set(
@@ -310,7 +310,7 @@ export const TournamentHost: React.FC = () => {
                                     <select 
                                         value={filterDifficulty} 
                                         onChange={e => setFilterDifficulty(e.target.value === '' ? '' : Number(e.target.value))}
-                                        className="flex-1 bg-gray-50 dark:bg-slate-850 border rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-purple-500"
+                                        className="flex-1 bg-gray-50 dark:bg-slate-850 border rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-purple-500 dark:border-slate-800"
                                     >
                                         <option value="">Tất cả độ khó</option>
                                         <option value="1">Mức 1</option>
@@ -355,7 +355,7 @@ export const TournamentHost: React.FC = () => {
                                                     {isSelected && <CheckCircle2 className="h-4 w-4" />}
                                                 </div>
                                                 <div className="flex-1 min-w-0">
-                                                    <MathText className="text-xs font-medium text-gray-900 line-clamp-2" inline>{q.content || q.question}</MathText>
+                                                    <MathText className="text-xs font-medium text-gray-900 line-clamp-2 dark:text-slate-100" inline>{q.content || q.question}</MathText>
                                                     <div className="flex gap-2 mt-1">
                                                         <span className="text-[10px] font-bold text-gray-400 uppercase">{q.subject || q.examTitle || 'Chung'}</span>
                                                         <span className="text-[10px] font-bold text-purple-400">ID: {qid.split('_').pop()}</span>
@@ -366,8 +366,8 @@ export const TournamentHost: React.FC = () => {
                                     })}
                                 </div>
 
-                                <div className="p-4 border-t flex gap-3">
-                                    <button onClick={() => setSelectedIds([])} className="px-4 py-2 text-sm font-bold text-gray-500 hover:text-gray-700">Xóa hết</button>
+                                <div className="p-4 border-t flex gap-3 dark:border-slate-800">
+                                    <button onClick={() => setSelectedIds([])} className="px-4 py-2 text-sm font-bold text-gray-500 hover:text-gray-700 dark:text-slate-500">Xóa hết</button>
                                     <button onClick={() => setShowSelector(false)} className="flex-1 bg-purple-600 text-white py-2 rounded-xl font-bold">Xác nhận</button>
                                 </div>
                             </div>
@@ -401,17 +401,17 @@ export const TournamentHost: React.FC = () => {
 
                 {/* Stats */}
                 <div className="grid grid-cols-3 gap-6 mb-8">
-                    <div className="bg-white/10 backdrop-blur rounded-2xl p-6 text-center border border-white/10">
+                    <div className="bg-white/10 backdrop-blur rounded-2xl p-6 text-center border border-white/10 dark:border-slate-800">
                         <Users className="h-8 w-8 mx-auto text-blue-400 mb-2" />
                         <div className="text-3xl font-black">{participants.length}</div>
                         <div className="text-white/60 text-sm">Tổng HS</div>
                     </div>
-                    <div className="bg-white/10 backdrop-blur rounded-2xl p-6 text-center border border-white/10">
+                    <div className="bg-white/10 backdrop-blur rounded-2xl p-6 text-center border border-white/10 dark:border-slate-800">
                         <Swords className="h-8 w-8 mx-auto text-emerald-400 mb-2" />
                         <div className="text-3xl font-black text-emerald-400">{activeCount}</div>
                         <div className="text-white/60 text-sm">Còn trong trận</div>
                     </div>
-                    <div className="bg-white/10 backdrop-blur rounded-2xl p-6 text-center border border-white/10">
+                    <div className="bg-white/10 backdrop-blur rounded-2xl p-6 text-center border border-white/10 dark:border-slate-800">
                         <Trophy className="h-8 w-8 mx-auto text-red-400 mb-2" />
                         <div className="text-3xl font-black text-red-400">{eliminatedCount}</div>
                         <div className="text-white/60 text-sm">Đã bị loại</div>
@@ -419,7 +419,7 @@ export const TournamentHost: React.FC = () => {
                 </div>
 
                 {/* Ranking */}
-                <div className="bg-white/5 backdrop-blur rounded-2xl border border-white/10 p-6">
+                <div className="bg-white/5 backdrop-blur rounded-2xl border border-white/10 p-6 dark:border-slate-800">
                     <h2 className="text-xl font-black mb-4 flex items-center gap-2"><Crown className="h-6 w-6 text-yellow-400" /> Bảng Xếp Hạng</h2>
                     <div className="space-y-3">
                         {ranking.slice(0, 8).map((p, i) => (
@@ -454,7 +454,7 @@ export const TournamentHost: React.FC = () => {
             <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-3">
                     <button onClick={() => navigate('/arena/admin')} className="text-gray-400 hover:text-gray-600"><ArrowLeft className="h-5 w-5" /></button>
-                    <h1 className="text-xl font-black text-gray-900">⚔️ {tournament?.title || 'Đấu Trường'}</h1>
+                    <h1 className="text-xl font-black text-gray-900 dark:text-slate-100">⚔️ {tournament?.title || 'Đấu Trường'}</h1>
                     <span className={`text-xs font-bold px-2 py-1 rounded-full ${tournament?.status === 'active' ? 'bg-emerald-100 text-emerald-700' : tournament?.status === 'finished' ? 'bg-gray-100 text-gray-600' : 'bg-amber-100 text-amber-700'}`}>
                         {tournament?.current_round && tournament.status === 'active' ? `🔥 Vòng ${tournament.current_round}` : 
                          tournament?.status === 'active' ? '🟢 Đang diễn ra' : 
@@ -492,19 +492,19 @@ export const TournamentHost: React.FC = () => {
 
             {/* Stats cards */}
             <div className="grid grid-cols-4 gap-4 mb-6">
-                <div className="bg-white rounded-xl border p-4 text-center">
-                    <div className="text-2xl font-black text-gray-900">{participants.length}</div>
-                    <div className="text-xs text-gray-500">Tổng HS</div>
+                <div className="bg-white rounded-xl border p-4 text-center dark:bg-slate-900 dark:border-slate-800">
+                    <div className="text-2xl font-black text-gray-900 dark:text-slate-100">{participants.length}</div>
+                    <div className="text-xs text-gray-500 dark:text-slate-500">Tổng HS</div>
                 </div>
-                <div className="bg-emerald-50 rounded-xl border border-emerald-100 p-4 text-center">
+                <div className="bg-emerald-50 rounded-xl border border-emerald-100 p-4 text-center dark:border-emerald-900/30">
                     <div className="text-2xl font-black text-emerald-600">{activeCount}</div>
                     <div className="text-xs text-emerald-600">Còn lại</div>
                 </div>
-                <div className="bg-red-50 rounded-xl border border-red-100 p-4 text-center">
+                <div className="bg-red-50 rounded-xl border border-red-100 p-4 text-center dark:border-red-900/30">
                     <div className="text-2xl font-black text-red-500">{eliminatedCount}</div>
                     <div className="text-xs text-red-500">Bị loại</div>
                 </div>
-                <div className="bg-purple-50 rounded-xl border border-purple-100 p-4 text-center">
+                <div className="bg-purple-50 rounded-xl border border-purple-100 p-4 text-center dark:border-slate-800">
                     <div className="text-2xl font-black text-purple-600">{questionsPerMatch}</div>
                     <div className="text-xs text-purple-600">câu/trận · {timePerQuestion}s</div>
                 </div>
@@ -512,8 +512,8 @@ export const TournamentHost: React.FC = () => {
 
             {/* Participants */}
             <div className="bg-white dark:bg-slate-900 rounded-2xl border dark:border-slate-800 shadow-sm">
-                <div className="p-4 border-b flex items-center justify-between">
-                    <h2 className="font-bold text-gray-900 flex items-center gap-2"><Users className="h-5 w-5 text-purple-500" /> Danh sách HS ({participants.length})</h2>
+                <div className="p-4 border-b flex items-center justify-between dark:border-slate-800">
+                    <h2 className="font-bold text-gray-900 flex items-center gap-2 dark:text-slate-100"><Users className="h-5 w-5 text-purple-500" /> Danh sách HS ({participants.length})</h2>
                 </div>
                 <div className="divide-y max-h-[60vh] overflow-y-auto">
                     {participants.length === 0 ? (
@@ -530,7 +530,7 @@ export const TournamentHost: React.FC = () => {
                                 </div>
                                 <span className="text-xl">{p.alias_emoji}</span>
                                 <div className="flex-1">
-                                    <div className="font-bold text-gray-900">{p.alias}</div>
+                                    <div className="font-bold text-gray-900 dark:text-slate-100">{p.alias}</div>
                                     <div className="text-xs text-gray-400">{p.wins}W · {p.status === 'active' ? '⚔️ Sẵn sàng' : p.status === 'fighting' ? '🔥 Đang đấu' : p.status === 'champion' ? '👑 Vô Địch' : '❌ Đã loại'}</div>
                                 </div>
                                 {p.status !== 'eliminated' && p.status !== 'champion' && tournament?.status === 'active' && (

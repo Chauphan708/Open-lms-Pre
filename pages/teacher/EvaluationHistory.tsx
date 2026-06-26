@@ -110,7 +110,7 @@ const PieChart: React.FC<{
         {data.map((d, i) => (
           <div key={i} className="flex items-center gap-1.5 text-xs">
             <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: d.color }} />
-            <span className="text-gray-600 font-medium">{d.label}: {d.value}</span>
+            <span className="text-gray-600 font-medium dark:text-slate-400">{d.label}: {d.value}</span>
           </div>
         ))}
       </div>
@@ -154,10 +154,10 @@ const StudentDetailModal: React.FC<{
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[9999] flex items-center justify-center p-4" onClick={onClose}>
       <div
-        className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[85vh] flex flex-col animate-in fade-in zoom-in-95"
+        className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[85vh] flex flex-col animate-in fade-in zoom-in-95 dark:bg-slate-900"
         onClick={e => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between p-5 border-b bg-gradient-to-r from-indigo-500 to-purple-600 rounded-t-2xl">
+        <div className="flex items-center justify-between p-5 border-b bg-gradient-to-r from-indigo-500 to-purple-600 rounded-t-2xl dark:border-slate-800">
           <div className="text-white">
             <h2 className="text-lg font-bold flex items-center gap-2">
               <Eye className="h-5 w-5" />
@@ -178,7 +178,7 @@ const StudentDetailModal: React.FC<{
             </div>
           ) : (
             evaluations.map(ev => (
-              <div key={ev.id} className="bg-gray-50 dark:bg-slate-850 border border-gray-100 rounded-xl p-4 space-y-3">
+              <div key={ev.id} className="bg-gray-50 dark:bg-slate-850 border border-gray-100 rounded-xl p-4 space-y-3 dark:border-slate-800">
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-bold text-indigo-700 flex items-center gap-2">
                     <Calendar className="h-4 w-4" />
@@ -189,14 +189,14 @@ const StudentDetailModal: React.FC<{
                 {/* Môn học */}
                 {ev.subjects && Object.keys(ev.subjects).length > 0 && (
                   <div>
-                    <p className="text-xs font-bold text-gray-500 mb-1 flex items-center gap-1"><BookOpen className="h-3 w-3" /> Môn học</p>
+                    <p className="text-xs font-bold text-gray-500 mb-1 flex items-center gap-1 dark:text-slate-500"><BookOpen className="h-3 w-3" /> Môn học</p>
                     <div className="flex flex-wrap gap-1.5">
                       {SUBJECT_LIST.map(s => {
                         const val = ev.subjects[s.key];
                         if (!val) return null;
                         return (
                           <div key={s.key} className="flex items-center gap-1" title={val.comment || ''}>
-                            <span className="text-[10px] text-gray-500">{s.label}:</span>
+                            <span className="text-[10px] text-gray-500 dark:text-slate-500">{s.label}:</span>
                             <RatingBadge rating={val.rating} isSubject />
                           </div>
                         );
@@ -208,14 +208,14 @@ const StudentDetailModal: React.FC<{
                 {/* Năng lực */}
                 {ev.competencies && Object.keys(ev.competencies).length > 0 && (
                   <div>
-                    <p className="text-xs font-bold text-gray-500 mb-1 flex items-center gap-1"><Lightbulb className="h-3 w-3" /> Năng lực</p>
+                    <p className="text-xs font-bold text-gray-500 mb-1 flex items-center gap-1 dark:text-slate-500"><Lightbulb className="h-3 w-3" /> Năng lực</p>
                     <div className="flex flex-wrap gap-1.5">
                       {COMPETENCY_LIST.map(c => {
                         const val = ev.competencies[c.key];
                         if (!val) return null;
                         return (
                           <div key={c.key} className="flex items-center gap-1" title={val.comment || ''}>
-                            <span className="text-[10px] text-gray-500">{c.label}:</span>
+                            <span className="text-[10px] text-gray-500 dark:text-slate-500">{c.label}:</span>
                             <RatingBadge rating={val.rating} />
                           </div>
                         );
@@ -227,14 +227,14 @@ const StudentDetailModal: React.FC<{
                 {/* Phẩm chất */}
                 {ev.qualities && Object.keys(ev.qualities).length > 0 && (
                   <div>
-                    <p className="text-xs font-bold text-gray-500 mb-1 flex items-center gap-1"><Heart className="h-3 w-3" /> Phẩm chất</p>
+                    <p className="text-xs font-bold text-gray-500 mb-1 flex items-center gap-1 dark:text-slate-500"><Heart className="h-3 w-3" /> Phẩm chất</p>
                     <div className="flex flex-wrap gap-1.5">
                       {QUALITY_LIST.map(q => {
                         const val = ev.qualities[q.key];
                         if (!val) return null;
                         return (
                           <div key={q.key} className="flex items-center gap-1" title={val.comment || ''}>
-                            <span className="text-[10px] text-gray-500">{q.label}:</span>
+                            <span className="text-[10px] text-gray-500 dark:text-slate-500">{q.label}:</span>
                             <RatingBadge rating={val.rating} />
                           </div>
                         );
@@ -245,9 +245,9 @@ const StudentDetailModal: React.FC<{
 
                 {/* Nhận xét chung */}
                 {ev.general_comment && (
-                  <div className="bg-white border border-indigo-100 rounded-lg p-3">
+                  <div className="bg-white border border-indigo-100 rounded-lg p-3 dark:bg-slate-900 dark:border-indigo-900/30">
                     <p className="text-xs font-bold text-indigo-600 mb-1 flex items-center gap-1"><MessageSquare className="h-3 w-3" /> Nhận xét chung</p>
-                    <p className="text-sm text-gray-700">{ev.general_comment}</p>
+                    <p className="text-sm text-gray-700 dark:text-slate-300">{ev.general_comment}</p>
                   </div>
                 )}
               </div>
@@ -255,8 +255,8 @@ const StudentDetailModal: React.FC<{
           )}
         </div>
 
-        <div className="p-4 border-t bg-gray-50 dark:bg-slate-850 rounded-b-2xl">
-          <button onClick={onClose} className="w-full py-2.5 text-sm font-bold text-gray-600 bg-white border rounded-xl hover:bg-gray-50 dark:bg-slate-850">
+        <div className="p-4 border-t bg-gray-50 dark:bg-slate-850 rounded-b-2xl dark:border-slate-800">
+          <button onClick={onClose} className="w-full py-2.5 text-sm font-bold text-gray-600 bg-white border rounded-xl hover:bg-gray-50 dark:bg-slate-850 dark:border-slate-800 dark:text-slate-400 dark:hover:bg-slate-850/50">
             Đóng
           </button>
         </div>
@@ -383,24 +383,24 @@ export const EvaluationHistory: React.FC = () => {
     <div className="max-w-6xl mx-auto">
       {/* Page Header */}
       <div className="mb-6">
-        <h1 className="text-2xl font-extrabold text-gray-900 flex items-center gap-3">
+        <h1 className="text-2xl font-extrabold text-gray-900 flex items-center gap-3 dark:text-slate-100">
           <div className="bg-gradient-to-br from-teal-500 to-emerald-600 p-2.5 rounded-xl shadow-lg shadow-teal-200">
             <History className="h-6 w-6 text-white" />
           </div>
           Lịch sử Nhận xét
         </h1>
-        <p className="text-gray-500 mt-1 text-sm">Tổng hợp nhận xét thường xuyên theo lớp và khoảng thời gian</p>
+        <p className="text-gray-500 mt-1 text-sm dark:text-slate-500">Tổng hợp nhận xét thường xuyên theo lớp và khoảng thời gian</p>
       </div>
 
       {/* Filters Bar */}
-      <div className="bg-white rounded-2xl shadow-sm border p-4 mb-6">
+      <div className="bg-white rounded-2xl shadow-sm border p-4 mb-6 dark:bg-slate-900 dark:border-slate-800">
         <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center">
           <div className="flex items-center gap-2 min-w-[200px]">
             <Users className="h-4 w-4 text-gray-400 flex-shrink-0" />
             <select
               value={selectedClassId}
               onChange={e => setSelectedClassId(e.target.value)}
-              className="flex-1 border border-gray-200 rounded-xl px-3 py-2.5 text-sm font-medium focus:ring-2 focus:ring-teal-400 outline-none bg-white"
+              className="flex-1 border border-gray-200 rounded-xl px-3 py-2.5 text-sm font-medium focus:ring-2 focus:ring-teal-400 outline-none bg-white dark:bg-slate-900 dark:border-slate-800"
             >
               <option value="">Chọn lớp...</option>
               {teacherClasses.map(c => (
@@ -415,14 +415,14 @@ export const EvaluationHistory: React.FC = () => {
               type="date"
               value={dateFrom}
               onChange={e => setDateFrom(e.target.value)}
-              className="border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:ring-2 focus:ring-teal-400 outline-none"
+              className="border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:ring-2 focus:ring-teal-400 outline-none dark:border-slate-800"
             />
             <span className="text-gray-400 text-sm">→</span>
             <input
               type="date"
               value={dateTo}
               onChange={e => setDateTo(e.target.value)}
-              className="border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:ring-2 focus:ring-teal-400 outline-none"
+              className="border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:ring-2 focus:ring-teal-400 outline-none dark:border-slate-800"
             />
           </div>
 
@@ -433,7 +433,7 @@ export const EvaluationHistory: React.FC = () => {
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
               placeholder="Tìm học sinh..."
-              className="w-full border border-gray-200 rounded-xl pl-9 pr-3 py-2.5 text-sm focus:ring-2 focus:ring-teal-400 outline-none"
+              className="w-full border border-gray-200 rounded-xl pl-9 pr-3 py-2.5 text-sm focus:ring-2 focus:ring-teal-400 outline-none dark:border-slate-800"
             />
           </div>
         </div>
@@ -443,10 +443,10 @@ export const EvaluationHistory: React.FC = () => {
       {selectedClassId && evaluations.length > 0 && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
           {/* Pie Chart */}
-          <div className="bg-white rounded-2xl shadow-sm border p-5 flex flex-col items-center">
+          <div className="bg-white rounded-2xl shadow-sm border p-5 flex flex-col items-center dark:bg-slate-900 dark:border-slate-800">
             <div className="flex items-center gap-2 mb-4 w-full">
               <BarChart3 className="h-4 w-4 text-teal-600" />
-              <h3 className="text-sm font-bold text-gray-800">Phân bố đánh giá</h3>
+              <h3 className="text-sm font-bold text-gray-800 dark:text-slate-200">Phân bố đánh giá</h3>
             </div>
 
             <div className="flex items-center gap-2 mb-4">
@@ -454,7 +454,7 @@ export const EvaluationHistory: React.FC = () => {
               <select
                 value={filterCategory}
                 onChange={e => setFilterCategory(e.target.value)}
-                className="text-xs border rounded-lg px-2 py-1.5 outline-none focus:ring-1 focus:ring-teal-400"
+                className="text-xs border rounded-lg px-2 py-1.5 outline-none focus:ring-1 focus:ring-teal-400 dark:border-slate-800"
               >
                 <option value="all">Tất cả</option>
                 <option value="subjects">Môn học</option>
@@ -494,19 +494,19 @@ export const EvaluationHistory: React.FC = () => {
               const pct = totalCount > 0 ? Math.round((keyCount / totalCount) * 100) : 0;
               
               return (
-                <div key={opt.value} className="bg-white rounded-2xl shadow-sm border p-4 text-center">
+                <div key={opt.value} className="bg-white rounded-2xl shadow-sm border p-4 text-center dark:bg-slate-900 dark:border-slate-800">
                   <div className="w-10 h-10 rounded-full mx-auto mb-2 flex items-center justify-center text-white font-bold text-sm" style={{ backgroundColor: opt.color }}>
                     {opt.value}
                   </div>
-                  <p className="text-[10px] text-gray-500 font-medium">{opt.label}</p>
-                  <p className="text-xl font-extrabold text-gray-800 mt-1">{keyCount}</p>
+                  <p className="text-[10px] text-gray-500 font-medium dark:text-slate-500">{opt.label}</p>
+                  <p className="text-xl font-extrabold text-gray-800 mt-1 dark:text-slate-200">{keyCount}</p>
                   <p className="text-[10px] text-gray-400">{pct}%</p>
                 </div>
               );
             })}
 
             {/* Quick stats */}
-            <div className="col-span-2 sm:col-span-4 bg-gradient-to-r from-teal-50 to-emerald-50 rounded-2xl border border-teal-100 p-4 flex items-center justify-around">
+            <div className="col-span-2 sm:col-span-4 bg-gradient-to-r from-teal-50 to-emerald-50 rounded-2xl border border-teal-100 p-4 flex items-center justify-around dark:border-slate-800">
               <div className="text-center">
                 <p className="text-xs text-teal-600 font-medium">Tổng HS</p>
                 <p className="text-xl font-extrabold text-teal-800">{classStudents.length}</p>
@@ -528,18 +528,18 @@ export const EvaluationHistory: React.FC = () => {
 
       {/* Student Table */}
       {!selectedClassId ? (
-        <div className="bg-white rounded-2xl shadow-sm border p-12 text-center">
+        <div className="bg-white rounded-2xl shadow-sm border p-12 text-center dark:bg-slate-900 dark:border-slate-800">
           <Users className="h-12 w-12 text-gray-300 mx-auto mb-3" />
-          <p className="text-gray-500 font-medium">Chọn một lớp để xem lịch sử nhận xét</p>
+          <p className="text-gray-500 font-medium dark:text-slate-500">Chọn một lớp để xem lịch sử nhận xét</p>
         </div>
       ) : isLoading ? (
-        <div className="bg-white rounded-2xl shadow-sm border p-12 text-center">
+        <div className="bg-white rounded-2xl shadow-sm border p-12 text-center dark:bg-slate-900 dark:border-slate-800">
           <Loader2 className="h-8 w-8 text-teal-600 animate-spin mx-auto mb-3" />
-          <p className="text-gray-500">Đang tải dữ liệu...</p>
+          <p className="text-gray-500 dark:text-slate-500">Đang tải dữ liệu...</p>
         </div>
       ) : (
-        <div className="bg-white rounded-2xl shadow-sm border overflow-hidden">
-          <div className="grid grid-cols-[1fr_auto_auto_auto] items-center gap-4 px-5 py-3 bg-gray-50 dark:bg-slate-850 border-b text-xs font-bold text-gray-500 uppercase tracking-wider">
+        <div className="bg-white rounded-2xl shadow-sm border overflow-hidden dark:bg-slate-900 dark:border-slate-800">
+          <div className="grid grid-cols-[1fr_auto_auto_auto] items-center gap-4 px-5 py-3 bg-gray-50 dark:bg-slate-850 border-b text-xs font-bold text-gray-500 uppercase tracking-wider dark:border-slate-800 dark:text-slate-500">
             <span>Học sinh</span>
             <span className="text-center">Số lần NX</span>
             <span className="text-center">Đánh giá gần nhất</span>
@@ -552,13 +552,13 @@ export const EvaluationHistory: React.FC = () => {
               const latest = evals.length > 0 ? evals[0] : null;
 
               return (
-                <div key={student.id} className="grid grid-cols-[1fr_auto_auto_auto] items-center gap-4 px-5 py-3.5 hover:bg-gray-50 dark:bg-slate-850/80 transition-all group">
+                <div key={student.id} className="grid grid-cols-[1fr_auto_auto_auto] items-center gap-4 px-5 py-3.5 hover:bg-gray-50 dark:bg-slate-850/80 transition-all group dark:hover:bg-slate-850/50">
                   <div className="flex items-center gap-3 min-w-0">
                     <div className="flex-shrink-0 w-9 h-9 rounded-full bg-gradient-to-br from-teal-400 to-emerald-500 flex items-center justify-center text-white text-sm font-bold shadow-sm">
                       {student.name[0]}
                     </div>
                     <div className="min-w-0">
-                      <p className="text-sm font-bold text-gray-900 truncate">{student.name}</p>
+                      <p className="text-sm font-bold text-gray-900 truncate dark:text-slate-100">{student.name}</p>
                       <p className="text-xs text-gray-400">{student.email || `STT: ${idx + 1}`}</p>
                     </div>
                   </div>

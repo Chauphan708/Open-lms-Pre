@@ -149,17 +149,17 @@ export const ClassFunAttendance: React.FC = () => {
             {/* Header */}
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div>
-                    <h1 className="text-3xl font-extrabold text-gray-900 flex items-center gap-3">
+                    <h1 className="text-3xl font-extrabold text-gray-900 flex items-center gap-3 dark:text-slate-100">
                         <ClipboardCheck className="h-8 w-8 text-indigo-600" />
                         Điểm Danh
                     </h1>
-                    <p className="text-gray-500 mt-1">Nhấn vào trạng thái để chuyển đổi</p>
+                    <p className="text-gray-500 mt-1 dark:text-slate-500">Nhấn vào trạng thái để chuyển đổi</p>
                 </div>
                 <div className="flex gap-3 items-center">
                     <button onClick={handleSave} disabled={saving}
                         className="flex items-center gap-2 px-5 py-2.5 bg-indigo-600 text-white rounded-xl font-bold text-sm shadow-md hover:bg-indigo-700 hover:shadow-lg transition-all active:scale-95 disabled:opacity-50">
                         {saving ? (
-                            <div className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                            <div className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin dark:border-slate-800" />
                         ) : (
                             <Save className="h-4 w-4" />
                         )}
@@ -167,7 +167,7 @@ export const ClassFunAttendance: React.FC = () => {
                     </button>
                     {myClasses.length > 1 && (
                         <select value={selectedClassId} onChange={e => setSelectedClassId(e.target.value)}
-                            className="border border-gray-300 rounded-lg px-4 py-2 text-sm font-medium focus:ring-2 focus:ring-indigo-500 outline-none">
+                            className="border border-gray-300 rounded-lg px-4 py-2 text-sm font-medium focus:ring-2 focus:ring-indigo-500 outline-none dark:border-slate-800">
                             {myClasses.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                         </select>
                     )}
@@ -175,18 +175,18 @@ export const ClassFunAttendance: React.FC = () => {
             </div>
 
             {/* Date Picker + Stats */}
-            <div className="bg-white rounded-xl shadow-sm border p-5 flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div className="bg-white rounded-xl shadow-sm border p-5 flex flex-col sm:flex-row justify-between items-center gap-4 dark:bg-slate-900 dark:border-slate-800">
                 <div className="flex items-center gap-4">
-                    <button onClick={() => changeDate(-1)} className="p-2 hover:bg-gray-100 rounded-lg transition"><ChevronLeft className="h-5 w-5" /></button>
+                    <button onClick={() => changeDate(-1)} className="p-2 hover:bg-gray-100 rounded-lg transition dark:hover:bg-slate-800"><ChevronLeft className="h-5 w-5" /></button>
                     <div className="text-center">
                         <div className="flex items-center gap-2">
                             <Calendar className="h-5 w-5 text-indigo-500" />
                             <input type="date" value={selectedDate} onChange={e => setSelectedDate(e.target.value)}
-                                className="border-0 text-lg font-bold text-gray-800 focus:outline-none cursor-pointer" />
+                                className="border-0 text-lg font-bold text-gray-800 focus:outline-none cursor-pointer dark:border-slate-800 dark:text-slate-200" />
                         </div>
-                        <p className="text-sm text-gray-500 capitalize">{dateLabel}</p>
+                        <p className="text-sm text-gray-500 capitalize dark:text-slate-500">{dateLabel}</p>
                     </div>
-                    <button onClick={() => changeDate(1)} className="p-2 hover:bg-gray-100 rounded-lg transition"><ChevronRight className="h-5 w-5" /></button>
+                    <button onClick={() => changeDate(1)} className="p-2 hover:bg-gray-100 rounded-lg transition dark:hover:bg-slate-800"><ChevronRight className="h-5 w-5" /></button>
                     {!isToday && (
                         <button onClick={() => setSelectedDate(new Date().toISOString().split('T')[0])}
                             className="text-xs bg-indigo-50 text-indigo-600 px-3 py-1 rounded-full font-bold hover:bg-indigo-100 transition">
@@ -210,21 +210,21 @@ export const ClassFunAttendance: React.FC = () => {
             {/* Quick Actions */}
             <div className="flex flex-wrap gap-2">
                 <button onClick={() => setAllStatus('present')}
-                    className="text-sm bg-emerald-50 text-emerald-700 px-4 py-2 rounded-lg font-medium hover:bg-emerald-100 border border-emerald-200 transition">
+                    className="text-sm bg-emerald-50 text-emerald-700 px-4 py-2 rounded-lg font-medium hover:bg-emerald-100 border border-emerald-200 transition dark:border-slate-800">
                     ✓ Tất cả Có mặt
                 </button>
                 <button onClick={() => setAllStatus('excused')}
-                    className="text-sm bg-amber-50 text-amber-700 px-4 py-2 rounded-lg font-medium hover:bg-amber-100 border border-amber-200 transition">
+                    className="text-sm bg-amber-50 text-amber-700 px-4 py-2 rounded-lg font-medium hover:bg-amber-100 border border-amber-200 transition dark:border-slate-800">
                     ⚠ Tất cả Có phép
                 </button>
                 <button onClick={() => setAllStatus('unexcused')}
-                    className="text-sm bg-red-50 text-red-700 px-4 py-2 rounded-lg font-medium hover:bg-red-100 border border-red-200 transition">
+                    className="text-sm bg-red-50 text-red-700 px-4 py-2 rounded-lg font-medium hover:bg-red-100 border border-red-200 transition dark:border-red-900/30">
                     ✕ Tất cả Vắng KP
                 </button>
             </div>
 
             {/* Student List */}
-            <div className="bg-white rounded-xl shadow-sm border overflow-hidden">
+            <div className="bg-white rounded-xl shadow-sm border overflow-hidden dark:bg-slate-900 dark:border-slate-800">
                 <div className="grid grid-cols-1 divide-y dark:divide-slate-800">
                     {classStudents.length === 0 ? (
                         <div className="p-10 text-center text-gray-400">
@@ -235,11 +235,11 @@ export const ClassFunAttendance: React.FC = () => {
                         const status = localStatuses[s.id] || 'present';
                         const cfg = StatusConfig[status];
                         return (
-                            <div key={s.id} className="flex items-center gap-4 p-4 hover:bg-gray-50 dark:bg-slate-850 transition-colors">
+                            <div key={s.id} className="flex items-center gap-4 p-4 hover:bg-gray-50 dark:bg-slate-850 transition-colors dark:hover:bg-slate-850/50">
                                 <span className="w-8 text-center text-sm font-bold text-gray-400">{idx + 1}</span>
                                 <img src={s.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(s.name)}&background=6366f1&color=fff&size=40`}
                                     alt="" className="w-10 h-10 rounded-full flex-shrink-0" />
-                                <span className="flex-1 font-semibold text-gray-800">{s.name}</span>
+                                <span className="flex-1 font-semibold text-gray-800 dark:text-slate-200">{s.name}</span>
 
                                 {/* Status buttons */}
                                 <div className="flex gap-2">
@@ -265,7 +265,7 @@ export const ClassFunAttendance: React.FC = () => {
                 <button onClick={handleSave} disabled={saving}
                     className="flex items-center gap-3 px-8 py-4 bg-indigo-600 text-white rounded-2xl font-bold text-lg shadow-xl hover:bg-indigo-700 hover:shadow-2xl transition-all active:scale-95 disabled:opacity-50">
                     {saving ? (
-                        <div className="h-5 w-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                        <div className="h-5 w-5 border-2 border-white border-t-transparent rounded-full animate-spin dark:border-slate-800" />
                     ) : (
                         <Save className="h-5 w-5" />
                     )}

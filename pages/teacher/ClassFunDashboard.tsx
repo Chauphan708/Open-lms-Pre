@@ -138,8 +138,8 @@ export const ClassFunDashboard: React.FC = () => {
         return (
             <div className="flex items-center justify-center p-20">
                 <div className="text-center">
-                    <div className="h-10 w-10 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-                    <p className="text-gray-500">Đang tải dữ liệu thi đua...</p>
+                    <div className="h-10 w-10 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin mx-auto mb-4 dark:border-slate-800"></div>
+                    <p className="text-gray-500 dark:text-slate-500">Đang tải dữ liệu thi đua...</p>
                 </div>
             </div>
         );
@@ -147,7 +147,7 @@ export const ClassFunDashboard: React.FC = () => {
 
     if (myClasses.length === 0) {
         return (
-            <div className="text-center p-20 text-gray-500">
+            <div className="text-center p-20 text-gray-500 dark:text-slate-500">
                 <Users className="h-16 w-16 mx-auto mb-4 opacity-30" />
                 <p className="text-lg font-semibold">Bạn chưa có lớp học nào.</p>
                 <p className="text-sm mt-2">Vui lòng tạo lớp học trước khi sử dụng tính năng Thi Đua.</p>
@@ -160,11 +160,11 @@ export const ClassFunDashboard: React.FC = () => {
             {/* Header */}
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div>
-                    <h1 className="text-3xl font-extrabold text-gray-900 flex items-center gap-3">
+                    <h1 className="text-3xl font-extrabold text-gray-900 flex items-center gap-3 dark:text-slate-100">
                         <Trophy className="h-8 w-8 text-amber-500" />
                         Bảng Thi Đua Lớp
                     </h1>
-                    <p className="text-gray-500 mt-1">Theo dõi và quản lý hành vi học sinh</p>
+                    <p className="text-gray-500 mt-1 dark:text-slate-500">Theo dõi và quản lý hành vi học sinh</p>
                 </div>
 
                 {/* Class Selector */}
@@ -172,7 +172,7 @@ export const ClassFunDashboard: React.FC = () => {
                     <select
                         value={selectedClassId}
                         onChange={e => setSelectedClassId(e.target.value)}
-                        className="border border-gray-300 rounded-lg px-4 py-2 text-sm font-medium focus:ring-2 focus:ring-indigo-500 outline-none"
+                        className="border border-gray-300 rounded-lg px-4 py-2 text-sm font-medium focus:ring-2 focus:ring-indigo-500 outline-none dark:border-slate-800"
                     >
                         {myClasses.map(c => (
                             <option key={c.id} value={c.id}>{c.name}</option>
@@ -182,8 +182,8 @@ export const ClassFunDashboard: React.FC = () => {
             </div>
 
             {/* Filter Bar */}
-            <div className="bg-white p-4 rounded-xl shadow-sm border flex flex-col sm:flex-row justify-between items-center gap-4">
-                <div className="flex bg-gray-100 p-1 rounded-lg">
+            <div className="bg-white p-4 rounded-xl shadow-sm border flex flex-col sm:flex-row justify-between items-center gap-4 dark:bg-slate-900 dark:border-slate-800">
+                <div className="flex bg-gray-100 p-1 rounded-lg dark:bg-slate-850">
                     <button
                         onClick={() => setViewMode('week')}
                         className={`px-4 py-2 rounded-md text-sm font-semibold transition-all ${viewMode === 'week' ? 'bg-white text-indigo-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'
@@ -201,7 +201,7 @@ export const ClassFunDashboard: React.FC = () => {
                 </div>
 
                 {viewMode === 'week' && (
-                    <div className="flex items-center gap-4 bg-indigo-50 px-4 py-2 rounded-lg border border-indigo-100">
+                    <div className="flex items-center gap-4 bg-indigo-50 px-4 py-2 rounded-lg border border-indigo-100 dark:border-indigo-900/30">
                         <button onClick={() => setWeekOffset(p => p - 1)} className="p-1 hover:bg-indigo-200 rounded-full text-indigo-600 transition">
                             <ChevronLeft className="w-5 h-5" />
                         </button>
@@ -220,7 +220,7 @@ export const ClassFunDashboard: React.FC = () => {
 
             {/* Stats Cards */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className="bg-white rounded-xl p-4 shadow-sm border">
+                <div className="bg-white rounded-xl p-4 shadow-sm border dark:bg-slate-900 dark:border-slate-800">
                     <div className="flex items-center gap-3">
                         <div className="p-2 bg-emerald-100 rounded-lg"><TrendingUp className="h-5 w-5 text-emerald-600" /></div>
                         <div>
@@ -231,7 +231,7 @@ export const ClassFunDashboard: React.FC = () => {
                         </div>
                     </div>
                 </div>
-                <div className="bg-white rounded-xl p-4 shadow-sm border">
+                <div className="bg-white rounded-xl p-4 shadow-sm border dark:bg-slate-900 dark:border-slate-800">
                     <div className="flex items-center gap-3">
                         <div className="p-2 bg-red-100 rounded-lg"><TrendingDown className="h-5 w-5 text-red-600" /></div>
                         <div>
@@ -242,7 +242,7 @@ export const ClassFunDashboard: React.FC = () => {
                         </div>
                     </div>
                 </div>
-                <div className="bg-white rounded-xl p-4 shadow-sm border">
+                <div className="bg-white rounded-xl p-4 shadow-sm border dark:bg-slate-900 dark:border-slate-800">
                     <div className="flex items-center gap-3">
                         <div className="p-2 bg-blue-100 rounded-lg"><Users className="h-5 w-5 text-blue-600" /></div>
                         <div>
@@ -251,7 +251,7 @@ export const ClassFunDashboard: React.FC = () => {
                         </div>
                     </div>
                 </div>
-                <div className="bg-white rounded-xl p-4 shadow-sm border">
+                <div className="bg-white rounded-xl p-4 shadow-sm border dark:bg-slate-900 dark:border-slate-800">
                     <div className="flex items-center gap-3">
                         <div className="p-2 bg-amber-100 rounded-lg"><Clock className="h-5 w-5 text-amber-600" /></div>
                         <div>
@@ -264,8 +264,8 @@ export const ClassFunDashboard: React.FC = () => {
 
             {/* Group Leaderboard */}
             {groupScores.length > 0 && (
-                <div className="bg-white rounded-xl shadow-sm border p-6">
-                    <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+                <div className="bg-white rounded-xl shadow-sm border p-6 dark:bg-slate-900 dark:border-slate-800">
+                    <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2 dark:text-slate-200">
                         <Award className="h-6 w-6 text-amber-500" />
                         Bảng Xếp Hạng Tổ
                     </h2>
@@ -287,13 +287,13 @@ export const ClassFunDashboard: React.FC = () => {
             )}
 
             {/* Individual Leaderboard */}
-            <div className="bg-white rounded-xl shadow-sm border p-6">
+            <div className="bg-white rounded-xl shadow-sm border p-6 dark:bg-slate-900 dark:border-slate-800">
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-                    <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
+                    <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2 dark:text-slate-200">
                         <Star className="h-6 w-6 text-amber-500" />
                         Bảng Xếp Hạng Học Sinh
                     </h2>
-                    <div className="flex bg-gray-100 p-1 rounded-lg">
+                    <div className="flex bg-gray-100 p-1 rounded-lg dark:bg-slate-850">
                         <button
                             onClick={() => setLeaderboardTab('top10')}
                             className={`px-4 py-1.5 rounded-md text-sm font-semibold transition-all ${leaderboardTab === 'top10' ? 'bg-white text-indigo-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'
@@ -350,7 +350,7 @@ export const ClassFunDashboard: React.FC = () => {
 
                                         {/* Progress Bar representing score visually */}
                                         {s.score > 0 && (
-                                            <div className="w-full bg-gray-100 rounded-full h-2.5 overflow-hidden">
+                                            <div className="w-full bg-gray-100 rounded-full h-2.5 overflow-hidden dark:bg-slate-850">
                                                 <div
                                                     className={`h-2.5 rounded-full transition-all duration-1000 ease-out
                                                         ${s.rank === 1 ? 'bg-gradient-to-r from-amber-400 to-amber-500' :
@@ -361,7 +361,7 @@ export const ClassFunDashboard: React.FC = () => {
                                             </div>
                                         )}
                                         {s.score <= 0 && (
-                                            <div className="w-full bg-gray-50 dark:bg-slate-850 rounded-full h-2.5 border border-dashed border-gray-200"></div>
+                                            <div className="w-full bg-gray-50 dark:bg-slate-850 rounded-full h-2.5 border border-dashed border-gray-200 dark:border-slate-800"></div>
                                         )}
                                     </div>
                                 </div>
