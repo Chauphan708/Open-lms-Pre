@@ -416,7 +416,7 @@ export const TeacherDashboard: React.FC = () => {
         {/* Timeline Block */}
         <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border dark:border-slate-800 shadow-sm lg:col-span-2">
           <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-3 mb-6">
-            <h2 className="font-extrabold text-gray-900 dark:text-slate-100 text-base flex items-center gap-2">
+            <h2 className="font-extrabold text-gray-900 dark:text-slate-300 text-base flex items-center gap-2">
               <Clock className="h-5 w-5 text-indigo-500 dark:text-indigo-400" /> Hoạt động gần đây {user?.role === 'ADMIN' ? '(Toàn hệ thống)' : '(Lớp của bạn)'}
             </h2>
             <div className="flex gap-2">
@@ -459,7 +459,7 @@ export const TeacherDashboard: React.FC = () => {
                         ${isExam ? 'bg-blue-100/50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300' : 'bg-emerald-100/50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-300'}`}>
                         {isExam ? 'Bài tập mới' : 'Nộp bài'}
                       </span>
-                      <h4 className="text-sm font-bold text-gray-800 dark:text-slate-200 line-clamp-2 leading-snug pt-1">
+                      <h4 className="text-sm font-bold text-gray-800 dark:text-slate-300 line-clamp-2 leading-snug pt-1">
                         {act.title}
                       </h4>
                     </div>
@@ -501,7 +501,7 @@ export const TeacherDashboard: React.FC = () => {
               </Link>
               <Link 
                 to="/teacher/analytics" 
-                className="bg-white text-indigo-750 hover:bg-indigo-50 px-3.5 py-2 rounded-xl text-xs font-bold transition-all text-center flex-1 shadow-md"
+                className="bg-white dark:bg-slate-800 text-indigo-750 dark:text-slate-200 hover:bg-indigo-50 dark:hover:bg-slate-700 border border-transparent dark:border-slate-700 px-3.5 py-2 rounded-xl text-xs font-bold transition-all text-center flex-1 shadow-md dark:shadow-none"
               >
                 Xem Phân Tích
               </Link>
