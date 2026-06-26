@@ -178,7 +178,7 @@ const StudentDetailModal: React.FC<{
             </div>
           ) : (
             evaluations.map(ev => (
-              <div key={ev.id} className="bg-gray-50 border border-gray-100 rounded-xl p-4 space-y-3">
+              <div key={ev.id} className="bg-gray-50 dark:bg-slate-850 border border-gray-100 rounded-xl p-4 space-y-3">
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-bold text-indigo-700 flex items-center gap-2">
                     <Calendar className="h-4 w-4" />
@@ -255,8 +255,8 @@ const StudentDetailModal: React.FC<{
           )}
         </div>
 
-        <div className="p-4 border-t bg-gray-50 rounded-b-2xl">
-          <button onClick={onClose} className="w-full py-2.5 text-sm font-bold text-gray-600 bg-white border rounded-xl hover:bg-gray-50">
+        <div className="p-4 border-t bg-gray-50 dark:bg-slate-850 rounded-b-2xl">
+          <button onClick={onClose} className="w-full py-2.5 text-sm font-bold text-gray-600 bg-white border rounded-xl hover:bg-gray-50 dark:bg-slate-850">
             Đóng
           </button>
         </div>
@@ -539,20 +539,20 @@ export const EvaluationHistory: React.FC = () => {
         </div>
       ) : (
         <div className="bg-white rounded-2xl shadow-sm border overflow-hidden">
-          <div className="grid grid-cols-[1fr_auto_auto_auto] items-center gap-4 px-5 py-3 bg-gray-50 border-b text-xs font-bold text-gray-500 uppercase tracking-wider">
+          <div className="grid grid-cols-[1fr_auto_auto_auto] items-center gap-4 px-5 py-3 bg-gray-50 dark:bg-slate-850 border-b text-xs font-bold text-gray-500 uppercase tracking-wider">
             <span>Học sinh</span>
             <span className="text-center">Số lần NX</span>
             <span className="text-center">Đánh giá gần nhất</span>
             <span className="text-center">Chi tiết</span>
           </div>
 
-          <div className="divide-y divide-gray-50">
+          <div className="divide-y dark:divide-slate-800 divide-gray-50">
             {filteredStudents.map((student, idx) => {
               const evals = studentEvalMap[student.id] || [];
               const latest = evals.length > 0 ? evals[0] : null;
 
               return (
-                <div key={student.id} className="grid grid-cols-[1fr_auto_auto_auto] items-center gap-4 px-5 py-3.5 hover:bg-gray-50/80 transition-all group">
+                <div key={student.id} className="grid grid-cols-[1fr_auto_auto_auto] items-center gap-4 px-5 py-3.5 hover:bg-gray-50 dark:bg-slate-850/80 transition-all group">
                   <div className="flex items-center gap-3 min-w-0">
                     <div className="flex-shrink-0 w-9 h-9 rounded-full bg-gradient-to-br from-teal-400 to-emerald-500 flex items-center justify-center text-white text-sm font-bold shadow-sm">
                       {student.name[0]}

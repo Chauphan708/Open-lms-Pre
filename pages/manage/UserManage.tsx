@@ -564,7 +564,7 @@ export const UserManage: React.FC<Props> = ({ targetRole, title }) => {
 
             {isCreating && (
                 <div className="bg-white rounded-xl border shadow-lg animate-fade-in overflow-hidden">
-                    <div className="bg-gray-50 border-b px-4 md:px-6 py-3 flex justify-between items-center">
+                    <div className="bg-gray-50 dark:bg-slate-850 border-b px-4 md:px-6 py-3 flex justify-between items-center">
                         <h3 className="font-bold text-gray-800">Thêm {targetRole === 'TEACHER' ? 'Giáo viên' : 'Học sinh'} mới</h3>
                         <button onClick={() => setIsCreating(false)} className="text-gray-400 hover:text-gray-600">
                             <X className="h-5 w-5" />
@@ -706,7 +706,7 @@ export const UserManage: React.FC<Props> = ({ targetRole, title }) => {
                                     </div>
 
                                     {/* Right: Preview */}
-                                    <div className="flex flex-col h-full border rounded-lg bg-gray-50 overflow-hidden">
+                                    <div className="flex flex-col h-full border rounded-lg bg-gray-50 dark:bg-slate-850 overflow-hidden">
                                         <div className="bg-gray-100 px-4 py-2 border-b flex justify-between items-center">
                                             <span className="text-sm font-bold text-gray-700">Xem trước ({previewUsers.length})</span>
                                             {previewUsers.length > 0 && (
@@ -807,9 +807,9 @@ export const UserManage: React.FC<Props> = ({ targetRole, title }) => {
                                     </select>
                                 </div>
                             )}
-                            <div className="bg-gray-50 p-3 rounded-lg">
-                                <p className="text-xs text-gray-500">ID: <span className="font-mono text-gray-700">{editingUser.id}</span></p>
-                                <p className="text-xs text-gray-500">Vai trò: <span className="font-bold">{editingUser.role}</span></p>
+                            <div className="bg-gray-50 dark:bg-slate-850 p-3 rounded-lg">
+                                <p className="text-xs text-gray-500 dark:text-slate-400">ID: <span className="font-mono text-gray-700">{editingUser.id}</span></p>
+                                <p className="text-xs text-gray-500 dark:text-slate-400">Vai trò: <span className="font-bold">{editingUser.role}</span></p>
                             </div>
                         </div>
 
@@ -905,7 +905,7 @@ export const UserManage: React.FC<Props> = ({ targetRole, title }) => {
                             <button onClick={() => setShowBulkTopicModal(true)} className="px-4 py-2 bg-purple-50 hover:bg-purple-100 text-purple-700 rounded-lg text-sm font-bold flex items-center gap-2 transition border border-purple-100 shadow-sm animate-fade-in">
                                 <GraduationCap className="h-5 w-5" /> Ẩn/Hiện Chủ Đề
                             </button>
-                            <button onClick={() => setSelectedStudentIds([])} className="text-xs text-gray-500 hover:text-gray-700 underline ml-auto">
+                            <button onClick={() => setSelectedStudentIds([])} className="text-xs text-gray-500 dark:text-slate-400 hover:text-gray-700 underline ml-auto">
                                 Bỏ chọn
                             </button>
                         </>
@@ -916,7 +916,7 @@ export const UserManage: React.FC<Props> = ({ targetRole, title }) => {
             {/* DESKTOP TABLE VIEW */}
             <div className="hidden md:block bg-white rounded-xl border shadow-sm overflow-hidden animate-fade-in relative">
                 <table className="w-full text-left text-sm text-gray-500">
-                    <thead className="bg-gray-50 text-gray-700 uppercase">
+                    <thead className="bg-gray-50 dark:bg-slate-850 text-gray-700 uppercase">
                         <tr>
                             {targetRole === 'STUDENT' && (
                                 <th className="px-4 py-3 w-12 text-center">
@@ -943,7 +943,7 @@ export const UserManage: React.FC<Props> = ({ targetRole, title }) => {
                             <th className="px-6 py-3 text-center">Tác vụ</th>
                         </tr>
                     </thead>
-                    <tbody className="divide-y divide-gray-200">
+                    <tbody className="divide-y dark:divide-slate-800 divide-gray-200">
                         {filteredUsers.map(u => {
                             const isSelected = selectedStudentIds.includes(u.id);
                             return (
@@ -954,7 +954,7 @@ export const UserManage: React.FC<Props> = ({ targetRole, title }) => {
                                             setSelectedStudentIds(p => p.includes(u.id) ? p.filter(id => id !== u.id) : [...p, u.id]);
                                         }
                                     }}
-                                    className={`transition-colors ${targetRole === 'STUDENT' ? 'cursor-pointer' : ''} ${isSelected ? 'bg-indigo-50/70' : 'hover:bg-gray-50'}`}
+                                    className={`transition-colors ${targetRole === 'STUDENT' ? 'cursor-pointer' : ''} ${isSelected ? 'bg-indigo-50/70' : 'hover:bg-gray-50 dark:bg-slate-850'}`}
                                 >
                                     {targetRole === 'STUDENT' && (
                                         <td className="px-4 py-4 text-center" onClick={e => e.stopPropagation()}>
@@ -1126,9 +1126,9 @@ export const UserManage: React.FC<Props> = ({ targetRole, title }) => {
                 <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
                     <div className="bg-white rounded-xl shadow-lg w-full max-w-2xl p-6 animate-fade-in flex flex-col max-h-[85vh]">
                         <h3 className="text-lg font-bold text-gray-900 mb-2">Ẩn/Hiện Chủ Đề Leo Tháp cho {selectedStudentIds.length} học sinh</h3>
-                        <p className="text-xs text-gray-500 mb-4">Cấu hình hiển thị hoặc ẩn hàng loạt chủ đề cho các học sinh đã chọn.</p>
+                        <p className="text-xs text-gray-500 dark:text-slate-400 mb-4">Cấu hình hiển thị hoặc ẩn hàng loạt chủ đề cho các học sinh đã chọn.</p>
 
-                        <div className="mb-4 bg-gray-50 p-3 rounded-lg flex items-center gap-3">
+                        <div className="mb-4 bg-gray-50 dark:bg-slate-850 p-3 rounded-lg flex items-center gap-3">
                             <span className="text-sm font-bold text-gray-700">Hành động áp dụng:</span>
                             <label className="flex items-center gap-1.5 text-sm cursor-pointer">
                                 <input
@@ -1155,12 +1155,12 @@ export const UserManage: React.FC<Props> = ({ targetRole, title }) => {
                         <div className="flex-1 overflow-y-auto pr-1 space-y-4 mb-4">
                             {Object.entries(bulkTopicsBySubject).map(([subj, tList]) => (
                                 <div key={subj} className="space-y-2 border-b last:border-0 pb-3 last:pb-0">
-                                    <h4 className="text-sm font-bold text-gray-700 bg-gray-50 px-2 py-1 rounded w-fit">{subj}</h4>
+                                    <h4 className="text-sm font-bold text-gray-700 bg-gray-50 dark:bg-slate-850 px-2 py-1 rounded w-fit">{subj}</h4>
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                         {tList.map(t => {
                                             const isSelected = bulkTopicSelectedTopics.includes(t.topic);
                                             return (
-                                                <label key={t.topic} className={`flex items-center gap-2 border px-3 py-2 rounded-lg text-xs font-bold cursor-pointer transition ${isSelected ? 'bg-indigo-50 border-indigo-300 text-indigo-700' : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'}`}>
+                                                <label key={t.topic} className={`flex items-center gap-2 border px-3 py-2 rounded-lg text-xs font-bold cursor-pointer transition ${isSelected ? 'bg-indigo-50 border-indigo-300 text-indigo-700' : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50 dark:bg-slate-850'}`}>
                                                     <input
                                                         type="checkbox"
                                                         checked={isSelected}

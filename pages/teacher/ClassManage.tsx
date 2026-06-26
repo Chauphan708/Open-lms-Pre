@@ -351,7 +351,7 @@ export const ClassManage: React.FC = () => {
                   </span>
                 </div>
               </div>
-              <div className="text-xs text-gray-500 mt-1">
+              <div className="text-xs text-gray-500 dark:text-slate-400 mt-1">
                 {academicYears.find(y => y.id === c.academicYearId)?.name}
               </div>
             </div>
@@ -452,7 +452,7 @@ export const ClassManage: React.FC = () => {
                         onClick={() => setIsAddDropdownOpen(false)}
                       ></div>
                       <div className="absolute z-20 w-full md:w-80 right-0 mt-1 bg-white border rounded-lg shadow-xl overflow-hidden flex flex-col">
-                        <div className="p-2 border-b bg-gray-50">
+                        <div className="p-2 border-b bg-gray-50 dark:bg-slate-850">
                           <input
                             type="text"
                             className="w-full px-3 py-1.5 text-sm border rounded outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 mb-2"
@@ -515,7 +515,7 @@ export const ClassManage: React.FC = () => {
                                   />
                                   <div className="flex flex-col min-w-0">
                                     <span className="text-sm font-medium text-gray-900 truncate">{s.name}</span>
-                                    <span className="text-xs text-gray-500 truncate font-mono">{s.email}</span>
+                                    <span className="text-xs text-gray-500 dark:text-slate-400 truncate font-mono">{s.email}</span>
                                   </div>
                                 </label>
                               );
@@ -549,7 +549,7 @@ export const ClassManage: React.FC = () => {
             </div>
 
             {activeTab === 'students' ? (
-              <div className="flex-1 overflow-y-auto p-4 bg-gray-50/50">
+              <div className="flex-1 overflow-y-auto p-4 bg-gray-50 dark:bg-slate-850/50">
                 {studentsInClass.length === 0 ? (
                   <div className="text-center py-8 text-gray-400">Lớp chưa có học sinh nào.</div>
                 ) : (
@@ -561,7 +561,7 @@ export const ClassManage: React.FC = () => {
                         onDragOver={handleDragOver}
                         onDrop={(e) => handleDrop(e, g.id)}
                       >
-                        <div className="px-4 py-3 bg-gray-50 border-b flex justify-between items-center">
+                        <div className="px-4 py-3 bg-gray-50 dark:bg-slate-850 border-b flex justify-between items-center">
                           <div className="flex items-center gap-2">
                             <div className="w-3 h-3 rounded-full" style={{ backgroundColor: g.color || '#6366f1' }}></div>
                             <h3 className="font-bold text-gray-800">{g.name} <span className="text-gray-500 font-normal">({g.students.length})</span></h3>
@@ -588,12 +588,12 @@ export const ClassManage: React.FC = () => {
                                 draggable
                                 onDragStart={(e) => handleDragStart(e, s.id, g.id)}
                                 onClick={() => setSelectedStudentIds(p => p.includes(s.id) ? p.filter(id => id !== s.id) : [...p, s.id])}
-                                className={`p-3 flex items-center gap-3 cursor-grab active:cursor-grabbing transition-colors group ${selected ? 'bg-indigo-50/70 border-l-4 border-indigo-500' : 'hover:bg-gray-50 border-l-4 border-transparent'}`}>
+                                className={`p-3 flex items-center gap-3 cursor-grab active:cursor-grabbing transition-colors group ${selected ? 'bg-indigo-50/70 border-l-4 border-indigo-500' : 'hover:bg-gray-50 dark:bg-slate-850 border-l-4 border-transparent'}`}>
                                 <GripVertical className="h-4 w-4 text-gray-300 group-hover:text-indigo-400 opacity-0 group-hover:opacity-100 transition-all flex-shrink-0" />
                                 {selected ? <CheckSquare className="h-5 w-5 text-indigo-600 flex-shrink-0" /> : <div className="h-5 w-5 border-2 rounded text-transparent flex-shrink-0" />}
                                 <div className="flex-1 min-w-0">
                                   <p className={`font-bold text-sm truncate ${selected ? 'text-indigo-900' : 'text-gray-900'}`}>{s.name}</p>
-                                  <p className="text-xs text-gray-500 truncate font-mono">{s.email}</p>
+                                  <p className="text-xs text-gray-500 dark:text-slate-400 truncate font-mono">{s.email}</p>
                                 </div>
                               </div>
                             );
@@ -605,7 +605,7 @@ export const ClassManage: React.FC = () => {
                     {/* Ungrouped */}
                     {groupedStudents.ungrouped.length > 0 && (
                       <div className="bg-white border rounded-xl overflow-hidden shadow-sm border-dashed">
-                        <div className="px-4 py-3 bg-gray-50/50 border-b">
+                        <div className="px-4 py-3 bg-gray-50 dark:bg-slate-850/50 border-b">
                           <h3 className="font-bold text-gray-500 italic">Chưa phân tổ <span className="font-normal">({groupedStudents.ungrouped.length})</span></h3>
                         </div>
                         <div className="divide-y divide-gray-100">
@@ -617,7 +617,7 @@ export const ClassManage: React.FC = () => {
                                 draggable
                                 onDragStart={(e) => handleDragStart(e, s.id, 'ungrouped')}
                                 onClick={() => setSelectedStudentIds(p => p.includes(s.id) ? p.filter(id => id !== s.id) : [...p, s.id])}
-                                className={`p-3 flex items-center gap-3 cursor-grab active:cursor-grabbing transition-colors group ${selected ? 'bg-indigo-50/70 border-l-4 border-indigo-500' : 'hover:bg-gray-50 border-l-4 border-transparent'}`}>
+                                className={`p-3 flex items-center gap-3 cursor-grab active:cursor-grabbing transition-colors group ${selected ? 'bg-indigo-50/70 border-l-4 border-indigo-500' : 'hover:bg-gray-50 dark:bg-slate-850 border-l-4 border-transparent'}`}>
                                 <GripVertical className="h-4 w-4 text-gray-300 group-hover:text-indigo-400 opacity-0 group-hover:opacity-100 transition-all flex-shrink-0" />
                                 {selected ? <CheckSquare className="h-5 w-5 text-indigo-600 flex-shrink-0" /> : <div className="h-5 w-5 border-2 rounded text-transparent flex-shrink-0" />}
                                 <div className="flex-1">

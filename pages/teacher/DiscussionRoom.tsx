@@ -299,7 +299,7 @@ export const DiscussionRoom: React.FC = () => {
    const VisibilityIcon = { 'FULL': Eye, 'HIDDEN_ALL': EyeOff, 'NAME_ONLY': User, 'CONTENT_ONLY': MessageSquare }[session.visibility] || Eye;
 
    return (
-      <div className="h-screen bg-gray-50 flex flex-col">
+      <div className="h-screen bg-gray-50 dark:bg-slate-850 flex flex-col">
          {/* Header */}
          <div className="bg-white border-b px-4 md:px-6 py-3 flex justify-between items-center shadow-sm z-50 relative">
             <div className="flex items-center gap-2 md:gap-4">
@@ -336,7 +336,7 @@ export const DiscussionRoom: React.FC = () => {
                               <div key={r.id} className="flex items-center gap-1">
                                  <button
                                     onClick={() => { setViewedRoundId(r.id); setIsRoundMenuOpen(false); }}
-                                    className={`flex-1 text-left px-3 py-2 rounded-lg text-sm flex justify-between items-center transition-colors ${viewedRoundId === r.id ? 'bg-gray-100 font-bold text-gray-900' : 'hover:bg-gray-50 text-gray-700'}`}
+                                    className={`flex-1 text-left px-3 py-2 rounded-lg text-sm flex justify-between items-center transition-colors ${viewedRoundId === r.id ? 'bg-gray-100 font-bold text-gray-900' : 'hover:bg-gray-50 dark:bg-slate-850 text-gray-700'}`}
                                  >
                                     <span className="truncate">{r.name}</span>
                                     {session.activeRoundId === r.id && <span className="text-[10px] bg-green-100 text-green-700 px-1.5 py-0.5 rounded ml-2 font-bold whitespace-nowrap">Active</span>}
@@ -368,7 +368,7 @@ export const DiscussionRoom: React.FC = () => {
                <div className="relative hidden md:block" ref={visibilityMenuRef}>
                   <button
                      onClick={() => setIsVisibilityMenuOpen(!isVisibilityMenuOpen)}
-                     className={`flex items-center gap-2 border px-3 py-2 rounded-lg text-sm font-medium transition-all ${isVisibilityMenuOpen ? 'bg-gray-100 border-gray-400 text-gray-900' : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'}`}
+                     className={`flex items-center gap-2 border px-3 py-2 rounded-lg text-sm font-medium transition-all ${isVisibilityMenuOpen ? 'bg-gray-100 border-gray-400 text-gray-900' : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50 dark:bg-slate-850'}`}
                   >
                      <VisibilityIcon className="h-4 w-4" />
                      <span>Hiển thị</span>
@@ -387,7 +387,7 @@ export const DiscussionRoom: React.FC = () => {
                            <button
                               key={mode.id}
                               onClick={() => { setDiscussionVisibility(session.id, mode.id as MessageVisibility); setIsVisibilityMenuOpen(false); }}
-                              className={`w-full text-left px-3 py-2.5 rounded-lg text-sm flex items-center gap-3 transition-colors ${session.visibility === mode.id ? 'bg-blue-50 text-blue-700 font-bold' : 'hover:bg-gray-50 text-gray-700'}`}
+                              className={`w-full text-left px-3 py-2.5 rounded-lg text-sm flex items-center gap-3 transition-colors ${session.visibility === mode.id ? 'bg-blue-50 text-blue-700 font-bold' : 'hover:bg-gray-50 dark:bg-slate-850 text-gray-700'}`}
                            >
                               <mode.icon className="h-4 w-4" /> {mode.label}
                               {session.visibility === mode.id && <Check className="h-4 w-4 ml-auto" />}
@@ -420,7 +420,7 @@ export const DiscussionRoom: React.FC = () => {
          <div className="flex-1 flex overflow-hidden relative">
             <div className="flex-1 flex flex-col bg-white relative">
                {/* Room Selector & Tab Toggle */}
-               <div className="bg-gray-50 border-b px-4 py-2 flex items-center justify-between gap-4 overflow-x-auto no-scrollbar">
+               <div className="bg-gray-50 dark:bg-slate-850 border-b px-4 py-2 flex items-center justify-between gap-4 overflow-x-auto no-scrollbar">
                   <div className="flex gap-2">
                      <button
                         onClick={() => setCurrentViewRoomId('MAIN')}
@@ -463,7 +463,7 @@ export const DiscussionRoom: React.FC = () => {
                ) : (
                   <>
                      {/* Messages */}
-                     <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50">
+                     <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50 dark:bg-slate-850">
                         <div className="text-center mb-6">
                            <span className={`text-xs px-3 py-1.5 rounded-full font-bold border shadow-sm ${currentRoundId === session.activeRoundId ? 'bg-indigo-100 text-indigo-700 border-indigo-200' : 'bg-gray-100 text-gray-600 border-gray-200'}`}>
                               Đang xem: {viewingRoundData?.name} {currentRoundId !== session.activeRoundId && '(Lịch sử)'}
@@ -534,15 +534,15 @@ export const DiscussionRoom: React.FC = () => {
              ${isMobileSidebarOpen ? 'translate-x-0' : 'translate-x-full'} md:translate-x-0
           `}>
                {/* Mobile Close */}
-               <div className="md:hidden p-4 border-b flex justify-between items-center bg-gray-50">
+               <div className="md:hidden p-4 border-b flex justify-between items-center bg-gray-50 dark:bg-slate-850">
                   <h3 className="font-bold text-gray-700">Công cụ quản lý</h3>
                   <button onClick={() => setIsMobileSidebarOpen(false)} className="p-1 hover:bg-gray-200 rounded-full"><X className="h-6 w-6 text-gray-500" /></button>
                </div>
 
                <div className="flex border-b">
-                  <button onClick={() => setActiveTab('PARTICIPANTS')} className={`flex-1 py-4 text-sm font-medium border-b-2 transition-colors ${activeTab === 'PARTICIPANTS' ? 'border-indigo-600 text-indigo-600 bg-indigo-50/50' : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50'}`}><Users className="h-4 w-4 mx-auto mb-1" /> Danh sách</button>
-                  <button onClick={() => setActiveTab('POLLS')} className={`flex-1 py-4 text-sm font-medium border-b-2 transition-colors ${activeTab === 'POLLS' ? 'border-indigo-600 text-indigo-600 bg-indigo-50/50' : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50'}`}><PieChart className="h-4 w-4 mx-auto mb-1" /> Bình chọn</button>
-                  <button onClick={() => setActiveTab('BREAKOUT')} className={`flex-1 py-4 text-sm font-medium border-b-2 transition-colors ${activeTab === 'BREAKOUT' ? 'border-indigo-600 text-indigo-600 bg-indigo-50/50' : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50'}`}><Layers className="h-4 w-4 mx-auto mb-1" /> Chia nhóm</button>
+                  <button onClick={() => setActiveTab('PARTICIPANTS')} className={`flex-1 py-4 text-sm font-medium border-b-2 transition-colors ${activeTab === 'PARTICIPANTS' ? 'border-indigo-600 text-indigo-600 bg-indigo-50/50' : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50 dark:bg-slate-850'}`}><Users className="h-4 w-4 mx-auto mb-1" /> Danh sách</button>
+                  <button onClick={() => setActiveTab('POLLS')} className={`flex-1 py-4 text-sm font-medium border-b-2 transition-colors ${activeTab === 'POLLS' ? 'border-indigo-600 text-indigo-600 bg-indigo-50/50' : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50 dark:bg-slate-850'}`}><PieChart className="h-4 w-4 mx-auto mb-1" /> Bình chọn</button>
+                  <button onClick={() => setActiveTab('BREAKOUT')} className={`flex-1 py-4 text-sm font-medium border-b-2 transition-colors ${activeTab === 'BREAKOUT' ? 'border-indigo-600 text-indigo-600 bg-indigo-50/50' : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50 dark:bg-slate-850'}`}><Layers className="h-4 w-4 mx-auto mb-1" /> Chia nhóm</button>
                </div>
 
                <div className="flex-1 overflow-y-auto p-4 bg-white">
@@ -568,7 +568,7 @@ export const DiscussionRoom: React.FC = () => {
                         <h3 className="font-bold text-gray-700 text-sm">Tất cả ({session.participants.length})</h3>
                         <div className="space-y-2">
                            {session.participants.map(p => (
-                              <div key={p.studentId} className="flex items-center justify-between p-2 hover:bg-gray-50 rounded-lg text-sm transition-colors">
+                              <div key={p.studentId} className="flex items-center justify-between p-2 hover:bg-gray-50 dark:bg-slate-850 rounded-lg text-sm transition-colors">
                                  <div className="flex items-center gap-3">
                                     <div className="w-8 h-8 rounded-full bg-gray-100 border border-gray-200 flex items-center justify-center text-xs font-bold text-gray-600">{p.name.charAt(0)}</div>
                                     <div>
@@ -585,7 +585,7 @@ export const DiscussionRoom: React.FC = () => {
 
                   {activeTab === 'POLLS' && (
                      <div className="space-y-6">
-                        <div className="bg-gray-50 p-4 rounded-xl border">
+                        <div className="bg-gray-50 dark:bg-slate-850 p-4 rounded-xl border">
                            <h3 className="font-bold text-sm mb-3 text-gray-800">Tạo bình chọn mới</h3>
                            <input className="w-full border border-gray-300 bg-white text-gray-900 p-2 rounded-lg text-sm mb-2 focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="Câu hỏi..." value={pollQuestion} onChange={e => setPollQuestion(e.target.value)} />
                            {pollOptions.map((opt, i) => (
@@ -625,7 +625,7 @@ export const DiscussionRoom: React.FC = () => {
 
                   {activeTab === 'BREAKOUT' && (
                      <div className="space-y-4">
-                        <div className="bg-gray-50 p-4 rounded-xl border">
+                        <div className="bg-gray-50 dark:bg-slate-850 p-4 rounded-xl border">
                            <h3 className="font-bold text-sm mb-3 text-gray-800">Chia nhóm tự động</h3>
                            <div className="flex items-center gap-3 mb-4">
                               <span className="text-sm text-gray-600">Số lượng nhóm:</span>
@@ -653,7 +653,7 @@ export const DiscussionRoom: React.FC = () => {
                </div>
 
                {/* Mobile Sidebar Footer */}
-               <div className="p-4 border-t bg-gray-50 md:hidden space-y-3">
+               <div className="p-4 border-t bg-gray-50 dark:bg-slate-850 md:hidden space-y-3">
                   <button onClick={() => setIsVisibilityMenuOpen(!isVisibilityMenuOpen)} className="w-full flex items-center justify-between bg-white border border-gray-300 px-4 py-3 rounded-lg text-sm font-medium text-gray-700">
                      <div className="flex items-center gap-2"><VisibilityIcon className="h-4 w-4" /><span>Hiển thị</span></div>
                      <ChevronDown className={`h-4 w-4 transition-transform ${isVisibilityMenuOpen ? 'rotate-180' : ''}`} />
@@ -669,7 +669,7 @@ export const DiscussionRoom: React.FC = () => {
                </div>
 
                {/* Common Sidebar Actions */}
-               <div className="p-4 border-t bg-gray-50 space-y-2">
+               <div className="p-4 border-t bg-gray-50 dark:bg-slate-850 space-y-2">
                   <button
                      onClick={handleExportPDF}
                      disabled={isExportingPDF}
@@ -724,7 +724,7 @@ export const DiscussionRoom: React.FC = () => {
                   <h2 className="text-base font-bold text-gray-800 border-b pb-2 mb-3">Danh sách thành viên tham gia</h2>
                   <div className="grid grid-cols-3 gap-2">
                      {session.participants.map((p, idx) => (
-                        <div key={p.studentId} className="text-xs bg-gray-50 p-2 rounded border truncate">
+                        <div key={p.studentId} className="text-xs bg-gray-50 dark:bg-slate-850 p-2 rounded border truncate">
                            {idx + 1}. {p.name}
                         </div>
                      ))}

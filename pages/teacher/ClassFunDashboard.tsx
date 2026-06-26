@@ -224,7 +224,7 @@ export const ClassFunDashboard: React.FC = () => {
                     <div className="flex items-center gap-3">
                         <div className="p-2 bg-emerald-100 rounded-lg"><TrendingUp className="h-5 w-5 text-emerald-600" /></div>
                         <div>
-                            <p className="text-xs text-gray-500">Điểm tốt</p>
+                            <p className="text-xs text-gray-500 dark:text-slate-400">Điểm tốt</p>
                             <p className="text-xl font-bold text-emerald-600">
                                 +{filteredLogs.filter(l => l.points > 0).reduce((s, l) => s + l.points, 0)}
                             </p>
@@ -235,7 +235,7 @@ export const ClassFunDashboard: React.FC = () => {
                     <div className="flex items-center gap-3">
                         <div className="p-2 bg-red-100 rounded-lg"><TrendingDown className="h-5 w-5 text-red-600" /></div>
                         <div>
-                            <p className="text-xs text-gray-500">Điểm trừ</p>
+                            <p className="text-xs text-gray-500 dark:text-slate-400">Điểm trừ</p>
                             <p className="text-xl font-bold text-red-600">
                                 {filteredLogs.filter(l => l.points < 0).reduce((s, l) => s + l.points, 0)}
                             </p>
@@ -246,7 +246,7 @@ export const ClassFunDashboard: React.FC = () => {
                     <div className="flex items-center gap-3">
                         <div className="p-2 bg-blue-100 rounded-lg"><Users className="h-5 w-5 text-blue-600" /></div>
                         <div>
-                            <p className="text-xs text-gray-500">Sĩ số</p>
+                            <p className="text-xs text-gray-500 dark:text-slate-400">Sĩ số</p>
                             <p className="text-xl font-bold text-blue-600">{classStudents.length}</p>
                         </div>
                     </div>
@@ -255,7 +255,7 @@ export const ClassFunDashboard: React.FC = () => {
                     <div className="flex items-center gap-3">
                         <div className="p-2 bg-amber-100 rounded-lg"><Clock className="h-5 w-5 text-amber-600" /></div>
                         <div>
-                            <p className="text-xs text-gray-500">Lượt ghi nhận</p>
+                            <p className="text-xs text-gray-500 dark:text-slate-400">Lượt ghi nhận</p>
                             <p className="text-xl font-bold text-amber-600">{filteredLogs.length}</p>
                         </div>
                     </div>
@@ -361,7 +361,7 @@ export const ClassFunDashboard: React.FC = () => {
                                             </div>
                                         )}
                                         {s.score <= 0 && (
-                                            <div className="w-full bg-gray-50 rounded-full h-2.5 border border-dashed border-gray-200"></div>
+                                            <div className="w-full bg-gray-50 dark:bg-slate-850 rounded-full h-2.5 border border-dashed border-gray-200"></div>
                                         )}
                                     </div>
                                 </div>

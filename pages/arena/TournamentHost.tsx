@@ -180,7 +180,7 @@ export const TournamentHost: React.FC = () => {
                     <h1 className="text-xl font-black text-gray-900 flex items-center gap-2">⚔️ Tạo Đấu Trường</h1>
                 </div>
 
-                <div className="bg-white rounded-2xl border shadow-sm p-6 space-y-5" style={{ animation: 'fadeIn 0.5s ease-out' }}>
+                <div className="bg-white dark:bg-slate-900 rounded-2xl border dark:border-slate-800 shadow-sm p-6 space-y-5" style={{ animation: 'fadeIn 0.5s ease-out' }}>
                     <div>
                         <label className="block text-sm font-bold text-gray-700 mb-1">Tên đấu trường</label>
                         <input value={title} onChange={e => setTitle(e.target.value)} className="w-full border rounded-xl px-3 py-2.5 text-sm focus:ring-2 focus:ring-purple-500 outline-none" />
@@ -287,7 +287,7 @@ export const TournamentHost: React.FC = () => {
                                             placeholder="Tiềm kiếm nội dung câu hỏi..."
                                             value={searchQuery}
                                             onChange={e => setSearchQuery(e.target.value)}
-                                            className="w-full pl-10 pr-4 py-2 bg-gray-50 border rounded-xl text-sm outline-none focus:ring-2 focus:ring-purple-500"
+                                            className="w-full pl-10 pr-4 py-2 bg-gray-50 dark:bg-slate-850 border rounded-xl text-sm outline-none focus:ring-2 focus:ring-purple-500"
                                         />
                                     </div>
                                 </div>
@@ -296,7 +296,7 @@ export const TournamentHost: React.FC = () => {
                                     <select 
                                         value={filterTopic} 
                                         onChange={e => setFilterTopic(e.target.value)}
-                                        className="flex-1 bg-gray-50 border rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-purple-500"
+                                        className="flex-1 bg-gray-50 dark:bg-slate-850 border rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-purple-500"
                                     >
                                         <option value="">Tất cả chủ đề</option>
                                         {Array.from(new Set(
@@ -310,7 +310,7 @@ export const TournamentHost: React.FC = () => {
                                     <select 
                                         value={filterDifficulty} 
                                         onChange={e => setFilterDifficulty(e.target.value === '' ? '' : Number(e.target.value))}
-                                        className="flex-1 bg-gray-50 border rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-purple-500"
+                                        className="flex-1 bg-gray-50 dark:bg-slate-850 border rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-purple-500"
                                     >
                                         <option value="">Tất cả độ khó</option>
                                         <option value="1">Mức 1</option>
@@ -511,7 +511,7 @@ export const TournamentHost: React.FC = () => {
             </div>
 
             {/* Participants */}
-            <div className="bg-white rounded-2xl border shadow-sm">
+            <div className="bg-white dark:bg-slate-900 rounded-2xl border dark:border-slate-800 shadow-sm">
                 <div className="p-4 border-b flex items-center justify-between">
                     <h2 className="font-bold text-gray-900 flex items-center gap-2"><Users className="h-5 w-5 text-purple-500" /> Danh sách HS ({participants.length})</h2>
                 </div>

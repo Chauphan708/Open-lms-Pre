@@ -196,7 +196,7 @@ export const StudentXPStats: React.FC = () => {
             <div className="bg-white rounded-xl border shadow-sm overflow-hidden">
                 <div className="overflow-x-auto">
                     <table className="w-full text-left text-sm">
-                        <thead className="bg-gray-50 text-gray-600 border-b">
+                        <thead className="bg-gray-50 dark:bg-slate-850 text-gray-600 border-b">
                             <tr>
                                 <th className="px-4 py-3 font-medium w-10 text-center">#</th>
                                 <th className="px-4 py-3 font-medium cursor-pointer hover:text-indigo-600" onClick={() => handleSort('name')}>
@@ -217,7 +217,7 @@ export const StudentXPStats: React.FC = () => {
                                 <th className="px-4 py-3 font-medium text-center">Cao nhất</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-gray-100">
+                        <tbody className="divide-y dark:divide-slate-800 divide-gray-100">
                             {filteredStudents.length === 0 ? (
                                 <tr>
                                     <td colSpan={9} className="px-6 py-12 text-center text-gray-400">
@@ -242,7 +242,7 @@ export const StudentXPStats: React.FC = () => {
                                     else if (s.totalXP < 50) xpColor = 'text-red-500';
 
                                     return (
-                                        <tr key={s.id} className="hover:bg-gray-50 transition-colors">
+                                        <tr key={s.id} className="hover:bg-gray-50 dark:bg-slate-850 transition-colors">
                                             <td className="px-4 py-3 text-center">
                                                 <div className={`w-7 h-7 rounded-full flex items-center justify-center font-bold text-xs mx-auto ${rankBg}`}>
                                                     {sortField === 'xp' && sortDir === 'desc' && rank <= 3 ? (

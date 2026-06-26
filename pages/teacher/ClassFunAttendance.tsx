@@ -225,7 +225,7 @@ export const ClassFunAttendance: React.FC = () => {
 
             {/* Student List */}
             <div className="bg-white rounded-xl shadow-sm border overflow-hidden">
-                <div className="grid grid-cols-1 divide-y">
+                <div className="grid grid-cols-1 divide-y dark:divide-slate-800">
                     {classStudents.length === 0 ? (
                         <div className="p-10 text-center text-gray-400">
                             <Users className="h-12 w-12 mx-auto mb-3 opacity-30" />
@@ -235,7 +235,7 @@ export const ClassFunAttendance: React.FC = () => {
                         const status = localStatuses[s.id] || 'present';
                         const cfg = StatusConfig[status];
                         return (
-                            <div key={s.id} className="flex items-center gap-4 p-4 hover:bg-gray-50 transition-colors">
+                            <div key={s.id} className="flex items-center gap-4 p-4 hover:bg-gray-50 dark:bg-slate-850 transition-colors">
                                 <span className="w-8 text-center text-sm font-bold text-gray-400">{idx + 1}</span>
                                 <img src={s.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(s.name)}&background=6366f1&color=fff&size=40`}
                                     alt="" className="w-10 h-10 rounded-full flex-shrink-0" />

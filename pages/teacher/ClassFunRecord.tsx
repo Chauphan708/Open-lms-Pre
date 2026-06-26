@@ -376,11 +376,11 @@ export const ClassFunRecord: React.FC = () => {
                         </select>
                     )}
                     <button onClick={() => setShowManageBehaviors(!showManageBehaviors)}
-                        className={`flex items-center gap-2 px-4 py-2 border rounded-lg text-sm font-medium transition ${showManageBehaviors ? 'bg-indigo-50 border-indigo-200 text-indigo-700' : 'bg-white hover:bg-gray-50'}`}>
+                        className={`flex items-center gap-2 px-4 py-2 border rounded-lg text-sm font-medium transition ${showManageBehaviors ? 'bg-indigo-50 border-indigo-200 text-indigo-700' : 'bg-white hover:bg-gray-50 dark:bg-slate-850'}`}>
                         <Edit2 className="h-4 w-4" /> Quản lý hành vi
                     </button>
                     <button onClick={() => { setShowAutoPointConfig(!showAutoPointConfig); setShowManageBehaviors(false); }}
-                        className={`flex items-center gap-2 px-4 py-2 border rounded-lg text-sm font-medium transition ${showAutoPointConfig ? 'bg-amber-50 border-amber-200 text-amber-700' : 'bg-white hover:bg-gray-50'}`}>
+                        className={`flex items-center gap-2 px-4 py-2 border rounded-lg text-sm font-medium transition ${showAutoPointConfig ? 'bg-amber-50 border-amber-200 text-amber-700' : 'bg-white hover:bg-gray-50 dark:bg-slate-850'}`}>
                         <Zap className="h-4 w-4" /> Điểm cộng tự động
                     </button>
                 </div>
@@ -391,12 +391,12 @@ export const ClassFunRecord: React.FC = () => {
                 <div className="bg-white rounded-xl shadow-sm border p-6 space-y-4 animate-in slide-in-from-top-2">
                     <div className="flex justify-between items-center">
                         <h2 className="text-lg font-bold text-gray-800">Cấu hình mốc điểm bài tập</h2>
-                        <p className="text-xs text-gray-500 italic">* Hệ thống sẽ cộng thêm điểm chênh lệch khi HS đạt mốc cao hơn.</p>
+                        <p className="text-xs text-gray-500 dark:text-slate-400 italic">* Hệ thống sẽ cộng thêm điểm chênh lệch khi HS đạt mốc cao hơn.</p>
                     </div>
                     
                     <div className="space-y-3">
                         {tempThresholds.map((t, idx) => (
-                            <div key={t.id || idx} className="flex items-center gap-4 bg-gray-50 p-3 rounded-xl border border-gray-100">
+                            <div key={t.id || idx} className="flex items-center gap-4 bg-gray-50 dark:bg-slate-850 p-3 rounded-xl border border-gray-100">
                                 <div className="flex-1 flex items-center gap-2">
                                     <span className="text-sm font-bold text-gray-600 min-w-20">Đúng từ:</span>
                                     <div className="relative flex-1 max-w-[120px]">
@@ -473,7 +473,7 @@ export const ClassFunRecord: React.FC = () => {
                     </div>
 
                     {/* Add new */}
-                    <div className="flex flex-col sm:flex-row gap-2 p-4 bg-gray-50 rounded-lg border">
+                    <div className="flex flex-col sm:flex-row gap-2 p-4 bg-gray-50 dark:bg-slate-850 rounded-lg border">
                         <input value={newBehavior.description} onChange={e => setNewBehavior(p => ({ ...p, description: e.target.value }))}
                             placeholder="Mô tả hành vi..." className="flex-1 px-3 py-2 border rounded-lg text-sm" />
                         <select value={newBehavior.type} onChange={e => setNewBehavior(p => ({ ...p, type: e.target.value as 'POSITIVE' | 'NEGATIVE' }))}
@@ -618,7 +618,7 @@ export const ClassFunRecord: React.FC = () => {
                         <button onClick={selectAllActive} className="flex-1 py-1.5 bg-indigo-50 text-indigo-700 rounded-lg text-xs font-bold hover:bg-indigo-100 transition-all border border-indigo-100/50">
                             Chọn cả mục
                         </button>
-                        <button onClick={deselectAllActive} className="flex-1 py-1.5 bg-gray-50 text-gray-600 rounded-lg text-xs font-bold hover:bg-gray-100 transition-all border border-gray-200/40">
+                        <button onClick={deselectAllActive} className="flex-1 py-1.5 bg-gray-50 dark:bg-slate-850 text-gray-600 rounded-lg text-xs font-bold hover:bg-gray-100 transition-all border border-gray-200/40">
                             Bỏ chọn cả mục
                         </button>
                     </div>
@@ -646,7 +646,7 @@ export const ClassFunRecord: React.FC = () => {
                                                     ? 'opacity-40 cursor-not-allowed bg-gray-100/50 border-gray-100' 
                                                     : (selected 
                                                         ? 'bg-indigo-50/80 border-indigo-400 shadow-md scale-[1.02]' 
-                                                        : 'hover:bg-gray-50 border-gray-100 bg-white hover:border-gray-300')}
+                                                        : 'hover:bg-gray-50 dark:bg-slate-850 border-gray-100 bg-white hover:border-gray-300')}
                                             `}
                                         >
                                             {/* Score Badge */}
@@ -710,7 +710,7 @@ export const ClassFunRecord: React.FC = () => {
                                             className={`py-2 px-3 rounded-lg border-2 text-center font-black transition-all ${
                                                 selectedStudentIds.length > 0
                                                     ? 'border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 hover:border-emerald-400 active:scale-95'
-                                                    : 'border-gray-100 bg-gray-50 text-gray-400 opacity-60 cursor-not-allowed'
+                                                    : 'border-gray-100 bg-gray-50 dark:bg-slate-850 text-gray-400 opacity-60 cursor-not-allowed'
                                             }`}
                                         >
                                             +{pts}
@@ -731,7 +731,7 @@ export const ClassFunRecord: React.FC = () => {
                                             className={`py-2 px-3 rounded-lg border-2 text-center font-black transition-all ${
                                                 selectedStudentIds.length > 0
                                                     ? 'border-red-200 bg-red-50 text-red-700 hover:bg-red-100 hover:border-red-400 active:scale-95'
-                                                    : 'border-gray-100 bg-gray-50 text-gray-400 opacity-60 cursor-not-allowed'
+                                                    : 'border-gray-100 bg-gray-50 dark:bg-slate-850 text-gray-400 opacity-60 cursor-not-allowed'
                                             }`}
                                         >
                                             -{pts}
@@ -765,7 +765,7 @@ export const ClassFunRecord: React.FC = () => {
                             <ThumbsUp className="h-5 w-5" /> Hành vi tích cực
                         </h2>
                         {positiveBehaviors.length === 0 ? (
-                            <div className="text-center py-6 border border-dashed rounded-xl border-gray-200 bg-gray-50/50">
+                            <div className="text-center py-6 border border-dashed rounded-xl border-gray-200 bg-gray-50 dark:bg-slate-850/50">
                                 <p className="text-gray-400 text-sm mb-3">Chưa có tiêu chí hành vi tích cực nào.</p>
                                 <button 
                                     onClick={seedDefaults}
@@ -781,7 +781,7 @@ export const ClassFunRecord: React.FC = () => {
                                         disabled={selectedStudentIds.length === 0}
                                         className={`group relative p-4 rounded-xl border-2 text-left transition-all duration-200 ${selectedStudentIds.length > 0
                                             ? 'border-emerald-200 hover:border-emerald-400 hover:shadow-md hover:scale-[1.02] active:scale-95 bg-emerald-50/50'
-                                            : 'border-gray-100 bg-gray-50 opacity-60 cursor-not-allowed'
+                                            : 'border-gray-100 bg-gray-50 dark:bg-slate-850 opacity-60 cursor-not-allowed'
                                             }`}>
                                         <div className="text-2xl font-extrabold text-emerald-600">+{b.points}</div>
                                         <div className="text-sm font-medium text-gray-700 mt-1 line-clamp-2">{b.description}</div>
@@ -797,7 +797,7 @@ export const ClassFunRecord: React.FC = () => {
                             <ThumbsDown className="h-5 w-5" /> Hành vi cần nhắc nhở
                         </h2>
                         {negativeBehaviors.length === 0 ? (
-                            <div className="text-center py-6 border border-dashed rounded-xl border-gray-200 bg-gray-50/50">
+                            <div className="text-center py-6 border border-dashed rounded-xl border-gray-200 bg-gray-50 dark:bg-slate-850/50">
                                 <p className="text-gray-400 text-sm mb-3">Chưa có tiêu chí hành vi nhắc nhở nào.</p>
                                 <button 
                                     onClick={seedDefaults}
@@ -813,7 +813,7 @@ export const ClassFunRecord: React.FC = () => {
                                         disabled={selectedStudentIds.length === 0}
                                         className={`group relative p-4 rounded-xl border-2 text-left transition-all duration-200 ${selectedStudentIds.length > 0
                                             ? 'border-red-200 hover:border-red-400 hover:shadow-md hover:scale-[1.02] active:scale-95 bg-red-50/50'
-                                            : 'border-gray-100 bg-gray-50 opacity-60 cursor-not-allowed'
+                                            : 'border-gray-100 bg-gray-50 dark:bg-slate-850 opacity-60 cursor-not-allowed'
                                             }`}>
                                         <div className="text-2xl font-extrabold text-red-600">{b.points}</div>
                                         <div className="text-sm font-medium text-gray-700 mt-1 line-clamp-2">{b.description}</div>
@@ -832,7 +832,7 @@ export const ClassFunRecord: React.FC = () => {
                             <div className="flex gap-2">
                                 <button 
                                     onClick={handleExportHistory}
-                                    className="flex items-center gap-1 px-3 py-1.5 text-xs font-bold text-gray-600 bg-gray-50 border rounded-lg hover:bg-gray-100 transition-all"
+                                    className="flex items-center gap-1 px-3 py-1.5 text-xs font-bold text-gray-600 bg-gray-50 dark:bg-slate-850 border rounded-lg hover:bg-gray-100 transition-all"
                                     title="Xuất danh sách ra CSV"
                                 >
                                     <Download className="h-3.5 w-3.5" /> Xuất file
@@ -854,7 +854,7 @@ export const ClassFunRecord: React.FC = () => {
                                     const isEditing = editingLogId === log.id;
 
                                     return (
-                                        <div key={log.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-3 rounded-lg bg-gray-50 border gap-2 hover:bg-gray-100 transition group/log">
+                                        <div key={log.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-3 rounded-lg bg-gray-50 dark:bg-slate-850 border gap-2 hover:bg-gray-100 transition group/log">
                                             <div className="flex items-center gap-3 flex-1">
                                                 <img src={student?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(student?.name || '')}&background=6366f1&color=fff&size=32`} className="w-8 h-8 rounded-full" />
                                                 <div className="flex-1">
@@ -866,7 +866,7 @@ export const ClassFunRecord: React.FC = () => {
                                                             className="text-xs w-full mt-1 px-2 py-1 border rounded"
                                                         />
                                                     ) : (
-                                                        <p className="text-xs text-gray-500 line-clamp-1">{log.reason}</p>
+                                                        <p className="text-xs text-gray-500 dark:text-slate-400 line-clamp-1">{log.reason}</p>
                                                     )}
                                                 </div>
                                             </div>
@@ -925,7 +925,7 @@ export const ClassFunRecord: React.FC = () => {
             {showAllHistory && (
                 <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
                     <div className="bg-white rounded-3xl shadow-2xl w-full max-w-4xl flex flex-col max-h-[90vh] overflow-hidden">
-                        <div className="p-6 border-b flex justify-between items-center bg-gray-50/50 sticky top-0 z-10">
+                        <div className="p-6 border-b flex justify-between items-center bg-gray-50 dark:bg-slate-850/50 sticky top-0 z-10">
                             <div className="flex items-center gap-4">
                                 <div className="bg-indigo-600 p-3 rounded-2xl text-white shadow-lg shadow-indigo-200">
                                     <List className="h-6 w-6" />
@@ -938,7 +938,7 @@ export const ClassFunRecord: React.FC = () => {
                             <div className="flex items-center gap-3">
                                 <button 
                                     onClick={handleExportHistory}
-                                    className="flex items-center gap-2 px-5 py-2.5 text-sm font-bold text-gray-700 bg-white border border-gray-200 rounded-2xl hover:bg-gray-50 shadow-sm transition-all"
+                                    className="flex items-center gap-2 px-5 py-2.5 text-sm font-bold text-gray-700 bg-white border border-gray-200 rounded-2xl hover:bg-gray-50 dark:bg-slate-850 shadow-sm transition-all"
                                 >
                                     <Download className="h-5 w-5 text-indigo-500" /> Xuất CSV
                                 </button>
@@ -948,7 +948,7 @@ export const ClassFunRecord: React.FC = () => {
                             </div>
                         </div>
 
-                        <div className="flex-1 overflow-y-auto p-6 space-y-3 bg-gray-50/30">
+                        <div className="flex-1 overflow-y-auto p-6 space-y-3 bg-gray-50 dark:bg-slate-850/30">
                             {(logs || []).length === 0 ? (
                                 <div className="text-center py-24 bg-white rounded-3xl border-2 border-dashed border-gray-100">
                                     <Sparkles className="h-12 w-12 text-gray-200 mx-auto mb-4" />
@@ -992,7 +992,7 @@ export const ClassFunRecord: React.FC = () => {
                             )}
                         </div>
 
-                        <div className="p-6 border-t bg-gray-50/50 text-center rounded-b-3xl">
+                        <div className="p-6 border-t bg-gray-50 dark:bg-slate-850/50 text-center rounded-b-3xl">
                             <button 
                                 onClick={() => setShowAllHistory(false)} 
                                 className="bg-indigo-600 text-white px-12 py-3 rounded-2xl font-black hover:bg-indigo-700 shadow-xl shadow-indigo-100 transition-all active:scale-95"

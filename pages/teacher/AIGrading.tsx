@@ -316,7 +316,7 @@ export const AIGrading: React.FC = () => {
                     <select
                         value={selectedClassId}
                         onChange={e => setSelectedClassId(e.target.value)}
-                        className="w-full border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 bg-gray-50"
+                        className="w-full border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 bg-gray-50 dark:bg-slate-850"
                     >
                         {myClasses.map(c => (
                             <option key={c.id} value={c.id}>{c.name}</option>
@@ -436,7 +436,7 @@ export const AIGrading: React.FC = () => {
                         {inputMode === 'IMAGE' ? (
                             <div className="mt-2">
                                 <label className="block text-sm font-medium text-gray-700 mb-2">Tải Ảnh / PDF Bài Làm</label>
-                                <div className="border-2 border-dashed border-gray-300 rounded-xl p-6 hover:bg-gray-50 transition relative">
+                                <div className="border-2 border-dashed border-gray-300 rounded-xl p-6 hover:bg-gray-50 dark:bg-slate-850 transition relative">
                                     <input
                                         type="file"
                                         multiple
@@ -619,8 +619,8 @@ export const AIGrading: React.FC = () => {
                     </div>
                 ) : (
                     <div className="overflow-x-auto">
-                        <table className="min-w-full divide-y divide-gray-200">
-                            <thead className="bg-gray-50">
+                        <table className="min-w-full divide-y dark:divide-slate-800 divide-gray-200">
+                            <thead className="bg-gray-50 dark:bg-slate-850">
                                 <tr>
                                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Học sinh</th>
                                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Bài làm</th>
@@ -629,11 +629,11 @@ export const AIGrading: React.FC = () => {
                                     <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Chi tiết</th>
                                 </tr>
                             </thead>
-                            <tbody className="bg-white divide-y divide-gray-200">
+                            <tbody className="bg-white divide-y dark:divide-slate-800 divide-gray-200">
                                 {gradingHistory.filter(h =>
                                     !historySearch || h.studentName.toLowerCase().includes(historySearch.toLowerCase()) || h.title.toLowerCase().includes(historySearch.toLowerCase())
                                 ).map((h, i) => (
-                                    <tr key={i} className="hover:bg-gray-50 transition">
+                                    <tr key={i} className="hover:bg-gray-50 dark:bg-slate-850 transition">
                                         <td className="px-4 py-3 whitespace-nowrap">
                                             <div className="flex items-center gap-2">
                                                 <div className="h-8 w-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700 font-bold text-xs">
@@ -663,7 +663,7 @@ export const AIGrading: React.FC = () => {
                         </table>
                         {/* Expanded detail */}
                         {expandedHistory !== null && gradingHistory[expandedHistory] && (
-                            <div className="mt-3 p-4 bg-gray-50 rounded-xl border space-y-2 text-sm">
+                            <div className="mt-3 p-4 bg-gray-50 dark:bg-slate-850 rounded-xl border space-y-2 text-sm">
                                 <div><strong className="text-green-700">✅ Ưu điểm:</strong> <span className="text-gray-700">{gradingHistory[expandedHistory].advantages}</span></div>
                                 <div><strong className="text-red-600">❌ Hạn chế:</strong> <span className="text-gray-700">{gradingHistory[expandedHistory].limitations}</span></div>
                                 <div><strong className="text-amber-600">💡 Cải thiện:</strong> <span className="text-gray-700">{gradingHistory[expandedHistory].improvements}</span></div>

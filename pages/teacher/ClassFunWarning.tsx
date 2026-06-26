@@ -149,7 +149,7 @@ export const ClassFunWarning: React.FC = () => {
                                     </div>
                                 </div>
 
-                                <div className="p-4 flex-1 bg-gray-50">
+                                <div className="p-4 flex-1 bg-gray-50 dark:bg-slate-850">
                                     <h4 className="text-xs font-bold text-gray-500 uppercase mb-2">Chi tiết vi phạm:</h4>
                                     <ul className="space-y-2 mb-4 max-h-48 overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-gray-200 hover:scrollbar-thumb-gray-300 transition-colors">
                                         {item.logs.map((log: any) => (
