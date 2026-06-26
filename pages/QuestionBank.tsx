@@ -285,20 +285,20 @@ const QuestionBank: React.FC = () => {
   };
 
   return (
-    <div className="h-full flex flex-col p-4 space-y-4 bg-gray-50/50">
+    <div className="h-full flex flex-col p-4 space-y-4 bg-gray-50/50 dark:bg-slate-950/20">
       {/* Header & Stats */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
+          <h1 className="text-2xl font-bold text-gray-800 dark:text-slate-100 flex items-center gap-2">
             <Layers className="h-6 w-6 text-emerald-600" /> Ngân hàng Câu hỏi
           </h1>
-          <p className="text-gray-500 text-sm">Quản lý và đồng bộ tập trung tất cả câu hỏi trong hệ thống</p>
+          <p className="text-gray-500 dark:text-slate-400 text-sm">Quản lý và đồng bộ tập trung tất cả câu hỏi trong hệ thống</p>
           
           <div className="flex items-center gap-4 mt-2 text-xs font-medium">
-            <div className="bg-emerald-50 text-emerald-700 px-2 py-1 rounded-md border border-emerald-100">
+            <div className="bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-300 px-2 py-1 rounded-md border border-emerald-100 dark:border-emerald-900/50">
               Hiển thị {filteredQuestions.length} / {questionBank.length} câu hỏi
             </div>
-            <div className="flex items-center gap-1 text-emerald-600">
+            <div className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400">
               <Check className="h-3.5 w-3.5" /> Đã lưu đám mây
             </div>
           </div>
@@ -306,21 +306,21 @@ const QuestionBank: React.FC = () => {
         
         <div className="flex items-center gap-2">
           {syncResult.show && (
-            <div className="bg-emerald-50 text-emerald-700 px-3 py-1.5 rounded-lg text-sm flex items-center gap-2 animate-bounce">
+            <div className="bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-300 px-3 py-1.5 rounded-lg text-sm flex items-center gap-2 animate-bounce">
               <CheckCircle2 className="h-4 w-4" /> Đã đồng bộ thêm {syncResult.count} câu mới
             </div>
           )}
           <button
             onClick={handleSync}
             disabled={isSyncing}
-            className="flex items-center gap-2 bg-white border-2 border-emerald-500 text-emerald-600 px-4 py-2 rounded-xl text-sm font-bold hover:bg-emerald-50 transition-all shadow-sm disabled:opacity-50"
+            className="flex items-center gap-2 bg-white dark:bg-slate-900 border-2 border-emerald-500 text-emerald-600 dark:text-emerald-400 px-4 py-2 rounded-xl text-sm font-bold hover:bg-emerald-50 dark:hover:bg-slate-800 transition-all shadow-sm disabled:opacity-50"
           >
             <RefreshCw className={`h-4 w-4 ${isSyncing ? 'animate-spin' : ''}`} />
             {isSyncing ? 'Đang đồng bộ...' : 'Đồng bộ từ Bài tập'}
           </button>
           <button
             onClick={handleDownloadDocx}
-            className="flex items-center gap-2 bg-emerald-600 text-white px-4 py-2 rounded-xl text-sm font-bold hover:bg-emerald-700 transition-all shadow-md"
+            className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl text-sm font-bold transition-all shadow-md"
           >
             <Download className="h-4 w-4" />
             Tải file Word
@@ -329,7 +329,7 @@ const QuestionBank: React.FC = () => {
       </div>
 
       {/* Filters Bar */}
-      <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 grid grid-cols-1 md:grid-cols-6 gap-3">
+      <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-800 grid grid-cols-1 md:grid-cols-6 gap-3">
         <div className="relative col-span-1 md:col-span-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
           <input
@@ -337,14 +337,14 @@ const QuestionBank: React.FC = () => {
             placeholder="Tìm theo nội dung, chủ đề..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-9 pr-4 py-2 bg-gray-50 border-0 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500 transition-all outline-none"
+            className="w-full pl-9 pr-4 py-2 bg-gray-50 dark:bg-slate-950 border border-gray-100 dark:border-slate-800 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500 transition-all outline-none text-gray-900 dark:text-slate-100"
           />
         </div>
 
         <select
           value={filterSubject}
           onChange={(e) => setFilterSubject(e.target.value)}
-          className="bg-gray-50 border-0 rounded-xl text-sm px-4 py-2 outline-none focus:ring-2 focus:ring-emerald-500"
+          className="bg-gray-50 dark:bg-slate-950 border border-gray-100 dark:border-slate-800 text-gray-700 dark:text-slate-200 rounded-xl text-sm px-4 py-2 outline-none focus:ring-2 focus:ring-emerald-500"
         >
           <option value="all">Tất cả Môn</option>
           {subjects.map(s => <option key={s} value={s}>{s}</option>)}
@@ -353,7 +353,7 @@ const QuestionBank: React.FC = () => {
         <select
           value={filterGrade}
           onChange={(e) => setFilterGrade(e.target.value)}
-          className="bg-gray-50 border-0 rounded-xl text-sm px-4 py-2 outline-none focus:ring-2 focus:ring-emerald-500"
+          className="bg-gray-50 dark:bg-slate-950 border border-gray-100 dark:border-slate-800 text-gray-700 dark:text-slate-200 rounded-xl text-sm px-4 py-2 outline-none focus:ring-2 focus:ring-emerald-500"
         >
           <option value="all">Tất cả</option>
           {grades.map(g => <option key={g} value={g}>Lớp {g}</option>)}
@@ -362,7 +362,7 @@ const QuestionBank: React.FC = () => {
         <select
           value={filterTopic}
           onChange={(e) => setFilterTopic(e.target.value)}
-          className="bg-gray-50 border-0 rounded-xl text-sm px-4 py-2 outline-none focus:ring-2 focus:ring-emerald-500"
+          className="bg-gray-50 dark:bg-slate-950 border border-gray-100 dark:border-slate-800 text-gray-700 dark:text-slate-200 rounded-xl text-sm px-4 py-2 outline-none focus:ring-2 focus:ring-emerald-500"
         >
           <option value="all">Tất cả Chủ đề</option>
           {allTopics.map(t => <option key={t} value={t}>{t}</option>)}
@@ -371,7 +371,7 @@ const QuestionBank: React.FC = () => {
         <select
           value={filterLevel}
           onChange={(e) => setFilterLevel(e.target.value)}
-          className="bg-gray-50 border-0 rounded-xl text-sm px-4 py-2 outline-none focus:ring-2 focus:ring-emerald-500"
+          className="bg-gray-50 dark:bg-slate-950 border border-gray-100 dark:border-slate-800 text-gray-700 dark:text-slate-200 rounded-xl text-sm px-4 py-2 outline-none focus:ring-2 focus:ring-emerald-500"
         >
           <option value="all">Tất cả Mức độ</option>
           <option value="NHAN_BIET">Nhận biết</option>
@@ -382,7 +382,7 @@ const QuestionBank: React.FC = () => {
         <select
           value={filterType}
           onChange={(e) => setFilterType(e.target.value)}
-          className="bg-gray-50 border-0 rounded-xl text-sm px-4 py-2 outline-none focus:ring-2 focus:ring-emerald-500"
+          className="bg-gray-50 dark:bg-slate-950 border border-gray-100 dark:border-slate-800 text-gray-700 dark:text-slate-200 rounded-xl text-sm px-4 py-2 outline-none focus:ring-2 focus:ring-emerald-500"
         >
           <option value="all">Tất cả Loại câu</option>
           {Object.entries(TYPE_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
@@ -390,21 +390,21 @@ const QuestionBank: React.FC = () => {
       </div>
 
       {/* Main Table */}
-      <div className="flex-1 bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col">
+      <div className="flex-1 bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-800 overflow-hidden flex flex-col">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
-            <thead className="bg-gray-50/80 text-gray-500 text-xs font-bold uppercase tracking-wider sticky top-0 z-10">
+            <thead className="bg-gray-50/80 dark:bg-slate-950/50 text-gray-500 dark:text-slate-400 text-xs font-bold uppercase tracking-wider sticky top-0 z-10 border-b dark:border-slate-800">
               <tr>
-                <th className="px-6 py-4 border-b">Câu hỏi / Nội dung</th>
-                <th className="px-4 py-4 border-b w-32">Thông tin</th>
-                <th className="px-4 py-4 border-b w-32">Chủ đề</th>
-                <th className="px-4 py-4 border-b w-32 text-center">Thao tác</th>
+                <th className="px-6 py-4">Câu hỏi / Nội dung</th>
+                <th className="px-4 py-4 w-32">Thông tin</th>
+                <th className="px-4 py-4 w-32">Chủ đề</th>
+                <th className="px-4 py-4 w-32 text-center">Thao tác</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-50">
+            <tbody className="divide-y divide-gray-50 dark:divide-slate-800 text-gray-900 dark:text-slate-100">
               {filteredQuestions.length === 0 ? (
                 <tr>
-                  <td colSpan={4} className="px-6 py-12 text-center text-gray-400">
+                  <td colSpan={4} className="px-6 py-12 text-center text-gray-400 dark:text-slate-500">
                     <div className="flex flex-col items-center gap-2">
                       <HelpCircle className="h-10 w-10 opacity-20" />
                       <p>Không tìm thấy câu hỏi nào phù hợp</p>
@@ -416,22 +416,22 @@ const QuestionBank: React.FC = () => {
                   const isEditing = editingId === q.id;
                   
                   return (
-                    <tr key={q.id} className="hover:bg-gray-50/50 transition-colors">
+                    <tr key={q.id} className="hover:bg-gray-50/50 dark:hover:bg-slate-800/30 transition-colors">
                       <td className="px-6 py-4 align-top">
                         {isEditing ? (
                           <div className="space-y-3">
                             <textarea
                               value={editValues.content}
                               onChange={(e) => setEditValues({ ...editValues, content: e.target.value })}
-                              className="w-full border rounded-lg p-2 text-sm min-h-[100px] outline-none focus:ring-2 focus:ring-emerald-500"
+                              className="w-full border dark:border-slate-800 rounded-lg p-2 text-sm min-h-[100px] outline-none focus:ring-2 focus:ring-emerald-500 bg-white dark:bg-slate-950 text-gray-900 dark:text-slate-100"
                             />
                             {(q.type === 'MCQ' || q.type === 'MCQ_MULTIPLE') && (
                               <div className="grid grid-cols-2 gap-2">
                                 {editValues.options?.map((opt, i) => (
-                                  <div key={i} className={`flex items-center gap-2 border rounded-lg p-2 ${
+                                  <div key={i} className={`flex items-center gap-2 border dark:border-slate-800 rounded-lg p-2 ${
                                     q.type === 'MCQ_MULTIPLE'
-                                      ? (editValues.correctOptionIndices?.includes(i) ? 'bg-emerald-50 border-emerald-200' : '')
-                                      : (editValues.correctOptionIndex === i ? 'bg-emerald-50 border-emerald-200' : '')
+                                      ? (editValues.correctOptionIndices?.includes(i) ? 'bg-emerald-50 dark:bg-emerald-950/20 border-emerald-200 dark:border-emerald-900/50' : '')
+                                      : (editValues.correctOptionIndex === i ? 'bg-emerald-50 dark:bg-emerald-950/20 border-emerald-200 dark:border-emerald-900/50' : '')
                                   }`}>
                                     {q.type === 'MCQ_MULTIPLE' ? (
                                       <input
@@ -457,7 +457,7 @@ const QuestionBank: React.FC = () => {
                                         newOpts[i] = e.target.value;
                                         setEditValues({ ...editValues, options: newOpts });
                                       }}
-                                      className="bg-transparent border-0 text-xs w-full outline-none"
+                                      className="bg-transparent border-0 text-xs w-full outline-none text-gray-900 dark:text-slate-100"
                                     />
                                   </div>
                                 ))}
@@ -469,20 +469,20 @@ const QuestionBank: React.FC = () => {
                             <div className="space-y-2">
                               <div className="flex flex-wrap gap-2 mb-1">
                                   <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
-                                      q.type === 'MCQ' ? 'bg-blue-50 text-blue-600' : 'bg-purple-50 text-purple-600'
+                                      q.type === 'MCQ' ? 'bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400' : 'bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400'
                                   }`}>
                                       {TYPE_LABELS[q.type]}
                                   </span>
                                   {q.level && (
                                       <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
-                                          q.level === 'NHAN_BIET' ? 'bg-green-50 text-green-600' : 
-                                          q.level === 'KET_NOI' ? 'bg-orange-50 text-orange-600' : 'bg-red-50 text-red-600'
+                                          q.level === 'NHAN_BIET' ? 'bg-green-50 dark:bg-green-950/40 text-green-600 dark:text-green-400' : 
+                                          q.level === 'KET_NOI' ? 'bg-orange-50 dark:bg-orange-950/40 text-orange-600 dark:text-orange-400' : 'bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400'
                                       }`}>
                                           {LEVEL_LABELS[q.level as ExamDifficulty] || q.level}
                                       </span>
                                   )}
                               </div>
-                              <div className="text-gray-800 text-sm font-medium prose prose-sm max-w-none">
+                              <div className="text-gray-800 dark:text-slate-200 text-sm font-medium prose prose-sm dark:prose-invert max-w-none">
                                   <ReactMarkdown 
                                       remarkPlugins={[remarkMath]} 
                                       rehypePlugins={[rehypeKatex]}
@@ -497,12 +497,12 @@ const QuestionBank: React.FC = () => {
                                   const isCorrectMulti = q.type === 'MCQ_MULTIPLE' && (q.correctOptionIndices?.includes(i) ?? false);
                                   const isCorrect = isCorrectSingle || isCorrectMulti;
                                   return (
-                                  <div key={i} className={`flex items-start gap-2 text-[11px] p-2 rounded-lg ${isCorrect ? 'bg-emerald-50 text-emerald-700 font-medium ring-1 ring-emerald-300' : 'bg-gray-50 text-gray-600'}`}>
+                                  <div key={i} className={`flex items-start gap-2 text-[11px] p-2 rounded-lg ${isCorrect ? 'bg-emerald-50 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-300 font-medium ring-1 ring-emerald-300 dark:ring-emerald-800' : 'bg-gray-50 dark:bg-slate-950/40 text-gray-600 dark:text-slate-400'}`}>
                                     <span className="font-bold shrink-0 flex items-center gap-0.5">
                                       {String.fromCharCode(65 + i)}.
                                       {isCorrect && <span className="text-emerald-500">✓</span>}
                                     </span>
-                                    <div className="prose prose-xs max-w-none">
+                                    <div className="prose prose-xs dark:prose-invert max-w-none">
                                         <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>
                                             {opt}
                                         </ReactMarkdown>
@@ -517,14 +517,14 @@ const QuestionBank: React.FC = () => {
                                 {q.options.map((opt, i) => {
                                   const [l, r] = opt.split('|||');
                                   return (
-                                    <div key={i} className="flex items-center gap-3 text-[11px] bg-gray-50 p-2 rounded-lg">
-                                      <div className="flex-1 text-center border-r border-dashed border-gray-300 pr-2 prose prose-xs max-w-none">
+                                    <div key={i} className="flex items-center gap-3 text-[11px] bg-gray-50 dark:bg-slate-950/40 p-2 rounded-lg">
+                                      <div className="flex-1 text-center border-r border-dashed border-gray-300 dark:border-slate-700 pr-2 prose prose-xs dark:prose-invert max-w-none">
                                         <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>
                                             {l?.trim() || ''}
                                         </ReactMarkdown>
                                       </div>
-                                      <div className="text-gray-400 shrink-0">... nối với ...</div>
-                                      <div className="flex-1 text-center pl-2 prose prose-xs max-w-none">
+                                      <div className="text-gray-400 dark:text-slate-500 shrink-0">... nối với ...</div>
+                                      <div className="flex-1 text-center pl-2 prose prose-xs dark:prose-invert max-w-none">
                                         <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>
                                             {r?.trim() || ''}
                                         </ReactMarkdown>
@@ -545,17 +545,17 @@ const QuestionBank: React.FC = () => {
                               placeholder="Môn"
                               value={editValues.subject}
                               onChange={(e) => setEditValues({ ...editValues, subject: e.target.value })}
-                              className="w-full border rounded p-1"
+                              className="w-full border dark:border-slate-800 rounded p-1 bg-white dark:bg-slate-950 text-gray-900 dark:text-slate-100"
                             />
                             <input
                               placeholder="Lớp"
                               value={editValues.grade}
                               onChange={(e) => setEditValues({ ...editValues, grade: e.target.value })}
-                              className="w-full border rounded p-1"
+                              className="w-full border dark:border-slate-800 rounded p-1 bg-white dark:bg-slate-950 text-gray-900 dark:text-slate-100"
                             />
                           </div>
                         ) : (
-                          <div className="space-y-1 text-gray-500">
+                          <div className="space-y-1 text-gray-500 dark:text-slate-400">
                             <div className="flex items-center gap-1"><BookMarked className="h-3 w-3" /> {q.subject}</div>
                             <div className="flex items-center gap-1"><GraduationCap className="h-3 w-3" /> Lớp {q.grade}</div>
                           </div>
@@ -567,10 +567,10 @@ const QuestionBank: React.FC = () => {
                             placeholder="Chủ đề"
                             value={editValues.topic}
                             onChange={(e) => setEditValues({ ...editValues, topic: e.target.value })}
-                            className="w-full border rounded p-1 text-xs"
+                            className="w-full border dark:border-slate-800 rounded p-1 text-xs bg-white dark:bg-slate-950 text-gray-900 dark:text-slate-100"
                           />
                         ) : (
-                          <div className="text-xs text-gray-600 font-medium italic">{q.topic || '(Chưa phân loại)'}</div>
+                          <div className="text-xs text-gray-600 dark:text-slate-400 font-medium italic">{q.topic || '(Chưa phân loại)'}</div>
                         )}
                       </td>
                       <td className="px-4 py-4 align-top">
@@ -579,14 +579,14 @@ const QuestionBank: React.FC = () => {
                             <>
                               <button
                                 onClick={handleSaveEdit}
-                                className="p-2 text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors"
+                                className="p-2 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-slate-800 rounded-lg transition-colors"
                                 title="Lưu"
                               >
                                 <Save className="h-4 w-4" />
                               </button>
                               <button
                                 onClick={cancelEdit}
-                                className="p-2 text-gray-400 hover:bg-gray-50 rounded-lg transition-colors"
+                                className="p-2 text-gray-400 dark:text-slate-500 hover:bg-gray-50 dark:hover:bg-slate-800 rounded-lg transition-colors"
                                 title="Hủy"
                               >
                                 <X className="h-4 w-4" />
@@ -596,14 +596,14 @@ const QuestionBank: React.FC = () => {
                             <>
                               <button
                                 onClick={() => startEdit(q)}
-                                className="p-2 text-blue-500 hover:bg-blue-50 rounded-lg transition-colors"
+                                className="p-2 text-blue-500 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-slate-800 rounded-lg transition-colors"
                                 title="Sửa"
                               >
                                 <Edit2 className="h-4 w-4" />
                               </button>
                               <button
                                 onClick={() => handleDelete(q.id)}
-                                className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                                className="p-2 text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-slate-800 rounded-lg transition-colors"
                                 title="Xóa"
                               >
                                 <Trash2 className="h-4 w-4" />

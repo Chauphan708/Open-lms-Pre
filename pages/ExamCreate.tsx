@@ -314,24 +314,24 @@ export const ExamCreate: React.FC = () => {
   };
 
   return (
-    <div className="h-[calc(100vh-100px)] flex flex-col">
+    <div className="h-[calc(100vh-100px)] flex flex-col text-gray-900 dark:text-slate-100">
       {/* Header */}
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">{isEditMode ? 'Chỉnh sửa Bài Tập' : 'Tạo Bài Tập Mới'}</h1>
-          <p className="text-gray-500">{isEditMode ? 'Quản lý nội dung câu hỏi và cấu hình Bài Tập.' : 'Soạn thảo, upload file hoặc nhờ AI tạo Bài Tập tự động.'}</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-slate-100">{isEditMode ? 'Chỉnh sửa Bài Tập' : 'Tạo Bài Tập Mới'}</h1>
+          <p className="text-gray-500 dark:text-slate-400">{isEditMode ? 'Quản lý nội dung câu hỏi và cấu hình Bài Tập.' : 'Soạn thảo, upload file hoặc nhờ AI tạo Bài Tập tự động.'}</p>
         </div>
         <div className="flex gap-3">
-          <div className="flex bg-gray-200 p-1 rounded-lg">
+          <div className="flex bg-gray-200 dark:bg-slate-800 p-1 rounded-lg">
             <button
               onClick={() => setMode('PARSE')}
-              className={`px-3 py-1.5 text-sm font-medium rounded-md flex items-center gap-2 transition-all ${mode === 'PARSE' ? 'bg-white shadow text-indigo-700' : 'text-gray-600'}`}
+              className={`px-3 py-1.5 text-sm font-medium rounded-md flex items-center gap-2 transition-all ${mode === 'PARSE' ? 'bg-white dark:bg-slate-900 shadow text-indigo-700 dark:text-indigo-400 font-bold' : 'text-gray-600 dark:text-slate-400'}`}
             >
               <FileText className="h-4 w-4" /> Tách từ File
             </button>
             <button
               onClick={() => setMode('GENERATE')}
-              className={`px-3 py-1.5 text-sm font-medium rounded-md flex items-center gap-2 transition-all ${mode === 'GENERATE' ? 'bg-white shadow text-purple-700' : 'text-gray-600'}`}
+              className={`px-3 py-1.5 text-sm font-medium rounded-md flex items-center gap-2 transition-all ${mode === 'GENERATE' ? 'bg-white dark:bg-slate-900 shadow text-purple-700 dark:text-purple-400 font-bold' : 'text-gray-600 dark:text-slate-400'}`}
             >
               <Sparkles className="h-4 w-4" /> AI Tạo Bài Tập
             </button>
@@ -340,21 +340,21 @@ export const ExamCreate: React.FC = () => {
           {/* Nút Xuất File */}
           {questions.length > 0 && (
             <div className="relative group">
-              <button className="flex items-center gap-2 bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 transition-colors font-medium shadow-sm">
+              <button className="flex items-center gap-2 bg-white dark:bg-slate-900 border border-gray-300 dark:border-slate-800 text-gray-700 dark:text-slate-200 px-4 py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors font-medium shadow-sm">
                 <Printer className="h-4 w-4" />
                 Xuất File <ChevronDown className="h-3 w-3" />
               </button>
-              <div className="absolute right-0 top-full mt-1 w-56 bg-white border border-gray-200 rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 overflow-hidden">
-                <button onClick={() => handlePrint('MATRIX')} className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-indigo-50 hover:text-indigo-700 flex items-center gap-2"><BarChart3 className="h-4 w-4" /> 1. In Ma trận</button>
-                <button onClick={() => handlePrint('EXAM')} className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-indigo-50 hover:text-indigo-700 flex items-center gap-2"><FileText className="h-4 w-4" /> 2. In Đề KT</button>
-                <button onClick={() => handlePrint('ALL')} className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 font-bold flex items-center gap-2"><Printer className="h-4 w-4" /> 3. In Ma trận & Đề</button>
+              <div className="absolute right-0 top-full mt-1 w-56 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 overflow-hidden">
+                <button onClick={() => handlePrint('MATRIX')} className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-slate-350 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 hover:text-indigo-700 dark:hover:text-indigo-400 flex items-center gap-2"><BarChart3 className="h-4 w-4" /> 1. In Ma trận</button>
+                <button onClick={() => handlePrint('EXAM')} className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-slate-350 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 hover:text-indigo-700 dark:hover:text-indigo-400 flex items-center gap-2"><FileText className="h-4 w-4" /> 2. In Đề KT</button>
+                <button onClick={() => handlePrint('ALL')} className="w-full text-left px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/20 font-bold flex items-center gap-2"><Printer className="h-4 w-4" /> 3. In Ma trận & Đề</button>
               </div>
             </div>
           )}
 
           <button
             onClick={handleSaveExam}
-            className="flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors font-medium shadow-sm"
+            className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg transition-colors font-medium shadow-sm"
           >
             <Save className="h-4 w-4" />
             Lưu & Xuất Bản
@@ -363,7 +363,7 @@ export const ExamCreate: React.FC = () => {
       </div>
 
       {error && (
-        <div className="bg-red-50 text-red-700 p-3 rounded-lg flex items-center gap-2 mb-4 text-sm animate-fade-in">
+        <div className="bg-red-50 dark:bg-red-950/20 text-red-700 dark:text-red-400 p-3 rounded-lg flex items-center gap-2 mb-4 text-sm animate-fade-in border dark:border-red-900/30">
           <AlertCircle className="h-4 w-4" />
           {error}
         </div>
@@ -406,7 +406,7 @@ export const ExamCreate: React.FC = () => {
         </div>
 
         {/* RIGHT COLUMN: Preview */}
-        <div className="lg:col-span-7 bg-white rounded-xl border shadow-sm flex flex-col h-full overflow-hidden">
+        <div className="lg:col-span-7 bg-white dark:bg-slate-900 rounded-xl border dark:border-slate-800 shadow-sm flex flex-col h-full overflow-hidden">
           <ExamQuestionPreview
             questions={questions}
             setQuestions={setQuestions}

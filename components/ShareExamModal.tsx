@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { X, Globe, Lock, Share2, Users, Search, CheckCircle, Copy, AlertCircle, Send, Info } from 'lucide-react';
 import { useStore } from '../store';
-import { Exam, User } from '../types';
+import { Exam } from '../types';
 
 interface Props {
   exam: Exam;
@@ -84,34 +84,34 @@ export const ShareExamModal: React.FC<Props> = ({ exam, isOpen, onClose }) => {
 
   return (
     <div className="fixed inset-0 bg-black/60 z-[100] flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg animate-fade-in overflow-hidden border border-gray-100 flex flex-col">
+      <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-lg animate-fade-in overflow-hidden border border-gray-100 dark:border-slate-800 flex flex-col">
         {/* Header */}
-        <div className="p-5 border-b flex justify-between items-center bg-gray-50/50">
+        <div className="p-5 border-b dark:border-slate-800 flex justify-between items-center bg-gray-50/50 dark:bg-slate-900/50">
           <div className="flex items-center gap-3">
-             <div className="p-2 bg-indigo-100 rounded-lg">
-                <Share2 className="h-5 w-5 text-indigo-600" />
+             <div className="p-2 bg-indigo-100 dark:bg-indigo-950/60 rounded-lg">
+                <Share2 className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
              </div>
              <div>
-                <h2 className="text-lg font-bold text-gray-900">Chia sẻ đề thi</h2>
-                <p className="text-xs text-gray-500 font-medium truncate max-w-[250px]">{exam.title}</p>
+                <h2 className="text-lg font-bold text-gray-900 dark:text-slate-100">Chia sẻ đề thi</h2>
+                <p className="text-xs text-gray-500 dark:text-slate-400 font-medium truncate max-w-[250px]">{exam.title}</p>
              </div>
           </div>
-          <button onClick={onClose} className="p-2 hover:bg-gray-200 rounded-full transition-colors text-gray-500">
+          <button onClick={onClose} className="p-2 hover:bg-gray-200 dark:hover:bg-slate-800 rounded-full transition-colors text-gray-500 dark:text-slate-400">
             <X className="h-5 w-5" />
           </button>
         </div>
 
         {/* Success View */}
         {showSuccess ? (
-          <div className="p-10 text-center space-y-6 animate-in zoom-in-95 duration-300">
-            <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto shadow-sm">
-              <CheckCircle className="h-10 w-10 text-green-600" />
+          <div className="p-10 text-center space-y-6 animate-in zoom-in-95 duration-300 dark:bg-slate-900">
+            <div className="w-20 h-20 bg-green-100 dark:bg-green-950/40 rounded-full flex items-center justify-center mx-auto shadow-sm">
+              <CheckCircle className="h-10 w-10 text-green-600 dark:text-green-400" />
             </div>
             <div className="space-y-2">
-              <h3 className="text-xl font-bold text-gray-900">
+              <h3 className="text-xl font-bold text-gray-900 dark:text-slate-100">
                 {activeTab === 'public' ? 'Đã cập nhật trạng thái chia sẻ!' : 'Đã gửi đề thi thành công!'}
               </h3>
-              <p className="text-sm text-gray-500 leading-relaxed">
+              <p className="text-sm text-gray-500 dark:text-slate-400 leading-relaxed">
                 {activeTab === 'public' 
                   ? 'Đồng nghiệp của bạn có thể tìm thấy đề thi này trong thư viện chung hoặc sử dụng mã chia sẻ bên dưới.' 
                   : 'Thông báo đã được gửi đến các giáo viên được chọn. Bạn sẽ nhận được thông báo nếu họ chấp nhận hoặc từ chối.'}
@@ -119,17 +119,17 @@ export const ShareExamModal: React.FC<Props> = ({ exam, isOpen, onClose }) => {
             </div>
 
             {(isPublic || isCodeRequired || shareCode) && activeTab === 'public' && (
-              <div className="bg-indigo-50 p-4 rounded-xl border border-indigo-100 space-y-3">
+              <div className="bg-indigo-50 dark:bg-indigo-950/20 p-4 rounded-xl border border-indigo-100 dark:border-indigo-900/40 space-y-3">
                 <div className="flex justify-between items-center">
-                   <span className="text-xs font-bold text-indigo-600 uppercase tracking-wider">Mã chia sẻ</span>
-                   <span className="text-lg font-mono font-black text-indigo-900">{shareCode}</span>
+                   <span className="text-xs font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider">Mã chia sẻ</span>
+                   <span className="text-lg font-mono font-black text-indigo-900 dark:text-indigo-300">{shareCode}</span>
                 </div>
-                <div className="flex items-center gap-2 bg-white p-2 rounded-lg border border-indigo-200">
+                <div className="flex items-center gap-2 bg-white dark:bg-slate-950 p-2 rounded-lg border border-indigo-200 dark:border-indigo-900/40">
                   <input
                     type="text"
                     readOnly
                     value={shareUrl}
-                    className="flex-1 bg-transparent border-none outline-none text-xs text-gray-600 font-mono truncate"
+                    className="flex-1 bg-transparent border-none outline-none text-xs text-gray-600 dark:text-slate-300 font-mono truncate"
                   />
                   <button
                     onClick={() => {
@@ -148,7 +148,7 @@ export const ShareExamModal: React.FC<Props> = ({ exam, isOpen, onClose }) => {
 
             <button 
               onClick={onClose}
-              className="w-full py-3 bg-gray-900 text-white rounded-xl font-bold hover:bg-gray-800 transition-all shadow-lg"
+              className="w-full py-3 bg-gray-900 dark:bg-indigo-600 text-white rounded-xl font-bold hover:bg-gray-800 dark:hover:bg-indigo-700 transition-all shadow-lg"
             >
               Hoàn tất
             </button>
@@ -156,25 +156,25 @@ export const ShareExamModal: React.FC<Props> = ({ exam, isOpen, onClose }) => {
         ) : (
           <>
             {/* Tabs */}
-            <div className="flex p-1 bg-gray-100 mx-5 mt-5 rounded-xl border border-gray-200">
+            <div className="flex p-1 bg-gray-100 dark:bg-slate-950 mx-5 mt-5 rounded-xl border border-gray-200 dark:border-slate-800">
               <button
                 onClick={() => setActiveTab('public')}
-                className={`flex-1 flex items-center justify-center gap-2 py-2 text-sm font-bold rounded-lg transition-all ${activeTab === 'public' ? 'bg-white shadow-sm text-indigo-600' : 'text-gray-500 hover:text-gray-700'}`}
+                className={`flex-1 flex items-center justify-center gap-2 py-2 text-sm font-bold rounded-lg transition-all ${activeTab === 'public' ? 'bg-white dark:bg-slate-900 shadow-sm text-indigo-600 dark:text-indigo-400' : 'text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-300'}`}
               >
                 <Globe className="h-4 w-4" /> Thư viện chung
               </button>
               <button
                 onClick={() => setActiveTab('direct')}
-                className={`flex-1 flex items-center justify-center gap-2 py-2 text-sm font-bold rounded-lg transition-all ${activeTab === 'direct' ? 'bg-white shadow-sm text-indigo-600' : 'text-gray-500 hover:text-gray-700'}`}
+                className={`flex-1 flex items-center justify-center gap-2 py-2 text-sm font-bold rounded-lg transition-all ${activeTab === 'direct' ? 'bg-white dark:bg-slate-900 shadow-sm text-indigo-600 dark:text-indigo-400' : 'text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-300'}`}
               >
                 <Users className="h-4 w-4" /> Gửi trực tiếp
               </button>
             </div>
 
-            <div className="p-6 overflow-y-auto flex-1 max-h-[60vh]">
+            <div className="p-6 overflow-y-auto flex-1 max-h-[60vh] bg-white dark:bg-slate-900">
               {activeTab === 'public' ? (
                 <div className="space-y-6">
-                  <div className="bg-indigo-50 border border-indigo-100 p-4 rounded-xl text-indigo-800 text-sm flex gap-3">
+                  <div className="bg-indigo-50 dark:bg-indigo-950/20 border border-indigo-100 dark:border-indigo-900/40 p-4 rounded-xl text-indigo-800 dark:text-indigo-300 text-sm flex gap-3">
                     <Info className="h-5 w-5 flex-shrink-0" />
                     <p className="leading-relaxed">
                       Chia sẻ đề thi giúp xây dựng kho học liệu phong phú. Bạn vẫn giữ <strong>bản quyền tác giả gốc</strong> và các bản sao sẽ ghi nhận sự đóng góp của đồng nghiệp.
@@ -182,55 +182,55 @@ export const ShareExamModal: React.FC<Props> = ({ exam, isOpen, onClose }) => {
                   </div>
 
                   <div className="space-y-4">
-                    <label className="flex items-start gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all hover:border-indigo-200 bg-white group select-none">
-                      <div className={`mt-1 p-2 rounded-lg ${isPublic ? 'bg-indigo-100 text-indigo-600' : 'bg-gray-100 text-gray-400'}`}>
+                    <label className="flex items-start gap-4 p-4 rounded-xl border-2 dark:border-slate-800 cursor-pointer transition-all hover:border-indigo-200 dark:hover:border-indigo-850 bg-white dark:bg-slate-950 group select-none">
+                      <div className={`mt-1 p-2 rounded-lg ${isPublic ? 'bg-indigo-100 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400' : 'bg-gray-100 dark:bg-slate-900 text-gray-400 dark:text-slate-500'}`}>
                         <Globe className="h-5 w-5" />
                       </div>
                       <div className="flex-1">
                         <div className="flex justify-between items-center mb-1">
-                           <span className="font-bold text-gray-900">Chia sẻ lên Thư viện chung</span>
+                           <span className="font-bold text-gray-900 dark:text-slate-100">Chia sẻ lên Thư viện chung</span>
                            <input 
                              type="checkbox" 
                              checked={isPublic} 
                              onChange={e => setIsPublic(e.target.checked)}
-                             className="w-5 h-5 rounded-full border-gray-300 text-indigo-600 focus:ring-indigo-500" 
+                             className="w-5 h-5 rounded-full border-gray-300 dark:border-slate-700 text-indigo-600 dark:bg-slate-900 focus:ring-indigo-500" 
                            />
                         </div>
-                        <p className="text-xs text-gray-500">Mọi giáo viên trong hệ thống đều có thể tìm thấy và sử dụng đề thi này.</p>
+                        <p className="text-xs text-gray-500 dark:text-slate-400">Mọi giáo viên trong hệ thống đều có thể tìm thấy và sử dụng đề thi này.</p>
                       </div>
                     </label>
 
-                    <label className="flex items-start gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all hover:border-indigo-200 bg-white group select-none">
-                      <div className={`mt-1 p-2 rounded-lg ${isCodeRequired ? 'bg-amber-100 text-amber-600' : 'bg-gray-100 text-gray-400'}`}>
+                    <label className="flex items-start gap-4 p-4 rounded-xl border-2 dark:border-slate-800 cursor-pointer transition-all hover:border-indigo-200 dark:hover:border-indigo-850 bg-white dark:bg-slate-950 group select-none">
+                      <div className={`mt-1 p-2 rounded-lg ${isCodeRequired ? 'bg-amber-100 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400' : 'bg-gray-100 dark:bg-slate-900 text-gray-400 dark:text-slate-500'}`}>
                         <Lock className="h-5 w-5" />
                       </div>
                       <div className="flex-1">
                         <div className="flex justify-between items-center mb-1">
-                           <span className="font-bold text-gray-900">Cho phép tìm theo Mã chia sẻ</span>
+                           <span className="font-bold text-gray-900 dark:text-slate-100">Cho phép tìm theo Mã chia sẻ</span>
                            <input 
                              type="checkbox" 
                              checked={isCodeRequired} 
                              onChange={e => setIsCodeRequired(e.target.checked)}
-                             className="w-5 h-5 rounded-full border-gray-300 text-indigo-600 focus:ring-indigo-500" 
+                             className="w-5 h-5 rounded-full border-gray-300 dark:border-slate-700 text-indigo-600 dark:bg-slate-900 focus:ring-indigo-500" 
                            />
                         </div>
-                        <p className="text-xs text-gray-500">Người có mã có thể tìm thấy đề thi ngay cả khi không hiện ở thư viện chung.</p>
+                        <p className="text-xs text-gray-500 dark:text-slate-400">Người có mã có thể tìm thấy đề thi ngay cả khi không hiện ở thư viện chung.</p>
                       </div>
                     </label>
                   </div>
 
                   {shareCode && (
-                    <div className="p-4 border-t border-dashed space-y-2">
-                       <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Mã chia sẻ của bạn</p>
-                       <div className="flex items-center justify-between bg-gray-50 p-3 rounded-lg border">
-                          <span className="font-mono text-xl font-black text-indigo-700">{shareCode}</span>
+                    <div className="p-4 border-t border-dashed dark:border-slate-800 space-y-2">
+                       <p className="text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">Mã chia sẻ của bạn</p>
+                       <div className="flex items-center justify-between bg-gray-50 dark:bg-slate-950 p-3 rounded-lg border dark:border-slate-800">
+                          <span className="font-mono text-xl font-black text-indigo-700 dark:text-indigo-400">{shareCode}</span>
                           <button 
                             onClick={() => {
                               navigator.clipboard.writeText(shareCode);
                               setCopied(true);
                               setTimeout(() => setCopied(false), 2000);
                             }}
-                            className="flex items-center gap-1.5 text-xs font-bold text-indigo-600 hover:text-indigo-800 px-3 py-1.5 bg-white border rounded shadow-sm"
+                            className="flex items-center gap-1.5 text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 px-3 py-1.5 bg-white dark:bg-slate-900 border dark:border-slate-800 rounded shadow-sm"
                           >
                             {copied ? <CheckCircle className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
                             {copied ? 'Đã chép' : 'Sao chép mã'}
@@ -246,7 +246,7 @@ export const ShareExamModal: React.FC<Props> = ({ exam, isOpen, onClose }) => {
                     <input
                       type="text"
                       placeholder="Tìm tên giáo viên..."
-                      className="w-full pl-10 pr-4 py-2.5 border rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
+                      className="w-full pl-10 pr-4 py-2.5 border dark:border-slate-800 bg-white dark:bg-slate-950 text-gray-900 dark:text-slate-100 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
                       value={teacherSearch}
                       onChange={e => setTeacherSearch(e.target.value)}
                     />
@@ -255,21 +255,21 @@ export const ShareExamModal: React.FC<Props> = ({ exam, isOpen, onClose }) => {
                   <div className="space-y-2 max-h-64 overflow-y-auto pr-2 custom-scrollbar">
                     {availableTeachers.length === 0 ? (
                       <div className="text-center py-8">
-                         <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-2 text-gray-300">
+                         <div className="w-12 h-12 bg-gray-100 dark:bg-slate-850 rounded-full flex items-center justify-center mx-auto mb-2 text-gray-300 dark:text-slate-650">
                             <Users className="h-6 w-6" />
                          </div>
-                         <p className="text-sm text-gray-400 italic">Không tìm thấy giáo viên phù hợp.</p>
+                         <p className="text-sm text-gray-400 dark:text-slate-500 italic">Không tìm thấy giáo viên phù hợp.</p>
                       </div>
                     ) : (
                       availableTeachers.map(teacher => (
-                        <label key={teacher.id} className="flex items-center justify-between p-3 border rounded-xl hover:bg-indigo-50/50 cursor-pointer transition-colors group">
+                        <label key={teacher.id} className="flex items-center justify-between p-3 border dark:border-slate-850 rounded-xl hover:bg-indigo-50/50 dark:hover:bg-indigo-950/20 cursor-pointer transition-colors group">
                            <div className="flex items-center gap-3">
-                              <div className="w-10 h-10 bg-indigo-100 text-indigo-700 rounded-full flex items-center justify-center font-bold">
+                              <div className="w-10 h-10 bg-indigo-100 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-350 rounded-full flex items-center justify-center font-bold">
                                  {teacher.name.charAt(0)}
                               </div>
                               <div>
-                                 <p className="text-sm font-bold text-gray-900 group-hover:text-indigo-700">{teacher.name}</p>
-                                 <p className="text-xs text-gray-500">{teacher.email}</p>
+                                 <p className="text-sm font-bold text-gray-900 dark:text-slate-100 group-hover:text-indigo-700 dark:group-hover:text-indigo-400">{teacher.name}</p>
+                                 <p className="text-xs text-gray-500 dark:text-slate-400">{teacher.email}</p>
                               </div>
                            </div>
                            <input
@@ -279,7 +279,7 @@ export const ShareExamModal: React.FC<Props> = ({ exam, isOpen, onClose }) => {
                                if (e.target.checked) setSelectedTeacherIds(prev => [...prev, teacher.id]);
                                else setSelectedTeacherIds(prev => prev.filter(id => id !== teacher.id));
                              }}
-                             className="w-5 h-5 rounded-full text-indigo-600 border-gray-300 focus:ring-indigo-500"
+                             className="w-5 h-5 rounded-full text-indigo-600 dark:bg-slate-900 border-gray-300 dark:border-slate-700 focus:ring-indigo-500"
                            />
                         </label>
                       ))
@@ -287,7 +287,7 @@ export const ShareExamModal: React.FC<Props> = ({ exam, isOpen, onClose }) => {
                   </div>
 
                   {selectedTeacherIds.length > 0 && (
-                     <div className="bg-amber-50 p-3 rounded-lg border border-amber-100 flex gap-2 text-[10px] text-amber-800">
+                     <div className="bg-amber-50 dark:bg-amber-950/20 p-3 rounded-lg border border-amber-100 dark:border-amber-900/40 flex gap-2 text-[10px] text-amber-850 dark:text-amber-300">
                         <AlertCircle className="h-3 w-3 flex-shrink-0" />
                         <p>Đề thi sẽ được gửi trực tiếp vào mục "Thông báo" của giáo viên đã chọn. Họ có thể chấp nhận hoặc từ chối đề này.</p>
                      </div>
@@ -297,8 +297,8 @@ export const ShareExamModal: React.FC<Props> = ({ exam, isOpen, onClose }) => {
             </div>
 
             {/* Footer Buttons */}
-            <div className="p-5 border-t bg-gray-50 flex justify-end gap-3">
-              <button onClick={onClose} className="px-5 py-2.5 text-sm font-bold text-gray-500 hover:bg-gray-200 rounded-xl transition-colors">Hủy</button>
+            <div className="p-5 border-t dark:border-slate-800 bg-gray-50 dark:bg-slate-900 flex justify-end gap-3">
+              <button onClick={onClose} className="px-5 py-2.5 text-sm font-bold text-gray-500 dark:text-slate-400 hover:bg-gray-200 dark:hover:bg-slate-800 rounded-xl transition-colors">Hủy</button>
               <button
                 onClick={activeTab === 'public' ? handleSavePublic : handleSendDirect}
                 disabled={isSaving || (activeTab === 'direct' && selectedTeacherIds.length === 0)}
@@ -306,12 +306,12 @@ export const ShareExamModal: React.FC<Props> = ({ exam, isOpen, onClose }) => {
               >
                 {isSaving ? (
                   <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                ) : activeTab === 'public' ? (
-                  <Globe className="h-4 w-4" />
                 ) : (
-                  <Send className="h-4 w-4" />
+                  <>
+                    {activeTab === 'public' ? <Globe className="h-4 w-4" /> : <Send className="h-4 w-4" />}
+                    {activeTab === 'public' ? 'Lưu chia sẻ' : `Gửi ngay (${selectedTeacherIds.length})`}
+                  </>
                 )}
-                {isSaving ? 'Đang xử lý...' : activeTab === 'public' ? 'Lưu chia sẻ' : `Gửi ngay (${selectedTeacherIds.length})`}
               </button>
             </div>
           </>

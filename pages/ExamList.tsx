@@ -177,13 +177,13 @@ export const ExamList: React.FC = () => {
           </Link>
         </div>
 
-        <div className="bg-white rounded-xl border shadow-sm overflow-hidden">
+        <div className="bg-white dark:bg-slate-900 rounded-xl border dark:border-slate-800 shadow-sm overflow-hidden">
           {myAssignments.length === 0 ? (
-            <div className="p-8 text-center text-gray-500">
+            <div className="p-8 text-center text-gray-500 dark:text-slate-400">
               Bạn chưa có bài tập nào được giao.
             </div>
           ) : (
-            <div className="divide-y">
+            <div className="divide-y dark:divide-slate-800">
               {myAssignments.map((assign) => {
                 const exam = exams.find(e => e.id === assign.examId);
                 const cls = classes.find(c => c.id === assign.classId);
@@ -205,7 +205,7 @@ export const ExamList: React.FC = () => {
                 const isExhausted = maxAttempts > 0 && attemptCount >= maxAttempts;
 
                 return (
-                  <div key={assign.id} className="p-4 hover:bg-gray-50 transition-colors flex flex-col md:flex-row md:items-center justify-between gap-4">
+                  <div key={assign.id} className="p-4 hover:bg-gray-50 dark:hover:bg-slate-800/40 transition-colors flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div className="flex gap-4">
                       <div className={`h-12 w-12 rounded-lg flex items-center justify-center text-white font-bold flex-shrink-0
                         ${isAvailable ? 'bg-indigo-500' : isUpcoming ? 'bg-yellow-500' : 'bg-gray-400'}
@@ -213,8 +213,8 @@ export const ExamList: React.FC = () => {
                         <FileText className="h-6 w-6" />
                       </div>
                       <div>
-                        <h3 className="font-bold text-gray-900">{exam.title}</h3>
-                        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-1 text-sm text-gray-500">
+                        <h3 className="font-bold text-gray-900 dark:text-slate-100">{exam.title}</h3>
+                        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-1 text-sm text-gray-500 dark:text-slate-400">
                           <span className="flex items-center gap-1">
                             <Clock className="h-3 w-3" /> {(assign.durationMinutes || exam.durationMinutes || 0)} phút
                           </span>
@@ -223,7 +223,7 @@ export const ExamList: React.FC = () => {
                             <span>• {assign.settings.maxAttempts === 0 ? 'Làm vô số lần' : `Được làm ${assign.settings.maxAttempts} lần`}</span>
                           )}
                           {assign.endTime && (
-                            <span className={isExpired ? 'text-red-500 font-medium' : ''}>
+                            <span className={isExpired ? 'text-red-500 dark:text-red-400 font-medium' : ''}>
                               • Hạn chót: {new Date(assign.endTime).toLocaleString('vi-VN')}
                             </span>
                           )}
@@ -248,7 +248,7 @@ export const ExamList: React.FC = () => {
                         </Link>
                       )
                     ) : (
-                      <button disabled className="px-4 py-2 text-sm font-medium bg-gray-100 text-gray-400 rounded-lg whitespace-nowrap">
+                      <button disabled className="px-4 py-2 text-sm font-medium bg-gray-100 dark:bg-slate-800 text-gray-400 dark:text-slate-500 rounded-lg whitespace-nowrap">
                         {isUpcoming ? 'Chưa mở' : 'Đã kết thúc'}
                       </button>
                     )}
@@ -266,35 +266,35 @@ export const ExamList: React.FC = () => {
   return (
     <div className="max-w-6xl mx-auto">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
-        <h1 className="text-2xl font-bold text-gray-900">Kho Đề KT & Nhiệm vụ</h1>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-slate-100">Kho Đề KT & Nhiệm vụ</h1>
         <div className="flex gap-2 w-full md:w-auto">
           <div className="relative flex-1 md:w-64">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
             <input
               type="text"
               placeholder="Tìm kiếm bài tập..."
-              className="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none bg-white text-gray-900 text-sm"
+              className="w-full pl-10 pr-4 py-2 border dark:border-slate-800 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none bg-white dark:bg-slate-900 text-gray-900 dark:text-slate-100 text-sm"
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}
             />
           </div>
           <button
             onClick={() => setShowFilters(!showFilters)}
-            className={`p-2 rounded-lg border transition-colors ${showFilters ? 'bg-indigo-50 border-indigo-500 text-indigo-600' : 'bg-white hover:bg-gray-50'}`}
+            className={`p-2 rounded-lg border transition-colors ${showFilters ? 'bg-indigo-50 dark:bg-indigo-950/40 border-indigo-500 dark:border-indigo-400 text-indigo-600 dark:text-indigo-400' : 'bg-white dark:bg-slate-900 hover:bg-gray-50 dark:hover:bg-slate-800 text-gray-600 dark:text-slate-300 border-gray-200 dark:border-slate-800'}`}
             title="Lọc bài tập"
           >
             <Filter className="h-5 w-5" />
           </button>
           <button
             onClick={() => setTopicModalOpen(true)}
-            className="p-2 rounded-lg border bg-white hover:bg-gray-50 text-gray-600"
+            className="p-2 rounded-lg border bg-white dark:bg-slate-900 hover:bg-gray-50 dark:hover:bg-slate-800 text-gray-600 dark:text-slate-300 border-gray-200 dark:border-slate-800"
             title="Quản lý chủ đề"
           >
             <Layers className="h-5 w-5" />
           </button>
           <button
             onClick={() => setImportModalOpen(true)}
-            className="p-2 rounded-lg border bg-indigo-600 text-white hover:bg-indigo-700 shadow-sm flex items-center gap-1 text-sm font-bold"
+            className="p-2 rounded-lg border bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm flex items-center gap-1 text-sm font-bold border-indigo-600"
             title="Nhập đề từ mã chia sẻ"
           >
             <Plus className="h-4 w-4" /> Nhập đề
@@ -303,16 +303,16 @@ export const ExamList: React.FC = () => {
       </div>
 
       {showFilters && (
-        <div className="bg-white p-5 rounded-xl border shadow-sm mb-6 animate-in slide-in-from-top-2">
+        <div className="bg-white dark:bg-slate-900 p-5 rounded-xl border dark:border-slate-800 shadow-sm mb-6 animate-in slide-in-from-top-2">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-7 gap-4">
             {/* 1. Subject */}
             <div>
-              <label className="block text-xs font-bold text-gray-500 mb-1">Môn học</label>
+              <label className="block text-xs font-bold text-gray-500 dark:text-slate-400 mb-1">Môn học</label>
               <div className="relative">
                 <BookOpen className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-3 w-3" />
                 <select
                   value={filterSubject} onChange={e => setFilterSubject(e.target.value)}
-                  className="w-full pl-8 pr-2 py-2 border rounded-lg text-xs bg-white text-gray-900 outline-none focus:border-indigo-500 appearance-none"
+                  className="w-full pl-8 pr-2 py-2 border dark:border-slate-800 rounded-lg text-xs bg-white dark:bg-slate-900 text-gray-900 dark:text-slate-100 outline-none focus:border-indigo-500 appearance-none"
                 >
                   <option value="">Tất cả</option>
                   {subjects.map(s => <option key={s} value={s}>{s}</option>)}
@@ -321,12 +321,12 @@ export const ExamList: React.FC = () => {
             </div>
             {/* 2. Grade */}
             <div>
-              <label className="block text-xs font-bold text-gray-500 mb-1">Khối lớp</label>
+              <label className="block text-xs font-bold text-gray-500 dark:text-slate-400 mb-1">Khối lớp</label>
               <div className="relative">
                 <GraduationCap className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-3 w-3" />
                 <select
                   value={filterGrade} onChange={e => setFilterGrade(e.target.value)}
-                  className="w-full pl-8 pr-2 py-2 border rounded-lg text-xs bg-white text-gray-900 outline-none focus:border-indigo-500 appearance-none"
+                  className="w-full pl-8 pr-2 py-2 border dark:border-slate-800 rounded-lg text-xs bg-white dark:bg-slate-900 text-gray-900 dark:text-slate-100 outline-none focus:border-indigo-500 appearance-none"
                 >
                   <option value="">Tất cả</option>
                   {grades.map(g => <option key={g} value={g}>Lớp {g}</option>)}
@@ -335,12 +335,12 @@ export const ExamList: React.FC = () => {
             </div>
             {/* 3. Difficulty */}
             <div>
-              <label className="block text-xs font-bold text-gray-500 mb-1">Mức độ</label>
+              <label className="block text-xs font-bold text-gray-500 dark:text-slate-400 mb-1">Mức độ</label>
               <div className="relative">
                 <BarChart3 className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-3 w-3" />
                 <select
                   value={filterDifficulty} onChange={e => setFilterDifficulty(e.target.value)}
-                  className="w-full pl-8 pr-2 py-2 border rounded-lg text-xs bg-white text-gray-900 outline-none focus:border-indigo-500 appearance-none"
+                  className="w-full pl-8 pr-2 py-2 border dark:border-slate-800 rounded-lg text-xs bg-white dark:bg-slate-900 text-gray-900 dark:text-slate-100 outline-none focus:border-indigo-500 appearance-none"
                 >
                   <option value="">Tất cả</option>
                   <option value="NHAN_BIET">Mức 1</option>
@@ -351,12 +351,12 @@ export const ExamList: React.FC = () => {
             </div>
             {/* 3.5 Topic */}
             <div>
-              <label className="block text-xs font-bold text-gray-500 mb-1">C.Đề / Nội dung</label>
+              <label className="block text-xs font-bold text-gray-500 dark:text-slate-400 mb-1">C.Đề / Nội dung</label>
               <div className="relative">
                 <Layers className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-3 w-3" />
                 <select
                   value={filterTopic} onChange={e => setFilterTopic(e.target.value)}
-                  className="w-full pl-8 pr-2 py-2 border rounded-lg text-xs bg-white text-gray-900 outline-none focus:border-indigo-500 appearance-none"
+                  className="w-full pl-8 pr-2 py-2 border dark:border-slate-800 rounded-lg text-xs bg-white dark:bg-slate-900 text-gray-900 dark:text-slate-100 outline-none focus:border-indigo-500 appearance-none"
                 >
                   <option value="">Tất cả</option>
                   {allTopics.map(t => <option key={t} value={t}>{t}</option>)}
@@ -365,12 +365,12 @@ export const ExamList: React.FC = () => {
             </div>
             {/* 4. Duration */}
             <div>
-              <label className="block text-xs font-bold text-gray-500 mb-1">Thời gian</label>
+              <label className="block text-xs font-bold text-gray-500 dark:text-slate-400 mb-1">Thời gian</label>
               <div className="relative">
                 <Clock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-3 w-3" />
                 <select
                   value={filterDuration} onChange={e => setFilterDuration(e.target.value)}
-                  className="w-full pl-8 pr-2 py-2 border rounded-lg text-xs bg-white text-gray-900 outline-none focus:border-indigo-500 appearance-none"
+                  className="w-full pl-8 pr-2 py-2 border dark:border-slate-800 rounded-lg text-xs bg-white dark:bg-slate-900 text-gray-900 dark:text-slate-100 outline-none focus:border-indigo-500 appearance-none"
                 >
                   <option value="">Tất cả</option>
                   <option value="<15">&lt; 15 phút</option>
@@ -381,12 +381,12 @@ export const ExamList: React.FC = () => {
             </div>
             {/* 5. Question Type */}
             <div>
-              <label className="block text-xs font-bold text-gray-500 mb-1">Loại câu hỏi</label>
+              <label className="block text-xs font-bold text-gray-500 dark:text-slate-400 mb-1">Loại câu hỏi</label>
               <div className="relative">
                 <HelpCircle className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-3 w-3" />
                 <select
                   value={filterQuestionType} onChange={e => setFilterQuestionType(e.target.value)}
-                  className="w-full pl-8 pr-2 py-2 border rounded-lg text-xs bg-white text-gray-900 outline-none focus:border-indigo-500 appearance-none"
+                  className="w-full pl-8 pr-2 py-2 border dark:border-slate-800 rounded-lg text-xs bg-white dark:bg-slate-900 text-gray-900 dark:text-slate-100 outline-none focus:border-indigo-500 appearance-none"
                 >
                   <option value="">Tất cả</option>
                   <option value="MCQ">Trắc nghiệm (4 LC)</option>
@@ -398,39 +398,39 @@ export const ExamList: React.FC = () => {
             </div>
             {/* 6. Date */}
             <div>
-              <label className="block text-xs font-bold text-gray-500 mb-1">Ngày tạo</label>
+              <label className="block text-xs font-bold text-gray-500 dark:text-slate-400 mb-1">Ngày tạo</label>
               <div className="relative">
                 <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-3 w-3" />
                 <input
                   type="date"
                   value={filterDate} onChange={e => setFilterDate(e.target.value)}
-                  className="w-full pl-8 pr-2 py-1.5 border rounded-lg text-xs bg-white text-gray-900 outline-none focus:border-indigo-500"
+                  className="w-full pl-8 pr-2 py-1.5 border dark:border-slate-800 rounded-lg text-xs bg-white dark:bg-slate-900 text-gray-900 dark:text-slate-100 outline-none focus:border-indigo-500"
                 />
               </div>
             </div>
             {/* 7. Category */}
             <div>
-              <label className="block text-xs font-bold text-gray-500 mb-1">Loại bộ đề</label>
+              <label className="block text-xs font-bold text-gray-500 dark:text-slate-400 mb-1">Loại bộ đề</label>
               <div className="relative">
                 <Bookmark className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-3 w-3" />
                 <select
                   value={filterCategory} onChange={e => setFilterCategory(e.target.value)}
-                  className="w-full pl-8 pr-2 py-2 border rounded-lg text-xs bg-white text-gray-900 outline-none focus:border-indigo-500 appearance-none font-bold"
+                  className="w-full pl-8 pr-2 py-2 border dark:border-slate-800 rounded-lg text-xs bg-white dark:bg-slate-900 text-gray-900 dark:text-slate-100 outline-none focus:border-indigo-500 appearance-none font-bold"
                 >
                   <option value="">Tất cả</option>
-                  <option value="EXAM" className="text-indigo-600">ĐỀ KT</option>
-                  <option value="TASK" className="text-amber-600">NHIỆM VỤ</option>
+                  <option value="EXAM" className="text-indigo-600 dark:text-indigo-400">ĐỀ KT</option>
+                  <option value="TASK" className="text-amber-600 dark:text-amber-400">NHIỆM VỤ</option>
                 </select>
               </div>
             </div>
           </div>
-          <div className="mt-4 pt-3 border-t flex justify-end">
+          <div className="mt-4 pt-3 border-t dark:border-slate-800 flex justify-end">
             <button
               onClick={() => {
                 setFilterSubject(''); setFilterGrade(''); setFilterDate(''); setFilterTopic('');
                 setSearchTerm(''); setFilterDuration(''); setFilterDifficulty(''); setFilterQuestionType('');
               }}
-              className="text-xs text-red-500 hover:bg-red-50 px-3 py-1.5 rounded-lg flex items-center gap-1 transition-colors"
+              className="text-xs text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/20 px-3 py-1.5 rounded-lg flex items-center gap-1 transition-colors"
             >
               <X className="h-3 w-3" /> Xóa bộ lọc
             </button>
@@ -438,15 +438,15 @@ export const ExamList: React.FC = () => {
         </div>
       )}
 
-      <div className="bg-white rounded-xl border shadow-sm overflow-hidden">
+      <div className="bg-white dark:bg-slate-900 rounded-xl border dark:border-slate-800 shadow-sm overflow-hidden">
         {filteredExams.length === 0 ? (
-          <div className="p-12 text-center text-gray-500">
-            <FileText className="h-16 w-16 mx-auto mb-4 text-gray-300" />
+          <div className="p-12 text-center text-gray-500 dark:text-slate-400">
+            <FileText className="h-16 w-16 mx-auto mb-4 text-gray-300 dark:text-slate-600" />
             <p className="text-lg font-medium">Không tìm thấy bài tập nào.</p>
             <p className="text-sm">Thử thay đổi bộ lọc hoặc tạo bài tập mới.</p>
           </div>
         ) : (
-          <div className="divide-y">
+          <div className="divide-y dark:divide-slate-800">
             {filteredExams.map((exam) => {
                 const examAssignments = assignments.filter(a => a.examId === exam.id);
                 // Tìm bản giao bài mới nhất
@@ -463,11 +463,11 @@ export const ExamList: React.FC = () => {
                 });
 
                 return (
-                  <div key={exam.id} className="p-5 hover:bg-gray-50 transition-colors flex flex-col md:flex-row md:items-center justify-between group gap-4">
+                  <div key={exam.id} className="p-5 hover:bg-gray-50 dark:hover:bg-slate-800/40 transition-colors flex flex-col md:flex-row md:items-center justify-between group gap-4">
                     <div className="flex gap-4">
-                      <div className="h-14 w-14 bg-indigo-50 border border-indigo-100 rounded-xl flex flex-col items-center justify-center text-indigo-700 flex-shrink-0">
+                      <div className="h-14 w-14 bg-indigo-50 dark:bg-indigo-950/30 border border-indigo-100 dark:border-indigo-900/50 rounded-xl flex flex-col items-center justify-center text-indigo-700 dark:text-indigo-300 flex-shrink-0">
                         <span className="text-xs font-bold uppercase">{exam.grade ? `Lớp ${exam.grade}` : 'K.Hợp'}</span>
-                        <span className="text-[10px] text-gray-500">{exam.subject?.substring(0, 6) || 'Chung'}</span>
+                        <span className="text-[10px] text-gray-500 dark:text-slate-400">{exam.subject?.substring(0, 6) || 'Chung'}</span>
                       </div>
                       <div>
                         <div className="flex flex-wrap items-center gap-2 mb-1">
@@ -479,7 +479,7 @@ export const ExamList: React.FC = () => {
                               </span>
                             );
                           })()}
-                          <h3 className="font-bold text-gray-900 text-lg hover:text-indigo-600 transition-colors cursor-pointer">{exam.title}</h3>
+                          <h3 className="font-bold text-gray-900 dark:text-slate-100 text-lg hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors cursor-pointer">{exam.title}</h3>
                           
                           {/* Assignment Status Badges */}
                           <div className="flex items-center gap-1">
@@ -506,7 +506,7 @@ export const ExamList: React.FC = () => {
                             )}
                           </div>
                         </div>
-                        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-1 text-sm text-gray-500">
+                        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-1 text-sm text-gray-500 dark:text-slate-400">
                           <span className="flex items-center gap-1">
                             <Clock className="h-3 w-3" /> {(exam.durationMinutes || 0)} phút
                           </span>
@@ -518,12 +518,12 @@ export const ExamList: React.FC = () => {
                           {latestAssign ? (
                             <>
                               <span className="flex items-center gap-1.5" title="Mốc thời gian bạn thực hiện giao bài">
-                                <Send className="h-3 w-3 text-indigo-500" /> 
-                                <span className="font-bold text-gray-700">Giao:</span> 
+                                <Send className="h-3 w-3 text-indigo-500 dark:text-indigo-400" /> 
+                                <span className="font-bold text-gray-700 dark:text-slate-300">Giao:</span> 
                                 {new Date(latestAssign.createdAt).toLocaleString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
                               </span>
                               {latestAssign.startTime && (
-                                <span className="flex items-center gap-1.5 text-indigo-600 bg-indigo-50 px-1.5 py-0.5 rounded" title="Thời điểm bài thi bắt đầu mở cho học sinh">
+                                <span className="flex items-center gap-1.5 text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/30 px-1.5 py-0.5 rounded" title="Thời điểm bài thi bắt đầu mở cho học sinh">
                                   <Calendar className="h-3 w-3" /> 
                                   <span className="font-bold">Mở:</span> 
                                   {new Date(latestAssign.startTime).toLocaleString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
@@ -533,11 +533,11 @@ export const ExamList: React.FC = () => {
                           ) : (
                             <span className="flex items-center gap-1" title="Ngày tạo đề thi">
                               <Calendar className="h-3 w-3" /> 
-                              <span className="font-bold text-gray-700">Tạo:</span> {new Date(exam.createdAt).toLocaleDateString('vi-VN')}
+                              <span className="font-bold text-gray-700 dark:text-slate-300">Tạo:</span> {new Date(exam.createdAt).toLocaleDateString('vi-VN')}
                             </span>
                           )}
 
-                          {exam.subject && <span className="bg-gray-100 text-gray-600 px-2 py-0.5 rounded text-xs">{exam.subject}</span>}
+                          {exam.subject && <span className="bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-slate-300 px-2 py-0.5 rounded text-xs">{exam.subject}</span>}
                         </div>
                       </div>
                     </div>
@@ -546,9 +546,10 @@ export const ExamList: React.FC = () => {
                   {(user?.role === 'TEACHER' || user?.role === 'ADMIN') && (
                     <>
                       {/* New Results Button */}
+                      {/* New Results Button */}
                       <Link
                         to={`/exam/${exam.id}/results`}
-                        className="flex items-center gap-1 px-3 py-2 text-sm font-medium text-green-700 bg-green-50 rounded-lg hover:bg-green-100 transition-colors border border-green-100"
+                        className="flex items-center gap-1 px-3 py-2 text-sm font-medium text-green-700 dark:text-green-400 bg-green-50 dark:bg-green-950/30 rounded-lg hover:bg-green-100 dark:hover:bg-green-900/40 transition-colors border border-green-100 dark:border-green-900/30"
                         title="Xem kết quả và thống kê"
                       >
                         <LineChart className="h-4 w-4" /> <span className="hidden sm:inline">Kết quả</span>
@@ -556,14 +557,14 @@ export const ExamList: React.FC = () => {
 
                       <button
                         onClick={() => handleHostLive(exam)}
-                        className="flex items-center gap-1 px-3 py-2 text-sm font-medium text-pink-700 bg-pink-50 rounded-lg hover:bg-pink-100 transition-colors border border-pink-100"
+                        className="flex items-center gap-1 px-3 py-2 text-sm font-medium text-pink-700 dark:text-pink-400 bg-pink-50 dark:bg-pink-950/30 rounded-lg hover:bg-pink-100 dark:hover:bg-pink-900/40 transition-colors border border-pink-100 dark:border-pink-900/30"
                         title="Tổ chức thi Live (Tại lớp)"
                       >
                         <Radio className="h-4 w-4" /> <span className="hidden sm:inline">Tổ chức KT</span>
                       </button>
                       <button
                         onClick={() => handleOpenAssign(exam)}
-                        className="flex items-center gap-1 px-3 py-2 text-sm font-medium text-indigo-700 bg-indigo-50 rounded-lg hover:bg-indigo-100 transition-colors border border-indigo-100"
+                        className="flex items-center gap-1 px-3 py-2 text-sm font-medium text-indigo-700 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/30 rounded-lg hover:bg-indigo-100 dark:hover:bg-indigo-900/40 transition-colors border border-indigo-100 dark:border-indigo-900/30"
                         title="Giao bài tập về nhà"
                       >
                         <Send className="h-4 w-4" /> <span className="hidden sm:inline">Giao bài</span>
@@ -572,7 +573,7 @@ export const ExamList: React.FC = () => {
                       {/* Sharing Button */}
                       <button
                         onClick={() => handleOpenShare(exam)}
-                        className="flex items-center gap-1 px-3 py-2 text-sm font-medium text-amber-700 bg-amber-50 rounded-lg hover:bg-amber-100 transition-colors border border-amber-100 shrink-0"
+                        className="flex items-center gap-1 px-3 py-2 text-sm font-medium text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/30 rounded-lg hover:bg-amber-100 dark:hover:bg-amber-900/40 transition-colors border border-amber-100 dark:border-amber-900/30 shrink-0"
                         title="Chia sẻ đề thi"
                       >
                         <Share2 className="h-4 w-4" /> <span className="hidden sm:inline text-xs font-bold uppercase">Chia sẻ</span>
@@ -582,7 +583,7 @@ export const ExamList: React.FC = () => {
                   {/* Teachers/Admins can preview/try the exam */}
                   <Link
                     to={`/exam/${exam.id}/take`}
-                    className="flex items-center gap-1 px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-lg border border-transparent hover:border-gray-200"
+                    className="flex items-center gap-1 px-3 py-2 text-sm font-medium text-gray-600 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg border border-transparent hover:border-gray-200 dark:hover:border-slate-700"
                   >
                     Xem thử
                   </Link>
@@ -590,7 +591,7 @@ export const ExamList: React.FC = () => {
                     <>
                       <button
                         onClick={() => handleStartEdit(exam)}
-                        className="p-2 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
+                        className="p-2 text-gray-400 dark:text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 rounded-lg transition-colors"
                         title="Chỉnh sửa bài tập"
                       >
                         <Edit2 className="h-4 w-4" />
@@ -600,12 +601,12 @@ export const ExamList: React.FC = () => {
                           <button onClick={() => { softDeleteExam(exam.id); setDeletingId(null); }}
                             className="px-2 py-1 text-xs font-bold text-white bg-red-500 rounded-lg hover:bg-red-600">Xoá</button>
                           <button onClick={() => setDeletingId(null)}
-                            className="px-2 py-1 text-xs text-gray-500 hover:bg-gray-100 rounded-lg">Huỷ</button>
+                            className="px-2 py-1 text-xs text-gray-500 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg">Huỷ</button>
                         </div>
                       ) : (
                         <button
                           onClick={() => setDeletingId(exam.id)}
-                          className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                          className="p-2 text-gray-400 dark:text-slate-500 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-lg transition-colors"
                           title="Xoá bài tập (vào thùng rác)"
                         >
                           <Trash2 className="h-4 w-4" />
@@ -626,25 +627,25 @@ export const ExamList: React.FC = () => {
         <div className="mt-6">
           <button
             onClick={() => setShowTrash(!showTrash)}
-            className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700 mb-3"
+            className="flex items-center gap-2 text-sm text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-300 mb-3"
           >
             <Trash2 className="h-4 w-4" />
             Thùng rác ({trashedExams.length})
           </button>
           {showTrash && trashedExams.length > 0 && (
-            <div className="bg-gray-50 rounded-xl border border-dashed border-gray-300 divide-y">
+            <div className="bg-gray-50 dark:bg-slate-900/50 rounded-xl border border-dashed border-gray-300 dark:border-slate-700 divide-y dark:divide-slate-800">
               {trashedExams.map(exam => (
                 <div key={exam.id} className="p-4 flex items-center justify-between gap-4">
                   <div className="flex items-center gap-3 min-w-0">
-                    <FileText className="h-5 w-5 text-gray-400 flex-shrink-0" />
+                    <FileText className="h-5 w-5 text-gray-400 dark:text-slate-500 flex-shrink-0" />
                     <div className="min-w-0">
-                      <p className="font-medium text-gray-500 truncate">{exam.title}</p>
-                      <p className="text-xs text-gray-400">Xoá: {new Date(exam.deletedAt!).toLocaleString('vi-VN')} • {exam.questionCount} câu</p>
+                      <p className="font-medium text-gray-500 dark:text-slate-400 truncate">{exam.title}</p>
+                      <p className="text-xs text-gray-400 dark:text-slate-500">Xoá: {new Date(exam.deletedAt!).toLocaleString('vi-VN')} • {exam.questionCount} câu</p>
                     </div>
                   </div>
                   <button
                     onClick={() => restoreExam(exam.id)}
-                    className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-indigo-700 bg-indigo-50 rounded-lg hover:bg-indigo-100 border border-indigo-100 whitespace-nowrap"
+                    className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-indigo-700 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/30 rounded-lg hover:bg-indigo-100 dark:hover:bg-indigo-900/40 border border-indigo-100 dark:border-indigo-900/30 whitespace-nowrap"
                   >
                     <RotateCcw className="h-3.5 w-3.5" /> Khôi phục
                   </button>
@@ -666,27 +667,27 @@ export const ExamList: React.FC = () => {
       {/* Import Modal */}
       {importModalOpen && (
         <div className="fixed inset-0 bg-black/60 z-[110] flex items-center justify-center p-4">
-           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md animate-fade-in overflow-hidden">
-              <div className="p-4 border-b flex justify-between items-center bg-gray-50">
-                 <h2 className="text-lg font-bold text-gray-800 flex items-center gap-2">
-                    <Plus className="h-5 w-5 text-indigo-600" /> Nhập đề từ mã chia sẻ
+           <div className="bg-white dark:bg-slate-900 text-gray-900 dark:text-slate-100 rounded-2xl shadow-2xl w-full max-w-md animate-fade-in overflow-hidden border dark:border-slate-800">
+              <div className="p-4 border-b dark:border-slate-800 flex justify-between items-center bg-gray-50 dark:bg-slate-950/50">
+                 <h2 className="text-lg font-bold text-gray-800 dark:text-slate-200 flex items-center gap-2">
+                    <Plus className="h-5 w-5 text-indigo-600 dark:text-indigo-400" /> Nhập đề từ mã chia sẻ
                  </h2>
-                 <button onClick={() => setImportModalOpen(false)} className="p-1 hover:bg-gray-200 rounded-lg">
+                 <button onClick={() => setImportModalOpen(false)} className="p-1 hover:bg-gray-200 dark:hover:bg-slate-800 rounded-lg text-gray-500 dark:text-slate-400">
                     <X className="h-5 w-5" />
                  </button>
               </div>
               <div className="p-6 space-y-4">
-                 <div className="bg-indigo-50 p-4 rounded-xl border border-indigo-100 text-sm text-indigo-800 flex gap-3">
+                 <div className="bg-indigo-50 dark:bg-indigo-950/30 p-4 rounded-xl border border-indigo-100 dark:border-indigo-900/40 text-sm text-indigo-800 dark:text-indigo-300 flex gap-3">
                     <AlertCircle className="h-5 w-5 flex-shrink-0" />
                     <p>Nhập mã chia sẻ được đồng nghiệp cung cấp (Vd: AZ-123456) để tạo một bản sao đề thi vào tài khoản của bạn.</p>
                  </div>
                  
                  <div>
-                    <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-1.5 ml-1">Mã chia sẻ (Share Code)</label>
+                    <label className="block text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest mb-1.5 ml-1">Mã chia sẻ (Share Code)</label>
                     <input 
                       type="text"
                       placeholder="AZ-XXXXXX"
-                      className="w-full px-4 py-3 border-2 rounded-xl text-center font-mono text-xl font-black text-indigo-700 focus:ring-2 focus:ring-indigo-500 outline-none uppercase"
+                      className="w-full px-4 py-3 border-2 dark:border-slate-800 rounded-xl text-center font-mono text-xl font-black bg-white dark:bg-slate-950 text-indigo-700 dark:text-indigo-400 focus:ring-2 focus:ring-indigo-500 outline-none uppercase"
                       value={importCode}
                       onChange={(e) => setImportCode(e.target.value)}
                     />
@@ -695,7 +696,7 @@ export const ExamList: React.FC = () => {
                  <button
                    onClick={handleImport}
                    disabled={isImporting || !importCode.trim()}
-                   className="w-full py-3.5 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 shadow-lg transition-all disabled:opacity-50"
+                   className="w-full py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold shadow-lg transition-all disabled:opacity-50"
                  >
                    {isImporting ? 'Đang nhập đề...' : 'Tiếp tục'}
                  </button>
@@ -707,26 +708,26 @@ export const ExamList: React.FC = () => {
       {/* Topic Management Modal */}
       {topicModalOpen && (
         <div className="fixed inset-0 bg-black/50 z-[100] flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden flex flex-col max-h-[80vh]">
-            <div className="p-4 border-b flex justify-between items-center bg-gray-50">
-              <h2 className="text-lg font-bold text-gray-800 flex items-center gap-2">
-                <Layers className="h-5 w-5 text-indigo-600" /> Quản lý Chủ đề
+          <div className="bg-white dark:bg-slate-900 border dark:border-slate-800 rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden flex flex-col max-h-[80vh] text-gray-900 dark:text-slate-100">
+            <div className="p-4 border-b dark:border-slate-800 flex justify-between items-center bg-gray-50 dark:bg-slate-950/50">
+              <h2 className="text-lg font-bold text-gray-800 dark:text-slate-200 flex items-center gap-2">
+                <Layers className="h-5 w-5 text-indigo-600 dark:text-indigo-400" /> Quản lý Chủ đề
               </h2>
-              <button onClick={() => setTopicModalOpen(false)} className="p-1 hover:bg-gray-200 rounded-lg">
+              <button onClick={() => setTopicModalOpen(false)} className="p-1 hover:bg-gray-200 dark:hover:bg-slate-800 rounded-lg text-gray-500 dark:text-slate-400">
                 <X className="h-5 w-5" />
               </button>
             </div>
             <div className="p-4 overflow-y-auto">
-              <p className="text-sm text-gray-500 mb-4 italic">* Các thay đổi sẽ áp dụng cho tất cả bài tập thuộc chủ đề đó.</p>
+              <p className="text-sm text-gray-500 dark:text-slate-400 mb-4 italic">* Các thay đổi sẽ áp dụng cho tất cả bài tập thuộc chủ đề đó.</p>
               
               {/* Add New Topic Input */}
-              <div className="flex gap-2 mb-4 p-3 bg-indigo-50/50 rounded-xl border border-indigo-100">
+              <div className="flex gap-2 mb-4 p-3 bg-indigo-50/50 dark:bg-indigo-950/20 rounded-xl border border-indigo-100 dark:border-indigo-900/30">
                 <input
                   type="text"
                   value={newTopicName}
                   onChange={(e) => setNewTopicName(e.target.value)}
                   placeholder="Nhập tên chủ đề mới..."
-                  className="flex-1 px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
+                  className="flex-1 px-3 py-2 border dark:border-slate-800 rounded-lg text-sm bg-white dark:bg-slate-950 text-gray-900 dark:text-slate-100 focus:ring-2 focus:ring-indigo-500 outline-none"
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' && newTopicName.trim()) {
                       addCustomTopic(newTopicName.trim());
@@ -741,7 +742,7 @@ export const ExamList: React.FC = () => {
                       setNewTopicName('');
                     }
                   }}
-                  className="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-bold hover:bg-indigo-700 transition-colors flex items-center gap-1 shadow-sm"
+                  className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-bold transition-colors flex items-center gap-1 shadow-sm"
                 >
                   <Plus className="h-4 w-4" /> Thêm
                 </button>
@@ -749,10 +750,10 @@ export const ExamList: React.FC = () => {
 
               <div className="space-y-2">
                 {allTopics.length === 0 ? (
-                  <p className="text-center py-8 text-gray-400">Chưa có chủ đề nào.</p>
+                  <p className="text-center py-8 text-gray-400 dark:text-slate-500">Chưa có chủ đề nào.</p>
                 ) : (
                   allTopics.map((topic: string) => (
-                    <div key={topic} className="flex items-center justify-between p-3 bg-gray-50 rounded-xl border border-gray-100 group">
+                    <div key={topic} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-slate-950/40 rounded-xl border border-gray-100 dark:border-slate-800 group">
                       {editingTopic?.old === topic ? (
                         <div className="flex-1 flex gap-2">
                           <input
@@ -763,7 +764,7 @@ export const ExamList: React.FC = () => {
                                     setEditingTopic({ ...editingTopic, new: e.target.value });
                                 }
                             }}
-                            className="flex-1 px-3 py-1 border rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
+                            className="flex-1 px-3 py-1 border dark:border-slate-800 rounded-lg text-sm bg-white dark:bg-slate-950 text-gray-900 dark:text-slate-100 focus:ring-2 focus:ring-indigo-500 outline-none"
                             autoFocus
                           />
                           <button
@@ -777,17 +778,17 @@ export const ExamList: React.FC = () => {
                           >
                             Lưu
                           </button>
-                          <button onClick={() => setEditingTopic(null)} className="px-3 py-1 bg-gray-200 text-gray-600 text-xs font-bold rounded-lg">
+                          <button onClick={() => setEditingTopic(null)} className="px-3 py-1 bg-gray-200 dark:bg-slate-800 text-gray-600 dark:text-slate-300 text-xs font-bold rounded-lg">
                             Hủy
                           </button>
                         </div>
                       ) : (
                         <>
-                          <span className="font-medium text-gray-700">{topic}</span>
+                          <span className="font-medium text-gray-700 dark:text-slate-300">{topic}</span>
                           <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                             <button
                               onClick={() => setEditingTopic({ old: topic, new: topic })}
-                              className="p-1.5 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg"
+                              className="p-1.5 text-gray-400 dark:text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 rounded-lg"
                               title="Sửa tên chủ đề"
                             >
                               <Edit2 className="h-4 w-4" />
@@ -798,7 +799,7 @@ export const ExamList: React.FC = () => {
                                   await bulkDeleteTopic(topic);
                                 }
                               }}
-                              className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg"
+                              className="p-1.5 text-gray-400 dark:text-slate-500 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-lg"
                               title="Xóa chủ đề"
                             >
                               <Trash2 className="h-4 w-4" />
@@ -811,10 +812,10 @@ export const ExamList: React.FC = () => {
                 )}
               </div>
             </div>
-            <div className="p-4 border-t bg-gray-50 text-right">
+            <div className="p-4 border-t dark:border-slate-800 bg-gray-50 dark:bg-slate-950/50 text-right">
               <button
                 onClick={() => setTopicModalOpen(false)}
-                className="px-6 py-2 bg-indigo-600 text-white font-bold rounded-xl shadow-lg hover:bg-indigo-700 transition-all"
+                className="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-lg transition-all"
               >
                 Đóng
               </button>

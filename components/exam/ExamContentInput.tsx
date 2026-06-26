@@ -25,11 +25,11 @@ export const ExamContentInput: React.FC<ExamContentInputProps> = ({
   handleParseLocal, handleParseAI, handleGenerate, handleParseImage
 }) => {
   return (
-    <div className="flex-1 bg-white p-5 rounded-xl border shadow-sm flex flex-col">
+    <div className="flex-1 bg-white dark:bg-slate-900 p-5 rounded-xl border dark:border-slate-800 shadow-sm flex flex-col text-gray-900 dark:text-slate-100">
       {mode === 'PARSE' && (
         <>
           <div className="flex justify-between items-center mb-2">
-            <h3 className="font-bold text-gray-800 flex items-center gap-2">
+            <h3 className="font-bold text-gray-800 dark:text-slate-200 flex items-center gap-2">
               <FileText className="h-4 w-4" /> Nội dung bài tập (Copy/Paste)
             </h3>
             <div className="flex items-center gap-2">
@@ -57,7 +57,7 @@ export const ExamContentInput: React.FC<ExamContentInputProps> = ({
           </div>
 
           {/* OCR Image Upload Dropzone */}
-          <div className="border-2 border-dashed border-gray-200 hover:border-indigo-400 rounded-xl p-4 mb-3 text-center bg-gray-50/50 hover:bg-indigo-50/10 transition-all cursor-pointer relative group">
+          <div className="border-2 border-dashed border-gray-200 dark:border-slate-800 hover:border-indigo-400 dark:hover:border-indigo-500 rounded-xl p-4 mb-3 text-center bg-gray-50/50 dark:bg-slate-950/20 hover:bg-indigo-50/10 transition-all cursor-pointer relative group">
              <input 
                 type="file" 
                 accept="image/*" 
@@ -69,32 +69,32 @@ export const ExamContentInput: React.FC<ExamContentInputProps> = ({
                 className="absolute inset-0 opacity-0 cursor-pointer" 
              />
              <div className="flex flex-col items-center justify-center gap-1.5">
-                <div className="w-10 h-10 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-600 group-hover:scale-110 transition-transform">
+                <div className="w-10 h-10 rounded-full bg-indigo-50 dark:bg-indigo-950/40 flex items-center justify-center text-indigo-600 dark:text-indigo-400 group-hover:scale-110 transition-transform">
                    <ImageIcon className="h-5 w-5" />
                 </div>
                 <div>
-                   <span className="text-xs font-bold text-indigo-600 hover:text-indigo-700">Tải ảnh đề thi lên (OCR AI)</span>
-                   <span className="text-xs text-gray-500"> hoặc kéo thả vào đây</span>
+                   <span className="text-xs font-bold text-indigo-600 dark:text-indigo-450 hover:text-indigo-700">Tải ảnh đề thi lên (OCR AI)</span>
+                   <span className="text-xs text-gray-500 dark:text-slate-400"> hoặc kéo thả vào đây</span>
                 </div>
-                <span className="text-[10px] text-gray-400">Hỗ trợ JPG, PNG (AI tự động chuyển thành câu hỏi)</span>
+                <span className="text-[10px] text-gray-400 dark:text-slate-500">Hỗ trợ JPG, PNG (AI tự động chuyển thành câu hỏi)</span>
              </div>
           </div>
 
-          <div className="bg-blue-50 border border-blue-100 rounded-lg p-3 mb-2 text-xs text-blue-700 space-y-1">
-            <p className="font-bold">📋 Hướng dẫn format nhập liệu:</p>
-            <p>• Mỗi câu bắt đầu bằng: <code className="bg-blue-100 px-1 rounded">Câu 1:</code> hoặc <code className="bg-blue-100 px-1 rounded">Bài 1:</code></p>
-            <p>• Mức độ (tùy chọn): <code className="bg-blue-100 px-1 rounded">Mức độ: Nhận biết</code>, <code className="bg-blue-100 px-1 rounded">Kết nối</code>, <code>Vận dụng</code></p>
-            <p>• Đáp án: <code className="bg-blue-100 px-1 rounded">A.</code> <code className="bg-blue-100 px-1 rounded">B.</code> <code className="bg-blue-100 px-1 rounded">C.</code> <code className="bg-blue-100 px-1 rounded">D.</code> (mỗi đáp án 1 dòng)</p>
-            <p>• Đáp án đúng: <code className="bg-blue-100 px-1 rounded">Đáp án: B</code></p>
-            <p>• Lời giải: <code className="bg-blue-100 px-1 rounded">Giải thích:</code> hoặc <code className="bg-blue-100 px-1 rounded">Hướng dẫn:</code></p>
-            <p className="text-blue-500 italic">💡 AI sẽ tự động nhận dạng cả khi format không chuẩn.</p>
+          <div className="bg-blue-50 dark:bg-blue-950/25 border border-blue-100 dark:border-blue-900/35 rounded-lg p-3 mb-2 text-xs text-blue-700 dark:text-blue-300 space-y-1">
+            <p className="font-bold text-blue-800 dark:text-blue-200">📋 Hướng dẫn format nhập liệu:</p>
+            <p>• Mỗi câu bắt đầu bằng: <code className="bg-blue-100 dark:bg-blue-900/50 px-1 rounded text-blue-800 dark:text-blue-200">Câu 1:</code> hoặc <code className="bg-blue-100 dark:bg-blue-900/50 px-1 rounded text-blue-800 dark:text-blue-200">Bài 1:</code></p>
+            <p>• Mức độ (tùy chọn): <code className="bg-blue-100 dark:bg-blue-900/50 px-1 rounded text-blue-800 dark:text-blue-200">Mức độ: Nhận biết</code>, <code className="bg-blue-100 dark:bg-blue-900/50 px-1 rounded text-blue-800 dark:text-blue-200">Kết nối</code>, <code className="bg-blue-100 dark:bg-blue-900/50 px-1 rounded text-blue-800 dark:text-blue-200">Vận dụng</code></p>
+            <p>• Đáp án: <code className="bg-blue-100 dark:bg-blue-900/50 px-1 rounded text-blue-800 dark:text-blue-200">A.</code> <code className="bg-blue-100 dark:bg-blue-900/50 px-1 rounded text-blue-800 dark:text-blue-200">B.</code> <code className="bg-blue-100 dark:bg-blue-900/50 px-1 rounded text-blue-800 dark:text-blue-200">C.</code> <code className="bg-blue-100 dark:bg-blue-900/50 px-1 rounded text-blue-800 dark:text-blue-200">D.</code> (mỗi đáp án 1 dòng)</p>
+            <p>• Đáp án đúng: <code className="bg-blue-100 dark:bg-blue-900/50 px-1 rounded text-blue-800 dark:text-blue-200">Đáp án: B</code></p>
+            <p>• Lời giải: <code className="bg-blue-100 dark:bg-blue-900/50 px-1 rounded text-blue-800 dark:text-blue-200">Giải thích:</code> hoặc <code className="bg-blue-100 dark:bg-blue-900/50 px-1 rounded text-blue-800 dark:text-blue-200">Hướng dẫn:</code></p>
+            <p className="text-blue-500 dark:text-blue-400 italic">💡 AI sẽ tự động nhận dạng cả khi format không chuẩn.</p>
           </div>
 
           <textarea
             value={rawText}
             onChange={e => setRawText(e.target.value)}
             placeholder={`Dán nội dung từ Word/PDF vào đây...\n\nVí dụ:\nCâu 1: 1+1=?\nMức độ: Nhận biết\nA. 1\nB. 2\nC. 3\nD. 4\nĐáp án: B`}
-            className="flex-1 w-full border border-gray-300 rounded-lg p-3 font-mono text-sm focus:ring-2 focus:ring-indigo-500 outline-none resize-none bg-white text-gray-900"
+            className="flex-1 w-full border border-gray-300 dark:border-slate-800 rounded-lg p-3 font-mono text-sm focus:ring-2 focus:ring-indigo-500 outline-none resize-none bg-white dark:bg-slate-950 text-gray-900 dark:text-slate-100"
             style={{ minHeight: '500px' }}
           />
         </>
@@ -103,12 +103,12 @@ export const ExamContentInput: React.FC<ExamContentInputProps> = ({
       {mode === 'GENERATE' && (
         <>
           <div className="flex justify-between items-center mb-4">
-            <h3 className="font-bold text-gray-800 flex items-center gap-2">
-              <Sparkles className="h-4 w-4 text-purple-600" /> AI Tạo bài tập (Thông minh)
+            <h3 className="font-bold text-gray-800 dark:text-slate-200 flex items-center gap-2">
+              <Sparkles className="h-4 w-4 text-purple-600 dark:text-purple-400" /> AI Tạo bài tập (Thông minh)
             </h3>
           </div>
 
-          <div className="bg-purple-50 border border-purple-100 rounded-lg p-3 mb-4 flex items-center gap-3 text-sm text-purple-800">
+          <div className="bg-purple-50 dark:bg-purple-950/20 border border-purple-100 dark:border-purple-900/30 rounded-lg p-3 mb-4 flex items-center gap-3 text-sm text-purple-800 dark:text-purple-300">
             <div className="flex items-center gap-1">
               <GraduationCap className="h-4 w-4" /> Khối lớp sẽ được lấy tự động từ Cấu hình chung ({grade})
             </div>
@@ -117,10 +117,10 @@ export const ExamContentInput: React.FC<ExamContentInputProps> = ({
           <div className="space-y-4 flex-1 overflow-y-auto pr-1">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Loại câu hỏi</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-slate-350 mb-1">Loại câu hỏi</label>
                 <select
                   value={aiQuestionType} onChange={e => setAiQuestionType(e.target.value as QuestionType)}
-                  className="w-full border border-gray-300 rounded-lg p-2 text-sm bg-white text-gray-900"
+                  className="w-full border border-gray-300 dark:border-slate-800 rounded-lg p-2 text-sm bg-white dark:bg-slate-950 text-gray-900 dark:text-slate-100 outline-none"
                 >
                   <option value="MCQ">Trắc nghiệm 4 lựa chọn (ABCD)</option>
                   <option value="MCQ_MULTIPLE">Trắc nghiệm nhiều lựa chọn (ABCD)</option>
@@ -131,10 +131,10 @@ export const ExamContentInput: React.FC<ExamContentInputProps> = ({
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Mức độ (khớp cấu hình chung)</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-slate-350 mb-1">Mức độ (khớp cấu hình chung)</label>
                 <select
                   value={difficulty} disabled
-                  className="w-full border border-gray-300 rounded-lg p-2 text-sm bg-gray-100 text-gray-500"
+                  className="w-full border border-gray-300 dark:border-slate-800 rounded-lg p-2 text-sm bg-gray-100 dark:bg-slate-900 text-gray-500 dark:text-slate-400"
                 >
                   <option value="NHAN_BIET">Mức 1 (Nhận biết)</option>
                   <option value="KET_NOI">Mức 2 (Kết nối)</option>
@@ -142,17 +142,17 @@ export const ExamContentInput: React.FC<ExamContentInputProps> = ({
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Số lượng câu</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-slate-350 mb-1">Số lượng câu</label>
                 <input
                   type="number" min="1" max="20"
                   value={aiCount} onChange={e => setAiCount(Number(e.target.value))}
-                  className="w-full border border-gray-300 rounded-lg p-2 text-sm bg-white text-gray-900"
+                  className="w-full border border-gray-300 dark:border-slate-800 rounded-lg p-2 text-sm bg-white dark:bg-slate-950 text-gray-900 dark:text-slate-100 outline-none"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1 flex items-center gap-1">
                 <GraduationCap className="h-3 w-3" /> Mẫu chỉ dẫn AI (Prompt sẵn)
               </label>
               <div className="flex flex-wrap gap-1.5 mb-2">
@@ -166,7 +166,7 @@ export const ExamContentInput: React.FC<ExamContentInputProps> = ({
                   <button
                     key={i}
                     onClick={() => setAiCustomPrompt(aiCustomPrompt ? `${aiCustomPrompt}\n${tpl.prompt}` : tpl.prompt)}
-                    className="px-2 py-1 text-xs bg-purple-50 text-purple-700 border border-purple-200 rounded-full hover:bg-purple-100 transition-colors"
+                    className="px-2 py-1 text-xs bg-purple-50 dark:bg-purple-950/20 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-900/30 rounded-full hover:bg-purple-100 dark:hover:bg-purple-900/40 transition-colors"
                     title={tpl.prompt}
                   >
                     {tpl.label}
@@ -176,13 +176,13 @@ export const ExamContentInput: React.FC<ExamContentInputProps> = ({
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1 flex items-center gap-1">
                 <MessageSquarePlus className="h-3 w-3" /> Yêu cầu khác (Cá nhân hóa)
               </label>
               <textarea
                 value={aiCustomPrompt} onChange={e => setAiCustomPrompt(e.target.value)}
                 placeholder="VD: Hãy dùng tên các nhân vật trong truyện Doraemon. Tập trung vào các lỗi sai thường gặp..."
-                className="w-full h-24 border border-gray-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-purple-500 outline-none resize-none bg-white text-gray-900"
+                className="w-full h-24 border border-gray-300 dark:border-slate-800 rounded-lg p-2 text-sm focus:ring-2 focus:ring-purple-500 outline-none resize-none bg-white dark:bg-slate-950 text-gray-900 dark:text-slate-100"
               />
             </div>
 

@@ -76,26 +76,26 @@ export const PublicLibrary: React.FC = () => {
 
       {/* Stats Bar */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-         <div className="bg-white p-4 rounded-2xl border shadow-sm flex items-center gap-4 transition-transform hover:-translate-y-1">
-            <div className="h-12 w-12 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center">
+         <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl border dark:border-slate-800 shadow-sm flex items-center gap-4 transition-transform hover:-translate-y-1">
+            <div className="h-12 w-12 bg-indigo-50 dark:bg-indigo-950/30 text-indigo-600 dark:text-indigo-400 rounded-xl flex items-center justify-center">
                <BookOpen className="h-6 w-6" />
             </div>
             <div>
-               <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Đề thi</p>
-               <p className="text-xl font-black text-gray-900">{publicExams.length}</p>
+               <p className="text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">Đề thi</p>
+               <p className="text-xl font-black text-gray-900 dark:text-slate-100">{publicExams.length}</p>
             </div>
          </div>
          {/* More stats if needed */}
       </div>
 
       {/* Filters & Search */}
-      <div className="flex flex-col md:flex-row gap-4 bg-white p-6 rounded-3xl shadow-sm border border-gray-100 sticky top-4 z-10">
+      <div className="flex flex-col md:flex-row gap-4 bg-white dark:bg-slate-900 p-6 rounded-3xl shadow-sm border border-gray-100 dark:border-slate-800 sticky top-4 z-10">
          <div className="relative flex-1 group">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 group-focus-within:text-indigo-600 transition-colors" />
             <input 
               type="text" 
               placeholder="Tìm kiếm đề thi, tên giáo viên..." 
-              className="w-full pl-12 pr-4 py-3.5 bg-gray-50 border-transparent border-2 border-gray-100 rounded-2xl focus:bg-white focus:border-indigo-600 outline-none transition-all font-medium text-gray-700"
+              className="w-full pl-12 pr-4 py-3.5 bg-gray-50 dark:bg-slate-950 border-transparent border-2 border-gray-100 dark:border-slate-800 rounded-2xl focus:bg-white dark:focus:bg-slate-900 focus:border-indigo-600 dark:focus:border-indigo-500 outline-none transition-all font-medium text-gray-700 dark:text-slate-200"
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}
             />
@@ -103,7 +103,7 @@ export const PublicLibrary: React.FC = () => {
          
          <div className="flex gap-3">
             <select 
-              className="px-4 py-3.5 bg-gray-50 border-2 border-gray-100 rounded-2xl focus:bg-white focus:border-indigo-600 outline-none transition-all font-bold text-gray-700 text-sm appearance-none min-w-[140px]"
+              className="px-4 py-3.5 bg-gray-50 dark:bg-slate-950 border-2 border-gray-100 dark:border-slate-850 rounded-2xl focus:bg-white dark:focus:bg-slate-900 focus:border-indigo-600 dark:focus:border-indigo-500 outline-none transition-all font-bold text-gray-700 dark:text-slate-200 text-sm appearance-none min-w-[140px]"
               value={selectedSubject}
               onChange={e => setSelectedSubject(e.target.value)}
             >
@@ -111,7 +111,7 @@ export const PublicLibrary: React.FC = () => {
                {subjects.map(s => <option key={s} value={s}>{s}</option>)}
             </select>
             <select 
-              className="px-4 py-3.5 bg-gray-50 border-2 border-gray-100 rounded-2xl focus:bg-white focus:border-indigo-600 outline-none transition-all font-bold text-gray-700 text-sm appearance-none min-w-[140px]"
+              className="px-4 py-3.5 bg-gray-50 dark:bg-slate-950 border-2 border-gray-100 dark:border-slate-850 rounded-2xl focus:bg-white dark:focus:bg-slate-900 focus:border-indigo-600 dark:focus:border-indigo-500 outline-none transition-all font-bold text-gray-700 dark:text-slate-200 text-sm appearance-none min-w-[140px]"
               value={selectedGrade}
               onChange={e => setSelectedGrade(e.target.value)}
             >
@@ -128,59 +128,59 @@ export const PublicLibrary: React.FC = () => {
            <p className="text-gray-400 font-medium animate-pulse">Đang nạp dữ liệu cộng đồng...</p>
         </div>
       ) : filteredExams.length === 0 ? (
-        <div className="py-20 bg-white rounded-3xl border border-dashed border-gray-300 text-center space-y-4">
-           <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto text-gray-400">
+        <div className="py-20 bg-white dark:bg-slate-900 rounded-3xl border border-dashed border-gray-300 dark:border-slate-700 text-center space-y-4">
+           <div className="w-16 h-16 bg-gray-100 dark:bg-slate-950 rounded-full flex items-center justify-center mx-auto text-gray-400">
               <Globe className="h-8 w-8" />
            </div>
-           <p className="text-gray-500 font-bold">Không tìm thấy tài liệu phù hợp</p>
-           <button onClick={() => { setSearchTerm(''); setSelectedSubject(''); setSelectedGrade(''); }} className="text-indigo-600 font-bold text-sm hover:underline">Xóa bộ lọc</button>
+           <p className="text-gray-500 dark:text-slate-400 font-bold">Không tìm thấy tài liệu phù hợp</p>
+           <button onClick={() => { setSearchTerm(''); setSelectedSubject(''); setSelectedGrade(''); }} className="text-indigo-600 dark:text-indigo-450 font-bold text-sm hover:underline">Xóa bộ lọc</button>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredExams.map((exam) => (
-            <div key={exam.id} className="bg-white rounded-3xl border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden flex flex-col group h-full">
+            <div key={exam.id} className="bg-white dark:bg-slate-900 rounded-3xl border border-gray-100 dark:border-slate-800 shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden flex flex-col group h-full">
                <div className="p-6 flex-1 space-y-4">
                   <div className="flex justify-between items-start">
-                     <span className="px-3 py-1 bg-indigo-50 text-indigo-700 rounded-lg text-[10px] font-black uppercase tracking-wider">
+                     <span className="px-3 py-1 bg-indigo-50 dark:bg-indigo-950/30 text-indigo-700 dark:text-indigo-400 rounded-lg text-[10px] font-black uppercase tracking-wider">
                         {exam.grade ? `Lớp ${exam.grade}` : 'K.Hợp'}
                      </span>
                      <div className="flex items-center gap-1.5 text-amber-500">
                         <Star className="h-4 w-4 fill-current" />
-                        <span className="text-xs font-bold text-gray-600">4.9</span>
+                        <span className="text-xs font-bold text-gray-600 dark:text-slate-300">4.9</span>
                      </div>
                   </div>
                   
-                  <h3 className="text-xl font-bold text-gray-900 group-hover:text-indigo-600 transition-colors line-clamp-2 leading-tight">
+                  <h3 className="text-xl font-bold text-gray-900 dark:text-slate-100 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors line-clamp-2 leading-tight">
                     {exam.title}
                   </h3>
 
                   <div className="flex flex-wrap gap-2">
-                     <span className="flex items-center gap-1.5 px-2.5 py-1 bg-gray-50 text-gray-600 rounded-lg text-xs font-medium border border-gray-100">
+                     <span className="flex items-center gap-1.5 px-2.5 py-1 bg-gray-50 dark:bg-slate-950 text-gray-600 dark:text-slate-300 rounded-lg text-xs font-medium border border-gray-100 dark:border-slate-800/40">
                         <Clock className="h-3.5 w-3.5" /> {exam.durationMinutes} ph
                      </span>
-                     <span className="flex items-center gap-1.5 px-2.5 py-1 bg-gray-50 text-gray-600 rounded-lg text-xs font-medium border border-gray-100">
+                     <span className="flex items-center gap-1.5 px-2.5 py-1 bg-gray-50 dark:bg-slate-950 text-gray-600 dark:text-slate-300 rounded-lg text-xs font-medium border border-gray-100 dark:border-slate-800/40">
                         <Layers className="h-3.5 w-3.5" /> {exam.questionCount} câu
                      </span>
-                     <span className="px-2.5 py-1 bg-indigo-50/50 text-indigo-600 rounded-lg text-xs font-bold">
+                     <span className="px-2.5 py-1 bg-indigo-50/50 dark:bg-indigo-950/20 text-indigo-600 dark:text-indigo-400 rounded-lg text-xs font-bold">
                         {exam.subject}
                      </span>
                   </div>
 
-                  <div className="pt-4 border-t border-gray-50 flex items-center gap-3">
+                  <div className="pt-4 border-t border-gray-50 dark:border-slate-800 flex items-center gap-3">
                      <div className="h-8 w-8 bg-gradient-to-tr from-indigo-500 to-purple-500 rounded-full flex items-center justify-center text-white text-[10px] font-black font-mono">
                         {(exam.originalAuthorName || 'AZ').charAt(0)}
                      </div>
                      <div className="min-w-0">
-                        <p className="text-xs font-bold text-gray-900 truncate">{exam.originalAuthorName || 'Giáo viên ẩn danh'}</p>
-                        <p className="text-[10px] text-gray-400 font-medium">Tác giả gốc</p>
+                        <p className="text-xs font-bold text-gray-900 dark:text-slate-200 truncate">{exam.originalAuthorName || 'Giáo viên ẩn danh'}</p>
+                        <p className="text-[10px] text-gray-400 dark:text-slate-500 font-medium">Tác giả gốc</p>
                      </div>
                   </div>
                </div>
 
-               <div className="px-6 py-5 bg-gray-50/80 border-t border-gray-100 flex items-center gap-3">
+               <div className="px-6 py-5 bg-gray-50/80 dark:bg-slate-950/40 border-t border-gray-100 dark:border-slate-800 flex items-center gap-3">
                   <button 
                     onClick={() => handlePreview(exam)}
-                    className="flex-1 flex items-center justify-center gap-2 py-3 bg-white text-gray-700 rounded-2xl font-bold text-sm border border-gray-200 hover:bg-gray-50 transition-all shadow-sm active:scale-95"
+                    className="flex-1 flex items-center justify-center gap-2 py-3 bg-white dark:bg-slate-900 text-gray-700 dark:text-slate-350 rounded-2xl font-bold text-sm border border-gray-200 dark:border-slate-800 hover:bg-gray-50 dark:hover:bg-slate-800 transition-all shadow-sm active:scale-95"
                   >
                      <Eye className="h-4 w-4" /> Xem thử
                   </button>
