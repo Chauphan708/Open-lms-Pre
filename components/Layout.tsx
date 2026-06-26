@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard,
@@ -36,7 +36,9 @@ import {
   Database,
   Layers,
   HelpCircle,
-  StickyNote
+  StickyNote,
+  Sun,
+  Moon
 } from 'lucide-react';
 import { useStore } from '../store';
 import { UserRole, CustomToolMenu } from '../types';
@@ -53,6 +55,30 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isGuideOpen, setIsGuideOpen] = useState(false);
   const [activeShare, setActiveShare] = useState<{ notifId: string, examId: string } | null>(null);
+
+  // Dark mode state
+  const [theme, setTheme] = useState<'light' | 'dark'>(() => {
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem('theme');
+      if (stored === 'dark' || stored === 'light') return stored;
+      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    }
+    return 'light';
+  });
+
+  useEffect(() => {
+    const root = window.document.documentElement;
+    if (theme === 'dark') {
+      root.classList.add('dark');
+    } else {
+      root.classList.remove('dark');
+    }
+    localStorage.setItem('theme', theme);
+  }, [theme]);
+
+  const toggleTheme = () => {
+    setTheme(prev => prev === 'dark' ? 'light' : 'dark');
+  };
 
   // State to track expanded custom tools
   const [expandedTools, setExpandedTools] = useState<Record<string, boolean>>({});
@@ -190,48 +216,51 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col md:flex-row">
+    <div className="min-h-screen bg-gray-50 dark:bg-slate-950 text-gray-900 dark:text-slate-100 flex flex-col md:flex-row transition-colors duration-300">
       {/* Mobile Header */}
-      <div className="md:hidden bg-white border-b p-4 flex justify-between items-center sticky top-0 z-20 shadow-sm">
-        <div className="flex items-center gap-2 font-bold text-indigo-600">
+      <div className="md:hidden bg-white dark:bg-slate-900 border-b dark:border-slate-800 p-4 flex justify-between items-center sticky top-0 z-20 shadow-sm transition-colors duration-300">
+        <div className="flex items-center gap-2 font-bold text-indigo-600 dark:text-indigo-400">
           <GraduationCap className="h-6 w-6" />
           <span>OpenLMS</span>
         </div>
         <div className="flex gap-4 relative">
-          <button onClick={() => setIsGuideOpen(true)} className="text-gray-600" title="Hướng dẫn sử dụng">
+          <button onClick={toggleTheme} className="text-gray-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors" title="Đổi giao diện">
+            {theme === 'dark' ? <Sun className="h-6 w-6 text-amber-400" /> : <Moon className="h-6 w-6" />}
+          </button>
+          <button onClick={() => setIsGuideOpen(true)} className="text-gray-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors" title="Hướng dẫn sử dụng">
             <HelpCircle className="h-6 w-6" />
           </button>
-          <button onClick={() => setIsNotifOpen(!isNotifOpen)} className="relative text-gray-600">
+          <button onClick={() => setIsNotifOpen(!isNotifOpen)} className="relative text-gray-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
             <Bell className="h-6 w-6" />
-            {unreadCount > 0 && <span className="absolute -top-1 -right-1 h-3 w-3 bg-red-500 rounded-full border border-white"></span>}
+            {unreadCount > 0 && <span className="absolute -top-1 -right-1 h-3 w-3 bg-red-500 rounded-full border border-white dark:border-slate-900"></span>}
           </button>
           
           {/* Mobile Notifications Dropdown */}
           {isNotifOpen && (
-            <div className="absolute right-12 top-full mt-2 w-72 bg-white rounded-xl shadow-xl border z-50 animate-in fade-in zoom-in-95 origin-top-right">
-              <div className="p-3 border-b flex justify-between items-center bg-gray-50 rounded-t-xl">
-                <h3 className="font-bold text-sm text-gray-800">Thông báo</h3>
+            <div className="absolute right-12 top-full mt-2 w-72 bg-white dark:bg-slate-900 rounded-xl shadow-xl border dark:border-slate-800 z-50 animate-in fade-in zoom-in-95 origin-top-right">
+              <div className="p-3 border-b dark:border-slate-800 flex justify-between items-center bg-gray-50 dark:bg-slate-950/50 rounded-t-xl">
+                <h3 className="font-bold text-sm text-gray-800 dark:text-slate-200">Thông báo</h3>
                 {unreadCount > 0 && (
-                  <button onClick={() => user && markAllNotificationsRead(user.id)} className="text-xs text-indigo-600 hover:underline">
+                  <button onClick={() => user && markAllNotificationsRead(user.id)} className="text-xs text-indigo-600 dark:text-indigo-400 hover:underline">
                     Đọc tất cả
                   </button>
                 )}
               </div>
               <div className="max-h-64 overflow-y-auto">
                 {myNotifications.length === 0 ? (
-                  <div className="p-6 text-center text-gray-400 text-xs">
+                  <div className="p-6 text-center text-gray-400 dark:text-slate-500 text-xs">
                     Không có thông báo mới
                   </div>
                 ) : (
-                  <div className="divide-y">
+                  <div className="divide-y dark:divide-slate-800">
                     {myNotifications.map(n => (
                       <div
                         key={n.id}
                         onClick={() => handleNotifClick(n)}
-                        className="p-3 cursor-pointer hover:bg-gray-50 transition-colors"
+                        className="p-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-slate-800/50 transition-colors"
                       >
-                        <p className={`text-xs ${!n.isRead ? 'font-bold text-gray-900' : 'text-gray-600'}`}>{n.title}</p>
-                        <p className="text-[10px] text-gray-400 mt-1">{new Date(n.createdAt).toLocaleDateString('vi-VN')}</p>
+                        <p className={`text-xs ${!n.isRead ? 'font-bold text-gray-900 dark:text-slate-100' : 'text-gray-600 dark:text-slate-400'}`}>{n.title}</p>
+                        <p className="text-[10px] text-gray-400 dark:text-slate-500 mt-1">{new Date(n.createdAt).toLocaleDateString('vi-VN')}</p>
                       </div>
                     ))}
                   </div>
@@ -240,7 +269,7 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
             </div>
           )}
 
-          <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className="text-gray-600">
+          <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className="text-gray-600 dark:text-slate-400">
             {isMobileMenuOpen ? <X /> : <Menu />}
           </button>
         </div>
@@ -248,23 +277,23 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
 
       {/* Sidebar */}
       <aside className={`
-        fixed inset-y-0 left-0 z-30 bg-white border-r shadow-lg transform transition-all duration-300 ease-in-out flex flex-col
+        fixed inset-y-0 left-0 z-30 bg-white dark:bg-slate-900 border-r dark:border-slate-800 shadow-lg transform transition-all duration-300 ease-in-out flex flex-col
         md:sticky md:top-0 md:h-screen md:translate-x-0
         ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}
         ${isSidebarCollapsed ? 'w-20' : 'w-64'}
       `}>
         <div className="h-full flex flex-col">
-          <div className={`p-4 border-b flex items-center h-[73px] ${isSidebarCollapsed ? 'justify-center' : 'justify-between'}`}>
+          <div className={`p-4 border-b dark:border-slate-800 flex items-center h-[73px] ${isSidebarCollapsed ? 'justify-center' : 'justify-between'}`}>
             <div className={`flex items-center gap-3 overflow-hidden ${isSidebarCollapsed ? 'justify-center w-full' : ''}`}>
               <div className="bg-indigo-600 p-2 rounded-xl shadow-lg shadow-indigo-200 flex-shrink-0">
                 <GraduationCap className="h-6 w-6 text-white" />
               </div>
-              {!isSidebarCollapsed && <span className="text-xl font-extrabold text-gray-800 tracking-tight whitespace-nowrap">OpenLMS</span>}
+              {!isSidebarCollapsed && <span className="text-xl font-extrabold text-gray-800 dark:text-slate-200 tracking-tight whitespace-nowrap">OpenLMS</span>}
             </div>
             {!isSidebarCollapsed && (
               <button
                 onClick={() => setIsSidebarCollapsed(true)}
-                className="hidden md:flex p-1.5 rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-800 transition-colors"
+                className="hidden md:flex p-1.5 rounded-lg text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-800 hover:text-gray-800 dark:hover:text-slate-200 transition-colors"
                 title="Thu gọn menu"
               >
                 <PanelLeftClose className="h-5 w-5" />
@@ -273,10 +302,10 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
           </div>
 
           {isSidebarCollapsed && (
-            <div className="hidden md:flex justify-center p-2 border-b border-gray-50">
+            <div className="hidden md:flex justify-center p-2 border-b border-gray-50 dark:border-slate-800">
               <button
                 onClick={() => setIsSidebarCollapsed(false)}
-                className="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-800 transition-colors"
+                className="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-800 hover:text-gray-800 dark:hover:text-slate-200 transition-colors"
                 title="Mở rộng menu"
               >
                 <PanelLeftOpen className="h-5 w-5" />
@@ -292,7 +321,7 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
               if (visibleItems.length === 0) return null;
 
               return (
-                <div key={groupIdx} className={`${groupIdx > 0 ? 'pt-2 border-t border-gray-50' : ''}`}>
+                <div key={groupIdx} className={`${groupIdx > 0 ? 'pt-2 border-t border-gray-50 dark:border-slate-800' : ''}`}>
                   {group.title ? (
                     <div className="mb-2">
                       <button
@@ -300,16 +329,16 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
                         title={isSidebarCollapsed ? group.title : undefined}
                         className={`w-full flex items-center py-3 rounded-xl text-sm font-semibold transition-all duration-300 group relative overflow-hidden
                            ${isSidebarCollapsed ? 'justify-center px-0' : 'justify-between px-4'}
-                           ${expandedNavGroups[group.title] && !isSidebarCollapsed ? 'bg-indigo-50/80 text-indigo-700' : 'text-gray-600 hover:bg-gray-100/80 hover:text-gray-900'}`}
+                           ${expandedNavGroups[group.title] && !isSidebarCollapsed ? 'bg-indigo-50/80 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300' : 'text-gray-600 dark:text-slate-400 hover:bg-gray-100/80 dark:hover:bg-slate-800/80 hover:text-gray-900 dark:hover:text-slate-200'}`}
                       >
                         <div className={`flex items-center gap-3 ${isSidebarCollapsed ? 'justify-center' : ''}`}>
                           {group.icon && React.createElement(group.icon, {
-                            className: `h-5 w-5 flex-shrink-0 transition-all duration-300 ${expandedNavGroups[group.title] && !isSidebarCollapsed ? 'text-indigo-600 scale-110' : 'text-gray-400 group-hover:text-indigo-500 group-hover:scale-110'}`
+                            className: `h-5 w-5 flex-shrink-0 transition-all duration-300 ${expandedNavGroups[group.title] && !isSidebarCollapsed ? 'text-indigo-600 dark:text-indigo-400 scale-110' : 'text-gray-400 dark:text-slate-500 group-hover:text-indigo-500 dark:group-hover:text-indigo-400 group-hover:scale-110'}`
                           })}
                           {!isSidebarCollapsed && <span className="relative z-10 whitespace-nowrap">{group.title}</span>}
                         </div>
                         {!isSidebarCollapsed && (
-                          <ChevronRight className={`h-4 w-4 flex-shrink-0 transition-transform duration-300 ${expandedNavGroups[group.title] ? 'rotate-90 text-indigo-500' : 'text-gray-400 group-hover:text-gray-600'}`} />
+                          <ChevronRight className={`h-4 w-4 flex-shrink-0 transition-transform duration-300 ${expandedNavGroups[group.title] ? 'rotate-90 text-indigo-500 dark:text-indigo-400' : 'text-gray-400 dark:text-slate-500 group-hover:text-gray-600 dark:group-hover:text-slate-400'}`} />
                         )}
                         {expandedNavGroups[group.title] && !isSidebarCollapsed && (
                           <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1.5 h-8 bg-indigo-600 rounded-r-full shadow-[0_0_8px_rgba(79,70,229,0.5)]"></div>
@@ -321,7 +350,7 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
                           className={`grid transition-all duration-300 ease-in-out ${expandedNavGroups[group.title] ? 'grid-rows-[1fr] opacity-100 mt-1' : 'grid-rows-[0fr] opacity-0 mt-0'}`}
                         >
                           <div className="overflow-hidden">
-                            <div className="pl-3 pr-2 py-1 space-y-1 my-1 ml-4 border-l-2 border-indigo-100/50">
+                            <div className="pl-3 pr-2 py-1 space-y-1 my-1 ml-4 border-l-2 border-indigo-100/50 dark:border-indigo-950/50">
                               {visibleItems.map(item => {
                                 const Icon = item.icon;
                                 const active = isActive(item.path);
@@ -335,11 +364,11 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
                                     className={`
                                         flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all duration-300 group relative overflow-hidden
                                         ${active
-                                        ? 'bg-indigo-100 text-indigo-800 font-bold shadow-sm translate-x-1 border border-indigo-200 hover:bg-indigo-200 hover:text-indigo-900'
-                                        : 'text-gray-500 hover:text-indigo-700 hover:bg-white hover:shadow-sm hover:border hover:border-indigo-50 hover:pl-4'}
+                                        ? 'bg-indigo-100 dark:bg-indigo-950/60 text-indigo-800 dark:text-indigo-300 font-bold shadow-sm translate-x-1 border border-indigo-200 dark:border-indigo-900/50 hover:bg-indigo-200 dark:hover:bg-indigo-900/40 hover:text-indigo-900 dark:hover:text-indigo-200'
+                                        : 'text-gray-500 dark:text-slate-400 hover:text-indigo-700 dark:hover:text-indigo-300 hover:bg-white dark:hover:bg-slate-800/50 hover:shadow-sm hover:border hover:border-indigo-50 dark:hover:border-slate-800 hover:pl-4'}
                                       `}
                                   >
-                                    <Icon className={`h-4 w-4 flex-shrink-0 transition-transform duration-300 ${active ? 'text-indigo-700 scale-110' : 'text-gray-400 group-hover:text-indigo-500 group-hover:scale-110'}`} />
+                                    <Icon className={`h-4 w-4 flex-shrink-0 transition-transform duration-300 ${active ? 'text-indigo-700 dark:text-indigo-400 scale-110' : 'text-gray-400 dark:text-slate-500 group-hover:text-indigo-500 dark:group-hover:text-indigo-400 group-hover:scale-110'}`} />
                                     <span className="relative z-10 truncate">{item.label}</span>
                                     {active && <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-indigo-600 rounded-r-md"></div>}
                                   </Link>
@@ -368,10 +397,10 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
                               ${isSidebarCollapsed ? 'justify-center px-0' : 'px-4'}
                               ${active
                                 ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white' + (!isSidebarCollapsed ? ' translate-x-1' : '')
-                                : 'bg-white text-gray-600 hover:bg-indigo-50 hover:text-indigo-700' + (!isSidebarCollapsed ? ' hover:translate-x-1' : '')}
+                                : 'bg-white dark:bg-slate-800 text-gray-600 dark:text-slate-300 hover:bg-indigo-50 dark:hover:bg-slate-700 hover:text-indigo-700 dark:hover:text-indigo-300' + (!isSidebarCollapsed ? ' hover:translate-x-1' : '')}
                             `}
                           >
-                            <Icon className={`h-5 w-5 flex-shrink-0 transition-transform duration-300 ${!active ? 'text-gray-400 group-hover:text-indigo-500 group-hover:scale-110' : 'text-white'}`} />
+                            <Icon className={`h-5 w-5 flex-shrink-0 transition-transform duration-300 ${!active ? 'text-gray-400 dark:text-slate-500 group-hover:text-indigo-500 dark:group-hover:text-indigo-400 group-hover:scale-110' : 'text-white'}`} />
                             {!isSidebarCollapsed && <span className="relative z-10 whitespace-nowrap">{item.label}</span>}
                             {active && !isSidebarCollapsed && <div className="absolute inset-0 bg-white/10 mix-blend-overlay"></div>}
                           </Link>
@@ -385,20 +414,20 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
 
             {/* CÔNG CỤ HỌC TẬP */}
             {user && (user.role === 'TEACHER' || user.role === 'ADMIN') && (
-              <div className="pt-2 border-t border-gray-100/50">
+              <div className="pt-2 border-t border-gray-100/50 dark:border-slate-800">
                 <button
                   onClick={() => !isSidebarCollapsed && setIsStudyToolsExpanded(!isStudyToolsExpanded)}
                   title={isSidebarCollapsed ? "Công cụ học tập" : undefined}
                   className={`w-full flex items-center py-3 rounded-xl text-sm font-semibold transition-all duration-300 group relative overflow-hidden
                     ${isSidebarCollapsed ? 'justify-center px-0' : 'justify-between px-4'}
-                    ${location.pathname.startsWith('/tools/') ? 'bg-indigo-50/80 text-indigo-700' : 'text-gray-600 hover:bg-gray-100/80 hover:text-gray-900'}`}
+                    ${location.pathname.startsWith('/tools/') ? 'bg-indigo-50/80 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300' : 'text-gray-600 dark:text-slate-400 hover:bg-gray-100/80 dark:hover:bg-slate-800/80 hover:text-gray-900 dark:hover:text-slate-200'}`}
                 >
                   <div className={`flex items-center gap-3 ${isSidebarCollapsed ? 'justify-center' : ''}`}>
-                    <Wrench className={`h-5 w-5 flex-shrink-0 transition-transform duration-300 ${location.pathname.startsWith('/tools/') ? 'text-indigo-600 scale-110' : 'text-gray-400 group-hover:text-indigo-500 group-hover:scale-110'}`} />
+                    <Wrench className={`h-5 w-5 flex-shrink-0 transition-transform duration-300 ${location.pathname.startsWith('/tools/') ? 'text-indigo-600 dark:text-indigo-400 scale-110' : 'text-gray-400 dark:text-slate-500 group-hover:text-indigo-500 dark:group-hover:text-indigo-400 group-hover:scale-110'}`} />
                     {!isSidebarCollapsed && <span className="relative z-10 whitespace-nowrap">Công cụ học tập</span>}
                   </div>
                   {!isSidebarCollapsed && (
-                    <ChevronRight className={`h-4 w-4 flex-shrink-0 transition-transform duration-300 ${isStudyToolsExpanded ? 'rotate-90 text-indigo-500' : 'text-gray-400 group-hover:text-gray-600'}`} />
+                    <ChevronRight className={`h-4 w-4 flex-shrink-0 transition-transform duration-300 ${isStudyToolsExpanded ? 'rotate-90 text-indigo-500 dark:text-indigo-400' : 'text-gray-400 dark:text-slate-500 group-hover:text-gray-600 dark:group-hover:text-slate-400'}`} />
                   )}
                   {isStudyToolsExpanded && !isSidebarCollapsed && (
                     <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1.5 h-8 bg-indigo-600 rounded-r-full shadow-[0_0_8px_rgba(79,70,229,0.5)]"></div>
@@ -410,14 +439,14 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
                     className={`grid transition-all duration-300 ease-in-out ${isStudyToolsExpanded ? 'grid-rows-[1fr] opacity-100 mt-1' : 'grid-rows-[0fr] opacity-0 mt-0'}`}
                   >
                     <div className="overflow-hidden">
-                      <div className="pl-3 pr-2 py-1 space-y-1 my-1 ml-4 border-l-2 border-indigo-100/50">
+                      <div className="pl-3 pr-2 py-1 space-y-1 my-1 ml-4 border-l-2 border-indigo-100/50 dark:border-indigo-950/50">
                         <Link
                           to="/tools/timer"
                           onClick={() => setIsMobileMenuOpen(false)}
-                          className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all duration-300 group relative overflow-hidden ${isActive('/tools/timer') ? 'text-indigo-700 font-bold bg-white shadow-sm border border-indigo-50 translate-x-1' : 'text-gray-500 hover:text-indigo-700 hover:bg-white hover:shadow-sm hover:border hover:border-indigo-50 hover:pl-4'
+                          className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all duration-300 group relative overflow-hidden ${isActive('/tools/timer') ? 'text-indigo-700 dark:text-indigo-300 font-bold bg-white dark:bg-slate-800 shadow-sm border border-indigo-50 dark:border-slate-700 translate-x-1' : 'text-gray-500 dark:text-slate-400 hover:text-indigo-700 dark:hover:text-indigo-300 hover:bg-white dark:hover:bg-slate-800/50 hover:shadow-sm hover:border hover:border-indigo-50 dark:hover:border-slate-700 hover:pl-4'
                             }`}
                         >
-                          <Clock className={`h-4 w-4 flex-shrink-0 transition-transform duration-300 ${isActive('/tools/timer') ? 'text-indigo-600 scale-110' : 'text-gray-400 group-hover:text-indigo-500 group-hover:scale-110'}`} />
+                          <Clock className={`h-4 w-4 flex-shrink-0 transition-transform duration-300 ${isActive('/tools/timer') ? 'text-indigo-600 dark:text-indigo-400 scale-110' : 'text-gray-400 dark:text-slate-500 group-hover:text-indigo-500 dark:group-hover:text-indigo-400 group-hover:scale-110'}`} />
                           <span className="relative z-10 truncate">Đồng hồ đếm ngược</span>
                           {isActive('/tools/timer') && <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-indigo-500 to-purple-500 rounded-r-md"></div>}
                         </Link>
@@ -430,7 +459,7 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
 
             {/* CUSTOM TOOLS RENDERER (TEACHER AND ADMIN) */}
             {user && (user.role === 'TEACHER' || user.role === 'ADMIN') && user.customTools && user.customTools.length > 0 && (
-              <div className="pt-2 border-t border-gray-100/50">
+              <div className="pt-2 border-t border-gray-100/50 dark:border-slate-800">
                 {!isSidebarCollapsed && (
                   <p className="px-4 text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 mt-2 truncate">Các Công Cụ Hỗ Trợ</p>
                 )}
@@ -443,14 +472,14 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
                           title={isSidebarCollapsed ? tool.title : undefined}
                           className={`w-full flex items-center py-3 rounded-xl text-sm font-semibold transition-all duration-300 group relative overflow-hidden
                             ${isSidebarCollapsed ? 'justify-center px-0' : 'justify-between px-4'}
-                            ${expandedTools[tool.id] && !isSidebarCollapsed ? 'bg-indigo-50/80 text-indigo-700' : 'text-gray-600 hover:bg-gray-100/80 hover:text-gray-900'}`}
+                            ${expandedTools[tool.id] && !isSidebarCollapsed ? 'bg-indigo-50/80 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300' : 'text-gray-600 dark:text-slate-400 hover:bg-gray-100/80 dark:hover:bg-slate-800/80 hover:text-gray-900 dark:hover:text-slate-200'}`}
                         >
                           <div className={`flex items-center gap-3 ${isSidebarCollapsed ? 'justify-center' : ''}`}>
-                            <ExternalLink className={`h-5 w-5 flex-shrink-0 transition-transform duration-300 ${expandedTools[tool.id] && !isSidebarCollapsed ? 'text-indigo-600 scale-110' : 'text-gray-400 group-hover:text-indigo-500 group-hover:scale-110'}`} />
+                            <ExternalLink className={`h-5 w-5 flex-shrink-0 transition-transform duration-300 ${expandedTools[tool.id] && !isSidebarCollapsed ? 'text-indigo-600 dark:text-indigo-400 scale-110' : 'text-gray-400 dark:text-slate-500 group-hover:text-indigo-500 dark:group-hover:text-indigo-400 group-hover:scale-110'}`} />
                             {!isSidebarCollapsed && <span className="relative z-10 truncate">{tool.title}</span>}
                           </div>
                           {!isSidebarCollapsed && (
-                            <ChevronRight className={`h-4 w-4 flex-shrink-0 transition-transform duration-300 ${expandedTools[tool.id] ? 'rotate-90 text-indigo-500' : 'text-gray-400 group-hover:text-gray-600'}`} />
+                            <ChevronRight className={`h-4 w-4 flex-shrink-0 transition-transform duration-300 ${expandedTools[tool.id] ? 'rotate-90 text-indigo-500 dark:text-indigo-400' : 'text-gray-400 dark:text-slate-500 group-hover:text-gray-600 dark:group-hover:text-slate-400'}`} />
                           )}
                           {expandedTools[tool.id] && !isSidebarCollapsed && (
                             <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1.5 h-8 bg-indigo-600 rounded-r-full shadow-[0_0_8px_rgba(79,70,229,0.5)]"></div>
@@ -462,14 +491,14 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
                             className={`grid transition-all duration-300 ease-in-out ${expandedTools[tool.id] ? 'grid-rows-[1fr] opacity-100 mt-1' : 'grid-rows-[0fr] opacity-0 mt-0'}`}
                           >
                             <div className="overflow-hidden">
-                              <div className="pl-3 pr-2 py-1 space-y-1 my-1 ml-4 border-l-2 border-indigo-100/50">
+                              <div className="pl-3 pr-2 py-1 space-y-1 my-1 ml-4 border-l-2 border-indigo-100/50 dark:border-indigo-950/50">
                                 {tool.children.map(child => (
                                   <a
                                     key={child.id}
                                     href={child.url}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="block px-3 py-2.5 rounded-lg text-sm text-gray-500 hover:text-indigo-700 hover:bg-white hover:shadow-sm hover:border hover:border-indigo-50 hover:pl-4 transition-all duration-300 truncate"
+                                    className="block px-3 py-2.5 rounded-lg text-sm text-gray-500 dark:text-slate-400 hover:text-indigo-700 dark:hover:text-indigo-300 hover:bg-white dark:hover:bg-slate-800/50 hover:shadow-sm hover:border hover:border-indigo-50 dark:hover:border-slate-700 hover:pl-4 transition-all duration-300 truncate"
                                   >
                                     {child.title}
                                   </a>
@@ -486,10 +515,10 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
                         target="_blank"
                         rel="noopener noreferrer"
                         title={isSidebarCollapsed ? tool.title : undefined}
-                        className={`flex items-center gap-3 py-3 rounded-xl text-sm font-semibold transition-all duration-300 group relative overflow-hidden shadow-sm bg-white text-gray-600 hover:bg-indigo-50 hover:text-indigo-700
+                        className={`flex items-center gap-3 py-3 rounded-xl text-sm font-semibold transition-all duration-300 group relative overflow-hidden shadow-sm bg-white dark:bg-slate-800 text-gray-600 dark:text-slate-300 hover:bg-indigo-50 dark:hover:bg-slate-700 hover:text-indigo-700 dark:hover:text-indigo-300
                           ${isSidebarCollapsed ? 'justify-center px-0' : 'px-4 hover:translate-x-1'}`}
                       >
-                        <ExternalLink className="h-5 w-5 text-gray-400 group-hover:text-indigo-500 group-hover:scale-110 flex-shrink-0 transition-transform duration-300" />
+                        <ExternalLink className="h-5 w-5 text-gray-400 dark:text-slate-500 group-hover:text-indigo-500 dark:group-hover:text-indigo-400 group-hover:scale-110 flex-shrink-0 transition-transform duration-300" />
                         {!isSidebarCollapsed && <span className="relative z-10 truncate">{tool.title}</span>}
                       </a>
                     )}
@@ -499,19 +528,19 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
             )}
           </nav>
 
-          <div className="mt-auto p-3 border-t bg-gray-50/50">
+          <div className="mt-auto p-3 border-t dark:border-slate-800 bg-gray-50/50 dark:bg-slate-900/50">
             {!isSidebarCollapsed ? (
               <>
-                <div className="flex items-center gap-3 mb-3 px-2 py-2 rounded-lg hover:bg-white transition-colors border border-transparent hover:border-gray-100 hover:shadow-sm">
-                  <img src={user?.avatar || "https://via.placeholder.com/40"} alt="User" className="w-10 h-10 rounded-full bg-gray-200 border-2 border-white shadow-sm flex-shrink-0" />
+                <div className="flex items-center gap-3 mb-3 px-2 py-2 rounded-lg hover:bg-white dark:hover:bg-slate-800 transition-colors border border-transparent hover:border-gray-100 dark:hover:border-slate-700 hover:shadow-sm">
+                  <img src={user?.avatar || "https://via.placeholder.com/40"} alt="User" className="w-10 h-10 rounded-full bg-gray-200 border-2 border-white dark:border-slate-800 shadow-sm flex-shrink-0" />
                   <div className="overflow-hidden">
-                    <p className="text-sm font-bold text-gray-900 truncate">{user?.name}</p>
-                    <p className="text-xs text-gray-500 truncate">{user?.email}</p>
+                    <p className="text-sm font-bold text-gray-900 dark:text-slate-100 truncate">{user?.name}</p>
+                    <p className="text-xs text-gray-500 dark:text-slate-400 truncate">{user?.email}</p>
                   </div>
                 </div>
                 <button
                   onClick={handleLogout}
-                  className="w-full flex items-center justify-center gap-2 px-4 py-2 text-sm text-red-600 bg-red-50 hover:bg-red-100 rounded-xl transition-all duration-200 font-medium"
+                  className="w-full flex items-center justify-center gap-2 px-4 py-2 text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/20 hover:bg-red-100 dark:hover:bg-red-900/30 rounded-xl transition-all duration-200 font-medium"
                 >
                   <LogOut className="h-4 w-4 hover:scale-110 transition-transform" />
                   Đăng Xuất
@@ -519,11 +548,11 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
               </>
             ) : (
               <div className="flex flex-col items-center gap-3 py-2">
-                <img src={user?.avatar || "https://via.placeholder.com/40"} alt="User" title={user?.name} className="w-10 h-10 rounded-full bg-gray-200 border-2 border-white shadow-sm flex-shrink-0 cursor-pointer" />
+                <img src={user?.avatar || "https://via.placeholder.com/40"} alt="User" title={user?.name} className="w-10 h-10 rounded-full bg-gray-200 border-2 border-white dark:border-slate-800 shadow-sm flex-shrink-0 cursor-pointer" />
                 <button
                   onClick={handleLogout}
                   title="Đăng xuất"
-                  className="flex items-center justify-center w-10 h-10 text-red-600 bg-red-50 hover:bg-red-100 rounded-xl transition-all duration-200"
+                  className="flex items-center justify-center w-10 h-10 text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/20 hover:bg-red-100 dark:hover:bg-red-900/30 rounded-xl transition-all duration-200"
                 >
                   <LogOut className="h-5 w-5" />
                 </button>
@@ -537,15 +566,24 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
       <main className="flex-1 p-4 md:p-8 overflow-x-hidden relative flex flex-col pb-48 md:pb-40" >
         {/* Top Bar for Desktop */}
         <div className="hidden md:flex justify-end items-center mb-6 gap-4" >
+          {/* Theme Toggle */}
+          <button
+            onClick={toggleTheme}
+            className="p-2 rounded-full bg-white dark:bg-slate-900 text-gray-600 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-800 border dark:border-slate-800 shadow-sm transition-all"
+            title="Đổi giao diện"
+          >
+            {theme === 'dark' ? <Sun className="h-5 w-5 text-amber-400" /> : <Moon className="h-5 w-5" />}
+          </button>
+
           {/* Notifications */}
           <div className="relative" >
             <button
               onClick={() => setIsNotifOpen(!isNotifOpen)}
-              className="relative p-2 rounded-full bg-white text-gray-600 hover:bg-gray-100 border shadow-sm transition-all"
+              className="relative p-2 rounded-full bg-white dark:bg-slate-900 text-gray-600 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-800 border dark:border-slate-800 shadow-sm transition-all"
             >
               <Bell className="h-5 w-5" />
               {unreadCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] w-5 h-5 flex items-center justify-center rounded-full border-2 border-white font-bold">
+                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] w-5 h-5 flex items-center justify-center rounded-full border-2 border-white dark:border-slate-900 font-bold">
                   {unreadCount}
                 </span>
               )}
@@ -553,35 +591,35 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
 
             {
               isNotifOpen && (
-                <div className="absolute right-0 top-full mt-2 w-80 bg-white rounded-xl shadow-xl border z-50 animate-in fade-in zoom-in-95 origin-top-right">
-                  <div className="p-3 border-b flex justify-between items-center bg-gray-50 rounded-t-xl">
-                    <h3 className="font-bold text-sm text-gray-800">Thông báo</h3>
+                <div className="absolute right-0 top-full mt-2 w-80 bg-white dark:bg-slate-900 rounded-xl shadow-xl border dark:border-slate-800 z-50 animate-in fade-in zoom-in-95 origin-top-right">
+                  <div className="p-3 border-b dark:border-slate-800 flex justify-between items-center bg-gray-50 dark:bg-slate-950/50 rounded-t-xl">
+                    <h3 className="font-bold text-sm text-gray-800 dark:text-slate-200">Thông báo</h3>
                     {unreadCount > 0 && (
-                      <button onClick={() => user && markAllNotificationsRead(user.id)} className="text-xs text-indigo-600 hover:underline">
+                      <button onClick={() => user && markAllNotificationsRead(user.id)} className="text-xs text-indigo-600 dark:text-indigo-400 hover:underline">
                         Đánh dấu đã đọc
                       </button>
                     )}
                   </div>
                   <div className="max-h-80 overflow-y-auto">
                     {myNotifications.length === 0 ? (
-                      <div className="p-8 text-center text-gray-400 text-sm">
+                      <div className="p-8 text-center text-gray-400 dark:text-slate-500 text-sm">
                         <Bell className="h-8 w-8 mx-auto mb-2 opacity-30" />
                         Không có thông báo mới
                       </div>
                     ) : (
-                      <div className="divide-y">
+                      <div className="divide-y dark:divide-slate-800">
                         {myNotifications.map(n => (
                           <div
                             key={n.id}
                             onClick={() => handleNotifClick(n)}
-                            className={`p-3 cursor-pointer hover:bg-gray-50 transition-colors ${!n.isRead ? 'bg-indigo-50/50' : ''}`}
+                            className={`p-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-slate-800/50 transition-colors ${!n.isRead ? 'bg-indigo-50/50 dark:bg-indigo-950/30' : ''}`}
                           >
                             <div className="flex gap-3">
-                              <div className={`mt-1 h-2 w-2 rounded-full flex-shrink-0 ${!n.isRead ? 'bg-indigo-600' : 'bg-transparent'}`}></div>
+                              <div className={`mt-1 h-2 w-2 rounded-full flex-shrink-0 ${!n.isRead ? 'bg-indigo-600 dark:bg-indigo-400' : 'bg-transparent'}`}></div>
                               <div>
-                                <p className={`text-sm ${!n.isRead ? 'font-bold text-gray-900' : 'text-gray-700'}`}>{n.title}</p>
-                                <p className="text-xs text-gray-500 mt-1 line-clamp-2">{n.message}</p>
-                                <p className="text-[10px] text-gray-400 mt-1">{new Date(n.createdAt).toLocaleDateString('vi-VN')} {new Date(n.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+                                <p className={`text-sm ${!n.isRead ? 'font-bold text-gray-900 dark:text-slate-100' : 'text-gray-700 dark:text-slate-300'}`}>{n.title}</p>
+                                <p className="text-xs text-gray-500 dark:text-slate-400 mt-1 line-clamp-2">{n.message}</p>
+                                <p className="text-[10px] text-gray-400 dark:text-slate-500 mt-1">{new Date(n.createdAt).toLocaleDateString('vi-VN')} {new Date(n.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
                               </div>
                             </div>
                           </div>
@@ -597,7 +635,7 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
           {/* User Guide */}
           <button
             onClick={() => setIsGuideOpen(true)}
-            className="p-2 rounded-full bg-white text-indigo-600 hover:bg-indigo-50 border border-indigo-100 shadow-sm transition-all flex items-center gap-2 px-4 group"
+            className="p-2 rounded-full bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-slate-800 border border-indigo-100 dark:border-slate-800 shadow-sm transition-all flex items-center gap-2 px-4 group"
             title="Hướng dẫn sử dụng"
           >
             <HelpCircle className="h-5 w-5 group-hover:scale-110 transition-transform" />
@@ -609,12 +647,12 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
         <div className="fixed bottom-4 right-4 z-50 flex flex-col gap-2 pointer-events-none" >
           {
             myNotifications.filter(n => !n.isRead && new Date(n.createdAt).getTime() > Date.now() - 5000).map(n => (
-              <div key={n.id} className="bg-white p-4 rounded-xl shadow-2xl border-l-4 border-indigo-500 w-80 animate-in slide-in-from-right pointer-events-auto flex gap-3">
-                <CheckCircle className="h-6 w-6 text-indigo-500 flex-shrink-0" />
+              <div key={n.id} className="bg-white dark:bg-slate-900 p-4 rounded-xl shadow-2xl border dark:border-slate-800 border-l-4 border-l-indigo-500 dark:border-l-indigo-400 w-80 animate-in slide-in-from-right pointer-events-auto flex gap-3">
+                <CheckCircle className="h-6 w-6 text-indigo-500 dark:text-indigo-400 flex-shrink-0" />
                 <div>
-                  <h4 className="font-bold text-gray-900 text-sm">{n.title}</h4>
-                  <p className="text-xs text-gray-600 mt-1">{n.message}</p>
-                  <button onClick={() => handleNotifClick(n)} className="text-xs text-indigo-600 font-bold mt-2 hover:underline">Xem ngay</button>
+                  <h4 className="font-bold text-gray-900 dark:text-slate-100 text-sm">{n.title}</h4>
+                  <p className="text-xs text-gray-600 dark:text-slate-400 mt-1">{n.message}</p>
+                  <button onClick={() => handleNotifClick(n)} className="text-xs text-indigo-600 dark:text-indigo-400 font-bold mt-2 hover:underline">Xem ngay</button>
                 </div>
               </div>
             ))

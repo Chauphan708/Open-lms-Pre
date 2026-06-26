@@ -15,7 +15,14 @@
   background: #94a3b8;
 }
 
+.dark ::-webkit-scrollbar-thumb {
+  background: #475569;
+}
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #64748b;
+}
+
 body {
   font-family: 'Inter', sans-serif;
-  @apply antialiased bg-gray-50 text-gray-900;
+  @apply antialiased bg-gray-50 text-gray-900 dark:bg-slate-950 dark:text-slate-100 transition-colors duration-300;
 }

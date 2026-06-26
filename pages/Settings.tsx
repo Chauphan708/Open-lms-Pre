@@ -26,15 +26,36 @@ import {
   CheckCircle,
   AlertCircle,
   Zap,
-  Loader2
+  Loader2,
+  Sun,
+  Moon
 } from 'lucide-react';
 import { CustomToolMenu } from '../types';
 
 export const Settings: React.FC = () => {
   const { user, updateUser, changePassword, updateUserCustomTools, siteSettings, updateSiteSettings } = useStore();
 
-  const [activeTab, setActiveTab] = useState<'PROFILE' | 'NOTIFICATIONS' | 'SYSTEM' | 'TEACHING' | 'TOOLS' | 'APIKEY'>('PROFILE');
+  const [activeTab, setActiveTab] = useState<'PROFILE' | 'NOTIFICATIONS' | 'SYSTEM' | 'TEACHING' | 'TOOLS' | 'APIKEY' | 'THEME'>('PROFILE');
   const [loading, setLoading] = useState(false);
+
+  // Interface Theme State
+  const [themeState, setThemeState] = useState<'light' | 'dark'>(() => {
+    if (typeof window !== 'undefined') {
+      return document.documentElement.classList.contains('dark') ? 'dark' : 'light';
+    }
+    return 'light';
+  });
+
+  const handleThemeChange = (newTheme: 'light' | 'dark') => {
+    setThemeState(newTheme);
+    const root = window.document.documentElement;
+    if (newTheme === 'dark') {
+      root.classList.add('dark');
+    } else {
+      root.classList.remove('dark');
+    }
+    localStorage.setItem('theme', newTheme);
+  };
 
   // Profile State
   const [name, setName] = useState(user?.name || '');
@@ -332,23 +353,30 @@ export const Settings: React.FC = () => {
 
   return (
     <div className="max-w-5xl mx-auto">
-      <h1 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-        <Wrench className="text-indigo-600" /> Cài đặt hệ thống
+      <h1 className="text-2xl font-bold text-gray-900 dark:text-slate-100 mb-6 flex items-center gap-2">
+        <Wrench className="text-indigo-600 dark:text-indigo-400" /> Cài đặt hệ thống
       </h1>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         {/* Sidebar Menu */}
-        <div className="md:col-span-1 space-y-2">
+        <div className="md:col-span-1 space-y-2 col-span-1">
           <button
             onClick={() => setActiveTab('PROFILE')}
-            className={`w-full text-left px-4 py-3 rounded-lg flex items-center gap-3 transition-colors ${activeTab === 'PROFILE' ? 'bg-indigo-50 text-indigo-700 font-bold' : 'bg-white text-gray-600 hover:bg-gray-50'}`}
+            className={`w-full text-left px-4 py-3 rounded-lg flex items-center gap-3 transition-colors ${activeTab === 'PROFILE' ? 'bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 font-bold' : 'bg-white dark:bg-slate-900 text-gray-600 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800/50'}`}
           >
             <User className="h-5 w-5" /> Hồ sơ cá nhân
           </button>
 
           <button
+            onClick={() => setActiveTab('THEME')}
+            className={`w-full text-left px-4 py-3 rounded-lg flex items-center gap-3 transition-colors ${activeTab === 'THEME' ? 'bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 font-bold' : 'bg-white dark:bg-slate-900 text-gray-600 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800/50'}`}
+          >
+            <Sun className="h-5 w-5" /> Giao diện & Chủ đề
+          </button>
+
+          <button
             onClick={() => setActiveTab('NOTIFICATIONS')}
-            className={`w-full text-left px-4 py-3 rounded-lg flex items-center gap-3 transition-colors ${activeTab === 'NOTIFICATIONS' ? 'bg-indigo-50 text-indigo-700 font-bold' : 'bg-white text-gray-600 hover:bg-gray-50'}`}
+            className={`w-full text-left px-4 py-3 rounded-lg flex items-center gap-3 transition-colors ${activeTab === 'NOTIFICATIONS' ? 'bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 font-bold' : 'bg-white dark:bg-slate-900 text-gray-600 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800/50'}`}
           >
             <Bell className="h-5 w-5" /> Thông báo
           </button>
@@ -356,7 +384,7 @@ export const Settings: React.FC = () => {
           {user.role === 'TEACHER' && (
             <button
               onClick={() => setActiveTab('TEACHING')}
-              className={`w-full text-left px-4 py-3 rounded-lg flex items-center gap-3 transition-colors ${activeTab === 'TEACHING' ? 'bg-indigo-50 text-indigo-700 font-bold' : 'bg-white text-gray-600 hover:bg-gray-50'}`}
+              className={`w-full text-left px-4 py-3 rounded-lg flex items-center gap-3 transition-colors ${activeTab === 'TEACHING' ? 'bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 font-bold' : 'bg-white dark:bg-slate-900 text-gray-600 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800/50'}`}
             >
               <Clock className="h-5 w-5" /> Cấu hình dạy học
             </button>
@@ -365,7 +393,7 @@ export const Settings: React.FC = () => {
           {(user.role === 'TEACHER' || user.role === 'ADMIN') && (
             <button
               onClick={() => setActiveTab('TOOLS')}
-              className={`w-full text-left px-4 py-3 rounded-lg flex items-center gap-3 transition-colors ${activeTab === 'TOOLS' ? 'bg-indigo-50 text-indigo-700 font-bold' : 'bg-white text-gray-600 hover:bg-gray-50'}`}
+              className={`w-full text-left px-4 py-3 rounded-lg flex items-center gap-3 transition-colors ${activeTab === 'TOOLS' ? 'bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 font-bold' : 'bg-white dark:bg-slate-900 text-gray-600 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800/50'}`}
             >
               <ExternalLink className="h-5 w-5" /> Custom Tools
             </button>
@@ -374,7 +402,7 @@ export const Settings: React.FC = () => {
           {(user.role === 'TEACHER' || user.role === 'ADMIN') && (
             <button
               onClick={() => setActiveTab('APIKEY')}
-              className={`w-full text-left px-4 py-3 rounded-lg flex items-center gap-3 transition-colors ${activeTab === 'APIKEY' ? 'bg-indigo-50 text-indigo-700 font-bold' : 'bg-white text-gray-600 hover:bg-gray-50'}`}
+              className={`w-full text-left px-4 py-3 rounded-lg flex items-center gap-3 transition-colors ${activeTab === 'APIKEY' ? 'bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 font-bold' : 'bg-white dark:bg-slate-900 text-gray-600 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800/50'}`}
             >
               <Key className="h-5 w-5" /> 🔑 API Key
               {apiKeyConfigured && <span className="ml-auto w-2 h-2 bg-green-500 rounded-full" title="Đã cấu hình"></span>}
@@ -384,7 +412,7 @@ export const Settings: React.FC = () => {
           {user.role === 'ADMIN' && (
             <button
               onClick={() => setActiveTab('SYSTEM')}
-              className={`w-full text-left px-4 py-3 rounded-lg flex items-center gap-3 transition-colors ${activeTab === 'SYSTEM' ? 'bg-indigo-50 text-indigo-700 font-bold' : 'bg-white text-gray-600 hover:bg-gray-50'}`}
+              className={`w-full text-left px-4 py-3 rounded-lg flex items-center gap-3 transition-colors ${activeTab === 'SYSTEM' ? 'bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 font-bold' : 'bg-white dark:bg-slate-900 text-gray-600 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800/50'}`}
             >
               <Shield className="h-5 w-5" /> Quản trị hệ thống
             </button>
@@ -392,7 +420,7 @@ export const Settings: React.FC = () => {
         </div>
 
         {/* Content Area */}
-        <div className="md:col-span-3 bg-white rounded-xl shadow-sm border p-6 min-h-[500px]">
+        <div className="md:col-span-3 bg-white dark:bg-slate-900 rounded-xl shadow-sm border dark:border-slate-800 p-6 min-h-[500px]">
 
           {/* PROFILE TAB */}
           {activeTab === 'PROFILE' && (
@@ -502,6 +530,47 @@ export const Settings: React.FC = () => {
                 >
                   <Save className="h-4 w-4" /> {loading ? 'Đang lưu...' : 'Lưu thay đổi'}
                 </button>
+              </div>
+            </div>
+          )}
+
+          {/* THEME TAB */}
+          {activeTab === 'THEME' && (
+            <div className="space-y-6 animate-fade-in">
+              <h2 className="text-xl font-bold text-gray-800 dark:text-slate-100 border-b dark:border-slate-800 pb-4">Giao diện & Chủ đề</h2>
+              
+              <div>
+                <p className="text-sm text-gray-500 dark:text-slate-400">Tùy chỉnh chế độ hiển thị của OpenLMS để bảo vệ mắt và tối ưu trải nghiệm đọc tốt nhất cho bạn.</p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                {/* Light Theme Card */}
+                <div 
+                  onClick={() => handleThemeChange('light')}
+                  className={`cursor-pointer border rounded-xl p-5 flex flex-col items-center gap-4 transition-all duration-300 ${themeState === 'light' ? 'border-indigo-600 dark:border-indigo-500 bg-indigo-50/50 dark:bg-indigo-950/20 shadow-md ring-2 ring-indigo-500/20' : 'border-gray-200 dark:border-slate-800 hover:bg-gray-50 dark:hover:bg-slate-800/40 bg-white dark:bg-slate-900'}`}
+                >
+                  <div className={`p-4 rounded-full ${themeState === 'light' ? 'bg-amber-100 dark:bg-amber-950/30 text-amber-500' : 'bg-gray-100 dark:bg-slate-800 text-gray-400'}`}>
+                    <Sun className="h-8 w-8" />
+                  </div>
+                  <div className="text-center">
+                    <h3 className="font-bold text-gray-800 dark:text-slate-200">Giao diện Sáng</h3>
+                    <p className="text-xs text-gray-500 dark:text-slate-400 mt-1">Phù hợp sử dụng vào ban ngày hoặc nơi có ánh sáng tốt.</p>
+                  </div>
+                </div>
+
+                {/* Dark Theme Card */}
+                <div 
+                  onClick={() => handleThemeChange('dark')}
+                  className={`cursor-pointer border rounded-xl p-5 flex flex-col items-center gap-4 transition-all duration-300 ${themeState === 'dark' ? 'border-indigo-600 dark:border-indigo-500 bg-indigo-50/50 dark:bg-indigo-950/20 shadow-md ring-2 ring-indigo-500/20' : 'border-gray-200 dark:border-slate-800 hover:bg-gray-50 dark:hover:bg-slate-800/40 bg-white dark:bg-slate-900'}`}
+                >
+                  <div className={`p-4 rounded-full ${themeState === 'dark' ? 'bg-indigo-100 dark:bg-indigo-950/30 text-indigo-500 dark:text-indigo-400' : 'bg-gray-100 dark:bg-slate-800 text-gray-400'}`}>
+                    <Moon className="h-8 w-8" />
+                  </div>
+                  <div className="text-center">
+                    <h3 className="font-bold text-gray-800 dark:text-slate-200">Giao diện Tối (Đêm)</h3>
+                    <p className="text-xs text-gray-500 dark:text-slate-400 mt-1">Tối ưu cho ban đêm, bảo vệ mắt khỏi ánh sáng xanh.</p>
+                  </div>
+                </div>
               </div>
             </div>
           )}
