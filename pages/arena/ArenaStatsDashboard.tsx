@@ -154,6 +154,50 @@ export const ArenaStatsDashboard: React.FC = () => {
 
   useEffect(() => {
     loadData();
+
+    // Subscribe to realtime updates for tower attempts
+    const towerChannel = supabase
+      .channel('arena_tower_attempts_realtime')
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'arena_tower_attempts' },
+        (payload) => {
+          console.log("Realtime INSERT on arena_tower_attempts:", payload.new);
+          setTowerAttempts(prev => {
+            // Avoid duplicate additions
+            if (prev.some(t => t.id === payload.new.id)) return prev;
+            return [payload.new as TowerAttempt, ...prev];
+          });
+        }
+      )
+      .subscribe();
+
+    // Subscribe to realtime updates for matches
+    const matchChannel = supabase
+      .channel('arena_matches_realtime')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'arena_matches' },
+        (payload) => {
+          console.log("Realtime change on arena_matches:", payload);
+          if (payload.eventType === 'INSERT') {
+            setMatchHistory(prev => {
+              if (prev.some(m => m.id === payload.new.id)) return prev;
+              return [payload.new as MatchHistory, ...prev];
+            });
+          } else if (payload.eventType === 'UPDATE') {
+            setMatchHistory(prev => prev.map(m => m.id === payload.new.id ? (payload.new as MatchHistory) : m));
+          } else if (payload.eventType === 'DELETE') {
+            setMatchHistory(prev => prev.filter(m => m.id !== payload.old.id));
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(towerChannel);
+      supabase.removeChannel(matchChannel);
+    };
   }, []);
 
   // Filter list of classes & grades from students list
