@@ -1432,14 +1432,14 @@ export const ArenaAdmin: React.FC = () => {
             <div className="flex border-b mb-6 gap-6 text-sm font-semibold dark:border-slate-800">
                 <button 
                     onClick={() => setActiveTab('questions')} 
-                    className={`pb-3 relative transition-all ${activeTab === 'questions' ? 'text-indigo-600 font-bold' : 'text-gray-400 hover:text-gray-600'}`}
+                    className={`pb-3 relative transition-all ${activeTab === 'questions' ? 'text-indigo-600 font-bold' : 'text-gray-400 hover:text-gray-600'} `}
                 >
                     {activeTab === 'questions' && <span className="absolute bottom-0 left-0 w-full h-0.5 bg-indigo-600 rounded-t-full" />}
                     📚 Ngân Hàng Câu Hỏi
                 </button>
                 <button 
                     onClick={() => setActiveTab('stats')} 
-                    className={`pb-3 relative transition-all ${activeTab === 'stats' ? 'text-indigo-600 font-bold' : 'text-gray-400 hover:text-gray-600'}`}
+                    className={`pb-3 relative transition-all ${activeTab === 'stats' ? 'text-indigo-600 font-bold' : 'text-gray-400 hover:text-gray-600'} `}
                 >
                     {activeTab === 'stats' && <span className="absolute bottom-0 left-0 w-full h-0.5 bg-indigo-600 rounded-t-full" />}
                     📊 Thống Kê Kết Quả
@@ -1461,8 +1461,8 @@ export const ArenaAdmin: React.FC = () => {
                     const colors = ['', 'text-emerald-600', 'text-amber-600', 'text-orange-600', 'text-red-600'];
                     const bgColors = ['', 'bg-emerald-50/55', 'bg-amber-50/55', 'bg-orange-50/55', 'bg-red-50/55'];
                     return (
-                        <div key={d.value} className={`bg-white rounded-2xl border p-4 shadow-sm text-center transition-all ${bgColors[d.value]}`}>
-                            <div className={`text-3xl font-black ${colors[d.value]}`}>{count}</div>
+                        <div key={d.value} className={`bg-white rounded-2xl border p-4 shadow-sm text-center transition-all dark:bg-slate-900 dark:border-slate-800 ${bgColors[d.value]} `}>
+                            <div className={`text-3xl font-black ${colors[d.value]} `}>{count}</div>
                             <div className="text-xs text-gray-500 font-bold uppercase tracking-wider mt-1 dark:text-slate-500">{d.label}</div>
                         </div>
                     );
@@ -1533,7 +1533,7 @@ export const ArenaAdmin: React.FC = () => {
             {/* Question List */}
             <div className="space-y-4">
                 {filteredQuestions.map(q => (
-                    <div key={q.id} className={`bg-white rounded-2xl border p-5 hover:border-indigo-200 transition-all hover:shadow-md group flex gap-4 ${selectedIds.has(q.id) ? 'border-indigo-500 bg-indigo-50/10' : ''}`}>
+                    <div key={q.id} className={`bg-white rounded-2xl border p-5 hover:border-indigo-200 transition-all hover:shadow-md group flex gap-4 dark:bg-slate-900 dark:border-slate-800 ${selectedIds.has(q.id) ? 'border-indigo-500 bg-indigo-50/10' : ''} `}>
                         <div className="flex-shrink-0 pt-1.5">
                             <input
                                 type="checkbox"
@@ -1587,8 +1587,8 @@ export const ArenaAdmin: React.FC = () => {
                                     {q.answers?.map((a, i) => {
                                         const isCorrect = q.correct_indices?.includes(i);
                                         return (
-                                            <div key={i} className={`text-xs md:text-sm px-3.5 py-2.5 rounded-xl flex items-center gap-2 border transition-all ${isCorrect ? 'bg-green-50 text-green-800 font-bold border-green-200 shadow-sm' : 'bg-gray-50 dark:bg-slate-850 text-gray-400 border-transparent opacity-60'}`}>
-                                                <span className={`w-5 h-5 rounded-md flex items-center justify-center font-bold text-[9px] border text-white ${isCorrect ? 'bg-green-500 border-green-400' : 'bg-white border-gray-200 text-gray-400'}`}>
+                                            <div key={i} className={`text-xs md:text-sm px-3.5 py-2.5 rounded-xl flex items-center gap-2 border transition-all dark:border-slate-800 ${isCorrect ? 'bg-green-50 text-green-800 font-bold border-green-200 shadow-sm' : 'bg-gray-50 dark:bg-slate-850 text-gray-400 border-transparent opacity-60'} `}>
+                                                <span className={`w-5 h-5 rounded-md flex items-center justify-center font-bold text-[9px] border text-white dark:border-slate-800 ${isCorrect ? 'bg-green-500 border-green-400' : 'bg-white border-gray-200 text-gray-400'} `}>
                                                     {String.fromCharCode(65 + i)}
                                                 </span>
                                                 <MathText inline>{a}</MathText>
@@ -1599,7 +1599,7 @@ export const ArenaAdmin: React.FC = () => {
                             ) : (
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mt-3">
                                     {q.answers?.map((a, i) => (
-                                        <div key={i} className={`text-xs md:text-sm px-3.5 py-2.5 rounded-xl flex items-center gap-2 transition-all ${i === q.correct_index ? 'bg-emerald-50 text-emerald-800 font-bold border border-emerald-200 shadow-sm shadow-emerald-50' : 'bg-gray-50 dark:bg-slate-850 text-gray-600 border border-transparent'}`}>
+                                        <div key={i} className={`text-xs md:text-sm px-3.5 py-2.5 rounded-xl flex items-center gap-2 transition-all ${i === q.correct_index ? 'bg-emerald-50 text-emerald-800 font-bold border border-emerald-200 shadow-sm shadow-emerald-50' : 'bg-gray-50 dark:bg-slate-850 text-gray-600 border border-transparent'} `}>
                                             <span className="flex-shrink-0 bg-white shadow-xs rounded-md w-5 h-5 flex items-center justify-center font-bold text-[10px] uppercase border tracking-wider dark:bg-slate-900 dark:border-slate-800">
                                                 {String.fromCharCode(65 + i)}
                                             </span>
@@ -2114,7 +2114,7 @@ export const ArenaAdmin: React.FC = () => {
                                             </div>
                                         ) : (
                                             bankMCQs.map(q => (
-                                                <label key={q.id} className={`flex gap-3 p-3 text-sm cursor-pointer hover:bg-purple-50 transition-colors bg-white ${bankSelectedIds.has(q.id) ? 'bg-purple-50/40 border-l-4 border-purple-500' : ''}`}>
+                                                <label key={q.id} className={`flex gap-3 p-3 text-sm cursor-pointer hover:bg-purple-50 transition-colors bg-white dark:bg-slate-900 ${bankSelectedIds.has(q.id) ? 'bg-purple-50/40 border-l-4 border-purple-500' : ''} `}>
                                                     <input type="checkbox" checked={bankSelectedIds.has(q.id)} onChange={() => toggleBankSelect(q.id)} className="w-4 h-4 mt-0.5 text-purple-600 rounded cursor-pointer" />
                                                     <div className="flex-1 min-w-0">
                                                         <div className="flex gap-1.5 mb-1 flex-wrap font-bold">
@@ -2242,7 +2242,7 @@ export const ArenaAdmin: React.FC = () => {
                                                     ? item.correct_indices?.includes(ansIdx)
                                                     : ansIdx === item.correct_index;
                                                 return (
-                                                    <div key={ansIdx} className={`text-xs px-3 py-2 rounded-xl flex items-center gap-2 border ${isCorrect ? 'bg-emerald-50 text-emerald-800 font-bold border-emerald-200' : 'bg-gray-50 dark:bg-slate-850 text-gray-500 border-transparent'}`}>
+                                                    <div key={ansIdx} className={`text-xs px-3 py-2 rounded-xl flex items-center gap-2 border dark:border-slate-800 ${isCorrect ? 'bg-emerald-50 text-emerald-800 font-bold border-emerald-200' : 'bg-gray-50 dark:bg-slate-850 text-gray-500 border-transparent'} `}>
                                                         <span className="bg-white border rounded shadow-xs w-4 h-4 flex items-center justify-center font-bold text-[9px] dark:bg-slate-900 dark:border-slate-800">{String.fromCharCode(65 + ansIdx)}</span>
                                                         <span>{ans}</span>
                                                     </div>
