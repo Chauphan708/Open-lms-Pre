@@ -189,8 +189,8 @@ export const TournamentHost: React.FC = () => {
                     <div>
                         <label className="block text-sm font-bold text-gray-700 mb-2 dark:text-slate-300">Nguồn câu hỏi</label>
                         <div className="grid grid-cols-2 gap-2">
-                            <button onClick={() => setSource('exam')} className={`p-3 rounded-xl border-2 text-sm font-bold transition-all ${source === 'exam' ? 'border-purple-500 bg-purple-50 text-purple-700' : 'border-gray-200 text-gray-600'}`}>📋 Ngân hàng bài tập</button>
-                            <button onClick={() => setSource('arena')} className={`p-3 rounded-xl border-2 text-sm font-bold transition-all ${source === 'arena' ? 'border-purple-500 bg-purple-50 text-purple-700' : 'border-gray-200 text-gray-600'}`}>🧠 Bộ câu hỏi Arena</button>
+                            <button onClick={() => setSource('exam')} className={`p-3 rounded-xl border-2 text-sm font-bold transition-all dark:border-slate-800 ${source === 'exam' ? 'border-purple-500 bg-purple-50 text-purple-700' : 'border-gray-200 text-gray-600'} `}>📋 Ngân hàng bài tập</button>
+                            <button onClick={() => setSource('arena')} className={`p-3 rounded-xl border-2 text-sm font-bold transition-all dark:border-slate-800 ${source === 'arena' ? 'border-purple-500 bg-purple-50 text-purple-700' : 'border-gray-200 text-gray-600'} `}>🧠 Bộ câu hỏi Arena</button>
                         </div>
                     </div>
 
@@ -349,9 +349,9 @@ export const TournamentHost: React.FC = () => {
                                                         setSelectedIds(prev => isSelected ? prev.filter(id => id !== qid) : [...prev, qid]);
                                                     }
                                                 }}
-                                                className={`w-full text-left p-3 rounded-xl border-2 transition-all flex gap-3 items-start ${isSelected ? 'border-purple-500 bg-purple-50' : 'border-gray-100 hover:border-gray-200 bg-white'}`}
+                                                className={`w-full text-left p-3 rounded-xl border-2 transition-all flex gap-3 items-start dark:border-slate-800 ${isSelected ? 'border-purple-500 bg-purple-50' : 'border-gray-100 hover:border-gray-200 bg-white'} `}
                                             >
-                                                <div className={`mt-1 flex-shrink-0 w-5 h-5 rounded-md border-2 flex items-center justify-center ${isSelected ? 'bg-purple-500 border-purple-500 text-white' : 'border-gray-300'}`}>
+                                                <div className={`mt-1 flex-shrink-0 w-5 h-5 rounded-md border-2 flex items-center justify-center dark:border-slate-800 ${isSelected ? 'bg-purple-500 border-purple-500 text-white' : 'border-gray-300'} `}>
                                                     {isSelected && <CheckCircle2 className="h-4 w-4" />}
                                                 </div>
                                                 <div className="flex-1 min-w-0">
@@ -423,9 +423,9 @@ export const TournamentHost: React.FC = () => {
                     <h2 className="text-xl font-black mb-4 flex items-center gap-2"><Crown className="h-6 w-6 text-yellow-400" /> Bảng Xếp Hạng</h2>
                     <div className="space-y-3">
                         {ranking.slice(0, 8).map((p, i) => (
-                            <div key={p.id} className={`flex items-center gap-4 p-4 rounded-xl transition-all ${p.status === 'eliminated' ? 'bg-white/5 opacity-60' : 'bg-white/10 border border-white/10'}`}
+                            <div key={p.id} className={`flex items-center gap-4 p-4 rounded-xl transition-all ${p.status === 'eliminated' ? 'bg-white/5 opacity-60' : 'bg-white/10 border border-white/10'} `}
                                 style={{ animation: `fadeIn 0.4s ease-out ${i * 0.05}s both` }}>
-                                <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-black text-lg ${i === 0 ? 'bg-yellow-500 text-black' : i === 1 ? 'bg-gray-400 text-black' : i === 2 ? 'bg-amber-700 text-white' : 'bg-white/10'}`}>
+                                <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-black text-lg ${i === 0 ? 'bg-yellow-500 text-black' : i === 1 ? 'bg-gray-400 text-black' : i === 2 ? 'bg-amber-700 text-white' : 'bg-white/10'} `}>
                                     {i + 1}
                                 </div>
                                 <span className="text-2xl">{p.alias_emoji}</span>
@@ -455,7 +455,7 @@ export const TournamentHost: React.FC = () => {
                 <div className="flex items-center gap-3">
                     <button onClick={() => navigate('/arena/admin')} className="text-gray-400 hover:text-gray-600"><ArrowLeft className="h-5 w-5" /></button>
                     <h1 className="text-xl font-black text-gray-900 dark:text-slate-100">⚔️ {tournament?.title || 'Đấu Trường'}</h1>
-                    <span className={`text-xs font-bold px-2 py-1 rounded-full ${tournament?.status === 'active' ? 'bg-emerald-100 text-emerald-700' : tournament?.status === 'finished' ? 'bg-gray-100 text-gray-600' : 'bg-amber-100 text-amber-700'}`}>
+                    <span className={`text-xs font-bold px-2 py-1 rounded-full ${tournament?.status === 'active' ? 'bg-emerald-100 text-emerald-700' : tournament?.status === 'finished' ? 'bg-gray-100 text-gray-600' : 'bg-amber-100 text-amber-700'} `}>
                         {tournament?.current_round && tournament.status === 'active' ? `🔥 Vòng ${tournament.current_round}` : 
                          tournament?.status === 'active' ? '🟢 Đang diễn ra' : 
                          tournament?.status === 'finished' ? '🏆 Kết thúc' : '⏳ Chờ HS vào'}
@@ -524,8 +524,8 @@ export const TournamentHost: React.FC = () => {
                         </div>
                     ) : (
                         participants.map((p, i) => (
-                            <div key={p.id} className={`flex items-center gap-4 p-4 transition-all ${p.status === 'eliminated' ? 'opacity-50' : ''}`}>
-                                <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold text-sm ${p.status === 'champion' ? 'bg-yellow-500 text-white' : p.status === 'eliminated' ? 'bg-gray-200 text-gray-400' : 'bg-purple-100 text-purple-700'}`}>
+                            <div key={p.id} className={`flex items-center gap-4 p-4 transition-all ${p.status === 'eliminated' ? 'opacity-50' : ''} `}>
+                                <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold text-sm ${p.status === 'champion' ? 'bg-yellow-500 text-white' : p.status === 'eliminated' ? 'bg-gray-200 text-gray-400' : 'bg-purple-100 text-purple-700'} `}>
                                     {i + 1}
                                 </div>
                                 <span className="text-xl">{p.alias_emoji}</span>

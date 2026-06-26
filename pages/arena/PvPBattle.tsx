@@ -472,7 +472,7 @@ export const PvPBattle: React.FC = () => {
             {/* Battle HUD */}
             <div className="grid grid-cols-3 gap-4 mb-6 items-center" style={{ animation: 'fadeIn 0.5s ease-out' }}>
                 {/* My Avatar */}
-                <div className={`text-center p-4 rounded-2xl border-2 transition-all ${myDamageAnim ? 'border-red-500' : 'border-indigo-200'}`}
+                <div className={`text-center p-4 rounded-2xl border-2 transition-all dark:border-slate-800 ${myDamageAnim ? 'border-red-500' : 'border-indigo-200'} `}
                     style={myDamageAnim ? { animation: 'shake 0.5s ease-in-out, damage-flash 0.5s ease-out' } : {}}>
                     <div className="w-16 h-16 mx-auto rounded-xl flex items-center justify-center text-3xl mb-2"
                         style={{ background: 'linear-gradient(135deg, #312e81, #4c1d95)' }}>
@@ -495,7 +495,7 @@ export const PvPBattle: React.FC = () => {
                 {/* VS / Timer */}
                 <div className="text-center">
                     <div className="text-2xl font-black text-gray-300 mb-2">VS</div>
-                    <div className={`w-14 h-14 mx-auto rounded-full flex items-center justify-center font-black text-lg ${timer > 10 ? 'bg-gray-100 text-gray-600' : timer > 5 ? 'bg-amber-100 text-amber-600' : 'bg-red-100 text-red-600'}`}
+                    <div className={`w-14 h-14 mx-auto rounded-full flex items-center justify-center font-black text-lg ${timer > 10 ? 'bg-gray-100 text-gray-600' : timer > 5 ? 'bg-amber-100 text-amber-600' : 'bg-red-100 text-red-600'} `}
                         style={timer <= 5 ? { animation: 'pulse 0.5s ease-in-out infinite' } : {}}>
                         {timer}s
                     </div>
@@ -509,7 +509,7 @@ export const PvPBattle: React.FC = () => {
                 </div>
 
                 {/* Opponent Avatar */}
-                <div className={`text-center p-4 rounded-2xl border-2 transition-all ${opDamageAnim ? 'border-red-500' : 'border-purple-100'}`}
+                <div className={`text-center p-4 rounded-2xl border-2 transition-all dark:border-slate-800 ${opDamageAnim ? 'border-red-500' : 'border-purple-100'} `}
                     style={opDamageAnim ? { animation: 'shake 0.5s ease-in-out, damage-flash 0.5s ease-out' } : {}}>
                     <div className="w-16 h-16 mx-auto rounded-xl flex items-center justify-center text-3xl mb-2 bg-gray-800">
                         {AVATAR_EMOJIS[opponentAvatar.current]}
@@ -609,10 +609,10 @@ export const PvPBattle: React.FC = () => {
                                 const colors = ['bg-blue-500', 'bg-orange-500', 'bg-green-500', 'bg-purple-500'];
                                 return (
                                     <button key={idx} onClick={() => !isHidden && handleAnswer(idx)} disabled={showResult || answeredThisQ || isHidden}
-                                        className={`p-4 rounded-xl border-2 text-left font-medium transition-all duration-200 ${btnClass} ${!showResult && !answeredThisQ && !isHidden ? 'hover:shadow-md active:scale-95' : ''}`}
+                                        className={`p-4 rounded-xl border-2 text-left font-medium transition-all duration-200 dark:border-slate-800 ${btnClass}  ${!showResult && !answeredThisQ && !isHidden ? 'hover:shadow-md active:scale-95' : ''} `}
                                         style={{ animation: `fadeIn 0.3s ease-out ${idx * 0.05}s both`, opacity: isHidden ? 0.4 : 1 }}>
                                         <div className="flex items-start gap-2">
-                                            <span className={`w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold flex-shrink-0 text-white ${showResult && idx === currentQuestion.correct_index ? 'bg-emerald-500' : showResult && idx === selected && !isCorrect ? 'bg-red-500' : isHidden ? 'bg-gray-300' : colors[idx]}`}>
+                                            <span className={`w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold flex-shrink-0 text-white ${showResult && idx === currentQuestion.correct_index ? 'bg-emerald-500' : showResult && idx === selected && !isCorrect ? 'bg-red-500' : isHidden ? 'bg-gray-300' : colors[idx]} `}>
                                                 {isHidden ? '✗' : showResult && idx === currentQuestion.correct_index ? '✓' : showResult && idx === selected && !isCorrect ? '✗' : String.fromCharCode(65 + idx)}
                                             </span>
                                             <span className="text-sm leading-relaxed">{isHidden ? <span className="line-through">Đã loại</span> : <MathText>{answer}</MathText>}</span>
@@ -656,7 +656,7 @@ export const PvPBattle: React.FC = () => {
                                                 );
                                             }}
                                             disabled={showResult || answeredThisQ}
-                                            className={`p-4 rounded-xl border-2 text-left font-medium transition-all duration-200 ${btnClass} ${!showResult && !answeredThisQ ? 'hover:shadow-md active:scale-95' : ''}`}
+                                            className={`p-4 rounded-xl border-2 text-left font-medium transition-all duration-200 dark:border-slate-800 ${btnClass}  ${!showResult && !answeredThisQ ? 'hover:shadow-md active:scale-95' : ''} `}
                                         >
                                             <div className="flex items-start gap-2">
                                                 <input 
@@ -708,7 +708,7 @@ export const PvPBattle: React.FC = () => {
                                 <div className="p-4 rounded-xl mb-4 bg-gray-50 border border-gray-100 flex flex-col gap-2 dark:border-slate-800 dark:bg-slate-900/50">
                                     <div className="flex justify-between items-center text-sm">
                                         <span className="text-gray-500 dark:text-slate-500">Đáp án của bạn:</span>
-                                        <span className={`font-bold ${isCorrect ? 'text-emerald-600' : 'text-red-600'}`}>
+                                        <span className={`font-bold ${isCorrect ? 'text-emerald-600' : 'text-red-600'} `}>
                                             {shortAnswerText || '(Không trả lời)'}
                                         </span>
                                     </div>

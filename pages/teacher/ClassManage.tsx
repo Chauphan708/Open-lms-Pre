@@ -272,9 +272,7 @@ export const ClassManage: React.FC = () => {
             <div
               key={c.id}
               onClick={() => setSelectedClassId(c.id)}
-              className={`p-3 rounded-lg cursor-pointer border transition-colors
-                  ${selectedClassId === c.id ? 'bg-indigo-50 border-indigo-500 ring-1 ring-indigo-500' : 'bg-white hover:border-indigo-300'}
-                `}
+              className={`p-3 rounded-lg cursor-pointer border transition-colors dark:border-slate-800 ${selectedClassId === c.id ? 'bg-indigo-50 border-indigo-500 ring-1 ring-indigo-500' : 'bg-white hover:border-indigo-300'} `}
             >
               <div className="flex justify-between items-center">
                 {editingClassId === c.id ? (
@@ -392,13 +390,13 @@ export const ClassManage: React.FC = () => {
                 <div className="flex bg-gray-100 p-1 rounded-lg w-fit dark:bg-slate-850">
                   <button 
                     onClick={() => setActiveTab('students')}
-                    className={`px-4 py-1.5 text-sm font-bold rounded-md transition-all ${activeTab === 'students' ? 'bg-white shadow text-gray-900' : 'text-gray-500 hover:text-gray-700'}`}
+                    className={`px-4 py-1.5 text-sm font-bold rounded-md transition-all ${activeTab === 'students' ? 'bg-white shadow text-gray-900' : 'text-gray-500 hover:text-gray-700'} `}
                   >
                     Danh sách Học sinh
                   </button>
                   <button 
                     onClick={() => setActiveTab('parents')}
-                    className={`px-4 py-1.5 text-sm font-bold rounded-md transition-all ${activeTab === 'parents' ? 'bg-white shadow text-gray-900' : 'text-gray-500 hover:text-gray-700'}`}
+                    className={`px-4 py-1.5 text-sm font-bold rounded-md transition-all ${activeTab === 'parents' ? 'bg-white shadow text-gray-900' : 'text-gray-500 hover:text-gray-700'} `}
                   >
                     Phụ huynh Lớp
                   </button>
@@ -588,11 +586,11 @@ export const ClassManage: React.FC = () => {
                                 draggable
                                 onDragStart={(e) => handleDragStart(e, s.id, g.id)}
                                 onClick={() => setSelectedStudentIds(p => p.includes(s.id) ? p.filter(id => id !== s.id) : [...p, s.id])}
-                                className={`p-3 flex items-center gap-3 cursor-grab active:cursor-grabbing transition-colors group ${selected ? 'bg-indigo-50/70 border-l-4 border-indigo-500' : 'hover:bg-gray-50 dark:bg-slate-850 border-l-4 border-transparent'}`}>
+                                className={`p-3 flex items-center gap-3 cursor-grab active:cursor-grabbing transition-colors group ${selected ? 'bg-indigo-50/70 border-l-4 border-indigo-500' : 'hover:bg-gray-50 dark:bg-slate-850 border-l-4 border-transparent'} `}>
                                 <GripVertical className="h-4 w-4 text-gray-300 group-hover:text-indigo-400 opacity-0 group-hover:opacity-100 transition-all flex-shrink-0" />
                                 {selected ? <CheckSquare className="h-5 w-5 text-indigo-600 flex-shrink-0" /> : <div className="h-5 w-5 border-2 rounded text-transparent flex-shrink-0 dark:border-slate-800" />}
                                 <div className="flex-1 min-w-0">
-                                  <p className={`font-bold text-sm truncate ${selected ? 'text-indigo-900' : 'text-gray-900'}`}>{s.name}</p>
+                                  <p className={`font-bold text-sm truncate ${selected ? 'text-indigo-900' : 'text-gray-900'} `}>{s.name}</p>
                                   <p className="text-xs text-gray-500 dark:text-slate-400 truncate font-mono">{s.email}</p>
                                 </div>
                               </div>
@@ -617,11 +615,11 @@ export const ClassManage: React.FC = () => {
                                 draggable
                                 onDragStart={(e) => handleDragStart(e, s.id, 'ungrouped')}
                                 onClick={() => setSelectedStudentIds(p => p.includes(s.id) ? p.filter(id => id !== s.id) : [...p, s.id])}
-                                className={`p-3 flex items-center gap-3 cursor-grab active:cursor-grabbing transition-colors group ${selected ? 'bg-indigo-50/70 border-l-4 border-indigo-500' : 'hover:bg-gray-50 dark:bg-slate-850 border-l-4 border-transparent'}`}>
+                                className={`p-3 flex items-center gap-3 cursor-grab active:cursor-grabbing transition-colors group ${selected ? 'bg-indigo-50/70 border-l-4 border-indigo-500' : 'hover:bg-gray-50 dark:bg-slate-850 border-l-4 border-transparent'} `}>
                                 <GripVertical className="h-4 w-4 text-gray-300 group-hover:text-indigo-400 opacity-0 group-hover:opacity-100 transition-all flex-shrink-0" />
                                 {selected ? <CheckSquare className="h-5 w-5 text-indigo-600 flex-shrink-0" /> : <div className="h-5 w-5 border-2 rounded text-transparent flex-shrink-0 dark:border-slate-800" />}
                                 <div className="flex-1">
-                                  <p className={`font-bold text-sm ${selected ? 'text-indigo-900' : 'text-gray-800'}`}>{s.name}</p>
+                                  <p className={`font-bold text-sm ${selected ? 'text-indigo-900' : 'text-gray-800'} `}>{s.name}</p>
                                   <p className="text-xs text-gray-400 font-mono">{s.email}</p>
                                 </div>
                               </div>

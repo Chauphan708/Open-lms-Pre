@@ -76,10 +76,10 @@ export const ArenaHome: React.FC = () => {
                                 <button
                                     key={cls.id}
                                     onClick={() => setSelectedClass(cls.id)}
-                                    className={`relative p-6 rounded-2xl border-2 transition-all duration-300 text-left group hover:shadow-lg ${isSelected
+                                    className={`relative p-6 rounded-2xl border-2 transition-all duration-300 text-left group hover:shadow-lg dark:border-slate-800 ${isSelected
                                         ? 'border-purple-500 bg-purple-50 shadow-lg shadow-purple-100 scale-[1.02]'
                                         : 'border-gray-200 bg-white hover:border-gray-300'
-                                        }`}
+                                        } `}
                                     style={{ animation: `fadeIn 0.5s ease-out ${idx * 0.1}s both` }}
                                 >
                                     {isSelected && (
@@ -105,7 +105,7 @@ export const ArenaHome: React.FC = () => {
                         className={`w-full py-4 rounded-xl font-bold text-lg transition-all duration-300 ${selectedClass
                             ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white hover:shadow-lg hover:shadow-purple-200 hover:-translate-y-0.5'
                             : 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                            }`}
+                            } `}
                     >
                         🚀 Bắt đầu Hành Trình Tri Thức!
                     </button>
@@ -292,10 +292,10 @@ export const ArenaHome: React.FC = () => {
                         ]).map((quest: any) => (
                             <div key={quest.id} className="p-3 bg-[#080d16] rounded-xl border border-white/5 space-y-2 dark:border-slate-800">
                                 <div className="flex justify-between items-start gap-2">
-                                    <p className={`text-xs font-bold leading-relaxed ${quest.completed ? 'text-gray-500 line-through' : 'text-gray-200'}`}>
+                                    <p className={`text-xs font-bold leading-relaxed ${quest.completed ? 'text-gray-500 line-through' : 'text-gray-200'} `}>
                                         {quest.text}
                                     </p>
-                                    <span className={`text-[9px] font-black px-2 py-0.5 rounded whitespace-nowrap ${quest.completed ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'}`}>
+                                    <span className={`text-[9px] font-black px-2 py-0.5 rounded whitespace-nowrap ${quest.completed ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'} `}>
                                         +{quest.reward_xp} XP
                                     </span>
                                 </div>
@@ -326,13 +326,13 @@ export const ArenaHome: React.FC = () => {
                             return (
                                 <div 
                                     key={badge.id}
-                                    className={`p-3 rounded-xl border flex flex-col items-center text-center transition-all ${
+                                    className={`p-3 rounded-xl border flex flex-col items-center text-center transition-all dark:border-slate-800 ${
                                         isUnlocked 
                                             ? 'border-purple-500/30 bg-purple-950/10 text-white shadow-md shadow-purple-950/20' 
                                             : 'border-white/5 bg-white/5 text-gray-500 opacity-40'
-                                    }`}
+                                    } `}
                                 >
-                                    <span className={`text-3xl mb-1.5 ${isUnlocked ? 'animate-pulse' : 'filter grayscale'}`}>{badge.emoji}</span>
+                                    <span className={`text-3xl mb-1.5 ${isUnlocked ? 'animate-pulse' : 'filter grayscale'} `}>{badge.emoji}</span>
                                     <h4 className="text-xs font-black truncate w-full">{badge.name}</h4>
                                     <p className="text-[9px] text-gray-400 mt-1 leading-tight">{badge.desc}</p>
                                     {isUnlocked ? (

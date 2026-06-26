@@ -691,14 +691,23 @@ export const TowerMode: React.FC = () => {
         setTimer(baseTimerLimit);
       } catch (err) {
         console.error("Failed to generate dynamic question", err);
-        // Fallback: recycle used questions
+        // Fallback: cascade pool search
         const recycled = pool.filter(q => q.difficulty === targetDiff);
         if (recycled.length > 0) {
           const randomQ = recycled[Math.floor(Math.random() * recycled.length)];
           setCurrentQ(randomQ);
         } else {
-          // If no questions at all, declare victory
-          handleVictory(masteryScore);
+          const unusedAny = pool.filter(q => !used.has(q.id));
+          if (unusedAny.length > 0) {
+            const randomQ = unusedAny[Math.floor(Math.random() * unusedAny.length)];
+            setCurrentQ(randomQ);
+          } else if (pool.length > 0) {
+            const randomQ = pool[Math.floor(Math.random() * pool.length)];
+            setCurrentQ(randomQ);
+          } else {
+            // If no questions at all, declare victory
+            handleVictory(masteryScore);
+          }
         }
       } finally {
         setAiGeneratingFallback(false);
@@ -991,6 +1000,11 @@ export const TowerMode: React.FC = () => {
     setLives(0);
     setAiGuideLoading(true);
 
+    const actualCorrect = correctCount !== undefined ? correctCount : correctAnswersCount;
+    const actualTotal = totalCount !== undefined ? totalCount : totalQuestionsCount;
+    const actualXp = xpGainedRun !== undefined ? xpGainedRun : xpGainedSession;
+    const actualElo = eloChangeRun !== undefined ? eloChangeRun : eloChangedSession;
+
     // Update profile ELO/losses
     if (arenaProfile) {
       const updatedMastery = { ...(arenaProfile.topic_mastery || {}), [selectedTopic]: finalMastery };
@@ -1002,18 +1016,23 @@ export const TowerMode: React.FC = () => {
 
       // Save tower attempt log to Supabase
       try {
-        await supabase.from('arena_tower_attempts').insert({
+        const { error } = await supabase.from('arena_tower_attempts').insert({
           student_id: user?.id || '',
           subject: selectedSubject,
           topic: selectedTopic,
           grade: selectedGrade || '5',
-          xp_gained: xpGainedRun || 0,
-          elo_change: eloChangeRun || 0,
+          xp_gained: actualXp,
+          elo_change: actualElo,
           end_floor: currentDifficulty,
           is_victory: false,
-          correct_answers: correctCount || 0,
-          total_questions: totalCount || 0
+          correct_answers: actualCorrect,
+          total_questions: actualTotal
         });
+        if (error) {
+          console.error("Supabase error saving tower attempt (gameover):", error);
+        } else {
+          console.log("Saved tower attempt successfully (gameover)");
+        }
       } catch (dbErr) {
         console.error("Failed to save tower attempt:", dbErr);
       }
@@ -1041,6 +1060,11 @@ export const TowerMode: React.FC = () => {
     setVictory(true);
     setAiGuideLoading(true);
 
+    const actualCorrect = correctCount !== undefined ? correctCount : correctAnswersCount;
+    const actualTotal = totalCount !== undefined ? totalCount : totalQuestionsCount;
+    const actualXp = xpGainedRun !== undefined ? xpGainedRun : (xpGainedSession || 50);
+    const actualElo = eloChangeRun !== undefined ? eloChangeRun : (eloChangedSession || 15);
+
     if (arenaProfile) {
       const updatedMastery = { ...(arenaProfile.topic_mastery || {}), [selectedTopic]: 100 };
       await updateArenaProfile({
@@ -1057,18 +1081,23 @@ export const TowerMode: React.FC = () => {
 
       // Save tower attempt log to Supabase
       try {
-        await supabase.from('arena_tower_attempts').insert({
+        const { error } = await supabase.from('arena_tower_attempts').insert({
           student_id: user?.id || '',
           subject: selectedSubject,
           topic: selectedTopic,
           grade: selectedGrade || '5',
-          xp_gained: xpGainedRun || 50,
-          elo_change: eloChangeRun || 15,
+          xp_gained: actualXp,
+          elo_change: actualElo,
           end_floor: currentDifficulty,
           is_victory: true,
-          correct_answers: correctCount || 0,
-          total_questions: totalCount || 0
+          correct_answers: actualCorrect,
+          total_questions: actualTotal
         });
+        if (error) {
+          console.error("Supabase error saving tower attempt (victory):", error);
+        } else {
+          console.log("Saved tower attempt successfully (victory)");
+        }
       } catch (dbErr) {
         console.error("Failed to save tower attempt:", dbErr);
       }
@@ -1227,7 +1256,11 @@ export const TowerMode: React.FC = () => {
           correct_answers: correctAnswersCount,
           total_questions: totalQuestionsCount
         }).then(({ error }) => {
-          if (error) console.warn("Failed to save exiting attempt:", error.message);
+          if (error) {
+            console.error("Failed to save exiting attempt:", error);
+          } else {
+            console.log("Saved exiting tower attempt successfully");
+          }
         });
       } catch (dbErr) {
         console.error("Failed to save exiting attempt:", dbErr);
@@ -1300,7 +1333,7 @@ export const TowerMode: React.FC = () => {
             {/* ELO & Character details */}
             {arenaProfile && (
               <div className="grid grid-cols-2 gap-4">
-                <div className={`p-4 lg:p-5 rounded-2xl bg-[#080d16] border ${league.border} flex items-center gap-3 lg:gap-4`}>
+                <div className={`p-4 lg:p-5 rounded-2xl bg-[#080d16] border dark:border-slate-800 ${league.border} flex items-center gap-3 lg:gap-4`}>
                   <span className="text-3xl lg:text-4xl">{league.badge}</span>
                   <div>
                     <p className="text-[10px] lg:text-xs text-gray-500 uppercase font-black dark:text-slate-500">Xếp hạng Võ Đài</p>
@@ -1348,7 +1381,7 @@ export const TowerMode: React.FC = () => {
                         selectedGrade === g
                           ? 'bg-amber-500 text-black font-extrabold shadow-lg shadow-amber-500/20'
                           : 'bg-white/5 text-gray-400 hover:bg-white/10'
-                      }`}
+                      } `}
                     >
                       Khối {g}
                       {(() => {
@@ -1377,7 +1410,7 @@ export const TowerMode: React.FC = () => {
                       const list = availableTopics.filter(t => t.subject === 'math');
                       if (list.length > 0) setSelectedTopic(list[0].topic);
                     }}
-                    className={`py-2 lg:py-3 px-1 lg:px-2 rounded-xl text-xs lg:text-sm font-black transition-all text-center ${selectedSubject === 'math' ? 'bg-indigo-600 text-white shadow-md' : 'bg-white/5 text-gray-400 hover:bg-white/10'}`}
+                    className={`py-2 lg:py-3 px-1 lg:px-2 rounded-xl text-xs lg:text-sm font-black transition-all text-center ${selectedSubject === 'math' ? 'bg-indigo-600 text-white shadow-md' : 'bg-white/5 text-gray-400 hover:bg-white/10'} `}
                   >
                     📐 Toán học
                   </button>
@@ -1387,7 +1420,7 @@ export const TowerMode: React.FC = () => {
                       const list = availableTopics.filter(t => t.subject === 'science');
                       if (list.length > 0) setSelectedTopic(list[0].topic);
                     }}
-                    className={`py-2 lg:py-3 px-1 lg:px-2 rounded-xl text-xs lg:text-sm font-black transition-all text-center ${selectedSubject === 'science' ? 'bg-purple-600 text-white shadow-md' : 'bg-white/5 text-gray-400 hover:bg-white/10'}`}
+                    className={`py-2 lg:py-3 px-1 lg:px-2 rounded-xl text-xs lg:text-sm font-black transition-all text-center ${selectedSubject === 'science' ? 'bg-purple-600 text-white shadow-md' : 'bg-white/5 text-gray-400 hover:bg-white/10'} `}
                   >
                     🔬 Khoa học
                   </button>
@@ -1397,7 +1430,7 @@ export const TowerMode: React.FC = () => {
                       const list = availableTopics.filter(t => t.subject === 'technology');
                       if (list.length > 0) setSelectedTopic(list[0].topic);
                     }}
-                    className={`py-2 lg:py-3 px-1 lg:px-2 rounded-xl text-xs lg:text-sm font-black transition-all text-center ${selectedSubject === 'technology' ? 'bg-emerald-600 text-white shadow-md' : 'bg-white/5 text-gray-400 hover:bg-white/10'}`}
+                    className={`py-2 lg:py-3 px-1 lg:px-2 rounded-xl text-xs lg:text-sm font-black transition-all text-center ${selectedSubject === 'technology' ? 'bg-emerald-600 text-white shadow-md' : 'bg-white/5 text-gray-400 hover:bg-white/10'} `}
                   >
                     💻 Công nghệ
                   </button>
@@ -1407,7 +1440,7 @@ export const TowerMode: React.FC = () => {
                       const list = availableTopics.filter(t => t.subject === 'vietnamese');
                       if (list.length > 0) setSelectedTopic(list[0].topic);
                     }}
-                    className={`py-2 lg:py-3 px-1 lg:px-2 rounded-xl text-xs lg:text-sm font-black transition-all text-center ${selectedSubject === 'vietnamese' ? 'bg-rose-600 text-white shadow-md' : 'bg-white/5 text-gray-400 hover:bg-white/10'}`}
+                    className={`py-2 lg:py-3 px-1 lg:px-2 rounded-xl text-xs lg:text-sm font-black transition-all text-center ${selectedSubject === 'vietnamese' ? 'bg-rose-600 text-white shadow-md' : 'bg-white/5 text-gray-400 hover:bg-white/10'} `}
                   >
                     📝 Tiếng Việt
                   </button>
@@ -1417,7 +1450,7 @@ export const TowerMode: React.FC = () => {
                       const list = availableTopics.filter(t => t.subject === 'english');
                       if (list.length > 0) setSelectedTopic(list[0].topic);
                     }}
-                    className={`py-2 lg:py-3 px-1 lg:px-2 rounded-xl text-xs lg:text-sm font-black transition-all text-center ${selectedSubject === 'english' ? 'bg-teal-600 text-white shadow-md' : 'bg-white/5 text-gray-400 hover:bg-white/10'}`}
+                    className={`py-2 lg:py-3 px-1 lg:px-2 rounded-xl text-xs lg:text-sm font-black transition-all text-center ${selectedSubject === 'english' ? 'bg-teal-600 text-white shadow-md' : 'bg-white/5 text-gray-400 hover:bg-white/10'} `}
                   >
                     🌐 Tiếng Anh
                   </button>
@@ -1427,7 +1460,7 @@ export const TowerMode: React.FC = () => {
                       const list = availableTopics.filter(t => t.subject === 'history_geography');
                       if (list.length > 0) setSelectedTopic(list[0].topic);
                     }}
-                    className={`py-2 lg:py-3 px-1 lg:px-2 rounded-xl text-xs lg:text-sm font-black transition-all text-center ${selectedSubject === 'history_geography' ? 'bg-amber-600 text-white shadow-md' : 'bg-white/5 text-gray-400 hover:bg-white/10'}`}
+                    className={`py-2 lg:py-3 px-1 lg:px-2 rounded-xl text-xs lg:text-sm font-black transition-all text-center ${selectedSubject === 'history_geography' ? 'bg-amber-600 text-white shadow-md' : 'bg-white/5 text-gray-400 hover:bg-white/10'} `}
                   >
                     ⏳ Lịch sử & Địa lí
                   </button>
@@ -1454,10 +1487,10 @@ export const TowerMode: React.FC = () => {
                     <button
                       key={topicObj.topic}
                       onClick={() => setSelectedTopic(topicObj.topic)}
-                      className={`w-full p-4 lg:p-5 rounded-xl border text-left flex items-center justify-between transition-all ${isSelected ? 'border-amber-500/50 bg-amber-500/10 glow-active' : 'border-white/5 bg-white/5 hover:bg-white/10'}`}
+                      className={`w-full p-4 lg:p-5 rounded-xl border text-left flex items-center justify-between transition-all dark:border-slate-800 ${isSelected ? 'border-amber-500/50 bg-amber-500/10 glow-active' : 'border-white/5 bg-white/5 hover:bg-white/10'} `}
                     >
                       <div className="flex-1 pr-4">
-                        <p className={`text-sm lg:text-base font-bold ${isSelected ? 'text-amber-400' : 'text-gray-200'}`}>{topicObj.label}</p>
+                        <p className={`text-sm lg:text-base font-bold ${isSelected ? 'text-amber-400' : 'text-gray-200'} `}>{topicObj.label}</p>
                         <div className="flex items-center gap-2 mt-2">
                           <div className="h-2 flex-1 bg-white/5 rounded-full overflow-hidden">
                             <div className="h-full bg-gradient-to-r from-amber-500 to-orange-500" style={{ width: `${mastery}%` }}></div>
@@ -1531,7 +1564,7 @@ export const TowerMode: React.FC = () => {
           <span className="text-6xl inline-block mb-3 animate-bounce">
             {victory ? '🏆' : '💀'}
           </span>
-          <h2 className={`text-2xl font-black tracking-wide ${victory ? 'text-yellow-400' : 'text-rose-500'}`}>
+          <h2 className={`text-2xl font-black tracking-wide ${victory ? 'text-yellow-400' : 'text-rose-500'} `}>
             {victory ? 'CHINH PHỤC THÀNH CÔNG!' : 'GAMEOVER (KẾT THÚC)'}
           </h2>
           <p className="text-gray-400 text-sm mt-1">Chuyên đề: <strong className="text-white">{selectedTopic}</strong></p>
@@ -1682,13 +1715,13 @@ export const TowerMode: React.FC = () => {
           {[...Array(maxLives)].map((_, i) => (
             <Heart 
               key={i} 
-              className={`h-5 w-5 transition-all duration-300 ${i < lives ? 'text-rose-500 fill-rose-500 glow-heart' : 'text-gray-700'}`} 
+              className={`h-5 w-5 transition-all duration-300 ${i < lives ? 'text-rose-500 fill-rose-500 glow-heart' : 'text-gray-700'} `} 
             />
           ))}
         </div>
 
         {/* ELO League badge */}
-        <div className={`px-3 py-1 rounded-full font-bold text-[10px] flex items-center gap-1 border ${league.border} ${league.bg}`}>
+        <div className={`px-3 py-1 rounded-full font-bold text-[10px] flex items-center gap-1 border dark:border-slate-800 ${league.border}  ${league.bg} `}>
           <span>{league.badge}</span> {league.name}
         </div>
       </div>
@@ -1741,13 +1774,13 @@ export const TowerMode: React.FC = () => {
           <button
             onClick={handleActivateSkill}
             disabled={skillUsed || showResult}
-            className={`flex-1 p-4 md:p-5 rounded-2xl border flex items-center justify-center gap-2 transition-all ${
+            className={`flex-1 p-4 md:p-5 rounded-2xl border flex items-center justify-center gap-2 transition-all dark:border-slate-800 ${
               skillUsed 
                 ? 'border-white/5 bg-white/5 text-gray-500 cursor-not-allowed' 
                 : showResult
                   ? 'border-white/5 bg-white/5 text-gray-400 cursor-not-allowed'
                   : 'border-purple-500/30 bg-purple-950/20 text-purple-300 hover:border-purple-500/50 hover:bg-purple-950/40 active:scale-[0.98]'
-            }`}
+            } `}
           >
             {charClass === 'scholar' && (
               <>
@@ -1789,11 +1822,11 @@ export const TowerMode: React.FC = () => {
               <button
                 onClick={handleUseHpPotion}
                 disabled={lives >= maxLives || showResult || gameOver || victory}
-                className={`flex-1 py-4 px-5 rounded-xl border text-base md:text-lg lg:text-xl font-black flex items-center justify-center gap-1.5 transition ${
+                className={`flex-1 py-4 px-5 rounded-xl border text-base md:text-lg lg:text-xl font-black flex items-center justify-center gap-1.5 transition dark:border-slate-800 ${
                   lives >= maxLives || showResult || gameOver || victory
                     ? 'border-white/5 bg-white/5 text-gray-500 cursor-not-allowed'
                     : 'border-red-500/30 bg-red-950/20 text-red-400 hover:bg-red-950/30 active:scale-[0.98]'
-                }`}
+                } `}
               >
                 🧪 Hồi 1 HP ({inventoryItems['small_hp_potion']} bình)
               </button>
@@ -1803,11 +1836,11 @@ export const TowerMode: React.FC = () => {
               <button
                 onClick={handleUseHourglass}
                 disabled={showResult || gameOver || victory || !started}
-                className={`flex-1 py-4 px-5 rounded-xl border text-base md:text-lg lg:text-xl font-black flex items-center justify-center gap-1.5 transition ${
+                className={`flex-1 py-4 px-5 rounded-xl border text-base md:text-lg lg:text-xl font-black flex items-center justify-center gap-1.5 transition dark:border-slate-800 ${
                   showResult || gameOver || victory || !started
                     ? 'border-white/5 bg-white/5 text-gray-500 cursor-not-allowed'
                     : 'border-amber-500/30 bg-amber-950/20 text-amber-400 hover:bg-amber-950/30 active:scale-[0.98]'
-                }`}
+                } `}
               >
                 ⏱️ Thêm 5 Giây ({inventoryItems['hourglass_5s']} cát)
               </button>
@@ -1894,7 +1927,7 @@ export const TowerMode: React.FC = () => {
                 <div className="p-4 rounded-xl mb-4 bg-white/5 border border-white/5 flex flex-col gap-2 dark:border-slate-800">
                   <div className="flex justify-between items-center text-sm">
                     <span className="text-gray-400">Đáp án của bạn:</span>
-                    <span className={`font-bold ${isCorrect ? 'text-emerald-400' : 'text-rose-400'}`}>
+                    <span className={`font-bold ${isCorrect ? 'text-emerald-400' : 'text-rose-400'} `}>
                       {shortAnswerText || '(Không trả lời)'}
                     </span>
                   </div>
@@ -1959,9 +1992,9 @@ export const TowerMode: React.FC = () => {
                     key={idx}
                     onClick={handleOptClick}
                     disabled={showResult || isEliminated}
-                    className={`w-full p-4 md:p-5 rounded-2xl border text-left font-bold text-sm md:text-base transition-all flex items-center gap-3 ${btnStyle} ${isEliminated ? 'opacity-20 cursor-not-allowed line-through' : ''}`}
+                    className={`w-full p-4 md:p-5 rounded-2xl border text-left font-bold text-sm md:text-base transition-all flex items-center gap-3 dark:border-slate-800 ${btnStyle}  ${isEliminated ? 'opacity-20 cursor-not-allowed line-through' : ''} `}
                   >
-                    <span className={`w-8 h-8 rounded-lg flex items-center justify-center text-sm font-black flex-shrink-0 ${showResult && isCorrectOption ? 'bg-emerald-500 text-white shadow-md' : showResult && isSelected && !isCorrectOption ? 'bg-rose-500 text-white shadow-md' : isSelected ? 'bg-indigo-500 text-white shadow-md' : 'bg-white/10 text-gray-400'}`}>
+                    <span className={`w-8 h-8 rounded-lg flex items-center justify-center text-sm font-black flex-shrink-0 ${showResult && isCorrectOption ? 'bg-emerald-500 text-white shadow-md' : showResult && isSelected && !isCorrectOption ? 'bg-rose-500 text-white shadow-md' : isSelected ? 'bg-indigo-500 text-white shadow-md' : 'bg-white/10 text-gray-400'} `}>
                       {showResult && isCorrectOption ? (
                         <CheckCircle className="h-4.5 w-4.5" />
                       ) : showResult && isSelected && !isCorrectOption ? (
@@ -1996,7 +2029,7 @@ export const TowerMode: React.FC = () => {
           {/* Result card & Next trigger */}
           {showResult && (
             <div className="mt-6 space-y-4 animate-slide">
-              <div className={`p-4 rounded-xl border flex items-center gap-3 justify-between ${isCorrect ? 'bg-emerald-950/20 border-emerald-500/20 text-emerald-400' : 'bg-rose-950/20 border-rose-500/20 text-rose-400'}`}>
+              <div className={`p-4 rounded-xl border flex items-center gap-3 justify-between dark:border-slate-800 ${isCorrect ? 'bg-emerald-950/20 border-emerald-500/20 text-emerald-400' : 'bg-rose-950/20 border-rose-500/20 text-rose-400'} `}>
                 <div className="flex items-center gap-3">
                   <span className="text-2xl">{isCorrect ? '🎉' : '💔'}</span>
                   <div>

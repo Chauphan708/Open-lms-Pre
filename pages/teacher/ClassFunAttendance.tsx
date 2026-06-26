@@ -198,7 +198,7 @@ export const ClassFunAttendance: React.FC = () => {
                 {/* Stats Badges */}
                 <div className="flex gap-3">
                     {Object.entries(StatusConfig).map(([key, cfg]) => (
-                        <div key={key} className={`flex items-center gap-2 px-4 py-2 rounded-lg border ${cfg.color}`}>
+                        <div key={key} className={`flex items-center gap-2 px-4 py-2 rounded-lg border dark:border-slate-800 ${cfg.color} `}>
                             <cfg.icon className="h-4 w-4" />
                             <span className="text-sm font-bold">{stats[key as keyof typeof stats]}</span>
                             <span className="text-xs font-medium">{cfg.label}</span>

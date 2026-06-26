@@ -155,7 +155,7 @@ export const DiscussionList: React.FC = () => {
                             <div className="flex-1">
                                 <div className="flex items-center gap-3 mb-2">
                                     <h3 className="font-bold text-lg text-gray-900 dark:text-slate-100">{session.title}</h3>
-                                    <span className={`px-2 py-0.5 rounded text-xs font-bold ${session.status === 'ACTIVE' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'}`}>
+                                    <span className={`px-2 py-0.5 rounded text-xs font-bold ${session.status === 'ACTIVE' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'} `}>
                                         {session.status === 'ACTIVE' ? 'Đang diễn ra' : 'Đã kết thúc'}
                                     </span>
                                 </div>

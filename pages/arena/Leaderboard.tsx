@@ -126,7 +126,7 @@ export const Leaderboard: React.FC = () => {
                     {rankings.map((profile, idx) => (
                         <div key={profile.id} className="flex items-center gap-4 px-4 py-3 hover:bg-gray-50 transition-colors dark:hover:bg-slate-850/50"
                             style={{ animation: `fadeIn 0.3s ease-out ${0.3 + idx * 0.03}s both` }}>
-                            <span className={`w-8 text-center font-bold text-sm ${idx < 3 ? 'text-amber-500' : 'text-gray-400'}`}>
+                            <span className={`w-8 text-center font-bold text-sm ${idx < 3 ? 'text-amber-500' : 'text-gray-400'} `}>
                                 {idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : `#${idx + 1}`}
                             </span>
                             <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center text-lg dark:bg-slate-850">

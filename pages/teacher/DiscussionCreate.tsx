@@ -90,7 +90,7 @@ export const DiscussionCreate: React.FC = () => {
                                 className={`w-full py-3.5 rounded-xl font-bold text-lg flex items-center justify-center gap-2 shadow-lg transition-all transform hover:scale-[1.02] ${isLoading || !title.trim()
                                         ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                                         : 'bg-indigo-600 text-white hover:bg-indigo-700'
-                                    }`}
+                                    } `}
                             >
                                 {isLoading ? (
                                     <>Đang tạo...</>

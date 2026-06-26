@@ -406,13 +406,13 @@ export const PvPLobby: React.FC = () => {
                                 <div className="grid grid-cols-2 gap-2">
                                     <button
                                         onClick={() => setFilterSource('exam')}
-                                        className={`p-3 rounded-xl border-2 text-sm font-bold transition-all ${filterSource === 'exam' ? 'border-indigo-500 bg-indigo-50 text-indigo-700' : 'border-gray-200 text-gray-600 hover:border-gray-300'}`}
+                                        className={`p-3 rounded-xl border-2 text-sm font-bold transition-all dark:border-slate-800 ${filterSource === 'exam' ? 'border-indigo-500 bg-indigo-50 text-indigo-700' : 'border-gray-200 text-gray-600 hover:border-gray-300'} `}
                                     >
                                         📋 Ngân hàng bài tập
                                     </button>
                                     <button
                                         onClick={() => setFilterSource('arena')}
-                                        className={`p-3 rounded-xl border-2 text-sm font-bold transition-all ${filterSource === 'arena' ? 'border-indigo-500 bg-indigo-50 text-indigo-700' : 'border-gray-200 text-gray-600 hover:border-gray-300'}`}
+                                        className={`p-3 rounded-xl border-2 text-sm font-bold transition-all dark:border-slate-800 ${filterSource === 'arena' ? 'border-indigo-500 bg-indigo-50 text-indigo-700' : 'border-gray-200 text-gray-600 hover:border-gray-300'} `}
                                     >
                                         🧠 Bộ câu hỏi Arena
                                     </button>

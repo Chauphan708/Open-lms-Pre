@@ -424,11 +424,11 @@ export const AIGrading: React.FC = () => {
                         {/* Tab chuyển đổi Ảnh / Text */}
                         <div className="flex gap-2 mb-2">
                             <button onClick={() => setInputMode('IMAGE')}
-                                className={`flex-1 py-2 rounded-lg font-bold text-sm flex items-center justify-center gap-2 transition-all ${inputMode === 'IMAGE' ? 'bg-indigo-600 text-white shadow' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
+                                className={`flex-1 py-2 rounded-lg font-bold text-sm flex items-center justify-center gap-2 transition-all ${inputMode === 'IMAGE' ? 'bg-indigo-600 text-white shadow' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'} `}>
                                 <FileImage className="h-4 w-4" /> Ảnh bài làm
                             </button>
                             <button onClick={() => setInputMode('TEXT')}
-                                className={`flex-1 py-2 rounded-lg font-bold text-sm flex items-center justify-center gap-2 transition-all ${inputMode === 'TEXT' ? 'bg-purple-600 text-white shadow' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
+                                className={`flex-1 py-2 rounded-lg font-bold text-sm flex items-center justify-center gap-2 transition-all ${inputMode === 'TEXT' ? 'bg-purple-600 text-white shadow' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'} `}>
                                 <Type className="h-4 w-4" /> Nhập bài dạng Text
                             </button>
                         </div>

@@ -157,7 +157,7 @@ const RatingBadge: React.FC<{ rating: string; isSubject?: boolean }> = ({ rating
     C: 'bg-red-100 text-red-700 border-red-200',
   };
   return (
-    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold border ${bgMap[rating] || 'bg-gray-100 dark:bg-slate-800 text-gray-600'}`}>
+    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold border dark:border-slate-800 ${bgMap[rating] || 'bg-gray-100 dark:bg-slate-800 text-gray-600'} `}>
       {opt.value}
     </span>
   );
@@ -367,11 +367,10 @@ const EvaluationModal: React.FC<{
               <button
                 key={tab.key}
                 onClick={() => setActiveTab(tab.key)}
-                className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 text-sm font-semibold transition-all border-b-2
-                  ${activeTab === tab.key
+                className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 text-sm font-semibold transition-all border-b-2 dark:border-slate-800 ${activeTab === tab.key
                     ? 'border-indigo-600 text-indigo-700 bg-white'
                     : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-100 dark:bg-slate-800'
-                  }`}
+                  } `}
               >
                 <Icon className="h-4 w-4" />
                 <span>{tab.label}</span>
@@ -885,7 +884,7 @@ export const DailyEvaluation: React.FC = () => {
                       const hasEval = studentEvals.length > 0;
                       const isChecked = selectedStudents.includes(student.id);
                       return (
-                        <div key={student.id} className={`p-3 group transition-colors hover:bg-indigo-50/30 ${isChecked ? 'bg-indigo-50' : ''}`}>
+                        <div key={student.id} className={`p-3 group transition-colors hover:bg-indigo-50/30 ${isChecked ? 'bg-indigo-50' : ''} `}>
                           <div className="flex items-center gap-2 mb-2">
                             <button onClick={() => toggleStudent(student.id)} className="flex-shrink-0">
                               {isChecked ? (
@@ -954,7 +953,7 @@ export const DailyEvaluation: React.FC = () => {
                    const hasEval = studentEvals.length > 0;
                    const isChecked = selectedStudents.includes(student.id);
                    return (
-                    <div key={student.id} className={`p-3 group ${isChecked ? 'bg-indigo-50' : ''}`}>
+                    <div key={student.id} className={`p-3 group ${isChecked ? 'bg-indigo-50' : ''} `}>
                       <div className="flex items-center gap-2 mb-2">
                         <button onClick={() => toggleStudent(student.id)}>
                           {isChecked ? <CheckSquare className="h-4 w-4 text-indigo-600" /> : <Square className="h-4 w-4 text-gray-300" />}

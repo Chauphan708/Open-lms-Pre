@@ -166,7 +166,7 @@ export const ArenaDashboard: React.FC = () => {
                                     <span className="text-sm font-semibold text-gray-300">{diff.label}</span>
                                     <div className="flex items-center gap-3">
                                         <span className="text-xs text-gray-400">{diff.correctQuestions}/{diff.totalQuestions} đúng</span>
-                                        <span className={`text-xs font-black px-2.5 py-1 rounded-lg ${diff.correctRate > 70 ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : diff.correctRate > 40 ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30' : 'bg-rose-500/20 text-rose-400 border border-rose-500/30'}`}>
+                                        <span className={`text-xs font-black px-2.5 py-1 rounded-lg ${diff.correctRate > 70 ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : diff.correctRate > 40 ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30' : 'bg-rose-500/20 text-rose-400 border border-rose-500/30'} `}>
                                             {diff.correctRate}%
                                         </span>
                                     </div>

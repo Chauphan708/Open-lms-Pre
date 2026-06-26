@@ -163,7 +163,7 @@ export const MatchResult: React.FC = () => {
             `}</style>
 
             {/* Glowing background ambiance */}
-            <div className={`absolute top-0 left-1/4 w-72 h-72 rounded-full opacity-10 blur-[80px] pointer-events-none ${isWin ? 'bg-emerald-500' : 'bg-red-500'}`}></div>
+            <div className={`absolute top-0 left-1/4 w-72 h-72 rounded-full opacity-10 blur-[80px] pointer-events-none ${isWin ? 'bg-emerald-500' : 'bg-red-500'} `}></div>
 
             {!showRevenge ? (
                 <div style={{ animation: 'fadeIn 0.5s ease-out' }}>
@@ -172,7 +172,7 @@ export const MatchResult: React.FC = () => {
                         {isDraw ? '🤝' : isWin ? '🏆' : '💀'}
                     </div>
 
-                    <h1 className={`text-3xl font-black mb-2 tracking-wide ${isWin ? 'text-emerald-400 victory-anim' : isDraw ? 'text-gray-400' : 'text-rose-500'}`}>
+                    <h1 className={`text-3xl font-black mb-2 tracking-wide ${isWin ? 'text-emerald-400 victory-anim' : isDraw ? 'text-gray-400' : 'text-rose-500'} `}>
                         {isDraw ? 'HÒA CÂN SỨC!' : isWin ? 'CHIẾN THẮNG!' : 'BẠI TRẬN!'}
                     </h1>
 
@@ -198,7 +198,7 @@ export const MatchResult: React.FC = () => {
                                     {isWin ? <TrendingUp className="h-4 w-4 text-emerald-400" /> : <TrendingDown className="h-4 w-4 text-rose-400" />}
                                     Elo thay đổi
                                 </span>
-                                <span className={`font-bold ${isWin ? 'text-emerald-400' : isDraw ? 'text-gray-400' : 'text-rose-400'}`}>
+                                <span className={`font-bold ${isWin ? 'text-emerald-400' : isDraw ? 'text-gray-400' : 'text-rose-400'} `}>
                                     {isWin ? '+16 ~ +32' : isDraw ? '±0' : '-16 ~ -32'}
                                 </span>
                             </div>
@@ -312,7 +312,7 @@ export const MatchResult: React.FC = () => {
                                                     : i < currentRevengeIndex 
                                                         ? (revengeAnswers[i] ? 'bg-emerald-500' : 'bg-rose-500')
                                                         : 'bg-white/10'
-                                            }`}
+                                            } `}
                                         />
                                     ))}
                                 </div>
@@ -349,7 +349,7 @@ export const MatchResult: React.FC = () => {
                                             key={idx}
                                             disabled={revengeSubmitted}
                                             onClick={() => setSelectedOption(idx)}
-                                            className={`w-full p-4 rounded-xl border text-left font-medium transition-all flex items-center gap-3 ${btnClass}`}
+                                            className={`w-full p-4 rounded-xl border text-left font-medium transition-all flex items-center gap-3 dark:border-slate-800 ${btnClass} `}
                                         >
                                             <span className={`w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold ${
                                                 revengeSubmitted && isCorrect 
@@ -357,7 +357,7 @@ export const MatchResult: React.FC = () => {
                                                     : revengeSubmitted && idx === selectedOption 
                                                         ? 'bg-rose-500 text-white' 
                                                         : 'bg-white/10 text-gray-400'
-                                            }`}>
+                                            } `}>
                                                 {String.fromCharCode(65 + idx)}
                                             </span>
                                             <MathText>{option}</MathText>
@@ -376,17 +376,17 @@ export const MatchResult: React.FC = () => {
                                             selectedOption !== null 
                                                 ? 'bg-gradient-to-r from-red-600 to-rose-600 text-white hover:shadow-lg' 
                                                 : 'bg-white/5 text-gray-500 cursor-not-allowed border border-white/5'
-                                        }`}
+                                        } `}
                                     >
                                         Nộp đáp án <ArrowRight className="h-5 w-5" />
                                     </button>
                                 ) : (
                                     <div className="space-y-4">
-                                        <div className={`p-4 rounded-xl text-sm leading-relaxed border ${
+                                        <div className={`p-4 rounded-xl text-sm leading-relaxed border dark:border-slate-800 ${
                                             revengeAnswers[currentRevengeIndex]
                                                 ? 'bg-emerald-950/20 border-emerald-500/20 text-emerald-300'
                                                 : 'bg-rose-950/20 border-rose-500/20 text-rose-300'
-                                        }`}>
+                                        } `}>
                                             <p className="font-bold flex items-center gap-1.5 mb-1.5">
                                                 {revengeAnswers[currentRevengeIndex] 
                                                     ? <><Check className="h-4.5 w-4.5 text-emerald-400" /> Tuyệt vời! Em làm đúng rồi!</>

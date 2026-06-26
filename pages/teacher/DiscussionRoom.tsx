@@ -321,11 +321,11 @@ export const DiscussionRoom: React.FC = () => {
                <div className="relative" ref={roundMenuRef}>
                   <button
                      onClick={() => setIsRoundMenuOpen(!isRoundMenuOpen)}
-                     className={`flex items-center gap-2 px-2 md:px-3 py-2 rounded-lg text-sm font-medium transition-all ${isRoundMenuOpen ? 'bg-indigo-100 text-indigo-700 ring-2 ring-indigo-500 ring-offset-1' : 'bg-indigo-50 text-indigo-700 hover:bg-indigo-100'}`}
+                     className={`flex items-center gap-2 px-2 md:px-3 py-2 rounded-lg text-sm font-medium transition-all ${isRoundMenuOpen ? 'bg-indigo-100 text-indigo-700 ring-2 ring-indigo-500 ring-offset-1' : 'bg-indigo-50 text-indigo-700 hover:bg-indigo-100'} `}
                   >
                      <Layers className="h-4 w-4" />
                      <span className="max-w-[80px] md:max-w-[120px] truncate">{viewingRoundData?.name}</span>
-                     <ChevronDown className={`h-3 w-3 transition-transform ${isRoundMenuOpen ? 'rotate-180' : ''}`} />
+                     <ChevronDown className={`h-3 w-3 transition-transform ${isRoundMenuOpen ? 'rotate-180' : ''} `} />
                   </button>
 
                   {isRoundMenuOpen && (
@@ -336,7 +336,7 @@ export const DiscussionRoom: React.FC = () => {
                               <div key={r.id} className="flex items-center gap-1">
                                  <button
                                     onClick={() => { setViewedRoundId(r.id); setIsRoundMenuOpen(false); }}
-                                    className={`flex-1 text-left px-3 py-2 rounded-lg text-sm flex justify-between items-center transition-colors ${viewedRoundId === r.id ? 'bg-gray-100 font-bold text-gray-900' : 'hover:bg-gray-50 dark:bg-slate-850 text-gray-700'}`}
+                                    className={`flex-1 text-left px-3 py-2 rounded-lg text-sm flex justify-between items-center transition-colors ${viewedRoundId === r.id ? 'bg-gray-100 font-bold text-gray-900' : 'hover:bg-gray-50 dark:bg-slate-850 text-gray-700'} `}
                                  >
                                     <span className="truncate">{r.name}</span>
                                     {session.activeRoundId === r.id && <span className="text-[10px] bg-green-100 text-green-700 px-1.5 py-0.5 rounded ml-2 font-bold whitespace-nowrap">Active</span>}
@@ -368,11 +368,11 @@ export const DiscussionRoom: React.FC = () => {
                <div className="relative hidden md:block" ref={visibilityMenuRef}>
                   <button
                      onClick={() => setIsVisibilityMenuOpen(!isVisibilityMenuOpen)}
-                     className={`flex items-center gap-2 border px-3 py-2 rounded-lg text-sm font-medium transition-all ${isVisibilityMenuOpen ? 'bg-gray-100 border-gray-400 text-gray-900' : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50 dark:bg-slate-850'}`}
+                     className={`flex items-center gap-2 border px-3 py-2 rounded-lg text-sm font-medium transition-all dark:border-slate-800 ${isVisibilityMenuOpen ? 'bg-gray-100 border-gray-400 text-gray-900' : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50 dark:bg-slate-850'} `}
                   >
                      <VisibilityIcon className="h-4 w-4" />
                      <span>Hiển thị</span>
-                     <ChevronDown className={`h-3 w-3 transition-transform ${isVisibilityMenuOpen ? 'rotate-180' : ''}`} />
+                     <ChevronDown className={`h-3 w-3 transition-transform ${isVisibilityMenuOpen ? 'rotate-180' : ''} `} />
                   </button>
 
                   {isVisibilityMenuOpen && (
@@ -387,7 +387,7 @@ export const DiscussionRoom: React.FC = () => {
                            <button
                               key={mode.id}
                               onClick={() => { setDiscussionVisibility(session.id, mode.id as MessageVisibility); setIsVisibilityMenuOpen(false); }}
-                              className={`w-full text-left px-3 py-2.5 rounded-lg text-sm flex items-center gap-3 transition-colors ${session.visibility === mode.id ? 'bg-blue-50 text-blue-700 font-bold' : 'hover:bg-gray-50 dark:bg-slate-850 text-gray-700'}`}
+                              className={`w-full text-left px-3 py-2.5 rounded-lg text-sm flex items-center gap-3 transition-colors ${session.visibility === mode.id ? 'bg-blue-50 text-blue-700 font-bold' : 'hover:bg-gray-50 dark:bg-slate-850 text-gray-700'} `}
                            >
                               <mode.icon className="h-4 w-4" /> {mode.label}
                               {session.visibility === mode.id && <Check className="h-4 w-4 ml-auto" />}
@@ -424,7 +424,7 @@ export const DiscussionRoom: React.FC = () => {
                   <div className="flex gap-2">
                      <button
                         onClick={() => setCurrentViewRoomId('MAIN')}
-                        className={`whitespace-nowrap px-4 py-1.5 rounded-full text-xs font-bold transition-all ${currentViewRoomId === 'MAIN' ? 'bg-indigo-600 text-white shadow-md' : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-100'}`}
+                        className={`whitespace-nowrap px-4 py-1.5 rounded-full text-xs font-bold transition-all ${currentViewRoomId === 'MAIN' ? 'bg-indigo-600 text-white shadow-md' : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-100'} `}
                      >
                         Phòng chính
                      </button>
@@ -432,7 +432,7 @@ export const DiscussionRoom: React.FC = () => {
                         <button
                            key={r.id}
                            onClick={() => setCurrentViewRoomId(r.id)}
-                           className={`whitespace-nowrap px-4 py-1.5 rounded-full text-xs font-bold transition-all ${currentViewRoomId === r.id ? 'bg-indigo-600 text-white shadow-md' : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-100'}`}
+                           className={`whitespace-nowrap px-4 py-1.5 rounded-full text-xs font-bold transition-all ${currentViewRoomId === r.id ? 'bg-indigo-600 text-white shadow-md' : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-100'} `}
                         >
                            {r.name}
                         </button>
@@ -443,13 +443,13 @@ export const DiscussionRoom: React.FC = () => {
                   <div className="flex bg-gray-200/80 p-0.5 rounded-xl border border-gray-300/30 flex-shrink-0 shadow-inner dark:border-slate-800">
                      <button
                         onClick={() => setMiddleMode('CHAT')}
-                        className={`px-3 py-1 rounded-lg text-xs font-bold transition-all ${middleMode === 'CHAT' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-900'}`}
+                        className={`px-3 py-1 rounded-lg text-xs font-bold transition-all ${middleMode === 'CHAT' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-900'} `}
                      >
                         Trò chuyện
                      </button>
                      <button
                         onClick={() => setMiddleMode('WHITEBOARD')}
-                        className={`px-3 py-1 rounded-lg text-xs font-bold transition-all ${middleMode === 'WHITEBOARD' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-900'}`}
+                        className={`px-3 py-1 rounded-lg text-xs font-bold transition-all ${middleMode === 'WHITEBOARD' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-900'} `}
                      >
                         Bảng tương tác
                      </button>
@@ -465,7 +465,7 @@ export const DiscussionRoom: React.FC = () => {
                      {/* Messages */}
                      <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50 dark:bg-slate-850">
                         <div className="text-center mb-6">
-                           <span className={`text-xs px-3 py-1.5 rounded-full font-bold border shadow-sm ${currentRoundId === session.activeRoundId ? 'bg-indigo-100 text-indigo-700 border-indigo-200' : 'bg-gray-100 text-gray-600 border-gray-200'}`}>
+                           <span className={`text-xs px-3 py-1.5 rounded-full font-bold border shadow-sm dark:border-slate-800 ${currentRoundId === session.activeRoundId ? 'bg-indigo-100 text-indigo-700 border-indigo-200' : 'bg-gray-100 text-gray-600 border-gray-200'} `}>
                               Đang xem: {viewingRoundData?.name} {currentRoundId !== session.activeRoundId && '(Lịch sử)'}
                            </span>
                         </div>
@@ -477,13 +477,13 @@ export const DiscussionRoom: React.FC = () => {
                         )}
 
                         {currentMessages.map(m => (
-                           <div key={m.id} className={`flex ${m.senderId === user?.id ? 'justify-end' : 'justify-start'}`}>
+                           <div key={m.id} className={`flex ${m.senderId === user?.id ? 'justify-end' : 'justify-start'} `}>
                               {m.type === 'SYSTEM' ? (
                                  <div className="w-full text-center my-2">
                                     <span className="bg-gray-200 text-gray-600 text-xs px-4 py-1.5 rounded-full font-medium dark:text-slate-400">{m.content}</span>
                                  </div>
                               ) : (
-                                 <div className={`max-w-[85%] md:max-w-[70%] rounded-2xl px-4 py-3 shadow-sm ${m.senderId === user?.id ? 'bg-indigo-600 text-white rounded-br-sm' : 'bg-white text-gray-800 border border-gray-100 rounded-bl-sm'}`}>
+                                 <div className={`max-w-[85%] md:max-w-[70%] rounded-2xl px-4 py-3 shadow-sm ${m.senderId === user?.id ? 'bg-indigo-600 text-white rounded-br-sm' : 'bg-white text-gray-800 border border-gray-100 rounded-bl-sm'} `}>
                                     {m.senderId !== user?.id && <div className="text-xs font-bold opacity-70 mb-1">{m.senderName}</div>}
                                     {m.type === 'STICKER' ? (
                                        <div className="text-5xl my-1">{m.content}</div>
@@ -529,10 +529,7 @@ export const DiscussionRoom: React.FC = () => {
             {/* Sidebar */}
             {isMobileSidebarOpen && <div className="absolute inset-0 bg-black/50 z-30 md:hidden backdrop-blur-sm animate-in fade-in" onClick={() => setIsMobileSidebarOpen(false)} />}
 
-            <div className={`
-             absolute inset-y-0 right-0 z-40 w-80 bg-white border-l shadow-2xl transform transition-transform duration-300 ease-in-out md:static md:transform-none md:shadow-none md:border-l md:flex md:flex-col
-             ${isMobileSidebarOpen ? 'translate-x-0' : 'translate-x-full'} md:translate-x-0
-          `}>
+            <div className={`absolute inset-y-0 right-0 z-40 w-80 bg-white border-l shadow-2xl transform transition-transform duration-300 ease-in-out md:static md:transform-none md:shadow-none md:border-l md:flex md:flex-col dark:bg-slate-900 dark:border-slate-800 ${isMobileSidebarOpen ? 'translate-x-0' : 'translate-x-full'} md:translate-x-0`}>
                {/* Mobile Close */}
                <div className="md:hidden p-4 border-b flex justify-between items-center bg-gray-50 dark:bg-slate-850 dark:border-slate-800">
                   <h3 className="font-bold text-gray-700 dark:text-slate-300">Công cụ quản lý</h3>
@@ -540,9 +537,9 @@ export const DiscussionRoom: React.FC = () => {
                </div>
 
                <div className="flex border-b dark:border-slate-800">
-                  <button onClick={() => setActiveTab('PARTICIPANTS')} className={`flex-1 py-4 text-sm font-medium border-b-2 transition-colors ${activeTab === 'PARTICIPANTS' ? 'border-indigo-600 text-indigo-600 bg-indigo-50/50' : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50 dark:bg-slate-850'}`}><Users className="h-4 w-4 mx-auto mb-1" /> Danh sách</button>
-                  <button onClick={() => setActiveTab('POLLS')} className={`flex-1 py-4 text-sm font-medium border-b-2 transition-colors ${activeTab === 'POLLS' ? 'border-indigo-600 text-indigo-600 bg-indigo-50/50' : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50 dark:bg-slate-850'}`}><PieChart className="h-4 w-4 mx-auto mb-1" /> Bình chọn</button>
-                  <button onClick={() => setActiveTab('BREAKOUT')} className={`flex-1 py-4 text-sm font-medium border-b-2 transition-colors ${activeTab === 'BREAKOUT' ? 'border-indigo-600 text-indigo-600 bg-indigo-50/50' : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50 dark:bg-slate-850'}`}><Layers className="h-4 w-4 mx-auto mb-1" /> Chia nhóm</button>
+                  <button onClick={() => setActiveTab('PARTICIPANTS')} className={`flex-1 py-4 text-sm font-medium border-b-2 transition-colors dark:border-slate-800 ${activeTab === 'PARTICIPANTS' ? 'border-indigo-600 text-indigo-600 bg-indigo-50/50' : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50 dark:bg-slate-850'} `}><Users className="h-4 w-4 mx-auto mb-1" /> Danh sách</button>
+                  <button onClick={() => setActiveTab('POLLS')} className={`flex-1 py-4 text-sm font-medium border-b-2 transition-colors dark:border-slate-800 ${activeTab === 'POLLS' ? 'border-indigo-600 text-indigo-600 bg-indigo-50/50' : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50 dark:bg-slate-850'} `}><PieChart className="h-4 w-4 mx-auto mb-1" /> Bình chọn</button>
+                  <button onClick={() => setActiveTab('BREAKOUT')} className={`flex-1 py-4 text-sm font-medium border-b-2 transition-colors dark:border-slate-800 ${activeTab === 'BREAKOUT' ? 'border-indigo-600 text-indigo-600 bg-indigo-50/50' : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50 dark:bg-slate-850'} `}><Layers className="h-4 w-4 mx-auto mb-1" /> Chia nhóm</button>
                </div>
 
                <div className="flex-1 overflow-y-auto p-4 bg-white dark:bg-slate-900">
@@ -603,7 +600,7 @@ export const DiscussionRoom: React.FC = () => {
                               <div key={poll.id} className="border rounded-xl p-4 bg-white shadow-sm dark:bg-slate-900 dark:border-slate-800">
                                  <div className="flex justify-between items-start mb-3">
                                     <h4 className="font-bold text-sm text-gray-900 dark:text-slate-100">{poll.question}</h4>
-                                    <button onClick={() => togglePollStatus(session.id, poll.id, !poll.isActive)} className={`text-[10px] px-2 py-1 rounded-full font-bold ${poll.isActive ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>{poll.isActive ? 'Đang mở' : 'Đã đóng'}</button>
+                                    <button onClick={() => togglePollStatus(session.id, poll.id, !poll.isActive)} className={`text-[10px] px-2 py-1 rounded-full font-bold ${poll.isActive ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'} `}>{poll.isActive ? 'Đang mở' : 'Đã đóng'}</button>
                                  </div>
                                  <div className="space-y-3">
                                     {poll.options.map(opt => {
@@ -656,12 +653,12 @@ export const DiscussionRoom: React.FC = () => {
                <div className="p-4 border-t bg-gray-50 dark:bg-slate-850 md:hidden space-y-3 dark:border-slate-800">
                   <button onClick={() => setIsVisibilityMenuOpen(!isVisibilityMenuOpen)} className="w-full flex items-center justify-between bg-white border border-gray-300 px-4 py-3 rounded-lg text-sm font-medium text-gray-700 dark:bg-slate-900 dark:border-slate-800 dark:text-slate-300">
                      <div className="flex items-center gap-2"><VisibilityIcon className="h-4 w-4" /><span>Hiển thị</span></div>
-                     <ChevronDown className={`h-4 w-4 transition-transform ${isVisibilityMenuOpen ? 'rotate-180' : ''}`} />
+                     <ChevronDown className={`h-4 w-4 transition-transform ${isVisibilityMenuOpen ? 'rotate-180' : ''} `} />
                   </button>
                   {isVisibilityMenuOpen && (
                      <div className="bg-white border rounded-lg p-2 space-y-1 animate-in slide-in-from-top-2 dark:bg-slate-900 dark:border-slate-800">
                         {[{ id: 'FULL', label: 'Hiện đầy đủ', icon: Eye }, { id: 'HIDDEN_ALL', label: 'Ẩn tất cả', icon: EyeOff }, { id: 'NAME_ONLY', label: 'Chỉ hiện tên', icon: User }, { id: 'CONTENT_ONLY', label: 'Ẩn danh', icon: MessageSquare }].map((mode) => (
-                           <button key={mode.id} onClick={() => { setDiscussionVisibility(session.id, mode.id as MessageVisibility); setIsVisibilityMenuOpen(false); }} className={`w-full text-left px-3 py-2 rounded-lg text-sm flex items-center gap-3 ${session.visibility === mode.id ? 'bg-blue-50 text-blue-700 font-bold' : 'text-gray-700'}`}><mode.icon className="h-4 w-4" /> {mode.label}</button>
+                           <button key={mode.id} onClick={() => { setDiscussionVisibility(session.id, mode.id as MessageVisibility); setIsVisibilityMenuOpen(false); }} className={`w-full text-left px-3 py-2 rounded-lg text-sm flex items-center gap-3 ${session.visibility === mode.id ? 'bg-blue-50 text-blue-700 font-bold' : 'text-gray-700'} `}><mode.icon className="h-4 w-4" /> {mode.label}</button>
                         ))}
                      </div>
                   )}

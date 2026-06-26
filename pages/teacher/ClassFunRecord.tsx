@@ -353,7 +353,7 @@ export const ClassFunRecord: React.FC = () => {
             {/* Success Toast */}
             {showSuccess && (
                 <div className={`fixed top-6 right-6 z-50 p-4 rounded-xl shadow-2xl text-white font-bold flex items-center gap-3 animate-bounce ${showSuccess.points > 0 ? 'bg-emerald-500' : 'bg-red-500'
-                    }`}>
+                    } `}>
                     <Sparkles className="h-6 w-6" />
                     {showSuccess.points > 0 ? '+' : ''}{showSuccess.points} điểm cho {showSuccess.count} học sinh!
                 </div>
@@ -376,11 +376,11 @@ export const ClassFunRecord: React.FC = () => {
                         </select>
                     )}
                     <button onClick={() => setShowManageBehaviors(!showManageBehaviors)}
-                        className={`flex items-center gap-2 px-4 py-2 border rounded-lg text-sm font-medium transition ${showManageBehaviors ? 'bg-indigo-50 border-indigo-200 text-indigo-700' : 'bg-white hover:bg-gray-50 dark:bg-slate-850'}`}>
+                        className={`flex items-center gap-2 px-4 py-2 border rounded-lg text-sm font-medium transition dark:border-slate-800 ${showManageBehaviors ? 'bg-indigo-50 border-indigo-200 text-indigo-700' : 'bg-white hover:bg-gray-50 dark:bg-slate-850'} `}>
                         <Edit2 className="h-4 w-4" /> Quản lý hành vi
                     </button>
                     <button onClick={() => { setShowAutoPointConfig(!showAutoPointConfig); setShowManageBehaviors(false); }}
-                        className={`flex items-center gap-2 px-4 py-2 border rounded-lg text-sm font-medium transition ${showAutoPointConfig ? 'bg-amber-50 border-amber-200 text-amber-700' : 'bg-white hover:bg-gray-50 dark:bg-slate-850'}`}>
+                        className={`flex items-center gap-2 px-4 py-2 border rounded-lg text-sm font-medium transition dark:border-slate-800 ${showAutoPointConfig ? 'bg-amber-50 border-amber-200 text-amber-700' : 'bg-white hover:bg-gray-50 dark:bg-slate-850'} `}>
                         <Zap className="h-4 w-4" /> Điểm cộng tự động
                     </button>
                 </div>
@@ -582,7 +582,7 @@ export const ClassFunRecord: React.FC = () => {
                                 activeGroupFilter === 'all'
                                     ? 'bg-white text-indigo-600 shadow-sm border border-gray-100'
                                     : 'text-gray-500 hover:text-gray-700 hover:bg-white/40'
-                            }`}
+                            } `}
                         >
                             Tất cả
                         </button>
@@ -594,7 +594,7 @@ export const ClassFunRecord: React.FC = () => {
                                     activeGroupFilter === g.id
                                         ? 'bg-white text-indigo-600 shadow-sm border border-gray-100'
                                         : 'text-gray-500 hover:text-gray-700 hover:bg-white/40'
-                                    }`}
+                                    } `}
                             >
                                 {g.name}
                             </button>
@@ -606,7 +606,7 @@ export const ClassFunRecord: React.FC = () => {
                                     activeGroupFilter === 'ungrouped'
                                         ? 'bg-white text-indigo-600 shadow-sm border border-gray-100'
                                         : 'text-gray-500 hover:text-gray-700 hover:bg-white/40'
-                                }`}
+                                } `}
                             >
                                 Chưa tổ
                             </button>
@@ -641,16 +641,14 @@ export const ClassFunRecord: React.FC = () => {
                                             key={s.id} 
                                             onClick={() => toggleStudent(s.id)}
                                             disabled={isAbsent}
-                                            className={`relative flex flex-col items-center p-3 rounded-xl border-2 transition-all text-center select-none group/card
-                                                ${isAbsent 
+                                            className={`relative flex flex-col items-center p-3 rounded-xl border-2 transition-all text-center select-none group/card dark:border-slate-800 ${isAbsent 
                                                     ? 'opacity-40 cursor-not-allowed bg-gray-100/50 border-gray-100' 
                                                     : (selected 
                                                         ? 'bg-indigo-50/80 border-indigo-400 shadow-md scale-[1.02]' 
-                                                        : 'hover:bg-gray-50 dark:bg-slate-850 border-gray-100 bg-white hover:border-gray-300')}
-                                            `}
+                                                        : 'hover:bg-gray-50 dark:bg-slate-850 border-gray-100 bg-white hover:border-gray-300')} `}
                                         >
                                             {/* Score Badge */}
-                                            <span className={`absolute top-2 right-2 px-1.5 py-0.5 rounded-md text-[10px] font-black tracking-wide ${score >= 0 ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' : 'bg-red-50 text-red-700 border border-red-100'}`}>
+                                            <span className={`absolute top-2 right-2 px-1.5 py-0.5 rounded-md text-[10px] font-black tracking-wide ${score >= 0 ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' : 'bg-red-50 text-red-700 border border-red-100'} `}>
                                                 {score > 0 ? '+' : ''}{score}
                                             </span>
 
@@ -664,11 +662,11 @@ export const ClassFunRecord: React.FC = () => {
                                             <img 
                                                 src={s.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(s.name)}&background=6366f1&color=fff&size=48`}
                                                 alt="" 
-                                                className={`w-12 h-12 rounded-full shadow-sm mb-2 border ${selected ? 'border-indigo-200' : 'border-gray-100'} ${isAbsent ? 'grayscale' : ''}`} 
+                                                className={`w-12 h-12 rounded-full shadow-sm mb-2 border dark:border-slate-800 ${selected ? 'border-indigo-200' : 'border-gray-100'}  ${isAbsent ? 'grayscale' : ''} `} 
                                             />
 
                                             <div className="w-full">
-                                                <p className={`text-xs font-black truncate ${selected ? 'text-indigo-950' : 'text-gray-700'}`}>
+                                                <p className={`text-xs font-black truncate ${selected ? 'text-indigo-950' : 'text-gray-700'} `}>
                                                     {s.name}
                                                 </p>
                                                 {isAbsent ? (
@@ -707,11 +705,11 @@ export const ClassFunRecord: React.FC = () => {
                                             key={`pos-${pts}`}
                                             onClick={() => applyQuickPoints(pts, customReason)}
                                             disabled={selectedStudentIds.length === 0}
-                                            className={`py-2 px-3 rounded-lg border-2 text-center font-black transition-all ${
+                                            className={`py-2 px-3 rounded-lg border-2 text-center font-black transition-all dark:border-slate-800 ${
                                                 selectedStudentIds.length > 0
                                                     ? 'border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 hover:border-emerald-400 active:scale-95'
                                                     : 'border-gray-100 bg-gray-50 dark:bg-slate-850 text-gray-400 opacity-60 cursor-not-allowed'
-                                            }`}
+                                            } `}
                                         >
                                             +{pts}
                                         </button>
@@ -728,11 +726,11 @@ export const ClassFunRecord: React.FC = () => {
                                             key={`neg-${pts}`}
                                             onClick={() => applyQuickPoints(-pts, customReason)}
                                             disabled={selectedStudentIds.length === 0}
-                                            className={`py-2 px-3 rounded-lg border-2 text-center font-black transition-all ${
+                                            className={`py-2 px-3 rounded-lg border-2 text-center font-black transition-all dark:border-slate-800 ${
                                                 selectedStudentIds.length > 0
                                                     ? 'border-red-200 bg-red-50 text-red-700 hover:bg-red-100 hover:border-red-400 active:scale-95'
                                                     : 'border-gray-100 bg-gray-50 dark:bg-slate-850 text-gray-400 opacity-60 cursor-not-allowed'
-                                            }`}
+                                            } `}
                                         >
                                             -{pts}
                                         </button>
@@ -779,10 +777,10 @@ export const ClassFunRecord: React.FC = () => {
                                 {positiveBehaviors.map(b => (
                                     <button key={b.id} onClick={() => applyBehavior(b)}
                                         disabled={selectedStudentIds.length === 0}
-                                        className={`group relative p-4 rounded-xl border-2 text-left transition-all duration-200 ${selectedStudentIds.length > 0
+                                        className={`group relative p-4 rounded-xl border-2 text-left transition-all duration-200 dark:border-slate-800 ${selectedStudentIds.length > 0
                                             ? 'border-emerald-200 hover:border-emerald-400 hover:shadow-md hover:scale-[1.02] active:scale-95 bg-emerald-50/50'
                                             : 'border-gray-100 bg-gray-50 dark:bg-slate-850 opacity-60 cursor-not-allowed'
-                                            }`}>
+                                            } `}>
                                         <div className="text-2xl font-extrabold text-emerald-600">+{b.points}</div>
                                         <div className="text-sm font-medium text-gray-700 mt-1 line-clamp-2 dark:text-slate-300">{b.description}</div>
                                     </button>
@@ -811,10 +809,10 @@ export const ClassFunRecord: React.FC = () => {
                                 {negativeBehaviors.map(b => (
                                     <button key={b.id} onClick={() => applyBehavior(b)}
                                         disabled={selectedStudentIds.length === 0}
-                                        className={`group relative p-4 rounded-xl border-2 text-left transition-all duration-200 ${selectedStudentIds.length > 0
+                                        className={`group relative p-4 rounded-xl border-2 text-left transition-all duration-200 dark:border-slate-800 ${selectedStudentIds.length > 0
                                             ? 'border-red-200 hover:border-red-400 hover:shadow-md hover:scale-[1.02] active:scale-95 bg-red-50/50'
                                             : 'border-gray-100 bg-gray-50 dark:bg-slate-850 opacity-60 cursor-not-allowed'
-                                            }`}>
+                                            } `}>
                                         <div className="text-2xl font-extrabold text-red-600">{b.points}</div>
                                         <div className="text-sm font-medium text-gray-700 mt-1 line-clamp-2 dark:text-slate-300">{b.description}</div>
                                     </button>
@@ -887,7 +885,7 @@ export const ClassFunRecord: React.FC = () => {
                                                     </div>
                                                 ) : (
                                                     <>
-                                                        <span className={`text-sm font-bold ${log.points >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
+                                                        <span className={`text-sm font-bold ${log.points >= 0 ? 'text-emerald-600' : 'text-red-600'} `}>
                                                             {log.points > 0 ? '+' : ''}{log.points}
                                                         </span>
                                                         <span className="text-xs text-gray-400">{new Date(log.created_at).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}</span>
@@ -960,8 +958,7 @@ export const ClassFunRecord: React.FC = () => {
                                     return (
                                         <div key={log.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-5 bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md hover:border-indigo-100 transition-all group dark:bg-slate-900 dark:border-slate-800">
                                             <div className="flex items-center gap-4">
-                                                <div className={`h-12 w-12 rounded-xl flex items-center justify-center flex-shrink-0 font-black text-lg
-                                                    ${log.points >= 0 ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-600'}`}>
+                                                <div className={`h-12 w-12 rounded-xl flex items-center justify-center flex-shrink-0 font-black text-lg ${log.points >= 0 ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-600'} `}>
                                                     {log.points > 0 ? `+${log.points}` : log.points}
                                                 </div>
                                                 <div className="min-w-0">

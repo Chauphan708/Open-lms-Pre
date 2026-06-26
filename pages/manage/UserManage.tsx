@@ -576,13 +576,13 @@ export const UserManage: React.FC<Props> = ({ targetRole, title }) => {
                         <div className="flex gap-4 border-b mb-6 overflow-x-auto no-scrollbar dark:border-slate-800">
                             <button
                                 onClick={() => setMode('SINGLE')}
-                                className={`pb-2 text-sm font-bold transition-colors border-b-2 whitespace-nowrap ${mode === 'SINGLE' ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
+                                className={`pb-2 text-sm font-bold transition-colors border-b-2 whitespace-nowrap dark:border-slate-800 ${mode === 'SINGLE' ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700'} `}
                             >
                                 Nhập thủ công
                             </button>
                             <button
                                 onClick={() => setMode('BULK')}
-                                className={`pb-2 text-sm font-bold transition-colors border-b-2 whitespace-nowrap ${mode === 'BULK' ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
+                                className={`pb-2 text-sm font-bold transition-colors border-b-2 whitespace-nowrap dark:border-slate-800 ${mode === 'BULK' ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700'} `}
                             >
                                 Nhập danh sách (Excel/File)
                             </button>
@@ -598,7 +598,7 @@ export const UserManage: React.FC<Props> = ({ targetRole, title }) => {
                                     </div>
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-1 dark:text-slate-300">{targetRole === 'STUDENT' ? 'Tên đăng nhập (VD: an5a1)' : 'Email'} <span className="text-red-500">*</span></label>
-                                        <input className={`w-full border rounded-lg px-3 py-2 outline-none focus:ring-2 ${duplicateWarning ? 'border-red-500 focus:ring-red-500 bg-red-50' : 'border-gray-300 focus:ring-indigo-500'}`} value={email} onChange={e => { setEmail(e.target.value.replace(/\s/g, '')); setIsAutoEmail(false); }} placeholder={targetRole === 'STUDENT' ? "an5a1" : "a@example.com"} />
+                                        <input className={`w-full border rounded-lg px-3 py-2 outline-none focus:ring-2 dark:border-slate-800 ${duplicateWarning ? 'border-red-500 focus:ring-red-500 bg-red-50' : 'border-gray-300 focus:ring-indigo-500'} `} value={email} onChange={e => { setEmail(e.target.value.replace(/\s/g, '')); setIsAutoEmail(false); }} placeholder={targetRole === 'STUDENT' ? "an5a1" : "a@example.com"} />
                                         {duplicateWarning && (
                                             <p className="text-xs font-medium text-red-600 mt-1 flex items-center gap-1 animate-in fade-in">
                                                 <AlertCircle className="h-3 w-3" /> {duplicateWarning}
@@ -954,7 +954,7 @@ export const UserManage: React.FC<Props> = ({ targetRole, title }) => {
                                             setSelectedStudentIds(p => p.includes(u.id) ? p.filter(id => id !== u.id) : [...p, u.id]);
                                         }
                                     }}
-                                    className={`transition-colors ${targetRole === 'STUDENT' ? 'cursor-pointer' : ''} ${isSelected ? 'bg-indigo-50/70' : 'hover:bg-gray-50 dark:bg-slate-850'}`}
+                                    className={`transition-colors ${targetRole === 'STUDENT' ? 'cursor-pointer' : ''}  ${isSelected ? 'bg-indigo-50/70' : 'hover:bg-gray-50 dark:bg-slate-850'} `}
                                 >
                                     {targetRole === 'STUDENT' && (
                                         <td className="px-4 py-4 text-center" onClick={e => e.stopPropagation()}>
@@ -970,8 +970,8 @@ export const UserManage: React.FC<Props> = ({ targetRole, title }) => {
                                     )}
                                     <td className="px-6 py-4 flex items-center gap-3 relative">
                                         {isSelected && <div className="absolute left-0 top-0 bottom-0 w-1 bg-indigo-500"></div>}
-                                        <img src={u.avatar} className={`w-8 h-8 rounded-full border border-gray-200 ${isSelected ? 'ring-2 ring-indigo-500' : ''}`} alt="" />
-                                        <span className={`font-medium ${isSelected ? 'text-indigo-900 font-bold' : 'text-gray-900'}`}>{u.name}</span>
+                                        <img src={u.avatar} className={`w-8 h-8 rounded-full border border-gray-200 dark:border-slate-800 ${isSelected ? 'ring-2 ring-indigo-500' : ''} `} alt="" />
+                                        <span className={`font-medium ${isSelected ? 'text-indigo-900 font-bold' : 'text-gray-900'} `}>{u.name}</span>
                                     </td>
                                     <td className="px-6 py-4 font-mono text-indigo-700">{u.email}</td>
                                     {targetRole === 'STUDENT' && (
@@ -984,10 +984,8 @@ export const UserManage: React.FC<Props> = ({ targetRole, title }) => {
                                         </td>
                                     )}
                                     <td className="px-6 py-4">
-                                        <span className={`px-2 py-1 rounded-full text-xs font-bold
-                     ${u.role === 'ADMIN' ? 'bg-red-100 text-red-700' :
-                                                u.role === 'TEACHER' ? 'bg-blue-100 text-blue-700' : 'bg-green-100 text-green-700'}
-                   `}>
+                                        <span className={`px-2 py-1 rounded-full text-xs font-bold ${u.role === 'ADMIN' ? 'bg-red-100 text-red-700' :
+                                                u.role === 'TEACHER' ? 'bg-blue-100 text-blue-700' : 'bg-green-100 text-green-700'} `}>
                                             {u.role}
                                         </span>
                                     </td>
@@ -1035,7 +1033,7 @@ export const UserManage: React.FC<Props> = ({ targetRole, title }) => {
                                     setSelectedStudentIds(p => p.includes(u.id) ? p.filter(id => id !== u.id) : [...p, u.id]);
                                 }
                             }}
-                            className={`p-4 rounded-xl border shadow-sm transition-colors ${targetRole === 'STUDENT' ? 'cursor-pointer' : ''} ${isSelected ? 'bg-indigo-50 border-indigo-200' : 'bg-white'}`}
+                            className={`p-4 rounded-xl border shadow-sm transition-colors dark:border-slate-800 ${targetRole === 'STUDENT' ? 'cursor-pointer' : ''}  ${isSelected ? 'bg-indigo-50 border-indigo-200' : 'bg-white'} `}
                         >
                             <div className="flex items-start gap-3 mb-3">
                                 {targetRole === 'STUDENT' && (
@@ -1050,14 +1048,12 @@ export const UserManage: React.FC<Props> = ({ targetRole, title }) => {
                                         />
                                     </div>
                                 )}
-                                <img src={u.avatar} className={`w-10 h-10 rounded-full border ${isSelected ? 'ring-2 ring-indigo-500' : ''}`} alt="" />
+                                <img src={u.avatar} className={`w-10 h-10 rounded-full border dark:border-slate-800 ${isSelected ? 'ring-2 ring-indigo-500' : ''} `} alt="" />
                                 <div className="flex-1 min-w-0">
                                     <div className="flex justify-between items-start">
-                                        <h4 className={`font-bold truncate ${isSelected ? 'text-indigo-900' : 'text-gray-900'}`}>{u.name}</h4>
-                                        <span className={`px-2 py-0.5 rounded-full text-[10px] uppercase font-bold
-                           ${u.role === 'ADMIN' ? 'bg-red-100 text-red-700' :
-                                                u.role === 'TEACHER' ? 'bg-blue-100 text-blue-700' : 'bg-green-100 text-green-700'}
-                         `}>
+                                        <h4 className={`font-bold truncate ${isSelected ? 'text-indigo-900' : 'text-gray-900'} `}>{u.name}</h4>
+                                        <span className={`px-2 py-0.5 rounded-full text-[10px] uppercase font-bold ${u.role === 'ADMIN' ? 'bg-red-100 text-red-700' :
+                                                u.role === 'TEACHER' ? 'bg-blue-100 text-blue-700' : 'bg-green-100 text-green-700'} `}>
                                             {u.role}
                                         </span>
                                     </div>
@@ -1160,7 +1156,7 @@ export const UserManage: React.FC<Props> = ({ targetRole, title }) => {
                                         {tList.map(t => {
                                             const isSelected = bulkTopicSelectedTopics.includes(t.topic);
                                             return (
-                                                <label key={t.topic} className={`flex items-center gap-2 border px-3 py-2 rounded-lg text-xs font-bold cursor-pointer transition ${isSelected ? 'bg-indigo-50 border-indigo-300 text-indigo-700' : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50 dark:bg-slate-850'}`}>
+                                                <label key={t.topic} className={`flex items-center gap-2 border px-3 py-2 rounded-lg text-xs font-bold cursor-pointer transition dark:border-slate-800 ${isSelected ? 'bg-indigo-50 border-indigo-300 text-indigo-700' : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50 dark:bg-slate-850'} `}>
                                                     <input
                                                         type="checkbox"
                                                         checked={isSelected}

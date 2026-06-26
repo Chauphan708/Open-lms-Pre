@@ -187,14 +187,14 @@ export const ClassFunDashboard: React.FC = () => {
                     <button
                         onClick={() => setViewMode('week')}
                         className={`px-4 py-2 rounded-md text-sm font-semibold transition-all ${viewMode === 'week' ? 'bg-white text-indigo-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'
-                            }`}
+                            } `}
                     >
                         Theo Tuần
                     </button>
                     <button
                         onClick={() => setViewMode('all')}
                         className={`px-4 py-2 rounded-md text-sm font-semibold transition-all ${viewMode === 'all' ? 'bg-white text-indigo-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'
-                            }`}
+                            } `}
                     >
                         Tất Cả
                     </button>
@@ -297,14 +297,14 @@ export const ClassFunDashboard: React.FC = () => {
                         <button
                             onClick={() => setLeaderboardTab('top10')}
                             className={`px-4 py-1.5 rounded-md text-sm font-semibold transition-all ${leaderboardTab === 'top10' ? 'bg-white text-indigo-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'
-                                }`}
+                                } `}
                         >
                             Top 10
                         </button>
                         <button
                             onClick={() => setLeaderboardTab('all')}
                             className={`px-4 py-1.5 rounded-md text-sm font-semibold transition-all ${leaderboardTab === 'all' ? 'bg-white text-indigo-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'
-                                }`}
+                                } `}
                         >
                             Cả Lớp
                         </button>
@@ -314,31 +314,29 @@ export const ClassFunDashboard: React.FC = () => {
                 {(leaderboardTab === 'top10' ? topStudents : rankedStudents).length === 0 ? (
                     <p className="text-gray-400 text-center py-8">Chưa có dữ liệu điểm.</p>
                 ) : (
-                    <div className={`grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 ${leaderboardTab === 'all' ? 'max-h-[600px] overflow-y-auto pr-2 p-1' : 'p-1'}`}>
+                    <div className={`grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 ${leaderboardTab === 'all' ? 'max-h-[600px] overflow-y-auto pr-2 p-1' : 'p-1'} `}>
                         {(leaderboardTab === 'top10' ? topStudents : rankedStudents).map((s) => {
                             const isTop3 = s.rank <= 3;
                             const percentage = Math.max(0, Math.min(100, (s.score / maxScore) * 100));
 
                             return (
-                                <div key={s.id} className={`flex flex-col p-4 rounded-2xl border transition-all hover:shadow-lg hover:-translate-y-1
-                                    ${s.rank === 1 ? 'bg-gradient-to-br from-amber-50 to-white border-amber-200' :
+                                <div key={s.id} className={`flex flex-col p-4 rounded-2xl border transition-all hover:shadow-lg hover:-translate-y-1 dark:border-slate-800 ${s.rank === 1 ? 'bg-gradient-to-br from-amber-50 to-white border-amber-200' :
                                         s.rank === 2 ? 'bg-gradient-to-br from-gray-50 to-white border-gray-200' :
-                                            s.rank === 3 ? 'bg-gradient-to-br from-orange-50 to-white border-orange-200' : 'bg-white border-gray-100'}`}>
+                                            s.rank === 3 ? 'bg-gradient-to-br from-orange-50 to-white border-orange-200' : 'bg-white border-gray-100'} `}>
 
                                     <div className="flex items-start justify-between mb-3">
                                         <div className="relative">
-                                            <span className={`w-10 h-10 rounded-xl flex items-center justify-center text-white font-extrabold text-lg shadow-sm
-                                                ${s.rank === 1 ? 'bg-gradient-to-br from-amber-400 to-amber-600 ring-2 ring-amber-100' :
+                                            <span className={`w-10 h-10 rounded-xl flex items-center justify-center text-white font-extrabold text-lg shadow-sm ${s.rank === 1 ? 'bg-gradient-to-br from-amber-400 to-amber-600 ring-2 ring-amber-100' :
                                                     s.rank === 2 ? 'bg-gradient-to-br from-gray-300 to-gray-500 ring-2 ring-gray-100' :
                                                         s.rank === 3 ? 'bg-gradient-to-br from-orange-400 to-orange-600 ring-2 ring-orange-100' :
                                                             'bg-indigo-50 text-indigo-600 border border-indigo-100'
-                                                }`}>
+                                                } `}>
                                                 #{s.rank}
                                             </span>
                                             {s.rank === 1 && <Trophy className="absolute -top-3 -right-3 h-6 w-6 text-amber-500 drop-shadow-sm" />}
                                         </div>
                                         <div className="text-right">
-                                            <span className={`block font-black text-2xl leading-none ${s.score >= 0 ? 'text-emerald-600' : 'text-red-500'}`}>
+                                            <span className={`block font-black text-2xl leading-none ${s.score >= 0 ? 'text-emerald-600' : 'text-red-500'} `}>
                                                 {s.score > 0 ? '+' : ''}{s.score}
                                             </span>
                                             <span className="text-xs text-gray-400 font-medium">điểm</span>
@@ -346,16 +344,15 @@ export const ClassFunDashboard: React.FC = () => {
                                     </div>
 
                                     <div className="mt-auto">
-                                        <span onClick={() => navigate(`/teacher/portfolio/${s.id}`)} className={`block font-bold mb-2 truncate cursor-pointer hover:text-indigo-600 hover:underline transition-colors ${isTop3 ? 'text-gray-900' : 'text-gray-700'}`} title={`Xem Hồ Sơ ${s.name}`}>{s.name}</span>
+                                        <span onClick={() => navigate(`/teacher/portfolio/${s.id}`)} className={`block font-bold mb-2 truncate cursor-pointer hover:text-indigo-600 hover:underline transition-colors ${isTop3 ? 'text-gray-900' : 'text-gray-700'} `} title={`Xem Hồ Sơ ${s.name}`}>{s.name}</span>
 
                                         {/* Progress Bar representing score visually */}
                                         {s.score > 0 && (
                                             <div className="w-full bg-gray-100 rounded-full h-2.5 overflow-hidden dark:bg-slate-850">
                                                 <div
-                                                    className={`h-2.5 rounded-full transition-all duration-1000 ease-out
-                                                        ${s.rank === 1 ? 'bg-gradient-to-r from-amber-400 to-amber-500' :
+                                                    className={`h-2.5 rounded-full transition-all duration-1000 ease-out ${s.rank === 1 ? 'bg-gradient-to-r from-amber-400 to-amber-500' :
                                                             s.rank === 2 ? 'bg-gradient-to-r from-gray-400 to-gray-500' :
-                                                                s.rank === 3 ? 'bg-gradient-to-r from-orange-400 to-orange-500' : 'bg-gradient-to-r from-emerald-400 to-emerald-500'}`}
+                                                                s.rank === 3 ? 'bg-gradient-to-r from-orange-400 to-orange-500' : 'bg-gradient-to-r from-emerald-400 to-emerald-500'} `}
                                                     style={{ width: `${percentage}%` }}
                                                 ></div>
                                             </div>

@@ -128,7 +128,7 @@ export const TournamentLobby: React.FC = () => {
             <div className="flex items-center gap-3 mb-6">
                 <button onClick={() => navigate('/arena')} className="text-gray-400 hover:text-gray-600"><ArrowLeft className="h-5 w-5" /></button>
                 <h1 className="text-xl font-black text-gray-900 flex items-center gap-2 dark:text-slate-100">⚔️ {tournament.title}</h1>
-                <span className={`text-xs font-bold px-2 py-1 rounded-full ${tournament.status === 'active' ? 'bg-emerald-100 text-emerald-700' : tournament.status === 'finished' ? 'bg-gray-100 text-gray-600' : 'bg-amber-100 text-amber-700'}`}>
+                <span className={`text-xs font-bold px-2 py-1 rounded-full ${tournament.status === 'active' ? 'bg-emerald-100 text-emerald-700' : tournament.status === 'finished' ? 'bg-gray-100 text-gray-600' : 'bg-amber-100 text-amber-700'} `}>
                     {tournament.status === 'active' ? '🟢 Đang diễn ra' : tournament.status === 'finished' ? '🏆 Kết thúc' : '⏳ Chờ bắt đầu'}
                 </span>
             </div>
@@ -148,7 +148,7 @@ export const TournamentLobby: React.FC = () => {
 
             {/* My info */}
             {myParticipant && (
-                <div className={`rounded-2xl p-4 mb-6 flex items-center gap-4 border-2 ${isEliminated ? 'bg-gray-50 border-gray-200' : isChampion ? 'bg-yellow-50 border-yellow-300' : 'bg-purple-50 border-purple-200'}`}
+                <div className={`rounded-2xl p-4 mb-6 flex items-center gap-4 border-2 dark:border-slate-800 ${isEliminated ? 'bg-gray-50 border-gray-200' : isChampion ? 'bg-yellow-50 border-yellow-300' : 'bg-purple-50 border-purple-200'} `}
                     style={!isEliminated && !isChampion ? { animation: 'glow-border 2s ease-in-out infinite' } : {}}>
                     <span className="text-3xl">{myParticipant.alias_emoji}</span>
                     <div className="flex-1">
@@ -196,8 +196,8 @@ export const TournamentLobby: React.FC = () => {
                 </div>
                 <div className="divide-y">
                     {ranking.slice(0, 8).map((p, i) => (
-                        <div key={p.id} className={`flex items-center gap-3 p-3 ${p.status === 'eliminated' ? 'opacity-50' : ''} ${p.student_id === user?.id ? 'bg-purple-50' : ''}`}>
-                            <div className={`w-7 h-7 rounded-lg flex items-center justify-center font-bold text-xs ${i === 0 ? 'bg-yellow-500 text-white' : i === 1 ? 'bg-gray-400 text-white' : i === 2 ? 'bg-amber-700 text-white' : 'bg-gray-100 text-gray-500'}`}>
+                        <div key={p.id} className={`flex items-center gap-3 p-3 ${p.status === 'eliminated' ? 'opacity-50' : ''}  ${p.student_id === user?.id ? 'bg-purple-50' : ''} `}>
+                            <div className={`w-7 h-7 rounded-lg flex items-center justify-center font-bold text-xs ${i === 0 ? 'bg-yellow-500 text-white' : i === 1 ? 'bg-gray-400 text-white' : i === 2 ? 'bg-amber-700 text-white' : 'bg-gray-100 text-gray-500'} `}>
                                 {i + 1}
                             </div>
                             <span className="text-lg">{p.alias_emoji}</span>
