@@ -367,15 +367,27 @@ export const useClassFunStore = create<ClassFunState>((set, get) => ({
 
   // --- Seating Chart ---
   fetchSeatingChart: async (classId) => {
-    const { data } = await supabase
-      .from('class_seating_charts')
-      .select('*')
-      .eq('class_id', classId)
-      .single();
+    const cacheKey = `seating_chart_${classId}`;
+    
+    // Load from local storage cache immediately for instant response
+    try {
+      const cached = localStorage.getItem(cacheKey);
+      if (cached) {
+        set({ seatingChart: JSON.parse(cached) });
+      }
+    } catch (e) {
+      console.warn('Failed to parse cached seating chart:', e);
+    }
 
-    if (data) {
-      set({
-        seatingChart: {
+    try {
+      const { data, error } = await supabase
+        .from('class_seating_charts')
+        .select('*')
+        .eq('class_id', classId)
+        .maybeSingle();
+
+      if (!error && data) {
+        const chart = {
           id: data.id,
           classId: data.class_id,
           rows: data.rows,
@@ -383,14 +395,34 @@ export const useClassFunStore = create<ClassFunState>((set, get) => ({
           seats: data.seats,
           createdAt: data.created_at,
           updatedAt: data.updated_at
-        } as ClassSeatingChart
-      });
-    } else {
-      set({ seatingChart: null });
+        } as ClassSeatingChart;
+        
+        set({ seatingChart: chart });
+        localStorage.setItem(cacheKey, JSON.stringify(chart));
+      } else if (error) {
+        console.error('Error fetching seating chart from Supabase:', error);
+      }
+    } catch (e) {
+      console.error('Error fetching seating chart:', e);
     }
   },
 
   saveSeatingChart: async (chart) => {
+    const cacheKey = `seating_chart_${chart.classId}`;
+    const localChart = {
+      id: `local_${Date.now()}`,
+      classId: chart.classId,
+      rows: chart.rows,
+      columns: chart.columns,
+      seats: chart.seats,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    } as ClassSeatingChart;
+
+    // Optimistic Save to local storage cache immediately
+    localStorage.setItem(cacheKey, JSON.stringify(localChart));
+    set({ seatingChart: localChart });
+
     const dbChart = {
       class_id: chart.classId,
       rows: chart.rows,
@@ -398,24 +430,28 @@ export const useClassFunStore = create<ClassFunState>((set, get) => ({
       seats: chart.seats
     };
 
-    // Upsert equivalent: check if exists
-    const { data: existing } = await supabase
-      .from('class_seating_charts')
-      .select('id')
-      .eq('class_id', chart.classId)
-      .single();
-
-    if (existing) {
-      const { data, error } = await supabase
+    try {
+      // Upsert: check if exists
+      const { data: existing, error: findError } = await supabase
         .from('class_seating_charts')
-        .update(dbChart)
+        .select('id')
         .eq('class_id', chart.classId)
-        .select()
-        .single();
+        .maybeSingle();
 
-      if (!error && data) {
-        set({
-          seatingChart: {
+      if (findError) {
+        console.error('Error finding existing seating chart:', findError);
+      }
+
+      if (existing) {
+        const { data, error } = await supabase
+          .from('class_seating_charts')
+          .update(dbChart)
+          .eq('class_id', chart.classId)
+          .select()
+          .single();
+
+        if (!error && data) {
+          const updatedChart = {
             id: data.id,
             classId: data.class_id,
             rows: data.rows,
@@ -423,19 +459,23 @@ export const useClassFunStore = create<ClassFunState>((set, get) => ({
             seats: data.seats,
             createdAt: data.created_at,
             updatedAt: data.updated_at
-          } as ClassSeatingChart
-        });
-      }
-    } else {
-      const { data, error } = await supabase
-        .from('class_seating_charts')
-        .insert(dbChart)
-        .select()
-        .single();
+          } as ClassSeatingChart;
+          
+          set({ seatingChart: updatedChart });
+          localStorage.setItem(cacheKey, JSON.stringify(updatedChart));
+        } else if (error) {
+          console.error('Error updating seating chart in Supabase:', error);
+          throw error;
+        }
+      } else {
+        const { data, error } = await supabase
+          .from('class_seating_charts')
+          .insert(dbChart)
+          .select()
+          .single();
 
-      if (!error && data) {
-        set({
-          seatingChart: {
+        if (!error && data) {
+          const insertedChart = {
             id: data.id,
             classId: data.class_id,
             rows: data.rows,
@@ -443,9 +483,17 @@ export const useClassFunStore = create<ClassFunState>((set, get) => ({
             seats: data.seats,
             createdAt: data.created_at,
             updatedAt: data.updated_at
-          } as ClassSeatingChart
-        });
+          } as ClassSeatingChart;
+          
+          set({ seatingChart: insertedChart });
+          localStorage.setItem(cacheKey, JSON.stringify(insertedChart));
+        } else if (error) {
+          console.error('Error inserting seating chart to Supabase:', error);
+          throw error;
+        }
       }
+    } catch (e) {
+      console.warn('Supabase save failed. Seating chart remains saved securely in local storage:', e);
     }
   },
 
