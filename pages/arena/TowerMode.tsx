@@ -20,6 +20,78 @@ import {
   generateArenaStudyGuide,
   generateMissingQuestionFields
 } from '../../services/geminiService';
+import { playArenaSound, isSoundEnabled, setSoundEnabled } from '../../services/soundService';
+
+// Confetti Particle Class for HTML5 Canvas Visual Effect
+class ConfettiEffect {
+  private canvas: HTMLCanvasElement;
+  private ctx: CanvasRenderingContext2D;
+  private particles: any[] = [];
+  private animationFrameId: number | null = null;
+
+  constructor(canvas: HTMLCanvasElement) {
+    this.canvas = canvas;
+    this.ctx = canvas.getContext('2d')!;
+    this.resize();
+  }
+
+  resize() {
+    this.canvas.width = window.innerWidth;
+    this.canvas.height = window.innerHeight;
+  }
+
+  start() {
+    this.particles = [];
+    const colors = ['#f43f5e', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899'];
+    for (let i = 0; i < 100; i++) {
+      this.particles.push({
+        x: Math.random() * this.canvas.width,
+        y: Math.random() * this.canvas.height - this.canvas.height,
+        r: Math.random() * 6 + 4,
+        d: Math.random() * this.canvas.height,
+        color: colors[Math.floor(Math.random() * colors.length)],
+        tilt: Math.random() * 10 - 5,
+        tiltAngleIncremental: Math.random() * 0.07 + 0.02,
+        tiltAngle: 0
+      });
+    }
+    if (this.animationFrameId) cancelAnimationFrame(this.animationFrameId);
+    this.animate();
+  }
+
+  private animate = () => {
+    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    let remaining = false;
+    this.particles.forEach((p) => {
+      p.tiltAngle += p.tiltAngleIncremental;
+      p.y += (Math.cos(p.d) + 3 + p.r / 2) / 2;
+      p.x += Math.sin(p.tiltAngle);
+      p.tilt = Math.sin(p.tiltAngle - p.r / 2) * 5;
+
+      if (p.y <= this.canvas.height) {
+        remaining = true;
+      }
+
+      this.ctx.beginPath();
+      this.ctx.lineWidth = p.r;
+      this.ctx.strokeStyle = p.color;
+      this.ctx.moveTo(p.x + p.tilt + p.r / 2, p.y);
+      this.ctx.lineTo(p.x + p.tilt, p.y + p.tilt + p.r / 2);
+      this.ctx.stroke();
+    });
+
+    if (remaining) {
+      this.animationFrameId = requestAnimationFrame(this.animate);
+    } else {
+      this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    }
+  };
+
+  destroy() {
+    if (this.animationFrameId) cancelAnimationFrame(this.animationFrameId);
+  }
+}
+
 
 // League calculation based on ELO rating
 export const getLeagueInfo = (elo: number) => {
@@ -110,6 +182,24 @@ export const TowerMode: React.FC = () => {
   const [consecutiveCorrect, setConsecutiveCorrect] = useState(0); // Consecutive correct at current level (target = 3 for level-up)
   const [consecutiveWrong, setConsecutiveWrong] = useState(0); // Consecutive wrong at current level (target = 2 for level-down)
   const [inventoryItems, setInventoryItems] = useState<Record<string, number>>({});
+
+  // Sound & Visual Effect states
+  const [soundOn, setSoundOn] = useState(isSoundEnabled());
+  const [shouldShake, setShouldShake] = useState(false);
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const confettiRef = useRef<any>(null);
+
+  useEffect(() => {
+    if (canvasRef.current) {
+      confettiRef.current = new ConfettiEffect(canvasRef.current);
+      const handleResize = () => confettiRef.current?.resize();
+      window.addEventListener('resize', handleResize);
+      return () => {
+        window.removeEventListener('resize', handleResize);
+        confettiRef.current?.destroy();
+      };
+    }
+  }, [started]);
   
   // Question selection & state
   const [questionPool, setQuestionPool] = useState<ArenaQuestion[]>([]);
@@ -759,6 +849,15 @@ export const TowerMode: React.FC = () => {
     setIsCorrect(correct);
     setShowResult(true);
 
+    if (correct) {
+      playArenaSound('correct');
+      confettiRef.current?.start();
+    } else {
+      playArenaSound('incorrect');
+      setShouldShake(true);
+      setTimeout(() => setShouldShake(false), 400);
+    }
+
     let finalLives = lives;
     let finalDifficulty = currentDifficulty;
     let newStreak = streakCombo;
@@ -996,6 +1095,7 @@ export const TowerMode: React.FC = () => {
     xpGainedRun?: number,
     eloChangeRun?: number
   ) => {
+    playArenaSound('defeat');
     setGameOver(true);
     setLives(0);
     setAiGuideLoading(true);
@@ -1057,6 +1157,7 @@ export const TowerMode: React.FC = () => {
     xpGainedRun?: number,
     eloChangeRun?: number
   ) => {
+    playArenaSound('victory');
     setVictory(true);
     setAiGuideLoading(true);
 
@@ -1313,16 +1414,30 @@ export const TowerMode: React.FC = () => {
         <div className="absolute top-0 right-1/4 w-72 h-72 rounded-full opacity-[0.03] blur-[90px] pointer-events-none bg-amber-500"></div>
 
         {/* Header */}
-        <div className="flex items-center gap-3 mb-6 bg-white/5 p-4 lg:p-5 rounded-2xl border border-white/5 mt-4 animate-fade-in dark:border-slate-800">
-          <button onClick={() => navigate('/arena')} className="p-2 hover:bg-white/10 rounded-full transition-colors text-gray-400 hover:text-white">
-            <ArrowLeft className="h-5 w-5 lg:h-6 lg:w-6" />
-          </button>
-          <div>
-            <h1 className="text-xl lg:text-3xl font-black text-white flex items-center gap-2">
-              <GraduationCap className="h-6 w-6 lg:h-8 lg:w-8 text-amber-500" /> Leo Tháp Thích Ứng (VioEdu)
-            </h1>
-            <p className="text-sm lg:text-base text-gray-400">Chinh phục chuyên đề theo độ khó tăng dần của AI</p>
+        <div className="flex items-center justify-between mb-6 bg-white/5 p-4 lg:p-5 rounded-2xl border border-white/5 mt-4 animate-fade-in dark:border-slate-800">
+          <div className="flex items-center gap-3">
+            <button onClick={() => navigate('/arena')} className="p-2 hover:bg-white/10 rounded-full transition-colors text-gray-400 hover:text-white">
+              <ArrowLeft className="h-5 w-5 lg:h-6 lg:w-6" />
+            </button>
+            <div>
+              <h1 className="text-xl lg:text-3xl font-black text-white flex items-center gap-2">
+                <GraduationCap className="h-6 w-6 lg:h-8 lg:w-8 text-amber-500" /> Leo Tháp Thích Ứng (VioEdu)
+              </h1>
+              <p className="text-sm lg:text-base text-gray-400">Chinh phục chuyên đề theo độ khó tăng dần của AI</p>
+            </div>
           </div>
+          
+          <button 
+            onClick={() => {
+              const next = !soundOn;
+              setSoundOn(next);
+              setSoundEnabled(next);
+              toast(next ? "🔊 Đã bật âm thanh đấu trường" : "🔇 Đã tắt âm thanh đấu trường");
+            }}
+            className="px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-gray-400 hover:text-white transition-all flex items-center gap-1.5 font-bold text-xs"
+          >
+            {soundOn ? "🔊 Âm thanh" : "🔇 Tắt âm"}
+          </button>
         </div>
 
         {/* Responsive Grid layout */}
@@ -1699,6 +1814,12 @@ export const TowerMode: React.FC = () => {
         .glass-hud { background: rgba(255, 255, 255, 0.02); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.05); }
         .glow-heart { filter: drop-shadow(0 0 4px rgba(244, 63, 94, 0.5)); }
         .katex { font-size: 1.35em !important; }
+        @keyframes shake {
+          0%, 100% { transform: translateX(0); }
+          20%, 60% { transform: translateX(-6px); }
+          40%, 80% { transform: translateX(6px); }
+        }
+        .shake-active { animation: shake 0.4s ease-in-out; }
       `}</style>
 
       {/* Ambient glowing dot */}
@@ -1706,9 +1827,23 @@ export const TowerMode: React.FC = () => {
 
       {/* Header HUD */}
       <div className="flex items-center justify-between py-4 border-b border-white/5 mb-5 relative z-10 dark:border-slate-800">
-        <button onClick={handleRestart} className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-white transition-colors">
-          <ArrowLeft className="h-4 w-4" /> Thoát
-        </button>
+        <div className="flex items-center gap-4">
+          <button onClick={handleRestart} className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-white transition-colors">
+            <ArrowLeft className="h-4 w-4" /> Thoát
+          </button>
+          
+          <button 
+            onClick={() => {
+              const next = !soundOn;
+              setSoundOn(next);
+              setSoundEnabled(next);
+              toast(next ? "🔊 Đã bật âm thanh" : "🔇 Đã tắt âm thanh");
+            }}
+            className="text-[10px] text-gray-400 hover:text-white transition-colors flex items-center gap-1 bg-white/5 px-2.5 py-1 rounded-full border border-white/5"
+          >
+            {soundOn ? "🔊 Âm thanh" : "🔇 Tắt âm"}
+          </button>
+        </div>
 
         {/* Lives */}
         <div className="flex items-center gap-1">
@@ -1875,7 +2010,7 @@ export const TowerMode: React.FC = () => {
           <p>AI đang biên soạn câu hỏi thích ứng tiếp theo...</p>
         </div>
       ) : currentQ ? (
-        <div className="animate-slide relative z-10">
+        <div className={`animate-slide relative z-10 ${shouldShake ? 'shake-active' : ''}`}>
           {/* Question Stem */}
           <div className="bg-[#080d16] border border-white/5 rounded-2xl p-6 mb-5 dark:border-slate-800">
             <div className="flex items-center justify-between mb-4">
@@ -2105,6 +2240,7 @@ export const TowerMode: React.FC = () => {
           )}
         </div>
       ) : null}
+      <canvas ref={canvasRef} className="pointer-events-none fixed inset-0 z-50 w-full h-full" />
       <Toaster position="top-center" />
     </div>
   );

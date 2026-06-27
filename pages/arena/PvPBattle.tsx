@@ -9,8 +9,79 @@ import ReactMarkdown from 'react-markdown';
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
 import MathText from '../../components/MathText';
+import { playArenaSound, isSoundEnabled, setSoundEnabled } from '../../services/soundService';
 
 
+
+// Confetti Particle Class for HTML5 Canvas Visual Effect
+class ConfettiEffect {
+  private canvas: HTMLCanvasElement;
+  private ctx: CanvasRenderingContext2D;
+  private particles: any[] = [];
+  private animationFrameId: number | null = null;
+
+  constructor(canvas: HTMLCanvasElement) {
+    this.canvas = canvas;
+    this.ctx = canvas.getContext('2d')!;
+    this.resize();
+  }
+
+  resize() {
+    this.canvas.width = window.innerWidth;
+    this.canvas.height = window.innerHeight;
+  }
+
+  start() {
+    this.particles = [];
+    const colors = ['#f43f5e', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899'];
+    for (let i = 0; i < 100; i++) {
+      this.particles.push({
+        x: Math.random() * this.canvas.width,
+        y: Math.random() * this.canvas.height - this.canvas.height,
+        r: Math.random() * 6 + 4,
+        d: Math.random() * this.canvas.height,
+        color: colors[Math.floor(Math.random() * colors.length)],
+        tilt: Math.random() * 10 - 5,
+        tiltAngleIncremental: Math.random() * 0.07 + 0.02,
+        tiltAngle: 0
+      });
+    }
+    if (this.animationFrameId) cancelAnimationFrame(this.animationFrameId);
+    this.animate();
+  }
+
+  private animate = () => {
+    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    let remaining = false;
+    this.particles.forEach((p) => {
+      p.tiltAngle += p.tiltAngleIncremental;
+      p.y += (Math.cos(p.d) + 3 + p.r / 2) / 2;
+      p.x += Math.sin(p.tiltAngle);
+      p.tilt = Math.sin(p.tiltAngle - p.r / 2) * 5;
+
+      if (p.y <= this.canvas.height) {
+        remaining = true;
+      }
+
+      this.ctx.beginPath();
+      this.ctx.lineWidth = p.r;
+      this.ctx.strokeStyle = p.color;
+      this.ctx.moveTo(p.x + p.tilt + p.r / 2, p.y);
+      this.ctx.lineTo(p.x + p.tilt, p.y + p.tilt + p.r / 2);
+      this.ctx.stroke();
+    });
+
+    if (remaining) {
+      this.animationFrameId = requestAnimationFrame(this.animate);
+    } else {
+      this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    }
+  };
+
+  destroy() {
+    if (this.animationFrameId) cancelAnimationFrame(this.animationFrameId);
+  }
+}
 
 const AVATAR_EMOJIS: Record<string, string> = {
     scholar: '📖', scientist: '🔬', artist: '🎨', explorer: '🌍'
@@ -47,6 +118,24 @@ export const PvPBattle: React.FC = () => {
     const [myDamageAnim, setMyDamageAnim] = useState(false);
     const [finished, setFinished] = useState(false);
     const [loading, setLoading] = useState(true);
+
+    // Sound & Visual Effect states
+    const [soundOn, setSoundOn] = useState(isSoundEnabled());
+    const [shouldShake, setShouldShake] = useState(false);
+    const canvasRef = useRef<HTMLCanvasElement | null>(null);
+    const confettiRef = useRef<any>(null);
+
+    useEffect(() => {
+        if (canvasRef.current) {
+            confettiRef.current = new ConfettiEffect(canvasRef.current);
+            const handleResize = () => confettiRef.current?.resize();
+            window.addEventListener('resize', handleResize);
+            return () => {
+                window.removeEventListener('resize', handleResize);
+                confettiRef.current?.destroy();
+            };
+        }
+    }, [loading]);
     const [answeredThisQ, setAnsweredThisQ] = useState(false);
     const [battleLore] = useState(() => BATTLE_LORE[Math.floor(Math.random() * BATTLE_LORE.length)]);
 
@@ -251,6 +340,15 @@ export const PvPBattle: React.FC = () => {
 
         setIsCorrect(correct);
         setShowResult(true);
+
+        if (correct) {
+            playArenaSound('correct');
+            confettiRef.current?.start();
+        } else {
+            playArenaSound('incorrect');
+            setShouldShake(true);
+            setTimeout(() => setShouldShake(false), 400);
+        }
 
         const timeTaken = TIME_PER_QUESTION - timer;
 
@@ -462,6 +560,8 @@ export const PvPBattle: React.FC = () => {
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
         @keyframes skill-activate { 0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(139,92,246,0.7); } 50% { transform: scale(1.1); box-shadow: 0 0 20px 10px rgba(139,92,246,0); } 100% { transform: scale(1); } }
         @keyframes streak-fire { 0% { text-shadow: 0 0 5px #f59e0b; } 50% { text-shadow: 0 0 20px #ef4444, 0 0 40px #f59e0b; } 100% { text-shadow: 0 0 5px #f59e0b; } }
+        .animate-fade-in { animation: fadeIn 0.4s ease-out; }
+        .shake-active { animation: shake 0.4s ease-in-out; }
       `}</style>
 
             {/* Lore Banner */}
@@ -493,7 +593,17 @@ export const PvPBattle: React.FC = () => {
                 </div>
 
                 {/* VS / Timer */}
-                <div className="text-center">
+                <div className="text-center flex flex-col items-center">
+                    <button 
+                        onClick={() => {
+                            const next = !soundOn;
+                            setSoundOn(next);
+                            setSoundEnabled(next);
+                        }}
+                        className="text-[10px] text-gray-400 hover:text-indigo-600 transition-colors mb-2 bg-indigo-50 px-2.5 py-0.5 rounded-full border border-indigo-100 dark:bg-slate-800 dark:border-slate-700"
+                    >
+                        {soundOn ? "🔊 Âm thanh" : "🔇 Tắt âm"}
+                    </button>
                     <div className="text-2xl font-black text-gray-300 mb-2">VS</div>
                     <div className={`w-14 h-14 mx-auto rounded-full flex items-center justify-center font-black text-lg ${timer > 10 ? 'bg-gray-100 text-gray-600' : timer > 5 ? 'bg-amber-100 text-amber-600' : 'bg-red-100 text-red-600'} `}
                         style={timer <= 5 ? { animation: 'pulse 0.5s ease-in-out infinite' } : {}}>
@@ -568,7 +678,7 @@ export const PvPBattle: React.FC = () => {
             {currentQuestion && (
                 <>
                     {/* Question type tag */}
-                    <div className="bg-white rounded-2xl shadow-sm border p-6 mb-4 dark:bg-slate-900 dark:border-slate-800" style={{ animation: 'fadeIn 0.4s ease-out' }}>
+                    <div className={`bg-white rounded-2xl shadow-sm border p-6 mb-4 dark:bg-slate-900 dark:border-slate-800 ${shouldShake ? 'shake-active' : 'animate-fade-in'}`}>
                         <div className="flex items-center gap-2 mb-3">
                             <span className="bg-indigo-100 text-indigo-700 px-2.5 py-0.5 rounded-full text-xs font-bold">
                                 {currentQuestion.subject === 'math' ? '📐 Toán' : currentQuestion.subject === 'science' ? '🔬 Khoa học' : currentQuestion.subject === 'technology' ? '💻 Công nghệ' : '📋 ' + currentQuestion.subject}
@@ -751,6 +861,7 @@ export const PvPBattle: React.FC = () => {
                     )}
                 </>
             )}
+            <canvas ref={canvasRef} className="pointer-events-none fixed inset-0 z-50 w-full h-full" />
         </div>
     );
 };

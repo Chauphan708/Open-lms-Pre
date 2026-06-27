@@ -5,6 +5,7 @@ import { Brain, Home, Trophy, TrendingUp, TrendingDown, HelpCircle, Check, X, Sp
 import { supabase } from '../../services/supabaseClient';
 import { generateRevengeQuestions } from '../../services/geminiService';
 import MathText from '../../components/MathText';
+import { playArenaSound } from '../../services/soundService';
 
 const RESULT_LORE = {
     win: [
@@ -51,6 +52,14 @@ export const MatchResult: React.FC = () => {
     const [revengeSubmitted, setRevengeSubmitted] = useState(false);
     const [revengeCompleted, setRevengeCompleted] = useState(false);
     const [showConfetti, setShowConfetti] = useState(false);
+
+    useEffect(() => {
+        if (isWin) {
+            playArenaSound('victory');
+        } else {
+            playArenaSound('defeat');
+        }
+    }, [isWin]);
 
     useEffect(() => {
         const fetchWrongQuestions = async () => {
