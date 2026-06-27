@@ -339,15 +339,15 @@ export const TeacherDashboard: React.FC = () => {
           {/* Hub 1: Student Portfolio */}
           <button
             onClick={() => setIsStudentListModalOpen(true)}
-            className="text-left bg-gradient-to-br from-indigo-50/50 to-white dark:from-indigo-950/10 dark:to-slate-900/60 p-6 rounded-3xl border border-indigo-100/60 dark:border-indigo-950/40 shadow-sm relative overflow-hidden group hover:border-indigo-300 hover:shadow-lg hover:shadow-indigo-100/20 dark:hover:shadow-none hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between h-48"
+            className="text-left bg-gradient-to-br from-indigo-50/60 via-white to-indigo-50/30 dark:from-indigo-950/20 dark:via-slate-900/85 dark:to-slate-950 p-7 rounded-3xl border-2 border-indigo-150/70 dark:border-indigo-900/40 shadow-sm relative overflow-hidden group hover:border-indigo-500 dark:hover:border-indigo-400 hover:shadow-xl hover:shadow-indigo-500/10 dark:hover:shadow-indigo-500/5 hover:-translate-y-1.5 transition-all duration-300 flex flex-col justify-between h-52"
           >
-            <div className="absolute top-0 right-0 w-24 h-24 bg-indigo-500/5 rounded-bl-full group-hover:scale-120 transition-all duration-300" />
-            <div className="p-3 bg-indigo-100 dark:bg-indigo-950/60 rounded-2xl text-indigo-600 dark:text-indigo-400 w-fit relative z-10">
+            <div className="absolute -top-4 -right-4 w-28 h-28 bg-indigo-500/10 rounded-full blur-xl group-hover:scale-125 transition-transform duration-500" />
+            <div className="p-3.5 bg-indigo-100/80 dark:bg-indigo-950/80 rounded-2xl text-indigo-600 dark:text-indigo-400 w-fit relative z-10 shadow-sm group-hover:bg-indigo-600 group-hover:text-white transition-all duration-300">
               <Users className="h-6 w-6" />
             </div>
-            <div className="space-y-1.5 relative z-10">
-              <h3 className="font-extrabold text-indigo-950 dark:text-indigo-300 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors text-base flex items-center gap-1.5">
-                Hồ Sơ Học Sinh <ChevronRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+            <div className="space-y-2 relative z-10">
+              <h3 className="font-black text-indigo-950 dark:text-indigo-350 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors text-lg flex items-center gap-1.5">
+                Hồ Sơ Học Sinh <ChevronRight className="h-5 w-5 group-hover:translate-x-1 transition-transform duration-300" />
               </h3>
               <p className="text-xs text-gray-500 dark:text-slate-400 leading-relaxed line-clamp-2">Xem chi tiết kết quả học tập, điểm thi đua và quá trình rèn luyện cá nhân.</p>
             </div>
@@ -356,18 +356,18 @@ export const TeacherDashboard: React.FC = () => {
           {/* Hub 2: Learning Analytics */}
           <Link
             to="/teacher/analytics"
-            className="bg-gradient-to-br from-purple-50/50 to-white dark:from-purple-950/10 dark:to-slate-900/60 p-6 rounded-3xl border border-purple-100/60 dark:border-purple-950/40 shadow-sm relative overflow-hidden group hover:border-purple-300 hover:shadow-lg hover:shadow-purple-100/20 dark:hover:shadow-none hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between h-48"
+            className="bg-gradient-to-br from-purple-50/60 via-white to-purple-50/30 dark:from-purple-950/20 dark:via-slate-900/85 dark:to-slate-950 p-7 rounded-3xl border-2 border-purple-150/70 dark:border-purple-900/40 shadow-sm relative overflow-hidden group hover:border-purple-500 dark:hover:border-purple-400 hover:shadow-xl hover:shadow-purple-500/10 dark:hover:shadow-purple-500/5 hover:-translate-y-1.5 transition-all duration-300 flex flex-col justify-between h-52"
           >
-            <div className="absolute top-0 right-0 w-24 h-24 bg-purple-500/5 rounded-bl-full group-hover:scale-120 transition-all duration-300" />
+            <div className="absolute -top-4 -right-4 w-28 h-28 bg-purple-500/10 rounded-full blur-xl group-hover:scale-125 transition-transform duration-500" />
             <div className="flex justify-between items-start relative z-10 w-full">
-              <div className="p-3 bg-purple-100 dark:bg-purple-950/60 rounded-2xl text-purple-600 dark:text-purple-400 w-fit">
+              <div className="p-3.5 bg-purple-100/80 dark:bg-purple-950/80 rounded-2xl text-purple-600 dark:text-purple-400 w-fit shadow-sm group-hover:bg-purple-600 group-hover:text-white transition-all duration-300">
                 <BarChart3 className="h-6 w-6" />
               </div>
-              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300 animate-pulse">Trí Tuệ Nhân Tạo</span>
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300 animate-pulse shadow-sm">Trí Tuệ Nhân Tạo</span>
             </div>
-            <div className="space-y-1.5 relative z-10">
-              <h3 className="font-extrabold text-purple-950 dark:text-purple-300 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors text-base flex items-center gap-1.5">
-                Phân Tích Học Tập AI <ChevronRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+            <div className="space-y-2 relative z-10">
+              <h3 className="font-black text-purple-950 dark:text-purple-350 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors text-lg flex items-center gap-1.5">
+                Phân Tích Học Tập AI <ChevronRight className="h-5 w-5 group-hover:translate-x-1 transition-transform duration-300" />
               </h3>
               <p className="text-xs text-gray-500 dark:text-slate-400 leading-relaxed line-clamp-2">Báo cáo điểm mạnh/yếu, phân tích phổ điểm thi cử từ AI.</p>
             </div>
@@ -376,15 +376,15 @@ export const TeacherDashboard: React.FC = () => {
           {/* Hub 3: Class Competition */}
           <Link
             to="/teacher/class-fun"
-            className="bg-gradient-to-br from-emerald-50/50 to-white dark:from-emerald-950/10 dark:to-slate-900/60 p-6 rounded-3xl border border-emerald-100/60 dark:border-emerald-950/40 shadow-sm relative overflow-hidden group hover:border-emerald-300 hover:shadow-lg hover:shadow-emerald-100/20 dark:hover:shadow-none hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between h-48"
+            className="bg-gradient-to-br from-emerald-50/60 via-white to-emerald-50/30 dark:from-emerald-950/20 dark:via-slate-900/85 dark:to-slate-950 p-7 rounded-3xl border-2 border-emerald-150/70 dark:border-emerald-900/40 shadow-sm relative overflow-hidden group hover:border-emerald-500 dark:hover:border-emerald-400 hover:shadow-xl hover:shadow-emerald-500/10 dark:hover:shadow-emerald-500/5 hover:-translate-y-1.5 transition-all duration-300 flex flex-col justify-between h-52"
           >
-            <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/5 rounded-bl-full group-hover:scale-120 transition-all duration-300" />
-            <div className="p-3 bg-emerald-100 dark:bg-emerald-950/60 rounded-2xl text-emerald-600 dark:text-emerald-400 w-fit relative z-10">
+            <div className="absolute -top-4 -right-4 w-28 h-28 bg-emerald-500/10 rounded-full blur-xl group-hover:scale-125 transition-transform duration-500" />
+            <div className="p-3.5 bg-emerald-100/80 dark:bg-emerald-950/80 rounded-2xl text-emerald-600 dark:text-emerald-400 w-fit relative z-10 shadow-sm group-hover:bg-emerald-600 group-hover:text-white transition-all duration-300">
               <Trophy className="h-6 w-6" />
             </div>
-            <div className="space-y-1.5 relative z-10">
-              <h3 className="font-extrabold text-emerald-950 dark:text-emerald-300 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors text-base flex items-center gap-1.5">
-                Thi Đua Lớp Học <ChevronRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+            <div className="space-y-2 relative z-10">
+              <h3 className="font-black text-emerald-950 dark:text-emerald-350 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors text-lg flex items-center gap-1.5">
+                Thi Đua Lớp Học <ChevronRight className="h-5 w-5 group-hover:translate-x-1 transition-transform duration-300" />
               </h3>
               <p className="text-xs text-gray-500 dark:text-slate-400 leading-relaxed line-clamp-2">Quản lý điểm cộng/trừ rèn luyện, điểm danh và kinh nghiệm XP lớp học.</p>
             </div>
@@ -393,15 +393,15 @@ export const TeacherDashboard: React.FC = () => {
           {/* Hub 4: Notebook */}
           <Link
             to="/teacher/notes"
-            className="bg-gradient-to-br from-amber-50/50 to-white dark:from-amber-950/10 dark:to-slate-900/60 p-6 rounded-3xl border border-amber-100/60 dark:border-amber-950/40 shadow-sm relative overflow-hidden group hover:border-amber-300 hover:shadow-lg hover:shadow-amber-100/20 dark:hover:shadow-none hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between h-48"
+            className="bg-gradient-to-br from-amber-50/60 via-white to-amber-50/30 dark:from-amber-950/20 dark:via-slate-900/85 dark:to-slate-950 p-7 rounded-3xl border-2 border-amber-150/70 dark:border-amber-900/40 shadow-sm relative overflow-hidden group hover:border-amber-300 hover:shadow-lg hover:shadow-amber-500/10 dark:hover:shadow-amber-500/5 hover:-translate-y-1.5 transition-all duration-300 flex flex-col justify-between h-52"
           >
-            <div className="absolute top-0 right-0 w-24 h-24 bg-amber-500/5 rounded-bl-full group-hover:scale-120 transition-all duration-300" />
-            <div className="p-3 bg-amber-100 dark:bg-amber-950/60 rounded-2xl text-amber-600 dark:text-amber-400 w-fit relative z-10">
+            <div className="absolute -top-4 -right-4 w-28 h-28 bg-amber-500/10 rounded-full blur-xl group-hover:scale-125 transition-transform duration-500" />
+            <div className="p-3.5 bg-amber-100/80 dark:bg-amber-950/80 rounded-2xl text-amber-600 dark:text-amber-400 w-fit relative z-10 shadow-sm group-hover:bg-amber-600 group-hover:text-white transition-all duration-300">
               <StickyNote className="h-6 w-6" />
             </div>
-            <div className="space-y-1.5 relative z-10">
-              <h3 className="font-extrabold text-amber-950 dark:text-amber-300 group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors text-base flex items-center gap-1.5">
-                Sổ Tay Sư Phạm <ChevronRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+            <div className="space-y-2 relative z-10">
+              <h3 className="font-black text-amber-950 dark:text-amber-350 group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors text-lg flex items-center gap-1.5">
+                Sổ Tay Sư Phạm <ChevronRight className="h-5 w-5 group-hover:translate-x-1 transition-transform duration-300" />
               </h3>
               <p className="text-xs text-gray-500 dark:text-slate-400 leading-relaxed line-clamp-2">Ghi chú kế hoạch giảng dạy, nhắc nhở công việc họp và ghim việc cần làm.</p>
             </div>
