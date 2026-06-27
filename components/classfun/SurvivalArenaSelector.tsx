@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Trophy, Play, X, Sparkles, ShieldAlert, Zap } from 'lucide-react';
+import { Trophy, Play, X, Zap } from 'lucide-react';
 import { User } from '../../types';
 import { useClassFunStore } from '../../services/classFunStore';
 import { playTickSound, playVictorySound } from '../../utils/audio';
@@ -12,16 +12,32 @@ interface SurvivalArenaSelectorProps {
     onClose: () => void;
 }
 
+interface Particle {
+    id: number;
+    x: number;
+    y: number;
+    color: string;
+    size: number;
+    speedY: number;
+    speedX: number;
+    life: number;
+}
+
 export const SurvivalArenaSelector: React.FC<SurvivalArenaSelectorProps> = ({ students, classId, onClose }) => {
     const { addBehaviorLog } = useClassFunStore();
     const [phase, setPhase] = useState<'SETUP' | 'BATTLE' | 'RESULT'>('SETUP');
     const [eliminatedIds, setEliminatedIds] = useState<Set<string>>(new Set());
+    const [justEliminatedIds, setJustEliminatedIds] = useState<Set<string>>(new Set());
     const [winner, setWinner] = useState<User | null>(null);
     const [rewardPoints, setRewardPoints] = useState<number | null>(null);
     const [isSavingReward, setIsSavingReward] = useState(false);
     const [roundName, setRoundName] = useState<string>('');
+    const [isLightningActive, setIsLightningActive] = useState(false);
+    const [particles, setParticles] = useState<Particle[]>([]);
 
     const activeTimers = useRef<any[]>([]);
+    const containerRef = useRef<HTMLDivElement>(null);
+    const particleIdCounter = useRef(0);
 
     useEffect(() => {
         return () => {
@@ -29,88 +45,133 @@ export const SurvivalArenaSelector: React.FC<SurvivalArenaSelectorProps> = ({ st
         };
     }, []);
 
+    // Particle Animation Loop
+    useEffect(() => {
+        if (phase !== 'BATTLE') return;
+        let animId: number;
+
+        const updateParticles = () => {
+            setParticles(prev => 
+                prev
+                    .map(p => ({
+                        ...p,
+                        x: p.x + p.speedX,
+                        y: p.y + p.speedY,
+                        life: p.life - 0.02
+                    }))
+                    .filter(p => p.life > 0)
+            );
+            animId = requestAnimationFrame(updateParticles);
+        };
+
+        animId = requestAnimationFrame(updateParticles);
+        return () => cancelAnimationFrame(animId);
+    }, [phase]);
+
+    // Function to spawn particles at a card's coordinate
+    const spawnExplosionParticles = (studentId: string) => {
+        const element = document.getElementById(`arena-card-${studentId}`);
+        if (!element || !containerRef.current) return;
+
+        const rect = element.getBoundingClientRect();
+        const containerRect = containerRef.current.getBoundingClientRect();
+        
+        const cardCenterX = rect.left - containerRect.left + rect.width / 2;
+        const cardCenterY = rect.top - containerRect.top + rect.height / 2;
+
+        const colors = ['#ec4899', '#a855f7', '#6366f1', '#3b82f6', '#f43f5e'];
+        const newParticles: Particle[] = [];
+
+        for (let i = 0; i < 15; i++) {
+            particleIdCounter.current++;
+            newParticles.push({
+                id: particleIdCounter.current * 100 + i,
+                x: cardCenterX,
+                y: cardCenterY,
+                color: colors[Math.floor(Math.random() * colors.length)],
+                size: Math.random() * 4 + 3,
+                speedX: (Math.random() - 0.5) * 6,
+                speedY: (Math.random() - 0.5) * 6 - 2, // Drift slightly upwards
+                life: 1.0
+            });
+        }
+
+        setParticles(prev => [...prev, ...newParticles]);
+    };
+
+    const triggerLightningFlash = () => {
+        setIsLightningActive(true);
+        setTimeout(() => setIsLightningActive(false), 150);
+        setTimeout(() => {
+            setIsLightningActive(true);
+            setTimeout(() => setIsLightningActive(false), 100);
+        }, 250);
+    };
+
     const startBattle = () => {
         if (students.length === 0) return;
         setPhase('BATTLE');
         setWinner(null);
         setRewardPoints(null);
         setEliminatedIds(new Set());
+        setJustEliminatedIds(new Set());
+        setParticles([]);
         activeTimers.current = [];
 
-        // Determine the final winner first
+        // Pre-determine target winner
         const randomWinner = students[Math.floor(Math.random() * students.length)];
         const nonWinners = students.filter(s => s.id !== randomWinner.id);
-        
-        // Shuffle non-winners for elimination order
         const shuffledEliminations = [...nonWinners].sort(() => 0.5 - Math.random());
 
-        // We will run 4 elimination rounds
-        // Round 1: eliminate 40% of non-winners
-        // Round 2: eliminate another 30% of non-winners
-        // Round 3: eliminate all but 4 survivors (including winner)
-        // Round 4: eliminate all but the winner!
         const totalNonWinners = shuffledEliminations.length;
         const round1Cut = Math.floor(totalNonWinners * 0.4);
         const round2Cut = Math.floor(totalNonWinners * 0.75);
-        const round3Cut = Math.max(0, totalNonWinners - 3); // Keep 3 non-winners + 1 winner = 4 survivors
+        const round3Cut = Math.max(0, totalNonWinners - 3);
 
-        const nextEliminated = new Set<string>();
+        const currentEliminated = new Set<string>();
 
-        // Schedule Round 1
-        setRoundName('ĐỢT QUÉT 1: LOẠI BỎ 40% BÀI BÁO CÁO');
-        const t1 = setTimeout(() => {
+        const runEliminationRound = (startIdx: number, endIdx: number, roundTitle: string, nextDelay: number, onRoundFinish: () => void) => {
+            setRoundName(roundTitle);
+            triggerLightningFlash();
             playTickSound();
-            for (let i = 0; i < round1Cut; i++) {
-                nextEliminated.add(shuffledEliminations[i].id);
+
+            const roundEliminated = new Set<string>();
+            for (let i = startIdx; i < endIdx; i++) {
+                const sId = shuffledEliminations[i].id;
+                currentEliminated.add(sId);
+                roundEliminated.add(sId);
             }
-            setEliminatedIds(new Set(nextEliminated));
 
-            // Schedule Round 2
-            setRoundName('ĐỢT QUÉT 2: CƠN BÃO KHÍ PHÂN RÃ CẬT LỰC');
-            const t2 = setTimeout(() => {
-                playTickSound();
-                for (let i = round1Cut; i < round2Cut; i++) {
-                    nextEliminated.add(shuffledEliminations[i].id);
-                }
-                setEliminatedIds(new Set(nextEliminated));
+            // Trigger shake/vibration on just eliminated cards
+            setJustEliminatedIds(roundEliminated);
+            
+            // Spawn explosion particles for each eliminated card
+            setTimeout(() => {
+                roundEliminated.forEach(spawnExplosionParticles);
+                setEliminatedIds(new Set(currentEliminated));
+                setJustEliminatedIds(new Set());
+                
+                const tNext = setTimeout(onRoundFinish, nextDelay);
+                activeTimers.current.push(tNext);
+            }, 500);
+        };
 
-                // Schedule Round 3
-                setRoundName('ĐỢT QUÉT BAN ĐÊM: TOP 4 CHIẾN BINH MẠNH NHẤT');
-                const t3 = setTimeout(() => {
-                    playTickSound();
-                    for (let i = round2Cut; i < round3Cut; i++) {
-                        nextEliminated.add(shuffledEliminations[i].id);
-                    }
-                    setEliminatedIds(new Set(nextEliminated));
-
-                    // Schedule Round 4 (Final Showdown)
-                    setRoundName('TRẬN QUYẾT CHIẾN: CHIẾN BINH CUỐI CÙNG SỐNG SÓT');
-                    const t4 = setTimeout(() => {
-                        playTickSound();
-                        for (let i = round3Cut; i < totalNonWinners; i++) {
-                            nextEliminated.add(shuffledEliminations[i].id);
-                        }
-                        setEliminatedIds(new Set(nextEliminated));
-
-                        // Final winner revealed
-                        const tFinal = setTimeout(() => {
-                            setPhase('RESULT');
-                            setWinner(randomWinner);
-                            playVictorySound();
-                        }, 1500);
-                        activeTimers.current.push(tFinal);
-
-                    }, 2000);
-                    activeTimers.current.push(t4);
-
-                }, 2000);
-                activeTimers.current.push(t3);
-
-            }, 2000);
-            activeTimers.current.push(t2);
-
-        }, 2000);
-        activeTimers.current.push(t1);
+        // Round 1
+        runEliminationRound(0, round1Cut, '⚡ BÃO SÉT CẤP 1: QUÉT SẠCH 40% BÀI THI', 2000, () => {
+            // Round 2
+            runEliminationRound(round1Cut, round2Cut, '⚡ BÃO TỪ TRƯỜNG CẤP 2: LASER ĐIỆN TỪ PHÂN RÃ', 2000, () => {
+                // Round 3
+                runEliminationRound(round2Cut, round3Cut, '⚡ ĐỢT SÓNG THẦN CUỐI CÙNG: TOP 4 CHIẾN BINH', 2000, () => {
+                    // Final Duel
+                    runEliminationRound(round3Cut, totalNonWinners, '🔥 QUYẾT CHIẾN: CHỈ MỘT CHIẾN BINH SỐNG SÓT', 2500, () => {
+                        // Winner Reveal
+                        setPhase('RESULT');
+                        setWinner(randomWinner);
+                        playVictorySound();
+                    });
+                });
+            });
+        });
     };
 
     const handleReward = async (points: number) => {
@@ -137,12 +198,18 @@ export const SurvivalArenaSelector: React.FC<SurvivalArenaSelectorProps> = ({ st
     return (
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 backdrop-blur-md p-4">
             {phase === 'RESULT' && <Confetti />}
-            <div className="bg-slate-900 border border-slate-800 w-full max-w-5xl rounded-3xl shadow-2xl flex flex-col relative z-10 transition-all overflow-hidden h-[90vh]">
+            
+            {/* Lightning Flash Overlay screen */}
+            {isLightningActive && (
+                <div className="absolute inset-0 bg-indigo-500/25 z-70 pointer-events-none transition-all duration-75 mix-blend-screen" />
+            )}
+
+            <div className="bg-slate-900 border border-slate-800 w-full max-w-5xl rounded-3xl shadow-2xl flex flex-col relative z-10 overflow-hidden h-[90vh]">
                 
                 {/* Header */}
                 <div className="bg-gradient-to-r from-violet-750 via-indigo-800 to-slate-900 p-4 text-white flex justify-between items-center relative overflow-hidden shrink-0">
                     <div className="absolute inset-0 opacity-20 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-indigo-500 via-slate-900 to-slate-950"></div>
-                    <h2 className="text-xl font-black flex items-center gap-2 relative z-10 tracking-widest uppercase">
+                    <h2 className="text-xl font-black flex items-center gap-2 relative z-10 tracking-widest uppercase italic">
                         ⚡ ĐẤU TRƯỜNG SINH TỒN: BÃO PHÂN RÃ
                     </h2>
                     <button onClick={onClose} className="p-2 hover:bg-white/20 rounded-full transition relative z-10">
@@ -151,7 +218,38 @@ export const SurvivalArenaSelector: React.FC<SurvivalArenaSelectorProps> = ({ st
                 </div>
 
                 {/* Arena Board */}
-                <div className="flex-1 overflow-auto p-6 bg-slate-950 flex flex-col justify-center items-center relative min-h-[350px]">
+                <div 
+                    ref={containerRef}
+                    className="flex-1 overflow-hidden p-6 bg-slate-950 flex flex-col justify-center items-center relative min-h-[350px]"
+                >
+                    {/* Laser scanning sweep line */}
+                    {phase === 'BATTLE' && (
+                        <div 
+                            className="absolute top-0 bottom-0 w-1 bg-gradient-to-r from-transparent via-fuchsia-500 to-transparent shadow-[0_0_20px_rgba(244,63,94,0.8)] pointer-events-none z-30"
+                            style={{
+                                left: '0%',
+                                animation: 'horizontal-laser-sweep 2.5s infinite linear'
+                            }}
+                        />
+                    )}
+
+                    {/* Custom canvas-like particles overlay */}
+                    {phase === 'BATTLE' && particles.map(p => (
+                        <div
+                            key={p.id}
+                            className="absolute rounded-full pointer-events-none z-40 transition-all duration-75 shadow-lg"
+                            style={{
+                                left: `${p.x}px`,
+                                top: `${p.y}px`,
+                                width: `${p.size}px`,
+                                height: `${p.size}px`,
+                                backgroundColor: p.color,
+                                opacity: p.life,
+                                boxShadow: `0 0 10px ${p.color}`
+                            }}
+                        />
+                    ))}
+
                     {phase === 'SETUP' && (
                         <div className="max-w-md w-full bg-slate-900 border border-slate-800 p-8 rounded-3xl shadow-xl text-center z-10">
                             <div className="text-6xl mb-4 animate-bounce">⚡</div>
@@ -169,31 +267,40 @@ export const SurvivalArenaSelector: React.FC<SurvivalArenaSelectorProps> = ({ st
                     )}
 
                     {phase === 'BATTLE' && (
-                        <div className="w-full h-full flex flex-col items-center justify-between py-2">
+                        <div className="w-full h-full flex flex-col items-center justify-between py-2 z-20">
                             {/* Live Battle Banner */}
                             <div className="mb-4 text-center shrink-0">
-                                <span className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-widest bg-red-500/10 text-red-400 animate-pulse border border-red-500/20">
-                                    <Zap className="h-3.5 w-3.5" /> {roundName}
+                                <span className="inline-flex items-center gap-1.5 px-5 py-2 rounded-full text-xs font-black uppercase tracking-widest bg-red-500/10 text-red-400 animate-pulse border border-red-500/20 shadow-[0_0_15px_rgba(239,68,68,0.15)]">
+                                    <Zap className="h-4 w-4 text-amber-500 animate-bounce" /> {roundName}
                                 </span>
                             </div>
 
-                            {/* Arena Grid cards */}
+                            {/* Arena Grid cards (Scroll-free grid list) */}
                             <div className="flex-1 w-full grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3.5 items-center justify-center p-2 overflow-y-auto">
                                 {students.map((student) => {
                                     const isEliminated = eliminatedIds.has(student.id);
+                                    const isJustEliminated = justEliminatedIds.has(student.id);
 
                                     return (
                                         <div
                                             key={student.id}
+                                            id={`arena-card-${student.id}`}
                                             className={`relative p-4 rounded-2xl border text-center transition-all duration-300 flex flex-col justify-center items-center h-20 shadow-sm
-                                                ${isEliminated 
-                                                    ? 'bg-slate-950/40 border-slate-900/60 text-slate-650 opacity-15 grayscale scale-95 blur-[0.5px] line-through decoration-red-900/40' 
-                                                    : 'bg-slate-900 border-indigo-950 text-slate-100 font-extrabold ring-1 ring-indigo-500/5 animate-pulse'
+                                                ${isJustEliminated 
+                                                    ? 'bg-red-950/40 border-red-500 text-red-400 scale-105 animate-shake ring-2 ring-red-500 z-10' 
+                                                    : isEliminated 
+                                                        ? 'bg-slate-950/40 border-slate-900/60 text-slate-700 opacity-10 grayscale scale-95 blur-[0.5px] line-through decoration-red-950/30' 
+                                                        : 'bg-slate-900 border-indigo-950 text-slate-100 font-extrabold ring-1 ring-indigo-500/5 hover:border-indigo-500'
                                                 }`}
                                         >
-                                            {isEliminated && (
-                                                <div className="absolute top-1 right-2 text-[8px] font-black uppercase text-red-500/40 tracking-wider">
-                                                    LOẠI
+                                            {isJustEliminated && (
+                                                <div className="absolute top-1.5 right-2 text-[9px] font-black uppercase text-red-450 animate-ping">
+                                                    PHÂN RÃ
+                                                </div>
+                                            )}
+                                            {isEliminated && !isJustEliminated && (
+                                                <div className="absolute top-1.5 right-2 text-[8px] font-black uppercase text-slate-800 tracking-wider">
+                                                    HỦY
                                                 </div>
                                             )}
                                             <span className="text-sm tracking-wide truncate w-full">{student.name}</span>
@@ -208,7 +315,7 @@ export const SurvivalArenaSelector: React.FC<SurvivalArenaSelectorProps> = ({ st
                         <div className="max-w-md w-full bg-slate-900 border-2 border-indigo-500 p-8 rounded-3xl shadow-2xl text-center z-10 animate-in zoom-in-95 duration-300">
                             <span className="text-6xl mb-4 block animate-bounce">⚡</span>
                             <h3 className="text-sm font-black text-indigo-400 uppercase tracking-widest mb-1">CHIẾN BINH CUỐI CÙNG</h3>
-                            <h2 className="text-3xl font-black text-slate-100 tracking-wide uppercase drop-shadow-[0_2px_10px_rgba(99,102,241,0.3)] mb-6">
+                            <h2 className="text-3xl font-black text-slate-100 tracking-wide uppercase drop-shadow-[0_2px_10px_rgba(99,102,241,0.3)] mb-6 animate-pulse">
                                 {winner.name}
                             </h2>
 
