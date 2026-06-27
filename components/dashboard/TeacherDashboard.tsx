@@ -308,20 +308,20 @@ export const TeacherDashboard: React.FC = () => {
       </div>
 
       {/* 2. STATS CARDS SECTION WITH GRADIENT ACCENTS */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {[
-          { icon: Users, label: 'Tổng số Học sinh', value: teacherStudentsCount, color: 'from-emerald-500 to-teal-600', text: 'text-emerald-950 dark:text-emerald-300', bg: 'bg-emerald-50/30 dark:bg-emerald-950/10 border-emerald-100/60 dark:border-emerald-900/20' },
-          { icon: BookOpen, label: 'Bài tập đã tạo', value: filteredExams.length, color: 'from-blue-500 to-indigo-600', text: 'text-blue-950 dark:text-blue-300', bg: 'bg-blue-50/30 dark:bg-blue-950/10 border-blue-100/60 dark:border-blue-900/20' },
-          { icon: TrendingUp, label: 'Tổng lượt nộp bài', value: totalAttemptsCount, color: 'from-indigo-500 to-purple-600', text: 'text-indigo-950 dark:text-indigo-300', bg: 'bg-indigo-50/30 dark:bg-indigo-950/10 border-indigo-100/60 dark:border-indigo-900/20' },
-          { icon: BookOpen, label: 'Kho tài liệu & Web', value: filteredResources.length, color: 'from-amber-500 to-orange-600', text: 'text-amber-950 dark:text-amber-300', bg: 'bg-amber-50/30 dark:bg-amber-950/10 border-amber-100/60 dark:border-amber-900/20' }
+          { icon: Users, label: 'Tổng số Học sinh', value: teacherStudentsCount, color: 'from-emerald-500 to-teal-600', text: 'text-emerald-950 dark:text-emerald-300', bg: 'bg-emerald-50/40 dark:bg-emerald-950/20 border-emerald-150/70 dark:border-emerald-900/30 shadow-emerald-100/10' },
+          { icon: BookOpen, label: 'Bài tập đã tạo', value: filteredExams.length, color: 'from-blue-500 to-indigo-600', text: 'text-blue-950 dark:text-blue-300', bg: 'bg-blue-50/40 dark:bg-blue-950/20 border-blue-150/70 dark:border-blue-900/30 shadow-blue-100/10' },
+          { icon: TrendingUp, label: 'Tổng lượt nộp bài', value: totalAttemptsCount, color: 'from-indigo-500 to-purple-600', text: 'text-indigo-950 dark:text-indigo-300', bg: 'bg-indigo-50/40 dark:bg-indigo-950/20 border-indigo-150/70 dark:border-indigo-900/30 shadow-indigo-100/10' },
+          { icon: BookOpen, label: 'Kho tài liệu & Web', value: filteredResources.length, color: 'from-amber-500 to-orange-600', text: 'text-amber-950 dark:text-amber-300', bg: 'bg-amber-50/40 dark:bg-amber-950/20 border-amber-150/70 dark:border-amber-900/30 shadow-amber-100/10' }
         ].map((card, i) => (
-          <div key={i} className={`flex items-center gap-4 bg-white dark:bg-slate-900 p-4.5 rounded-2xl border dark:border-slate-800 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 ${card.bg}`}>
-            <div className={`p-3 rounded-2xl bg-gradient-to-br ${card.color} text-white shadow-sm flex-shrink-0`}>
-              <card.icon className="h-5 w-5" />
+          <div key={i} className={`flex items-center gap-5 bg-white dark:bg-slate-900 py-6 px-6 rounded-2xl border dark:border-slate-800 shadow-md hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ${card.bg}`}>
+            <div className={`p-4 rounded-2xl bg-gradient-to-br ${card.color} text-white shadow-md flex-shrink-0 transform group-hover:scale-110 transition-transform duration-300`}>
+              <card.icon className="h-6 w-6" />
             </div>
             <div>
-              <p className="text-xs font-semibold text-gray-500 dark:text-slate-400">{card.label}</p>
-              <h4 className="text-xl font-extrabold text-gray-900 dark:text-slate-100 mt-0.5">{card.value}</h4>
+              <p className="text-xs font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wider">{card.label}</p>
+              <h4 className="text-3xl font-black text-gray-900 dark:text-slate-100 mt-1.5 tracking-tight">{card.value}</h4>
             </div>
           </div>
         ))}
