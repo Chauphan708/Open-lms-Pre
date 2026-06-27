@@ -486,22 +486,22 @@ export const TeacherDashboard: React.FC = () => {
         <div className="space-y-6">
           
           {/* Quick Stats Widget */}
-          <div className="bg-gradient-to-r from-violet-650 via-indigo-600 to-indigo-700 p-6 rounded-3xl text-white relative overflow-hidden shadow-md">
+          <div className="bg-gradient-to-br from-violet-600 via-indigo-600 to-indigo-800 p-6 rounded-3xl text-white relative overflow-hidden shadow-lg border border-indigo-500/20">
             <div className="absolute top-0 right-0 w-[150px] h-[150px] bg-white/5 rounded-full -translate-y-1/2 translate-x-1/3 blur-xl pointer-events-none" />
-            <h3 className="font-extrabold text-sm uppercase tracking-wider text-violet-250 dark:text-violet-200">Trợ Lý Sư Phạm AI</h3>
-            <p className="text-xs text-indigo-50 mt-3 leading-relaxed">
+            <h3 className="font-extrabold text-sm uppercase tracking-wider text-violet-200">Trợ Lý Sư Phạm AI</h3>
+            <p className="text-xs text-indigo-100 mt-3 leading-relaxed">
               Bạn có thể sử dụng tính năng **Phân tích Học tập** hoặc tính năng **Chấm bài tự động AI** để giảm bớt 70% thời gian chấm bài viết tay và nhận xét học bạ định kỳ cho học sinh.
             </p>
             <div className="mt-5 flex gap-2">
               <Link 
                 to="/teacher/ai-grading" 
-                className="bg-white/15 hover:bg-white/20 px-3.5 py-2 rounded-xl text-xs font-bold text-white transition-all text-center flex-1 border border-white/5 shadow-xs"
+                className="bg-white/15 hover:bg-white/25 px-3.5 py-2 rounded-xl text-xs font-bold text-white transition-all text-center flex-1 border border-white/20 shadow-xs"
               >
                 Chấm Bài AI
               </Link>
               <Link 
                 to="/teacher/analytics" 
-                className="bg-white dark:bg-slate-800 text-indigo-750 dark:text-slate-200 hover:bg-indigo-50 dark:hover:bg-slate-700 border border-transparent dark:border-slate-700 px-3.5 py-2 rounded-xl text-xs font-bold transition-all text-center flex-1 shadow-md dark:shadow-none"
+                className="bg-white hover:bg-indigo-50 text-indigo-900 px-3.5 py-2 rounded-xl text-xs font-bold transition-all text-center flex-1 shadow-md"
               >
                 Xem Phân Tích
               </Link>
