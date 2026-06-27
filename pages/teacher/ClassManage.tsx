@@ -9,6 +9,9 @@ import { GroupManageModal } from '../../components/classfun/GroupManageModal';
 import { RandomGroupModal } from '../../components/classfun/RandomGroupModal';
 import { ClassSeatingModal } from '../../components/classfun/ClassSeatingModal';
 import { ClassParentTab } from '../../components/parents/ClassParentTab';
+import { TimeBombSelector } from '../../components/classfun/TimeBombSelector';
+import { KrakenOceanSelector } from '../../components/classfun/KrakenOceanSelector';
+import { SurvivalArenaSelector } from '../../components/classfun/SurvivalArenaSelector';
 
 export const ClassManage: React.FC = () => {
   const { classes, academicYears, users, user: currentUser, addClass, updateClass, deleteClass, fetchClasses } = useStore();
@@ -144,6 +147,9 @@ export const ClassManage: React.FC = () => {
   const [showGroupModal, setShowGroupModal] = useState(false);
   const [showRandomGroup, setShowRandomGroup] = useState(false);
   const [showSeatingModal, setShowSeatingModal] = useState(false);
+  const [showTimeBomb, setShowTimeBomb] = useState(false);
+  const [showKrakenOcean, setShowKrakenOcean] = useState(false);
+  const [showSurvivalArena, setShowSurvivalArena] = useState(false);
 
   // Group students
   const groupedStudents = React.useMemo(() => {
@@ -422,6 +428,18 @@ export const ClassManage: React.FC = () => {
                   <span className="text-lg leading-none">🦆</span> Đua Vịt
                 </button>
                 <div className="w-px h-5 bg-gray-200 mx-1 hidden sm:block"></div>
+                <button onClick={() => setShowTimeBomb(true)} className="text-sm bg-red-50 text-red-700 px-4 py-2 rounded-lg hover:bg-red-100 font-bold flex items-center gap-2 transition shadow-sm border border-red-200 dark:border-slate-800">
+                  <span className="text-base leading-none">💣</span> Bom Hẹn Giờ
+                </button>
+                <div className="w-px h-5 bg-gray-200 mx-1 hidden sm:block"></div>
+                <button onClick={() => setShowKrakenOcean(true)} className="text-sm bg-cyan-50 text-cyan-700 px-4 py-2 rounded-lg hover:bg-cyan-100 font-bold flex items-center gap-2 transition shadow-sm border border-cyan-200 dark:border-slate-800">
+                  <span className="text-base leading-none">🌊</span> Đại Hải Trình
+                </button>
+                <div className="w-px h-5 bg-gray-200 mx-1 hidden sm:block"></div>
+                <button onClick={() => setShowSurvivalArena(true)} className="text-sm bg-violet-50 text-violet-700 px-4 py-2 rounded-lg hover:bg-violet-100 font-bold flex items-center gap-2 transition shadow-sm border border-violet-200 dark:border-slate-800">
+                  <span className="text-base leading-none">⚡</span> Đấu Trường
+                </button>
+                <div className="w-px h-5 bg-gray-200 mx-1 hidden sm:block"></div>
                 <button onClick={() => setShowSeatingModal(true)} className="text-sm bg-blue-50 text-blue-700 px-4 py-2 rounded-lg hover:bg-blue-100 font-bold flex items-center gap-2 transition shadow-sm border border-blue-200 dark:border-slate-800">
                   <LayoutGrid className="h-4 w-4" /> Sơ đồ Lớp
                 </button>
@@ -669,6 +687,30 @@ export const ClassManage: React.FC = () => {
 
       {showSeatingModal && selectedClassId && (
         <ClassSeatingModal classId={selectedClassId} students={studentsInClass} onClose={() => setShowSeatingModal(false)} />
+      )}
+
+      {showTimeBomb && (
+        <TimeBombSelector
+          students={studentsInClass}
+          classId={selectedClassId || ''}
+          onClose={() => setShowTimeBomb(false)}
+        />
+      )}
+
+      {showKrakenOcean && (
+        <KrakenOceanSelector
+          students={studentsInClass}
+          classId={selectedClassId || ''}
+          onClose={() => setShowKrakenOcean(false)}
+        />
+      )}
+
+      {showSurvivalArena && (
+        <SurvivalArenaSelector
+          students={studentsInClass}
+          classId={selectedClassId || ''}
+          onClose={() => setShowSurvivalArena(false)}
+        />
       )}
     </div>
   );
