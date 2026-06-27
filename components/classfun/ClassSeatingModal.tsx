@@ -3,6 +3,7 @@ import { useClassFunStore } from '../../services/classFunStore';
 import { User, ClassSeat } from '../../types';
 import { generateSeatingChart } from '../../services/geminiService';
 import { X, Users, RotateCcw, Save, LayoutGrid, AlertCircle, Wand2, CheckSquare } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 interface ClassSeatingModalProps {
     classId: string;
@@ -181,14 +182,19 @@ export const ClassSeatingModal: React.FC<ClassSeatingModalProps> = ({ classId, s
 
     const handleSave = async () => {
         setIsSaving(true);
-        await saveSeatingChart({
-            classId,
-            rows,
-            columns: cols,
-            seats
-        });
-        setIsSaving(false);
-        onClose();
+        try {
+            await saveSeatingChart({
+                classId,
+                rows,
+                columns: cols,
+                seats
+            });
+            toast.success('Lưu sơ đồ lớp học thành công!');
+        } catch (e) {
+            toast.error('Có lỗi xảy ra khi lưu sơ đồ.');
+        } finally {
+            setIsSaving(false);
+        }
     }
 
 
