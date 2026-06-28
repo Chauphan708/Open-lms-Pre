@@ -26,14 +26,7 @@ export const DuckRace: React.FC<DuckRaceProps> = ({ students, onComplete, onClos
     const [winner, setWinner] = useState<User | null>(null);
     const [commentary, setCommentary] = useState<string>('Chào mừng các bạn đến với Giải Đua Vịt lớp học!');
     
-    const requestRef = useRef<number>();
-    const lastTimeRef = useRef<number>();
     const countdownTimerRef = useRef<any>();
-
-    const winnerRef = useRef(winner);
-    useEffect(() => {
-        winnerRef.current = winner;
-    }, [winner]);
 
     const commentaryTemplates = [
         "Vịt của [NAME] đang bứt tốc ngoạn mục!",
@@ -51,7 +44,6 @@ export const DuckRace: React.FC<DuckRaceProps> = ({ students, onComplete, onClos
         }
         return () => {
             if (countdownTimerRef.current) clearInterval(countdownTimerRef.current);
-            if (requestRef.current) cancelAnimationFrame(requestRef.current);
         };
     }, [students]);
 
@@ -112,79 +104,62 @@ export const DuckRace: React.FC<DuckRaceProps> = ({ students, onComplete, onClos
         };
     }, [phase]);
 
-    // Animation loop effect triggered after phase changes to RACING
+    // Stable interval-based racing animation loop
     useEffect(() => {
+        let raceInterval: any = null;
+
         if (phase === 'RACING') {
-            lastTimeRef.current = performance.now();
-            requestRef.current = requestAnimationFrame(runRace);
             setCommentary('XUẤT PHÁT!!!');
+            
+            // Interval ticks every 40ms (25fps) for smooth and guaranteed movement
+            raceInterval = setInterval(() => {
+                setRacers(prevRacers => {
+                    let someoneWon = false;
+                    let newWinner: any = null;
+
+                    const updated = prevRacers.map(racer => {
+                        if (someoneWon) return racer;
+                        if (racer.progress >= 100) return racer;
+
+                        // Increment factors based on speed settings
+                        let speedMultiplier = 1.0;
+                        if (speedSetting === 'SLOW') speedMultiplier = 0.6;
+                        if (speedSetting === 'FAST') speedMultiplier = 1.8;
+
+                        // Random progress increment per tick (around 0.2% to 1.3%)
+                        const baseIncrement = Math.random() * 0.95 + 0.15;
+                        const increment = baseIncrement * speedMultiplier;
+                        let newProgress = racer.progress + increment;
+
+                        if (newProgress >= 100) {
+                            newProgress = 100;
+                            someoneWon = true;
+                            newWinner = racer.student;
+                        }
+
+                        return { ...racer, progress: newProgress };
+                    });
+
+                    if (someoneWon && newWinner) {
+                        setPhase('RESULT');
+                        setWinner(newWinner);
+                        setCommentary(`Chúc mừng Vịt ${newWinner.name} đã giành chiến thắng! 🏆`);
+                        playVictorySound();
+                        clearInterval(raceInterval);
+                    }
+
+                    return updated;
+                });
+            }, 40);
         }
+
         return () => {
-            if (requestRef.current) cancelAnimationFrame(requestRef.current);
+            if (raceInterval) clearInterval(raceInterval);
         };
-    }, [phase]);
-
-    const runRace = (time: number) => {
-        const now = performance.now();
-        const deltaTime = lastTimeRef.current ? now - lastTimeRef.current : 16.67;
-        lastTimeRef.current = now;
-
-        setRacers(prevRacers => {
-            let someoneWon = false;
-            let newWinner: any = null;
-
-            const updated = prevRacers.map(racer => {
-                if (someoneWon) return racer;
-                if (racer.progress >= 100) return racer;
-
-                let newSpeed = racer.speed;
-
-                if (Math.random() < 0.02) {
-                    const roll = Math.random();
-                    if (roll < 0.2) {
-                        newSpeed = Math.random() * 1.0 + 0.1; 
-                    } else if (roll > 0.85) {
-                        newSpeed = Math.random() * 6 + 7; 
-                    } else {
-                        newSpeed = Math.random() * 3.5 + 2.0; 
-                    }
-                } else {
-                    newSpeed = Math.max(0.4, Math.min(12, newSpeed + (Math.random() - 0.5) * 0.5));
-                }
-
-                let baseFactor = 0.0016; 
-                if (speedSetting === 'SLOW') baseFactor = 0.0011;
-                if (speedSetting === 'FAST') baseFactor = 0.0035;
-
-                let newProgress = racer.progress + (newSpeed * deltaTime * baseFactor);
-
-                if (newProgress >= 100) {
-                    newProgress = 100;
-                    if (!someoneWon) {
-                        someoneWon = true;
-                        newWinner = racer.student;
-                    }
-                }
-                return { ...racer, progress: newProgress, speed: newSpeed };
-            });
-
-            if (someoneWon && newWinner) {
-                setPhase('RESULT');
-                setWinner(newWinner);
-                setCommentary(`Chúc mừng Vịt ${newWinner.name} đã giành chiến thắng! 🏆`);
-                playVictorySound();
-            }
-
-            return updated;
-        });
-
-        if (!winnerRef.current) {
-            requestRef.current = requestAnimationFrame(runRace);
-        }
-    };
+    }, [phase, speedSetting]);
 
     const startRace = () => {
-        playTickSound(); // Direct user click interaction resumes audio context
+        playTickSound(); // Pre-trigger Web Audio Context on direct click handler to bypass block
         setPhase('COUNTDOWN');
     };
 
@@ -217,7 +192,7 @@ export const DuckRace: React.FC<DuckRaceProps> = ({ students, onComplete, onClos
                 
                 {/* Header */}
                 <div className="bg-gradient-to-r from-cyan-600 via-blue-600 to-indigo-700 p-4 text-white flex justify-between items-center relative overflow-hidden shrink-0">
-                    <div className="absolute inset-0 opacity-20 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-cyan-400 via-indigo-650 to-indigo-900"></div>
+                    <div className="absolute inset-0 opacity-20 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-cyan-400 via-indigo-655 to-indigo-900"></div>
                     <h2 className="text-xl font-black italic flex items-center gap-2.5 relative z-10 tracking-wide uppercase">
                         🦆 GIẢI ĐUA VỊT LỚP HỌC
                     </h2>
@@ -239,10 +214,10 @@ export const DuckRace: React.FC<DuckRaceProps> = ({ students, onComplete, onClos
                 {/* Main Race Track Screen (Single Open Pool, No Rows, No Scrollbars) */}
                 <div className="flex-1 bg-gradient-to-b from-blue-900 via-sky-900 to-blue-950 relative overflow-hidden p-6 select-none flex flex-col justify-center">
                     
-                    {/* Animated Ocean Wave Layers */}
-                    <div className="absolute inset-0 z-0 opacity-20 pointer-events-none overflow-hidden">
-                        <div className="absolute inset-0 bg-[url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 1200 120%22 preserveAspectRatio=%22none%22><path d=%22M0,40 C150,90 350,90 500,40 C650,90 850,90 1000,40 C1150,90 1350,90 1500,40 L1500,120 L0,120 Z%22 fill=%25230ea5e9 opacity=%220.25%22/></svg>')] bg-repeat-x bg-[length:1000px_100%] animate-wave-slow" />
-                        <div className="absolute inset-0 bg-[url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 1200 120%22 preserveAspectRatio=%22none%22><path d=%22M0,60 C150,110 350,110 500,60 C650,110 850,110 1000,60 C1150,110 1350,110 1500,60 L1500,120 L0,120 Z%22 fill=%252338bdf8 opacity=%220.35%22/></svg>')] bg-repeat-x bg-[length:800px_100%] animate-wave-fast" />
+                    {/* Animated Ocean Wave Layers (Fixed %23 URL Encoding) */}
+                    <div className="absolute inset-0 z-0 opacity-25 pointer-events-none overflow-hidden">
+                        <div className="absolute inset-0 bg-[url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 1200 120%22 preserveAspectRatio=%22none%22><path d=%22M0,40 C150,90 350,90 500,40 C650,90 850,90 1000,40 C1150,90 1350,90 1500,40 L1500,120 L0,120 Z%22 fill=%22%230ea5e9%22 opacity=%220.3%22/></svg>')] bg-repeat-x bg-[length:1000px_100%] animate-wave-slow" />
+                        <div className="absolute inset-0 bg-[url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 1200 120%22 preserveAspectRatio=%22none%22><path d=%22M0,60 C150,110 350,110 500,60 C650,110 850,110 1000,60 C1150,110 1350,110 1500,60 L1500,120 L0,120 Z%22 fill=%22%2338bdf8%22 opacity=%220.4%22/></svg>')] bg-repeat-x bg-[length:800px_100%] animate-wave-fast" />
                     </div>
 
                     {phase === 'SETUP' && (
@@ -304,13 +279,6 @@ export const DuckRace: React.FC<DuckRaceProps> = ({ students, onComplete, onClos
 
                             {/* Render all ducks together in one open pool area */}
                             {racers.map((racer, idx) => {
-                                const bobY = phase === 'RACING' 
-                                    ? Math.sin((racer.progress * 0.45) + racer.wobbleOffset) * 4.5 
-                                    : 0;
-                                const tilt = phase === 'RACING'
-                                    ? Math.cos((racer.progress * 0.45) + racer.wobbleOffset) * 5
-                                    : 0;
-                                
                                 const isLead = currentLeader?.id === racer.id;
 
                                 // Dynamically space out positions vertically in the pool
@@ -326,11 +294,10 @@ export const DuckRace: React.FC<DuckRaceProps> = ({ students, onComplete, onClos
                                 return (
                                     <div
                                         key={racer.id}
-                                        className="absolute transition-all duration-75 z-20 flex flex-col items-center"
+                                        className="absolute transition-all duration-300 z-20 flex flex-col items-center"
                                         style={{
                                             left: `${racer.progress * 0.82 + 6}%`, // Scale to fit screen width
                                             top: `${topPercent}%`,
-                                            transform: `translateY(${bobY}px) rotate(${tilt}deg)`
                                         }}
                                     >
                                         {/* Floating name tag directly above duck */}
