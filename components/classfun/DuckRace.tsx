@@ -1,11 +1,14 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { Trophy, Play, RotateCcw, X } from 'lucide-react';
 import { User } from '../../types';
+import { useClassFunStore } from '../../services/classFunStore';
 import { playTickSound, playVictorySound } from '../../utils/audio';
 import { Confetti } from './Confetti';
+import toast from 'react-hot-toast';
 
 interface DuckRaceProps {
     students: User[];
+    classId?: string;
     onComplete: (winner: User) => void;
     onClose: () => void;
 }
@@ -18,13 +21,16 @@ interface Racer {
     wobbleOffset: number;
 }
 
-export const DuckRace: React.FC<DuckRaceProps> = ({ students, onComplete, onClose }) => {
+export const DuckRace: React.FC<DuckRaceProps> = ({ students, classId, onComplete, onClose }) => {
+    const { addBehaviorLog } = useClassFunStore();
     const [racers, setRacers] = useState<Racer[]>([]);
     const [phase, setPhase] = useState<'SETUP' | 'COUNTDOWN' | 'RACING' | 'RESULT'>('SETUP');
     const [countdown, setCountdown] = useState(3);
     const [speedSetting, setSpeedSetting] = useState<'SLOW' | 'NORMAL' | 'FAST'>('NORMAL');
     const [winner, setWinner] = useState<User | null>(null);
     const [commentary, setCommentary] = useState<string>('Chào mừng các bạn đến với Giải Đua Vịt lớp học!');
+    const [rewardPoints, setRewardPoints] = useState<number | null>(null);
+    const [isSavingReward, setIsSavingReward] = useState(false);
     
     const countdownTimerRef = useRef<any>();
 
@@ -57,6 +63,7 @@ export const DuckRace: React.FC<DuckRaceProps> = ({ students, onComplete, onClos
         }));
         setRacers(initialRacers);
         setWinner(null);
+        setRewardPoints(null);
         setCommentary('Các vận động viên vịt đang khởi động tại vạch xuất phát...');
     };
 
@@ -111,7 +118,6 @@ export const DuckRace: React.FC<DuckRaceProps> = ({ students, onComplete, onClos
         if (phase === 'RACING') {
             setCommentary('XUẤT PHÁT!!!');
             
-            // Interval ticks every 40ms (25fps) for smooth and guaranteed movement
             raceInterval = setInterval(() => {
                 setRacers(prevRacers => {
                     let someoneWon = false;
@@ -121,12 +127,10 @@ export const DuckRace: React.FC<DuckRaceProps> = ({ students, onComplete, onClos
                         if (someoneWon) return racer;
                         if (racer.progress >= 100) return racer;
 
-                        // Increment factors based on speed settings
                         let speedMultiplier = 1.0;
                         if (speedSetting === 'SLOW') speedMultiplier = 0.6;
                         if (speedSetting === 'FAST') speedMultiplier = 1.8;
 
-                        // Random progress increment per tick (around 0.2% to 1.3%)
                         const baseIncrement = Math.random() * 0.95 + 0.15;
                         const increment = baseIncrement * speedMultiplier;
                         let newProgress = racer.progress + increment;
@@ -159,13 +163,34 @@ export const DuckRace: React.FC<DuckRaceProps> = ({ students, onComplete, onClos
     }, [phase, speedSetting]);
 
     const startRace = () => {
-        playTickSound(); // Pre-trigger Web Audio Context on direct click handler to bypass block
+        playTickSound(); 
         setPhase('COUNTDOWN');
     };
 
     const handleSelectWinner = () => {
         if (winner) {
             onComplete(winner);
+        }
+    };
+
+    const handleReward = async (points: number) => {
+        if (!winner || !classId) return;
+        setIsSavingReward(true);
+        try {
+            await addBehaviorLog({
+                student_id: winner.id,
+                class_id: classId,
+                behavior_id: null,
+                points: points,
+                reason: `Thắng trò chơi Trợ Lý Sư Phạm AI: Đua Vịt Lớp Học`,
+                recorded_by: null
+            });
+            setRewardPoints(points);
+            toast.success(`Đã cộng +${points} XP cho ${winner.name}!`);
+        } catch (e) {
+            toast.error('Không thể cộng điểm thi đua.');
+        } finally {
+            setIsSavingReward(false);
         }
     };
 
@@ -188,7 +213,7 @@ export const DuckRace: React.FC<DuckRaceProps> = ({ students, onComplete, onClos
                 }
             `}</style>
 
-            <div className="bg-slate-900 border border-slate-800 w-full max-w-5xl rounded-3xl shadow-2xl overflow-hidden flex flex-col h-[90vh]">
+            <div className="bg-slate-900 border border-slate-800 w-full max-w-5xl rounded-3xl shadow-2xl overflow-hidden flex flex-col h-[90vh] relative">
                 
                 {/* Header */}
                 <div className="bg-gradient-to-r from-cyan-600 via-blue-600 to-indigo-700 p-4 text-white flex justify-between items-center relative overflow-hidden shrink-0">
@@ -206,7 +231,7 @@ export const DuckRace: React.FC<DuckRaceProps> = ({ students, onComplete, onClos
                     <span className="bg-red-500/10 text-red-400 border border-red-500/30 text-[9px] font-black px-2 py-0.5 rounded uppercase tracking-wider shrink-0 animate-pulse">
                         Bình Luận Viên
                     </span>
-                    <p className="text-xs font-semibold text-slate-300 truncate">
+                    <p className="text-xs font-semibold text-slate-350 truncate">
                         {commentary}
                     </p>
                 </div>
@@ -221,7 +246,7 @@ export const DuckRace: React.FC<DuckRaceProps> = ({ students, onComplete, onClos
                     </div>
 
                     {phase === 'SETUP' && (
-                        <div className="max-w-md mx-auto bg-slate-900 border border-slate-800 p-6 rounded-3xl shadow-lg text-center z-20">
+                        <div className="max-w-md mx-auto bg-slate-900 border border-slate-800 p-6 rounded-3xl shadow-lg text-center z-25">
                             <div className="text-5xl mb-3">🏁</div>
                             <h3 className="font-black text-slate-200 mb-5 text-lg tracking-wide uppercase">Cấu hình Đấu Trường</h3>
 
@@ -272,9 +297,9 @@ export const DuckRace: React.FC<DuckRaceProps> = ({ students, onComplete, onClos
 
                     {phase !== 'SETUP' && (
                         <div className="relative w-full h-[65vh]">
-                            {/* Finish Line Banner */}
-                            <div className="absolute right-6 top-0 bottom-0 w-2.5 border-r-4 border-dashed border-red-500/50 flex flex-col justify-center items-center z-0 opacity-60">
-                                <div className="text-[10px] font-black text-red-400 uppercase rotate-90 tracking-widest bg-slate-950 px-2.5 py-1 rounded-full border border-red-500/20 shadow">ĐÍCH ĐẾN</div>
+                            {/* Finish Line Banner (Dashed line positioned at exactly 92% of the width) */}
+                            <div className="absolute left-[92%] top-0 bottom-0 w-2.5 border-r-4 border-dashed border-red-500/50 flex flex-col justify-center items-center z-0 opacity-60">
+                                <div className="text-[10px] font-black text-red-405 uppercase rotate-90 tracking-widest bg-slate-950 px-2.5 py-1 rounded-full border border-red-500/20 shadow">ĐÍCH ĐẾN</div>
                             </div>
 
                             {/* Render all ducks together in one open pool area */}
@@ -284,24 +309,35 @@ export const DuckRace: React.FC<DuckRaceProps> = ({ students, onComplete, onClos
                                 // Dynamically space out positions vertically in the pool
                                 const topPercent = (idx / (racers.length - 1 || 1)) * 82 + 5; 
                                 
-                                // Scale size based on total racer count
-                                const duckScaleClass = racers.length <= 12 
-                                    ? 'text-3xl' 
-                                    : racers.length <= 22 
-                                        ? 'text-2xl' 
-                                        : 'text-lg';
+                                // SCALE SIZE: Upgraded size to meet user requirements (Student names larger, ducks larger)
+                                let duckScaleClass = 'text-4xl';
+                                let nameTagClass = 'text-[11px] px-2 py-0.5';
+
+                                if (racers.length <= 12) {
+                                    duckScaleClass = 'text-6xl';
+                                    nameTagClass = 'text-[13px] px-2.5 py-1';
+                                } else if (racers.length <= 22) {
+                                    duckScaleClass = 'text-5xl';
+                                    nameTagClass = 'text-[12px] px-2 py-0.5';
+                                } else {
+                                    duckScaleClass = 'text-3.5xl';
+                                    nameTagClass = 'text-[10px] px-1.5 py-0';
+                                }
+
+                                // POSITION CALCULATION: Scale precisely so duck touches the finish line (92%) when progress is 100
+                                const finalLeftPercent = racer.progress * 0.88 + 4; // Starts at 4% and ends exactly at 92% (touching finish line)
 
                                 return (
                                     <div
                                         key={racer.id}
                                         className="absolute transition-all duration-300 z-20 flex flex-col items-center"
                                         style={{
-                                            left: `${racer.progress * 0.82 + 6}%`, // Scale to fit screen width
+                                            left: `${finalLeftPercent}%`, 
                                             top: `${topPercent}%`,
                                         }}
                                     >
                                         {/* Floating name tag directly above duck */}
-                                        <span className="text-[9px] font-black bg-slate-950/80 px-1.5 py-0.5 rounded text-white border border-slate-800 tracking-wide select-none whitespace-nowrap mb-0.5">
+                                        <span className={`font-black bg-slate-950/90 rounded text-white border border-slate-800 tracking-wide select-none whitespace-nowrap mb-0.5 ${nameTagClass}`}>
                                             {racer.student.name}
                                         </span>
 
@@ -323,7 +359,7 @@ export const DuckRace: React.FC<DuckRaceProps> = ({ students, onComplete, onClos
 
                                             {/* Golden crown for leader */}
                                             {isLead && racer.progress > 0 && (
-                                                <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 animate-bounce text-xs">
+                                                <div className="absolute -top-4 left-1/2 -translate-x-1/2 animate-bounce text-sm">
                                                     <span className="drop-shadow-[0_2px_6px_rgba(245,158,11,0.6)]">👑</span>
                                                 </div>
                                             )}
@@ -339,11 +375,11 @@ export const DuckRace: React.FC<DuckRaceProps> = ({ students, onComplete, onClos
                 <div className="p-4 bg-slate-900 border-t border-slate-800 flex items-center justify-between shrink-0 z-20">
                     <div className="flex-1">
                         {winner ? (
-                            <div className="animate-in slide-in-from-bottom-2 duration-300 flex items-center gap-3 text-emerald-400">
+                            <div className="animate-in slide-in-from-bottom-2 duration-300 flex items-center gap-3 text-emerald-450">
                                 <Trophy className="h-8 w-8 text-amber-500 fill-amber-500 drop-shadow-[0_0_12px_rgba(245,158,11,0.4)] animate-bounce" />
                                 <div>
                                     <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Nhà Vô Địch</p>
-                                    <p className="text-base font-black text-emerald-450 tracking-wide uppercase">{winner.name}</p>
+                                    <p className="text-base font-black text-emerald-400 tracking-wide uppercase">{winner.name}</p>
                                 </div>
                             </div>
                         ) : (
@@ -372,6 +408,77 @@ export const DuckRace: React.FC<DuckRaceProps> = ({ students, onComplete, onClos
                         )}
                     </div>
                 </div>
+
+                {/* GIANT CENTRAL WINNER OVERLAY CARD (Tên người chiến thắng to đùng ở giữa màn hình) */}
+                {phase === 'RESULT' && winner && (
+                    <div className="absolute inset-0 bg-black/60 backdrop-blur-sm z-40 flex items-center justify-center p-6 animate-in fade-in duration-300">
+                        <div className="bg-slate-900 border-4 border-amber-400 p-10 rounded-3xl text-center shadow-2xl max-w-lg w-full relative overflow-hidden animate-in zoom-in-95 duration-300">
+                            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-amber-500/10 via-transparent to-transparent pointer-events-none" />
+                            
+                            <Trophy className="h-20 w-20 text-amber-450 mx-auto mb-4 animate-bounce drop-shadow-[0_0_20px_rgba(245,158,11,0.5)]" />
+                            
+                            <h3 className="text-sm font-black text-amber-400 uppercase tracking-widest mb-1">
+                                🏆 NHÀ VÔ ĐỊCH HÔM NAY 🏆
+                            </h3>
+                            
+                            <h2 className="text-5xl sm:text-6xl font-black text-emerald-450 tracking-widest uppercase mb-8 drop-shadow-[0_0_25px_rgba(52,211,153,0.5)] animate-pulse">
+                                {winner.name}
+                            </h2>
+
+                            {/* Direct reward points XP system */}
+                            {classId && (
+                                <div className="bg-slate-950/80 p-5 rounded-2xl border border-slate-800 space-y-4 mb-8">
+                                    <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+                                        Thưởng điểm thi đua sư phạm
+                                    </p>
+                                    
+                                    {rewardPoints === null ? (
+                                        <div className="flex gap-2.5">
+                                            {[1, 3, 5].map(pts => (
+                                                <button
+                                                    key={pts}
+                                                    disabled={isSavingReward}
+                                                    onClick={() => handleReward(pts)}
+                                                    className="flex-1 py-3.5 bg-slate-800 hover:bg-slate-700 text-slate-200 font-black rounded-xl border border-slate-700 transition active:scale-95 flex items-center justify-center gap-1.5 text-sm shadow"
+                                                >
+                                                    +{pts} XP
+                                                </button>
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <div className="bg-emerald-950/20 border border-emerald-500/20 py-3 rounded-xl text-emerald-400 font-bold text-sm">
+                                            🎉 Đã cộng +{rewardPoints} XP thành công!
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+
+                            <div className="flex flex-col gap-3.5">
+                                <button 
+                                    onClick={handleSelectWinner}
+                                    className="w-full py-4 bg-gradient-to-r from-emerald-600 to-teal-650 hover:from-emerald-550 hover:to-teal-550 text-white font-black rounded-xl transition active:scale-95 shadow-lg shadow-emerald-700/20 text-sm"
+                                >
+                                    Xác nhận và Chọn học sinh
+                                </button>
+                                
+                                <div className="flex gap-3">
+                                    <button 
+                                        onClick={() => { initRacers(); setPhase('SETUP'); }}
+                                        className="flex-1 py-3 bg-slate-850 hover:bg-slate-750 text-slate-300 font-bold rounded-xl border border-slate-800 transition active:scale-95 text-xs"
+                                    >
+                                        Tái đấu
+                                    </button>
+                                    <button 
+                                        onClick={onClose}
+                                        className="flex-1 py-3 bg-slate-800/40 hover:bg-slate-800 text-slate-400 font-bold rounded-xl border border-slate-800/40 transition active:scale-95 text-xs"
+                                    >
+                                        Đóng lại
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
             </div>
             {winner && <Confetti />}
         </div>

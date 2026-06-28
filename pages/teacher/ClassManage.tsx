@@ -669,6 +669,7 @@ export const ClassManage: React.FC = () => {
       {showDuckRace && (
         <DuckRace
           students={duckRacePool}
+          classId={selectedClassId || ''}
           onClose={() => setShowDuckRace(false)}
           onComplete={handleDuckRaceComplete}
         />
