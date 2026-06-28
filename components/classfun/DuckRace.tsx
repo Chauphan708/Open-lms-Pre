@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { Trophy, Play, RotateCcw, X, Sparkles } from 'lucide-react';
+import { Trophy, Play, RotateCcw, X } from 'lucide-react';
 import { User } from '../../types';
 import { playTickSound, playVictorySound } from '../../utils/audio';
 import { Confetti } from './Confetti';
@@ -21,16 +21,15 @@ interface Racer {
 export const DuckRace: React.FC<DuckRaceProps> = ({ students, onComplete, onClose }) => {
     const [racers, setRacers] = useState<Racer[]>([]);
     const [phase, setPhase] = useState<'SETUP' | 'COUNTDOWN' | 'RACING' | 'RESULT'>('SETUP');
-    const [countdown, setCountdown] = useState(3); // 3, 2, 1, 0 (GO)
+    const [countdown, setCountdown] = useState(3);
     const [speedSetting, setSpeedSetting] = useState<'SLOW' | 'NORMAL' | 'FAST'>('NORMAL');
     const [winner, setWinner] = useState<User | null>(null);
-    const [commentary, setCommentary] = useState<string>('Chào mừng các bạn đến với Giải Đua Vịt siêu cúp lớp học!');
+    const [commentary, setCommentary] = useState<string>('Chào mừng các bạn đến với Giải Đua Vịt lớp học!');
     
     const requestRef = useRef<number>();
     const lastTimeRef = useRef<number>();
     const countdownTimerRef = useRef<any>();
 
-    // Refs to avoid React closure stale states in requestAnimationFrame
     const phaseRef = useRef(phase);
     const winnerRef = useRef(winner);
 
@@ -42,54 +41,14 @@ export const DuckRace: React.FC<DuckRaceProps> = ({ students, onComplete, onClos
         winnerRef.current = winner;
     }, [winner]);
 
-    // Dynamic Commentary templates
     const commentaryTemplates = [
         "Vịt của [NAME] đang bứt tốc ngoạn mục!",
-        "Vịt của [NAME] đang dẫn đầu với phong thái rất tự tin!",
-        "[NAME] bơi rất bền bỉ, đang thu hẹp khoảng cách!",
-        "Một pha lội ngược dòng bất ngờ đang được tạo ra bởi [NAME]!",
-        "Vịt của [NAME] bơi thong thả nhưng cực kỳ chắc chắn!",
-        "Các đối thủ đang bám đuổi sát sao sau vịt [NAME]!",
-        "Vịt [NAME] vừa thực hiện cú bứt phá ngoạn mục đầy kịch tính!"
+        "Vịt của [NAME] đang tạm thời vươn lên dẫn đầu!",
+        "[NAME] bơi rất bền bỉ, đang bám sát phía sau!",
+        "Cú tăng tốc bất ngờ từ chú vịt của [NAME]!",
+        "Vịt của [NAME] đang bơi rất chắc chắn!",
+        "Cả lớp đang cổ vũ cuồng nhiệt cho vịt [NAME]!"
     ];
-
-    // Dynamic Layout sizing parameters based on student count to prevent scrollbars
-    const { laneHeightClass, textSizeClass, duckSizeClass, crownSizeClass, gapClass } = useMemo(() => {
-        const count = students.length;
-        if (count <= 8) {
-            return {
-                laneHeightClass: 'h-14 px-4 py-1.5',
-                textSizeClass: 'text-sm w-36',
-                duckSizeClass: 'text-4xl',
-                crownSizeClass: 'text-xl -top-5',
-                gapClass: 'space-y-3'
-            };
-        } else if (count <= 14) {
-            return {
-                laneHeightClass: 'h-10 px-3 py-1',
-                textSizeClass: 'text-xs w-28',
-                duckSizeClass: 'text-2xl',
-                crownSizeClass: 'text-base -top-3.5',
-                gapClass: 'space-y-2'
-            };
-        } else if (count <= 22) {
-            return {
-                laneHeightClass: 'h-8 px-2 py-0.5',
-                textSizeClass: 'text-[10px] w-24',
-                duckSizeClass: 'text-xl',
-                crownSizeClass: 'text-xs -top-2.5',
-                gapClass: 'space-y-1'
-            };
-        } else {
-            return {
-                laneHeightClass: 'h-6.5 px-2 py-0',
-                textSizeClass: 'text-[9px] w-20',
-                duckSizeClass: 'text-base',
-                crownSizeClass: 'text-[10px] -top-2.5',
-                gapClass: 'space-y-0.5'
-            };
-        }
-    }, [students]);
 
     // Initialize racers
     useEffect(() => {
@@ -112,10 +71,10 @@ export const DuckRace: React.FC<DuckRaceProps> = ({ students, onComplete, onClos
         }));
         setRacers(initialRacers);
         setWinner(null);
-        setCommentary('Vận động viên đang khởi động tại vạch xuất phát...');
+        setCommentary('Các vận động viên vịt đang khởi động tại vạch xuất phát...');
     };
 
-    // Calculate the current leader
+    // Calculate current leader
     const currentLeader = useMemo(() => {
         if (racers.length === 0) return null;
         let lead = racers[0];
@@ -127,7 +86,7 @@ export const DuckRace: React.FC<DuckRaceProps> = ({ students, onComplete, onClos
         return lead.progress > 0 ? lead : null;
     }, [racers]);
 
-    // Live commentary update based on leader change
+    // Update commentary
     const leaderName = currentLeader?.student.name || '';
     useEffect(() => {
         if (phase === 'RACING' && leaderName) {
@@ -136,7 +95,7 @@ export const DuckRace: React.FC<DuckRaceProps> = ({ students, onComplete, onClos
         }
     }, [leaderName, phase]);
 
-    // Countdown effect
+    // Countdown timer
     useEffect(() => {
         if (phase === 'COUNTDOWN') {
             setCountdown(3);
@@ -145,12 +104,11 @@ export const DuckRace: React.FC<DuckRaceProps> = ({ students, onComplete, onClos
             countdownTimerRef.current = setInterval(() => {
                 setCountdown(prev => {
                     if (prev === 1) {
-                        // Transition to racing
                         clearInterval(countdownTimerRef.current);
                         setPhase('RACING');
                         lastTimeRef.current = performance.now();
                         requestRef.current = requestAnimationFrame(runRace);
-                        setCommentary('XUẤT PHÁT!!! Các đấu thủ lao ra vây làn nước!');
+                        setCommentary('XUẤT PHÁT!!!');
                         return 0;
                     }
                     playTickSound();
@@ -165,7 +123,6 @@ export const DuckRace: React.FC<DuckRaceProps> = ({ students, onComplete, onClos
     }, [phase]);
 
     const runRace = (time: number) => {
-        // Safe deltaTime calculation to prevent high-res timestamp mismatches
         const now = performance.now();
         const deltaTime = lastTimeRef.current ? now - lastTimeRef.current : 16.67;
         lastTimeRef.current = now;
@@ -180,22 +137,19 @@ export const DuckRace: React.FC<DuckRaceProps> = ({ students, onComplete, onClos
 
                 let newSpeed = racer.speed;
 
-                // 2% chance per frame to change speed drastically
                 if (Math.random() < 0.02) {
                     const roll = Math.random();
-                    if (roll < 0.25) {
-                        newSpeed = Math.random() * 1.2 + 0.1; // Stall
-                    } else if (roll > 0.82) {
-                        newSpeed = Math.random() * 6 + 7; // Super Burst
+                    if (roll < 0.2) {
+                        newSpeed = Math.random() * 1.0 + 0.1; 
+                    } else if (roll > 0.85) {
+                        newSpeed = Math.random() * 6 + 7; 
                     } else {
-                        newSpeed = Math.random() * 3.5 + 2.2; // Normal swim
+                        newSpeed = Math.random() * 3.5 + 2.0; 
                     }
                 } else {
-                    // Smooth drift speed
-                    newSpeed = Math.max(0.4, Math.min(12, newSpeed + (Math.random() - 0.5) * 0.55));
+                    newSpeed = Math.max(0.4, Math.min(12, newSpeed + (Math.random() - 0.5) * 0.5));
                 }
 
-                // Speed base factors
                 let baseFactor = 0.0016; 
                 if (speedSetting === 'SLOW') baseFactor = 0.0011;
                 if (speedSetting === 'FAST') baseFactor = 0.0035;
@@ -215,14 +169,13 @@ export const DuckRace: React.FC<DuckRaceProps> = ({ students, onComplete, onClos
             if (someoneWon && newWinner) {
                 setPhase('RESULT');
                 setWinner(newWinner);
-                setCommentary(`Chúc mừng Chiến Binh Vịt ${newWinner.name} đã cán đích xuất sắc giành ngôi Quán Quân! 🏆`);
+                setCommentary(`Chúc mừng Vịt ${newWinner.name} đã giành chiến thắng! 🏆`);
                 playVictorySound();
             }
 
             return updated;
         });
 
-        // Run next animation frame using Ref to avoid closure stale value
         if (phaseRef.current === 'RACING' && !winnerRef.current) {
             requestRef.current = requestAnimationFrame(runRace);
         }
@@ -244,28 +197,40 @@ export const DuckRace: React.FC<DuckRaceProps> = ({ students, onComplete, onClos
                 
                 {/* Header */}
                 <div className="bg-gradient-to-r from-cyan-600 via-blue-600 to-indigo-700 p-4 text-white flex justify-between items-center relative overflow-hidden shrink-0">
-                    <div className="absolute inset-0 opacity-20 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-cyan-400 via-indigo-655 to-indigo-900"></div>
+                    <div className="absolute inset-0 opacity-20 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-cyan-400 via-indigo-650 to-indigo-900"></div>
                     <h2 className="text-xl font-black italic flex items-center gap-2.5 relative z-10 tracking-wide uppercase">
-                        🦆 SIÊU ĐUA VỊT KHÔNG GIAN
+                        🦆 GIẢI ĐUA VỊT LỚP HỌC
                     </h2>
                     <button onClick={onClose} className="p-2 hover:bg-white/20 rounded-full transition relative z-10">
                         <X className="h-6 w-6" />
                     </button>
                 </div>
 
-                {/* Live Commentary Ticket */}
+                {/* Live Commentary */}
                 <div className="bg-slate-950 px-6 py-2 border-y border-slate-800/80 flex items-center gap-3 shrink-0">
-                    <span className="bg-red-500/10 text-red-400 border border-red-500/30 text-[9px] font-black px-2 py-0.5 rounded uppercase tracking-wider animate-pulse shrink-0">
+                    <span className="bg-red-500/10 text-red-400 border border-red-500/30 text-[9px] font-black px-2 py-0.5 rounded uppercase tracking-wider shrink-0 animate-pulse">
                         Bình Luận Viên
                     </span>
-                    <p className="text-xs font-semibold text-slate-350 truncate tracking-wide">
+                    <p className="text-xs font-semibold text-slate-300 truncate">
                         {commentary}
                     </p>
                 </div>
 
-                {/* Race Track Screen */}
-                <div className="flex-1 p-4 bg-slate-950 relative flex flex-col justify-center overflow-hidden">
+                {/* Main Race Track Screen (Single Open Pool, No Rows, No Scrollbars) */}
+                <div className="flex-1 bg-gradient-to-b from-blue-900 via-sky-900 to-blue-950 relative overflow-hidden p-6 select-none flex flex-col justify-center">
                     
+                    {/* Simulated Wave Grid Lines on background */}
+                    <div className="absolute inset-0 opacity-10 pointer-events-none z-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-cyan-400/40 via-transparent to-transparent" />
+                    
+                    {/* Wavy SVG Animated backgrounds */}
+                    <div className="absolute inset-0 opacity-5 pointer-events-none z-0">
+                        <svg className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M 0 50 Q 250 80 500 50 T 1000 50" fill="none" stroke="white" strokeWidth="4" className="animate-pulse" />
+                            <path d="M 0 150 Q 250 180 500 150 T 1000 150" fill="none" stroke="white" strokeWidth="4" className="animate-pulse" style={{ animationDelay: '1s' }} />
+                            <path d="M 0 250 Q 250 280 500 250 T 1000 250" fill="none" stroke="white" strokeWidth="4" className="animate-pulse" style={{ animationDelay: '2s' }} />
+                        </svg>
+                    </div>
+
                     {phase === 'SETUP' && (
                         <div className="max-w-md mx-auto bg-slate-900 border border-slate-800 p-6 rounded-3xl shadow-lg text-center z-20">
                             <div className="text-5xl mb-3">🏁</div>
@@ -273,7 +238,7 @@ export const DuckRace: React.FC<DuckRaceProps> = ({ students, onComplete, onClos
 
                             <div className="space-y-5">
                                 <div>
-                                    <label className="block text-[10px] font-black text-slate-450 uppercase tracking-widest mb-2.5">Tốc độ trận đấu</label>
+                                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2.5">Tốc độ trận đấu</label>
                                     <div className="flex gap-2">
                                         {[
                                             { key: 'SLOW', label: '🐢 Chậm' },
@@ -302,7 +267,7 @@ export const DuckRace: React.FC<DuckRaceProps> = ({ students, onComplete, onClos
                     )}
 
                     {phase === 'COUNTDOWN' && (
-                        <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-950/80 backdrop-blur-sm z-30">
+                        <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-950/80 backdrop-blur-sm z-35">
                             <div className="bg-slate-900 border border-slate-800 p-8 rounded-3xl flex flex-col items-center gap-6 shadow-2xl">
                                 <div className="flex gap-4">
                                     <div className={`w-12 h-12 rounded-full border-4 border-slate-950 transition-all ${countdown === 3 ? 'bg-red-500 shadow-[0_0_25px_rgba(239,68,68,0.8)]' : 'bg-red-950/30'}`} />
@@ -317,89 +282,79 @@ export const DuckRace: React.FC<DuckRaceProps> = ({ students, onComplete, onClos
                     )}
 
                     {phase !== 'SETUP' && (
-                        <div className="relative w-full h-full flex flex-col justify-center">
-                            {/* Finish Line Indicator */}
-                            <div className="absolute right-12 top-0 bottom-0 w-8 border-l-2 border-dashed border-red-500/40 flex flex-col justify-center items-center opacity-60 z-0">
-                                <div className="text-[9px] font-black text-red-500 uppercase rotate-90 tracking-widest whitespace-nowrap bg-slate-950 px-2 py-1 rounded-full border border-red-500/10">ĐÍCH ĐẾN</div>
+                        <div className="relative w-full h-[65vh]">
+                            {/* Finish Line Banner */}
+                            <div className="absolute right-6 top-0 bottom-0 w-2.5 border-r-4 border-dashed border-red-500/50 flex flex-col justify-center items-center z-0 opacity-60">
+                                <div className="text-[10px] font-black text-red-400 uppercase rotate-90 tracking-widest bg-slate-950 px-2.5 py-1 rounded-full border border-red-500/20 shadow">ĐÍCH ĐẾN</div>
                             </div>
 
-                            {/* Water Lanes container (Fits dynamically within viewport, no scrollbar) */}
-                            <div className={`w-full flex flex-col ${gapClass} relative z-10`}>
-                                {racers.map((racer, idx) => {
-                                    // Smooth floating wave motion
-                                    const bobY = phase === 'RACING' 
-                                        ? Math.sin((racer.progress * 0.45) + racer.wobbleOffset) * 4.5 
-                                        : 0;
-                                    const tilt = phase === 'RACING'
-                                        ? Math.cos((racer.progress * 0.45) + racer.wobbleOffset) * 5
-                                        : 0;
-                                    
-                                    const isLead = currentLeader?.id === racer.id;
+                            {/* Render all ducks together in one open pool area */}
+                            {racers.map((racer, idx) => {
+                                const bobY = phase === 'RACING' 
+                                    ? Math.sin((racer.progress * 0.45) + racer.wobbleOffset) * 4.5 
+                                    : 0;
+                                const tilt = phase === 'RACING'
+                                    ? Math.cos((racer.progress * 0.45) + racer.wobbleOffset) * 5
+                                    : 0;
+                                
+                                const isLead = currentLeader?.id === racer.id;
 
-                                    return (
-                                        <div 
-                                            key={racer.id} 
-                                            className={`relative rounded-xl border flex items-center transition-all duration-300 overflow-hidden shadow-inner
-                                                bg-gradient-to-r from-slate-900/90 via-slate-850/40 to-slate-900/90
-                                                ${laneHeightClass}
-                                                ${isLead ? 'border-amber-500/40 shadow-amber-500/5' : 'border-slate-850'}
-                                            `}
-                                        >
-                                            {/* Water Wave Scrolling Background simulation */}
-                                            <div 
-                                                className="absolute left-0 top-0 bottom-0 bg-gradient-to-r from-cyan-600/10 via-blue-500/15 to-indigo-500/10 transition-all duration-75"
-                                                style={{ width: `${racer.progress}%` }}
-                                            />
+                                // Dynamically space out positions vertically in the pool
+                                const topPercent = (idx / (racers.length - 1 || 1)) * 82 + 5; 
+                                
+                                // Scale size based on total racer count
+                                const duckScaleClass = racers.length <= 12 
+                                    ? 'text-3xl' 
+                                    : racers.length <= 22 
+                                        ? 'text-2xl' 
+                                        : 'text-lg';
 
-                                            {/* Student Name */}
-                                            <div className={`font-black text-slate-350 truncate z-10 flex items-center gap-1.5 shrink-0 ${textSizeClass}`}>
-                                                <span className="opacity-40 font-mono text-[9px]">#{idx + 1}</span>
-                                                <span className={isLead ? 'text-amber-300 drop-shadow-sm' : ''}>{racer.student.name}</span>
-                                            </div>
+                                return (
+                                    <div
+                                        key={racer.id}
+                                        className="absolute transition-all duration-75 z-20 flex flex-col items-center"
+                                        style={{
+                                            left: `${racer.progress * 0.82 + 6}%`, // Scale to fit screen width
+                                            top: `${topPercent}%`,
+                                            transform: `translateY(${bobY}px) rotate(${tilt}deg)`
+                                        }}
+                                    >
+                                        {/* Floating name tag directly above duck */}
+                                        <span className="text-[9px] font-black bg-slate-950/80 px-1.5 py-0.5 rounded text-white border border-slate-800 tracking-wide select-none whitespace-nowrap mb-0.5">
+                                            {racer.student.name}
+                                        </span>
 
-                                            {/* Duck Wrapper with progressive movement */}
-                                            <div
-                                                className="absolute transition-all duration-75 z-20 flex items-center"
-                                                style={{
-                                                    left: `calc(${racer.progress}% - (2 * ${textSizeClass.split(' ')[1]}) + 100px)`,
-                                                    transform: `translateY(${bobY}px) rotate(${tilt}deg)`
-                                                }}
+                                        <div className="relative flex items-center justify-center">
+                                            <span
+                                                className={`filter drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)] transition-all ${duckScaleClass}
+                                                    ${winner && winner.id !== racer.id ? 'opacity-30 grayscale blur-[0.5px]' : ''}
+                                                    ${isLead ? 'scale-125' : ''}
+                                                `}
+                                                style={{ transform: 'scaleX(-1)', display: 'inline-block' }}
                                             >
-                                                <div className="relative">
-                                                    {/* Duck Avatar with crown */}
-                                                    <div className="relative flex items-center justify-center">
-                                                        <span
-                                                            className={`filter drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)] transition-all ${duckSizeClass}
-                                                                ${winner && winner.id !== racer.id ? 'opacity-30 grayscale blur-[0.5px]' : ''}
-                                                            `}
-                                                            style={{ transform: 'scaleX(-1)', display: 'inline-block' }}
-                                                        >
-                                                            🦆
-                                                        </span>
+                                                🦆
+                                            </span>
 
-                                                        {/* Water splash behind moving duck */}
-                                                        {phase === 'RACING' && racer.progress > 0 && racer.progress < 100 && (
-                                                            <div className="absolute -left-2.5 bottom-0 text-[8px] animate-ping opacity-60 text-cyan-300 select-none">💦</div>
-                                                        )}
-                                                    </div>
+                                            {/* Water ripples trailing splash */}
+                                            {phase === 'RACING' && racer.progress > 0 && racer.progress < 100 && (
+                                                <div className="absolute -left-2.5 bottom-0 text-[8px] animate-ping opacity-60 text-cyan-300 select-none">💦</div>
+                                            )}
 
-                                                    {/* King crown for the current leader */}
-                                                    {isLead && racer.progress > 0 && (
-                                                        <div className={`absolute left-1/2 -translate-x-1/2 animate-bounce ${crownSizeClass}`}>
-                                                            <span className="drop-shadow-[0_2px_6px_rgba(245,158,11,0.6)]">👑</span>
-                                                        </div>
-                                                    )}
+                                            {/* Golden crown for leader */}
+                                            {isLead && racer.progress > 0 && (
+                                                <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 animate-bounce text-xs">
+                                                    <span className="drop-shadow-[0_2px_6px_rgba(245,158,11,0.6)]">👑</span>
                                                 </div>
-                                            </div>
+                                            )}
                                         </div>
-                                    )
-                                })}
-                            </div>
+                                    </div>
+                                );
+                            })}
                         </div>
                     )}
                 </div>
 
-                {/* Footer Controls / Winner block */}
+                {/* Footer */}
                 <div className="p-4 bg-slate-900 border-t border-slate-800 flex items-center justify-between shrink-0 z-20">
                     <div className="flex-1">
                         {winner ? (
@@ -407,11 +362,11 @@ export const DuckRace: React.FC<DuckRaceProps> = ({ students, onComplete, onClos
                                 <Trophy className="h-8 w-8 text-amber-500 fill-amber-500 drop-shadow-[0_0_12px_rgba(245,158,11,0.4)] animate-bounce" />
                                 <div>
                                     <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Nhà Vô Địch</p>
-                                    <p className="text-lg font-black text-emerald-450 tracking-wide uppercase">{winner.name}</p>
+                                    <p className="text-base font-black text-emerald-450 tracking-wide uppercase">{winner.name}</p>
                                 </div>
                             </div>
                         ) : (
-                            <p className="text-slate-500 text-xs font-semibold tracking-wide italic">
+                            <p className="text-slate-550 text-xs font-semibold tracking-wide italic">
                                 {phase === 'RACING' ? '🚴 Cuộc đua đang diễn ra vô cùng ác liệt...' : '🏁 Chuẩn bị vào làn đua...'}
                             </p>
                         )}
