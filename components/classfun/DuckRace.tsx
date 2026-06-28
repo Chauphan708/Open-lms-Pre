@@ -375,7 +375,7 @@ export const DuckRace: React.FC<DuckRaceProps> = ({ students, classId, onComplet
                 <div className="p-4 bg-slate-900 border-t border-slate-800 flex items-center justify-between shrink-0 z-20">
                     <div className="flex-1">
                         {winner ? (
-                            <div className="animate-in slide-in-from-bottom-2 duration-300 flex items-center gap-3 text-emerald-450">
+                            <div className="animate-in slide-in-from-bottom-2 duration-300 flex items-center gap-3 text-emerald-400">
                                 <Trophy className="h-8 w-8 text-amber-500 fill-amber-500 drop-shadow-[0_0_12px_rgba(245,158,11,0.4)] animate-bounce" />
                                 <div>
                                     <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Nhà Vô Địch</p>
@@ -383,7 +383,7 @@ export const DuckRace: React.FC<DuckRaceProps> = ({ students, classId, onComplet
                                 </div>
                             </div>
                         ) : (
-                            <p className="text-slate-550 text-xs font-semibold tracking-wide italic">
+                            <p className="text-slate-500 text-xs font-semibold tracking-wide italic">
                                 {phase === 'RACING' ? '🚴 Cuộc đua đang diễn ra vô cùng ác liệt...' : '🏁 Chuẩn bị vào làn đua...'}
                             </p>
                         )}
@@ -415,13 +415,13 @@ export const DuckRace: React.FC<DuckRaceProps> = ({ students, classId, onComplet
                         <div className="bg-slate-900 border-4 border-amber-400 p-10 rounded-3xl text-center shadow-2xl max-w-lg w-full relative overflow-hidden animate-in zoom-in-95 duration-300">
                             <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-amber-500/10 via-transparent to-transparent pointer-events-none" />
                             
-                            <Trophy className="h-20 w-20 text-amber-450 mx-auto mb-4 animate-bounce drop-shadow-[0_0_20px_rgba(245,158,11,0.5)]" />
+                            <Trophy className="h-20 w-20 text-amber-400 mx-auto mb-4 animate-bounce drop-shadow-[0_0_20px_rgba(245,158,11,0.5)]" />
                             
                             <h3 className="text-sm font-black text-amber-400 uppercase tracking-widest mb-1">
                                 🏆 NHÀ VÔ ĐỊCH HÔM NAY 🏆
                             </h3>
                             
-                            <h2 className="text-5xl sm:text-6xl font-black text-emerald-450 tracking-widest uppercase mb-8 drop-shadow-[0_0_25px_rgba(52,211,153,0.5)] animate-pulse">
+                            <h2 className="text-5xl sm:text-6xl font-black text-emerald-400 tracking-widest uppercase mb-8 drop-shadow-[0_0_25px_rgba(52,211,153,0.5)] animate-pulse">
                                 {winner.name}
                             </h2>
 
