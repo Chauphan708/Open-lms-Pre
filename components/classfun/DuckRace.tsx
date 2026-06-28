@@ -30,13 +30,7 @@ export const DuckRace: React.FC<DuckRaceProps> = ({ students, onComplete, onClos
     const lastTimeRef = useRef<number>();
     const countdownTimerRef = useRef<any>();
 
-    const phaseRef = useRef(phase);
     const winnerRef = useRef(winner);
-
-    useEffect(() => {
-        phaseRef.current = phase;
-    }, [phase]);
-
     useEffect(() => {
         winnerRef.current = winner;
     }, [winner]);
@@ -106,19 +100,27 @@ export const DuckRace: React.FC<DuckRaceProps> = ({ students, onComplete, onClos
                     if (prev === 1) {
                         clearInterval(countdownTimerRef.current);
                         setPhase('RACING');
-                        lastTimeRef.current = performance.now();
-                        requestRef.current = requestAnimationFrame(runRace);
-                        setCommentary('XUẤT PHÁT!!!');
                         return 0;
                     }
                     playTickSound();
                     return prev - 1;
                 });
             }, 1000);
-            playTickSound();
         }
         return () => {
             if (countdownTimerRef.current) clearInterval(countdownTimerRef.current);
+        };
+    }, [phase]);
+
+    // Animation loop effect triggered after phase changes to RACING
+    useEffect(() => {
+        if (phase === 'RACING') {
+            lastTimeRef.current = performance.now();
+            requestRef.current = requestAnimationFrame(runRace);
+            setCommentary('XUẤT PHÁT!!!');
+        }
+        return () => {
+            if (requestRef.current) cancelAnimationFrame(requestRef.current);
         };
     }, [phase]);
 
@@ -176,12 +178,13 @@ export const DuckRace: React.FC<DuckRaceProps> = ({ students, onComplete, onClos
             return updated;
         });
 
-        if (phaseRef.current === 'RACING' && !winnerRef.current) {
+        if (!winnerRef.current) {
             requestRef.current = requestAnimationFrame(runRace);
         }
     };
 
     const startRace = () => {
+        playTickSound(); // Direct user click interaction resumes audio context
         setPhase('COUNTDOWN');
     };
 
@@ -193,6 +196,23 @@ export const DuckRace: React.FC<DuckRaceProps> = ({ students, onComplete, onClos
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-md p-4">
+            <style>{`
+                @keyframes wave-flow-slow {
+                    0% { background-position-x: 0px; }
+                    100% { background-position-x: 1000px; }
+                }
+                @keyframes wave-flow-fast {
+                    0% { background-position-x: 0px; }
+                    100% { background-position-x: -800px; }
+                }
+                .animate-wave-slow {
+                    animation: wave-flow-slow 15s linear infinite;
+                }
+                .animate-wave-fast {
+                    animation: wave-flow-fast 10s linear infinite;
+                }
+            `}</style>
+
             <div className="bg-slate-900 border border-slate-800 w-full max-w-5xl rounded-3xl shadow-2xl overflow-hidden flex flex-col h-[90vh]">
                 
                 {/* Header */}
@@ -219,16 +239,10 @@ export const DuckRace: React.FC<DuckRaceProps> = ({ students, onComplete, onClos
                 {/* Main Race Track Screen (Single Open Pool, No Rows, No Scrollbars) */}
                 <div className="flex-1 bg-gradient-to-b from-blue-900 via-sky-900 to-blue-950 relative overflow-hidden p-6 select-none flex flex-col justify-center">
                     
-                    {/* Simulated Wave Grid Lines on background */}
-                    <div className="absolute inset-0 opacity-10 pointer-events-none z-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-cyan-400/40 via-transparent to-transparent" />
-                    
-                    {/* Wavy SVG Animated backgrounds */}
-                    <div className="absolute inset-0 opacity-5 pointer-events-none z-0">
-                        <svg className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M 0 50 Q 250 80 500 50 T 1000 50" fill="none" stroke="white" strokeWidth="4" className="animate-pulse" />
-                            <path d="M 0 150 Q 250 180 500 150 T 1000 150" fill="none" stroke="white" strokeWidth="4" className="animate-pulse" style={{ animationDelay: '1s' }} />
-                            <path d="M 0 250 Q 250 280 500 250 T 1000 250" fill="none" stroke="white" strokeWidth="4" className="animate-pulse" style={{ animationDelay: '2s' }} />
-                        </svg>
+                    {/* Animated Ocean Wave Layers */}
+                    <div className="absolute inset-0 z-0 opacity-20 pointer-events-none overflow-hidden">
+                        <div className="absolute inset-0 bg-[url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 1200 120%22 preserveAspectRatio=%22none%22><path d=%22M0,40 C150,90 350,90 500,40 C650,90 850,90 1000,40 C1150,90 1350,90 1500,40 L1500,120 L0,120 Z%22 fill=%25230ea5e9 opacity=%220.25%22/></svg>')] bg-repeat-x bg-[length:1000px_100%] animate-wave-slow" />
+                        <div className="absolute inset-0 bg-[url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 1200 120%22 preserveAspectRatio=%22none%22><path d=%22M0,60 C150,110 350,110 500,60 C650,110 850,110 1000,60 C1150,110 1350,110 1500,60 L1500,120 L0,120 Z%22 fill=%252338bdf8 opacity=%220.35%22/></svg>')] bg-repeat-x bg-[length:800px_100%] animate-wave-fast" />
                     </div>
 
                     {phase === 'SETUP' && (
