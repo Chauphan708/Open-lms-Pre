@@ -144,7 +144,7 @@ export const ArenaAdmin: React.FC = () => {
             if (qData) {
                 qData.forEach(q => {
                     if (!q.topic || !q.topic.trim() || q.topic === 'general') return;
-                    const key = `${normalizeSubject(q.subject)}:${q.topic.trim().toLowerCase()}`;
+                    const key = `${normalizeSubject(q.subject || 'math')}:${q.topic.trim().toLowerCase()}`;
                     const existing = topicsMap.get(key);
                     if (existing) {
                         existing.questionCount += 1;
@@ -158,7 +158,7 @@ export const ArenaAdmin: React.FC = () => {
                     } else {
                         topicsMap.set(key, {
                             topic: q.topic.trim(),
-                            subject: normalizeSubject(q.subject) || 'math',
+                            subject: normalizeSubject(q.subject || 'math'),
                             grade: q.grade || '5',
                             questionCount: 1,
                             isCustom: false
@@ -170,7 +170,8 @@ export const ArenaAdmin: React.FC = () => {
             // Process custom topics from table
             if (customData) {
                 customData.forEach(t => {
-                    const key = `${normalizeSubject(t.subject)}:${t.topic.trim().toLowerCase()}`;
+                    if (!t.topic || !t.topic.trim()) return;
+                    const key = `${normalizeSubject(t.subject || 'math')}:${t.topic.trim().toLowerCase()}`;
                     const existing = topicsMap.get(key);
                     if (existing) {
                         existing.id = t.id;
@@ -182,7 +183,7 @@ export const ArenaAdmin: React.FC = () => {
                         topicsMap.set(key, {
                             id: t.id,
                             topic: t.topic.trim(),
-                            subject: normalizeSubject(t.subject) || 'math',
+                            subject: normalizeSubject(t.subject || 'math'),
                             grade: (t as any).grade || '5',
                             questionCount: 0,
                             isCustom: true

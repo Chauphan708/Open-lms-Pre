@@ -488,72 +488,51 @@ export const createArenaSlice: StateCreator<AppState, [], [], ArenaSliceState> =
   },
 
   bulkAddArenaQuestions: async (questions) => {
-    if (questions.length === 0) return 0;
-
-    // 1. Remove duplicate questions within the incoming list itself (based on trimmed lowercase content)
-    const uniqueIncoming: Omit<ArenaQuestion, 'id'>[] = [];
-    const seenContents = new Set<string>();
-    for (const q of questions) {
-      if (!q.content || !q.content.trim()) continue;
-      const normalized = q.content.trim().toLowerCase().replace(/\s+/g, ' ');
-      if (!seenContents.has(normalized)) {
-        seenContents.add(normalized);
-        uniqueIncoming.push(q);
-      }
-    }
-
-    if (uniqueIncoming.length === 0) return 0;
-
-    // 2. Fetch existing questions to check for duplicates in database
-    const incomingContents = uniqueIncoming.map(q => q.content.trim());
-    let existingContents: string[] = [];
     try {
-      const { data, error } = await supabase
-        .from('arena_questions')
-        .select('content')
-        .in('content', incomingContents);
-        
-      if (!error && data) {
-        existingContents = data.map(row => row.content.trim().toLowerCase().replace(/\s+/g, ' '));
+      if (questions.length === 0) return 0;
+
+      // 1. Remove duplicate questions within the incoming list itself (based on trimmed lowercase content)
+      const uniqueIncoming: Omit<ArenaQuestion, 'id'>[] = [];
+      const seenContents = new Set<string>();
+      for (const q of questions) {
+        if (!q.content || !q.content.trim()) continue;
+        const normalized = q.content.trim().toLowerCase().replace(/\s+/g, ' ');
+        if (!seenContents.has(normalized)) {
+          seenContents.add(normalized);
+          uniqueIncoming.push(q);
+        }
       }
-    } catch (dbErr) {
-      console.error("Error checking duplicates:", dbErr);
-    }
 
-    // Filter out questions that already exist in the database
-    const finalToInsert = uniqueIncoming.filter(q => {
-      const norm = q.content.trim().toLowerCase().replace(/\s+/g, ' ');
-      return !existingContents.includes(norm);
-    });
+      if (uniqueIncoming.length === 0) return 0;
 
-    if (finalToInsert.length === 0) {
-      console.log("All questions were duplicates. Skipping insert.");
-      return 0;
-    }
+      // 2. Fetch existing questions to check for duplicates in database
+      const incomingContents = uniqueIncoming.map(q => q.content.trim());
+      let existingContents: string[] = [];
+      try {
+        const { data, error } = await supabase
+          .from('arena_questions')
+          .select('content')
+          .in('content', incomingContents);
+          
+        if (!error && data) {
+          existingContents = data.map(row => row.content.trim().toLowerCase().replace(/\s+/g, ' '));
+        }
+      } catch (dbErr) {
+        console.error("Error checking duplicates:", dbErr);
+      }
 
-    const rowsFull = finalToInsert.map((q, i) => ({
-      id: `aq_bulk_${Date.now()}_${i}`,
-      content: q.content,
-      answers: q.answers || [],
-      correct_index: q.correct_index ?? 0,
-      difficulty: q.difficulty,
-      subject: q.subject,
-      topic: q.topic || 'general',
-      time_limit_seconds: q.time_limit_seconds || 30,
-      xp_reward: q.xp_reward || 10,
-      type: q.type || 'MCQ',
-      correct_indices: q.correct_indices || null,
-      correct_answer_string: q.correct_answer_string || null,
-      guide: q.guide || null,
-      explanation: q.explanation || null,
-      grade: q.grade,
-      case_sensitive: q.case_sensitive ?? false
-    }));
-    
-    let { error } = await supabase.from('arena_questions').insert(rowsFull);
-    if (error) {
-      console.warn("Retrying bulk insert without custom time, xp, and new columns...", error.message);
-      const rowsMin = finalToInsert.map((q, i) => ({
+      // Filter out questions that already exist in the database
+      const finalToInsert = uniqueIncoming.filter(q => {
+        const norm = q.content.trim().toLowerCase().replace(/\s+/g, ' ');
+        return !existingContents.includes(norm);
+      });
+
+      if (finalToInsert.length === 0) {
+        console.log("All questions were duplicates. Skipping insert.");
+        return 0;
+      }
+
+      const rowsFull = finalToInsert.map((q, i) => ({
         id: `aq_bulk_${Date.now()}_${i}`,
         content: q.content,
         answers: q.answers || [],
@@ -561,22 +540,49 @@ export const createArenaSlice: StateCreator<AppState, [], [], ArenaSliceState> =
         difficulty: q.difficulty,
         subject: q.subject,
         topic: q.topic || 'general',
-        grade: q.grade
+        time_limit_seconds: q.time_limit_seconds || 30,
+        xp_reward: q.xp_reward || 10,
+        type: q.type || 'MCQ',
+        correct_indices: q.correct_indices || null,
+        correct_answer_string: q.correct_answer_string || null,
+        guide: q.guide || null,
+        explanation: q.explanation || null,
+        grade: q.grade,
+        case_sensitive: q.case_sensitive ?? false
       }));
-      const { error: err2 } = await supabase.from('arena_questions').insert(rowsMin);
-      if (err2) {
-        console.error('Bulk insert error:', err2);
-        alert(`Không thể chèn loạt câu hỏi: ${err2.message}`);
-        return 0;
+      
+      let { error } = await supabase.from('arena_questions').insert(rowsFull);
+      if (error) {
+        console.warn("Retrying bulk insert without custom time, xp, and new columns...", error.message);
+        const rowsMin = finalToInsert.map((q, i) => ({
+          id: `aq_bulk_${Date.now()}_${i}`,
+          content: q.content,
+          answers: q.answers || [],
+          correct_index: q.correct_index ?? 0,
+          difficulty: q.difficulty,
+          subject: q.subject,
+          topic: q.topic || 'general',
+          grade: q.grade
+        }));
+        const { error: err2 } = await supabase.from('arena_questions').insert(rowsMin);
+        if (err2) {
+          console.error('Bulk insert error:', err2);
+          alert(`Không thể chèn loạt câu hỏi: ${err2.message}`);
+          return 0;
+        }
+        const parsed = rowsMin.map(r => ({ ...r, answers: typeof r.answers === 'string' ? JSON.parse(r.answers as any) : r.answers }));
+        set(state => ({ arenaQuestions: [...state.arenaQuestions, ...parsed as any[]] }));
+        return rowsMin.length;
       }
-      const parsed = rowsMin.map(r => ({ ...r, answers: typeof r.answers === 'string' ? JSON.parse(r.answers as any) : r.answers }));
+      
+      const parsed = rowsFull.map(r => ({ ...r, answers: typeof r.answers === 'string' ? JSON.parse(r.answers as any) : r.answers }));
       set(state => ({ arenaQuestions: [...state.arenaQuestions, ...parsed as any[]] }));
-      return rowsMin.length;
+      return rowsFull.length;
+    } catch (e: any) {
+      console.error("Exception in bulkAddArenaQuestions:", e);
+      alert(`Lỗi hệ thống khi lưu câu hỏi: ${e.message || e}`);
+      return 0;
     }
-    
-    const parsed = rowsFull.map(r => ({ ...r, answers: typeof r.answers === 'string' ? JSON.parse(r.answers as any) : r.answers }));
-    set(state => ({ arenaQuestions: [...state.arenaQuestions, ...parsed as any[]] }));
-    return rowsFull.length;
   },
 
   // ============================================
