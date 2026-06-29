@@ -31,6 +31,10 @@ export const createArenaSlice: StateCreator<AppState, [], [], ArenaSliceState> =
     if (data) {
       set({ arenaProfile: data as any });
     } else {
+      if (error && error.code !== 'PGRST116' && error.status !== 406) {
+        console.error('Error fetching arena profile (connection/db failure):', error);
+        throw new Error(error.message || 'Lỗi kết nối cơ sở dữ liệu đấu trường');
+      }
       set({ arenaProfile: null });
     }
   },

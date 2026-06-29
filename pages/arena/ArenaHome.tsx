@@ -20,19 +20,55 @@ export const ArenaHome: React.FC = () => {
     const [selecting, setSelecting] = useState(false);
     const [selectedClass, setSelectedClass] = useState<AvatarClass | null>(null);
     const [showHelp, setShowHelp] = useState(false);
+    const [fetchError, setFetchError] = useState<string | null>(null);
+
+    const loadProfile = async () => {
+        if (!user) return;
+        setFetchError(null);
+        setLoading(true);
+        try {
+            await fetchArenaProfile(user.id);
+        } catch (err: any) {
+            console.error("Failed loading arena profile:", err);
+            setFetchError(err.message || 'Lỗi kết nối máy chủ');
+        } finally {
+            setLoading(false);
+        }
+    };
 
     useEffect(() => {
-        if (user) {
-            fetchArenaProfile(user.id).then(() => setLoading(false));
-        }
+        loadProfile();
     }, [user]);
 
     const handleCreateProfile = async () => {
         if (!user || !selectedClass) return;
         setLoading(true);
-        await createArenaProfile(user.id, selectedClass);
-        setLoading(false);
+        try {
+            await createArenaProfile(user.id, selectedClass);
+        } catch (err: any) {
+            toast.error("Không thể khởi tạo nhân vật: " + (err.message || "Lỗi mạng"));
+        } finally {
+            setLoading(false);
+        }
     };
+
+    if (fetchError) {
+        return (
+            <div className="min-h-[60vh] flex flex-col items-center justify-center p-6 text-center bg-[#030712] text-gray-100 rounded-3xl border border-white/5 shadow-2xl">
+                <div className="bg-red-500/10 text-red-500 border border-red-500/20 px-6 py-4 rounded-2xl max-w-md mb-6 dark:border-slate-800">
+                    <h2 className="text-xl font-bold mb-2">⚠️ Lỗi tải dữ liệu đấu trường</h2>
+                    <p className="text-sm opacity-90">{fetchError}</p>
+                    <p className="text-xs opacity-75 mt-2">Vui lòng kiểm tra lại kết nối mạng hoặc thử lại.</p>
+                </div>
+                <button
+                    onClick={loadProfile}
+                    className="px-6 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-bold rounded-xl transition-all shadow-md active:scale-95"
+                >
+                    🔄 Thử lại
+                </button>
+            </div>
+        );
+    }
 
     if (loading) {
         return (
