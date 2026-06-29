@@ -149,6 +149,75 @@ const DEFAULT_TOPICS_BY_SUBJECT: Record<string, { topic: string; label: string }
   ]
 };
 
+const isFractionAnswer = (question: any): boolean => {
+  if (!question) return false;
+  const targets: string[] = [];
+  if (question.correct_answer_string) targets.push(question.correct_answer_string);
+  if (question.solution) targets.push(question.solution);
+  if (question.options && question.options.length > 0) {
+    question.options.forEach((opt: any) => {
+      if (typeof opt === 'string') targets.push(opt);
+    });
+  }
+  const fractionRegex = /\\frac|\\dfrac|^\s*-?\d+\s*[\/⁄]\s*\d+\s*$/i;
+  return targets.some(str => fractionRegex.test(str));
+};
+
+const FractionInput = ({ value, onChange }: any) => {
+  const [num, setNum] = useState('');
+  const [den, setDen] = useState('');
+
+  useEffect(() => {
+    if (value && typeof value === 'string' && value.includes('/')) {
+      const parts = value.split('/');
+      setNum(parts[0] || '');
+      setDen(parts[1] || '');
+    } else if (!value) {
+      setNum('');
+      setDen('');
+    } else {
+      setNum(value);
+      setDen('');
+    }
+  }, [value]);
+
+  const handleNumChange = (newNum: string) => {
+    const cleanNum = newNum.replace(/\s+/g, '');
+    setNum(cleanNum);
+    onChange(den ? `${cleanNum}/${den}` : cleanNum);
+  };
+
+  const handleDenChange = (newDen: string) => {
+    const cleanDen = newDen.replace(/\s+/g, '');
+    setDen(cleanDen);
+    if (num) {
+      onChange(cleanDen ? `${num}/${cleanDen}` : num);
+    } else {
+      onChange(cleanDen ? `/${cleanDen}` : '');
+    }
+  };
+
+  return (
+    <div className="flex flex-col items-center justify-center p-4 border border-white/10 bg-white/5 rounded-2xl w-48 mx-auto shadow-inner">
+      <input
+        type="text"
+        value={num}
+        onChange={(e) => handleNumChange(e.target.value)}
+        placeholder="Tử số"
+        className="w-36 p-3 text-center border border-white/10 rounded-xl outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30 bg-black/40 text-white font-bold text-xl shadow-sm transition-all"
+      />
+      <div className="w-40 h-[3px] bg-white/20 my-3 rounded-full"></div>
+      <input
+        type="text"
+        value={den}
+        onChange={(e) => handleDenChange(e.target.value)}
+        placeholder="Mẫu số"
+        className="w-36 p-3 text-center border border-white/10 rounded-xl outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30 bg-black/40 text-white font-bold text-xl shadow-sm transition-all"
+      />
+    </div>
+  );
+};
+
 export const TowerMode: React.FC = () => {
   const navigate = useNavigate();
   const [customTopics, setCustomTopics] = useState<{ id: string; subject: string; topic: string }[]>([]);
@@ -247,12 +316,20 @@ export const TowerMode: React.FC = () => {
     
     return { hint: guideText.trim(), explanation: explanationText || '' };
   }, [currentQ]);
+
+  useEffect(() => {
+    if (currentQ) {
+      setIsFractionMode(isFractionAnswer(currentQ));
+    }
+  }, [currentQ]);
+
   const [isCorrect, setIsCorrect] = useState(false);
   const [xpGained, setXpGained] = useState(0);
   const [eloGained, setEloGained] = useState(0);
   const [timer, setTimer] = useState(30);
   const [baseTimerLimit, setBaseTimerLimit] = useState(30);
   const [shortAnswerText, setShortAnswerText] = useState('');
+  const [isFractionMode, setIsFractionMode] = useState(false);
 
   // Gamification Active Perks
   const [skillUsed, setSkillUsed] = useState(false);
@@ -2051,19 +2128,34 @@ export const TowerMode: React.FC = () => {
             <div className="bg-[#080d16] border border-white/5 rounded-2xl p-6 mb-5 dark:border-slate-800">
               <div className="mb-4">
                 <label className="block text-base md:text-lg font-bold text-gray-300 mb-3">Nhập đáp án của bạn:</label>
-                <input
-                  type="text"
-                  value={shortAnswerText}
-                  onChange={(e) => setShortAnswerText(e.target.value)}
-                  disabled={showResult}
-                  placeholder="Điền từ, số hoặc cụm từ đáp án chính xác..."
-                  className="w-full px-5 py-4 rounded-xl bg-white/5 border border-white/10 text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all font-black text-lg md:text-xl lg:text-2xl dark:border-slate-800"
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' && shortAnswerText.trim() && !showResult) {
-                      handleAnswer(shortAnswerText);
-                    }
-                  }}
-                />
+                {isFractionMode && !showResult ? (
+                  <FractionInput value={shortAnswerText} onChange={setShortAnswerText} />
+                ) : (
+                  <input
+                    type="text"
+                    value={shortAnswerText}
+                    onChange={(e) => setShortAnswerText(e.target.value)}
+                    disabled={showResult}
+                    placeholder="Điền từ, số hoặc cụm từ đáp án chính xác..."
+                    className="w-full px-5 py-4 rounded-xl bg-white/5 border border-white/10 text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all font-black text-lg md:text-xl lg:text-2xl dark:border-slate-800"
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && shortAnswerText.trim() && !showResult) {
+                        handleAnswer(shortAnswerText);
+                      }
+                    }}
+                  />
+                )}
+                {!showResult && (
+                  <div className="mt-3 flex justify-center">
+                    <button
+                      type="button"
+                      onClick={() => setIsFractionMode(!isFractionMode)}
+                      className="text-xs text-indigo-400 hover:text-indigo-300 font-semibold hover:underline"
+                    >
+                      {isFractionMode ? "Chuyển sang nhập dòng đơn (số thường/chữ)" : "Chuyển sang nhập phân số đứng"}
+                    </button>
+                  </div>
+                )}
               </div>
 
               {showResult && (
@@ -2071,13 +2163,21 @@ export const TowerMode: React.FC = () => {
                   <div className="flex justify-between items-center text-sm">
                     <span className="text-gray-400">Đáp án của bạn:</span>
                     <span className={`font-bold ${isCorrect ? 'text-emerald-400' : 'text-rose-400'} `}>
-                      {shortAnswerText || '(Không trả lời)'}
+                      {shortAnswerText && shortAnswerText.includes('/') ? (
+                        <span className="inline-flex flex-col items-center justify-center align-middle font-bold">
+                          <span>{shortAnswerText.split('/')[0]}</span>
+                          <span className="w-8 h-[2px] bg-white/40 my-0.5"></span>
+                          <span>{shortAnswerText.split('/')[1]}</span>
+                        </span>
+                      ) : (
+                        shortAnswerText || '(Không trả lời)'
+                      )}
                     </span>
                   </div>
                   <div className="flex justify-between items-center text-sm">
                     <span className="text-gray-400">Đáp án đúng:</span>
                     <span className="font-bold text-emerald-400">
-                      {currentQ.correct_answer_string}
+                      <MathText inline>{currentQ.correct_answer_string || ''}</MathText>
                     </span>
                   </div>
                 </div>

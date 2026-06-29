@@ -9,6 +9,7 @@ import { DictionaryWidget } from '../components/DictionaryWidget'; // IMPORT WID
 import ReactMarkdown from 'react-markdown';
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
+import MathText from '../components/MathText';
 import { supabase } from '../services/supabaseClient'; // BỔ SUNG ĐỂ GHI NHẬN HÀNH VI TỰ ĐỘNG
 import { FaceLandmarker, FilesetResolver } from '@mediapipe/tasks-vision';
 import { AssignmentSettings } from '../types';
@@ -179,6 +180,75 @@ const normalizeMath = (s: string) => {
   return processed.toLowerCase();
 };
 
+const isFractionAnswer = (question: any): boolean => {
+  if (!question) return false;
+  const targets: string[] = [];
+  if (question.correct_answer_string) targets.push(question.correct_answer_string);
+  if (question.solution) targets.push(question.solution);
+  if (question.options && question.options.length > 0) {
+    question.options.forEach((opt: any) => {
+      if (typeof opt === 'string') targets.push(opt);
+    });
+  }
+  const fractionRegex = /\\frac|\\dfrac|^\s*-?\d+\s*[\/⁄]\s*\d+\s*$/i;
+  return targets.some(str => fractionRegex.test(str));
+};
+
+const FractionInput = ({ value, onChange }: any) => {
+  const [num, setNum] = useState('');
+  const [den, setDen] = useState('');
+
+  useEffect(() => {
+    if (value && typeof value === 'string' && value.includes('/')) {
+      const parts = value.split('/');
+      setNum(parts[0] || '');
+      setDen(parts[1] || '');
+    } else if (!value) {
+      setNum('');
+      setDen('');
+    } else {
+      setNum(value);
+      setDen('');
+    }
+  }, [value]);
+
+  const handleNumChange = (newNum: string) => {
+    const cleanNum = newNum.replace(/\s+/g, '');
+    setNum(cleanNum);
+    onChange(den ? `${cleanNum}/${den}` : cleanNum);
+  };
+
+  const handleDenChange = (newDen: string) => {
+    const cleanDen = newDen.replace(/\s+/g, '');
+    setDen(cleanDen);
+    if (num) {
+      onChange(cleanDen ? `${num}/${cleanDen}` : num);
+    } else {
+      onChange(cleanDen ? `/${cleanDen}` : '');
+    }
+  };
+
+  return (
+    <div className="flex flex-col items-center justify-center p-4 border border-gray-200 dark:border-slate-800 bg-gray-50/50 dark:bg-slate-900/30 rounded-2xl w-48 mx-auto shadow-inner">
+      <input
+        type="text"
+        value={num}
+        onChange={(e) => handleNumChange(e.target.value)}
+        placeholder="Tử số"
+        className="w-36 p-3 text-center border border-gray-300 dark:border-slate-700 rounded-xl outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 dark:focus:ring-indigo-900/30 bg-white dark:bg-slate-950 text-gray-900 dark:text-slate-100 font-bold text-xl shadow-sm transition-all"
+      />
+      <div className="w-40 h-[3px] bg-gray-400 dark:bg-slate-600 my-3 rounded-full"></div>
+      <input
+        type="text"
+        value={den}
+        onChange={(e) => handleDenChange(e.target.value)}
+        placeholder="Mẫu số"
+        className="w-36 p-3 text-center border border-gray-300 dark:border-slate-700 rounded-xl outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 dark:focus:ring-indigo-900/30 bg-white dark:bg-slate-950 text-gray-900 dark:text-slate-100 font-bold text-xl shadow-sm transition-all"
+      />
+    </div>
+  );
+};
+
 const ShortAnswerQuestion = React.memo(({ question, answer, isSubmitted, onSetAnswer, viewPassFail, caseSensitive }: any) => {
   const sAns = caseSensitive
     ? normalizeMath(String(answer || '').trim().replace(/\s+/g, ' '))
@@ -195,33 +265,74 @@ const ShortAnswerQuestion = React.memo(({ question, answer, isSubmitted, onSetAn
         ? String(question.solution || '').trim().replace(/\s+/g, ' ')
         : String(question.solution || '').trim().toLowerCase().replace(/\s+/g, ''));
 
+  const [isFractionMode, setIsFractionMode] = useState(() => isFractionAnswer(question));
+
   return (
     <div className="max-w-2xl">
       {isSubmitted ? (
         <div
           className={`w-full p-4 border-2 rounded-xl min-h-[60px] flex items-center shadow-inner ${isSubmitted && viewPassFail ? (isCorrect ? 'border-green-500 bg-green-50 text-green-700' : 'border-red-500 bg-red-50 text-red-700') : 'bg-gray-50 text-gray-700 border-gray-200'}`}
         >
-          <span className="font-bold text-lg">{answer || '(Bỏ trống)'}</span>
+          <span className="font-bold text-lg">
+            {answer && answer.includes('/') ? (
+              <span className="inline-flex flex-col items-center justify-center align-middle font-bold text-lg">
+                <span>{answer.split('/')[0]}</span>
+                <span className="w-8 h-[2px] bg-gray-600 my-0.5"></span>
+                <span>{answer.split('/')[1]}</span>
+              </span>
+            ) : (
+              answer || '(Bỏ trống)'
+            )}
+          </span>
         </div>
       ) : (
         <div className="relative group">
-          <input
-            type="text"
-            value={answer || ''}
-            onChange={(e) => onSetAnswer(e.target.value)}
-            placeholder="Nhập câu trả lời của bạn tại đây..."
-            className="w-full p-5 border-2 border-gray-200 rounded-xl outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-50/50 bg-white text-gray-900 text-lg font-medium transition-all shadow-sm"
-          />
-          <div className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-indigo-400">
-            <Sparkles className="h-5 w-5" />
+          {isFractionMode ? (
+            <FractionInput value={answer || ''} onChange={onSetAnswer} />
+          ) : (
+            <>
+              <input
+                type="text"
+                value={answer || ''}
+                onChange={(e) => onSetAnswer(e.target.value)}
+                placeholder="Nhập câu trả lời của bạn tại đây..."
+                className="w-full p-5 border-2 border-gray-200 rounded-xl outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-50/50 bg-white text-gray-900 text-lg font-medium transition-all shadow-sm"
+              />
+              <div className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-indigo-400">
+                <Sparkles className="h-5 w-5" />
+              </div>
+            </>
+          )}
+          <div className="mt-3 flex justify-center">
+            <button
+              type="button"
+              onClick={() => setIsFractionMode(!isFractionMode)}
+              className="text-xs text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300 font-semibold hover:underline"
+            >
+              {isFractionMode ? "Chuyển sang nhập dòng đơn (số thường/chữ)" : "Chuyển sang nhập phân số đứng"}
+            </button>
           </div>
         </div>
       )}
       {isSubmitted && viewPassFail && (
-        <div className="mt-3 flex items-center gap-2 px-2">
-          {isCorrect
-            ? <><CheckCircle className="h-5 w-5 text-green-600" /><span className="text-green-700 font-bold">Hệ thống chấp nhận đáp án này</span></>
-            : <><X className="h-5 w-5 text-red-600" /><span className="text-red-700 font-bold">Sai (Không khớp đáp án mẫu)</span></>}
+        <div className="mt-3 flex flex-col gap-2 px-2">
+          <div className="flex items-center gap-2">
+            {isCorrect
+              ? <><CheckCircle className="h-5 w-5 text-green-600" /><span className="text-green-700 font-bold">Hệ thống chấp nhận đáp án này</span></>
+              : <><X className="h-5 w-5 text-red-600" /><span className="text-red-700 font-bold">Sai (Không khớp đáp án mẫu)</span></>}
+          </div>
+          {!isCorrect && (
+            <div className="mt-2 text-sm text-gray-600 flex items-center gap-2 bg-gray-50 p-3 rounded-lg border border-gray-100">
+              <span className="font-medium text-gray-500">Đáp án mẫu:</span>
+              <span className="font-bold text-gray-800">
+                <MathText inline>
+                  {question.options && question.options.length > 0 
+                    ? question.options.map((opt: any) => String(opt)).join(' / ') 
+                    : String(question.solution || '')}
+                </MathText>
+              </span>
+            </div>
+          )}
         </div>
       )}
     </div>

@@ -1759,7 +1759,9 @@ export const ArenaAdmin: React.FC = () => {
                             {q.type === 'SHORT_ANSWER' ? (
                                 <div className="mt-2 bg-emerald-55/10 border border-emerald-200/50 p-3 rounded-xl max-w-md dark:border-slate-800">
                                     <p className="text-xs font-black text-emerald-800 uppercase tracking-widest">Đáp án đúng điền từ:</p>
-                                    <p className="text-sm font-bold text-emerald-950 mt-1 italic">"{q.correct_answer_string}"</p>
+                                    <div className="mt-1 text-emerald-950 font-bold">
+                                        <MathText inline>{q.correct_answer_string || ''}</MathText>
+                                    </div>
                                 </div>
                             ) : q.type === 'MCQ_MULTIPLE' ? (
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mt-3">
@@ -2412,7 +2414,9 @@ export const ArenaAdmin: React.FC = () => {
                                     {item.type === 'SHORT_ANSWER' ? (
                                         <div className="bg-emerald-50 border p-3 rounded-xl text-xs max-w-sm dark:border-slate-800">
                                             <span className="font-black text-emerald-800 uppercase block tracking-wider">Đáp án điền từ:</span>
-                                            <span className="font-bold text-emerald-950 block mt-1">"{item.correct_answer_string}"</span>
+                                            <div className="mt-1 text-emerald-950 font-bold">
+                                                <MathText inline>{item.correct_answer_string || ''}</MathText>
+                                            </div>
                                         </div>
                                     ) : (
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-2">

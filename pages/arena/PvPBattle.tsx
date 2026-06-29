@@ -99,6 +99,75 @@ const BATTLE_LORE = [
 const QUESTIONS_PER_MATCH = 5;
 const TIME_PER_QUESTION = 15;
 
+const isFractionAnswer = (question: any): boolean => {
+  if (!question) return false;
+  const targets: string[] = [];
+  if (question.correct_answer_string) targets.push(question.correct_answer_string);
+  if (question.solution) targets.push(question.solution);
+  if (question.options && question.options.length > 0) {
+    question.options.forEach((opt: any) => {
+      if (typeof opt === 'string') targets.push(opt);
+    });
+  }
+  const fractionRegex = /\\frac|\\dfrac|^\s*-?\d+\s*[\/⁄]\s*\d+\s*$/i;
+  return targets.some(str => fractionRegex.test(str));
+};
+
+const FractionInput = ({ value, onChange }: any) => {
+  const [num, setNum] = useState('');
+  const [den, setDen] = useState('');
+
+  useEffect(() => {
+    if (value && typeof value === 'string' && value.includes('/')) {
+      const parts = value.split('/');
+      setNum(parts[0] || '');
+      setDen(parts[1] || '');
+    } else if (!value) {
+      setNum('');
+      setDen('');
+    } else {
+      setNum(value);
+      setDen('');
+    }
+  }, [value]);
+
+  const handleNumChange = (newNum: string) => {
+    const cleanNum = newNum.replace(/\s+/g, '');
+    setNum(cleanNum);
+    onChange(den ? `${cleanNum}/${den}` : cleanNum);
+  };
+
+  const handleDenChange = (newDen: string) => {
+    const cleanDen = newDen.replace(/\s+/g, '');
+    setDen(cleanDen);
+    if (num) {
+      onChange(cleanDen ? `${num}/${cleanDen}` : num);
+    } else {
+      onChange(cleanDen ? `/${cleanDen}` : '');
+    }
+  };
+
+  return (
+    <div className="flex flex-col items-center justify-center p-4 border border-gray-200 dark:border-slate-800 bg-gray-50/50 dark:bg-slate-900/30 rounded-2xl w-48 mx-auto shadow-inner">
+      <input
+        type="text"
+        value={num}
+        onChange={(e) => handleNumChange(e.target.value)}
+        placeholder="Tử số"
+        className="w-36 p-3 text-center border border-gray-350 dark:border-slate-700 rounded-xl outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 dark:focus:ring-indigo-900/30 bg-white dark:bg-slate-950 text-gray-900 dark:text-slate-100 font-bold text-xl shadow-sm transition-all"
+      />
+      <div className="w-40 h-[3px] bg-gray-400 dark:bg-slate-600 my-3 rounded-full"></div>
+      <input
+        type="text"
+        value={den}
+        onChange={(e) => handleDenChange(e.target.value)}
+        placeholder="Mẫu số"
+        className="w-36 p-3 text-center border border-gray-350 dark:border-slate-700 rounded-xl outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 dark:focus:ring-indigo-900/30 bg-white dark:bg-slate-950 text-gray-900 dark:text-slate-100 font-bold text-xl shadow-sm transition-all"
+      />
+    </div>
+  );
+};
+
 export const PvPBattle: React.FC = () => {
     const { id: matchId } = useParams<{ id: string }>();
     const navigate = useNavigate();
@@ -293,6 +362,7 @@ export const PvPBattle: React.FC = () => {
     // Extra states for MCQ_MULTIPLE and SHORT_ANSWER
     const [selectedIndices, setSelectedIndices] = useState<number[]>([]);
     const [shortAnswerText, setShortAnswerText] = useState('');
+    const [isFractionMode, setIsFractionMode] = useState(false);
 
     const handleAnswer = async (idxPayload: number | number[] | string) => {
         if (showResult || answeredThisQ || !questions[currentQIdx] || !matchId || !user) return;
@@ -520,6 +590,12 @@ export const PvPBattle: React.FC = () => {
     }
 
     const currentQuestion = questions[currentQIdx];
+    
+    useEffect(() => {
+        if (currentQuestion) {
+            setIsFractionMode(isFractionAnswer(currentQuestion));
+        }
+    }, [currentQuestion]);
     const { hint, explanation } = React.useMemo(() => {
         if (!currentQuestion) return { hint: '', explanation: '' };
         const guideText = currentQuestion.guide;
@@ -809,19 +885,34 @@ export const PvPBattle: React.FC = () => {
                         <div className="bg-white rounded-2xl shadow-sm border p-6 dark:bg-slate-900 dark:border-slate-800">
                             <div className="mb-4">
                                 <label className="block text-sm font-semibold text-gray-600 mb-2 dark:text-slate-400">Nhập đáp án của bạn:</label>
-                                <input
-                                    type="text"
-                                    value={shortAnswerText}
-                                    onChange={(e) => setShortAnswerText(e.target.value)}
-                                    disabled={showResult || answeredThisQ}
-                                    placeholder="Điền từ, số hoặc cụm từ đáp án chính xác..."
-                                    className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all font-semibold dark:border-slate-800"
-                                    onKeyDown={(e) => {
-                                        if (e.key === 'Enter' && shortAnswerText.trim()) {
-                                            handleAnswer(shortAnswerText);
-                                        }
-                                    }}
-                                />
+                                {isFractionMode && !showResult && !answeredThisQ ? (
+                                    <FractionInput value={shortAnswerText} onChange={setShortAnswerText} />
+                                ) : (
+                                    <input
+                                        type="text"
+                                        value={shortAnswerText}
+                                        onChange={(e) => setShortAnswerText(e.target.value)}
+                                        disabled={showResult || answeredThisQ}
+                                        placeholder="Điền từ, số hoặc cụm từ đáp án chính xác..."
+                                        className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all font-semibold dark:border-slate-800"
+                                        onKeyDown={(e) => {
+                                            if (e.key === 'Enter' && shortAnswerText.trim()) {
+                                                handleAnswer(shortAnswerText);
+                                            }
+                                        }}
+                                    />
+                                )}
+                                {!showResult && !answeredThisQ && (
+                                    <div className="mt-3 flex justify-center">
+                                        <button
+                                            type="button"
+                                            onClick={() => setIsFractionMode(!isFractionMode)}
+                                            className="text-xs text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300 font-semibold hover:underline"
+                                        >
+                                            {isFractionMode ? "Chuyển sang nhập dòng đơn (số thường/chữ)" : "Chuyển sang nhập phân số đứng"}
+                                        </button>
+                                    </div>
+                                )}
                             </div>
 
                             {showResult && (
@@ -829,13 +920,21 @@ export const PvPBattle: React.FC = () => {
                                     <div className="flex justify-between items-center text-sm">
                                         <span className="text-gray-500 dark:text-slate-500">Đáp án của bạn:</span>
                                         <span className={`font-bold ${isCorrect ? 'text-emerald-600' : 'text-red-600'} `}>
-                                            {shortAnswerText || '(Không trả lời)'}
+                                            {shortAnswerText && shortAnswerText.includes('/') ? (
+                                                <span className="inline-flex flex-col items-center justify-center align-middle font-bold">
+                                                    <span>{shortAnswerText.split('/')[0]}</span>
+                                                    <span className="w-8 h-[2px] bg-gray-400 dark:bg-slate-650 my-0.5"></span>
+                                                    <span>{shortAnswerText.split('/')[1]}</span>
+                                                </span>
+                                            ) : (
+                                                shortAnswerText || '(Không trả lời)'
+                                            )}
                                         </span>
                                     </div>
                                     <div className="flex justify-between items-center text-sm">
                                         <span className="text-gray-500 dark:text-slate-500">Đáp án đúng:</span>
                                         <span className="font-bold text-emerald-600">
-                                            {currentQuestion.correct_answer_string}
+                                            <MathText inline>{currentQuestion.correct_answer_string || ''}</MathText>
                                         </span>
                                     </div>
                                 </div>
