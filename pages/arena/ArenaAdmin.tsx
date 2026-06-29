@@ -56,6 +56,8 @@ export const ArenaAdmin: React.FC = () => {
     const [editingTopicName, setEditingTopicName] = useState('');
     const [editingTopicSubject, setEditingTopicSubject] = useState('math');
     const [editingTopicGrade, setEditingTopicGrade] = useState('5');
+    const [modalFilterSubject, setModalFilterSubject] = useState('');
+    const [modalFilterGrade, setModalFilterGrade] = useState('');
     
     // Filters & Search
     const [filterSubject, setFilterSubject] = useState('');
@@ -343,11 +345,18 @@ export const ArenaAdmin: React.FC = () => {
 
     const displayedTopics = useMemo(() => {
         return allCombinedTopics.filter(t => {
-            if (filterSubject && normalizeSubject(t.subject) !== normalizeSubject(filterSubject)) return false;
-            if (filterGrade && !t.grade.split(', ').includes(filterGrade)) return false;
+            if (modalFilterSubject && normalizeSubject(t.subject) !== normalizeSubject(modalFilterSubject)) return false;
+            if (modalFilterGrade && !t.grade.split(', ').includes(modalFilterGrade)) return false;
             return true;
         });
-    }, [allCombinedTopics, filterSubject, filterGrade]);
+    }, [allCombinedTopics, modalFilterSubject, modalFilterGrade]);
+
+    useEffect(() => {
+        if (showTopicManager) {
+            setModalFilterSubject(filterSubject);
+            setModalFilterGrade(filterGrade);
+        }
+    }, [showTopicManager, filterSubject, filterGrade]);
 
     const handleGradeChange = (grade: string) => {
         setFilterGrade(grade);
@@ -2615,7 +2624,32 @@ export const ArenaAdmin: React.FC = () => {
                             </div>
 
                             {/* Topics List */}
-                            <div className="space-y-2">
+                            <div className="space-y-2.5">
+                                <div className="grid grid-cols-2 gap-3 bg-gray-50 dark:bg-slate-800/50 p-3 rounded-xl border dark:border-slate-800">
+                                    <div>
+                                        <label className="block text-[10px] text-gray-400 mb-1 font-bold uppercase tracking-wider dark:text-slate-500">Lọc theo Môn</label>
+                                        <select 
+                                            value={modalFilterSubject} 
+                                            onChange={e => setModalFilterSubject(e.target.value)} 
+                                            className="w-full border rounded-lg px-2.5 py-1.5 text-xs font-bold bg-white dark:bg-slate-900 dark:border-slate-800 outline-none"
+                                        >
+                                            <option value="">Tất cả môn học</option>
+                                            {SUBJECTS.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label className="block text-[10px] text-gray-400 mb-1 font-bold uppercase tracking-wider dark:text-slate-500">Lọc theo Lớp</label>
+                                        <select 
+                                            value={modalFilterGrade} 
+                                            onChange={e => setModalFilterGrade(e.target.value)} 
+                                            className="w-full border rounded-lg px-2.5 py-1.5 text-xs font-bold bg-white dark:bg-slate-900 dark:border-slate-800 outline-none"
+                                        >
+                                            <option value="">Tất cả các lớp</option>
+                                            {['3', '4', '5'].map(g => <option key={g} value={g}>Lớp {g}</option>)}
+                                        </select>
+                                    </div>
+                                </div>
+
                                 <h4 className="font-bold text-xs text-gray-500 uppercase tracking-wider dark:text-slate-500">Danh sách chuyên đề ({displayedTopics.length})</h4>
                                 {displayedTopics.length === 0 ? (
                                     <p className="text-sm text-gray-400 text-center py-6">Chưa có chuyên đề nào được tạo.</p>
