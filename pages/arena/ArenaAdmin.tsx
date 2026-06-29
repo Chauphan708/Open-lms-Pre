@@ -106,6 +106,8 @@ export const ArenaAdmin: React.FC = () => {
     const [aiScanFileLoading, setAiScanFileLoading] = useState(false);
     const [aiScanning, setAiScanning] = useState(false);
 
+    const isFirstLoad = useRef(true);
+
     // Edit form
     const [formContent, setFormContent] = useState('');
     const [formAnswers, setFormAnswers] = useState(['', '', '', '']);
@@ -310,13 +312,17 @@ export const ArenaAdmin: React.FC = () => {
     // Load questions on start and when filters/search changes
     useEffect(() => {
         const delayDebounceFn = setTimeout(() => {
+            const shouldIncludeStats = isFirstLoad.current || activeTab === 'stats';
+            if (isFirstLoad.current) {
+                isFirstLoad.current = false;
+            }
             fetchArenaQuestions({
                 subject: filterSubject || undefined,
                 difficulty: filterDifficulty || undefined,
                 grade: filterGrade || undefined,
                 topic: filterTopic || undefined,
                 search: searchQuery || undefined
-            }, activeTab === 'stats').then(() => setLoading(false));
+            }, shouldIncludeStats).then(() => setLoading(false));
         }, 300); // 300ms debounce to avoid spamming database on text typing
 
         return () => clearTimeout(delayDebounceFn);
