@@ -337,18 +337,39 @@ export const createArenaSlice: StateCreator<AppState, [], [], ArenaSliceState> =
         .map(q => q.id);
     } else {
       // Lấy từ bảng arena_questions
-      let query = supabase.from('arena_questions').select('id');
+      let query = supabase.from('arena_questions').select('id, answers, correct_answer_string, type');
       if (filters?.subject) query = query.eq('subject', filters.subject);
       if (filters?.topic) query = query.eq('topic', filters.topic);
       const { data: questions } = await query;
-      const allIds = questions?.map((q: any) => q.id) || [];
+      const allIds = (questions || [])
+        .filter((q: any) => {
+          const parsedAnswers = typeof q.answers === 'string' ? JSON.parse(q.answers) : q.answers;
+          const answersLen = (parsedAnswers && Array.isArray(parsedAnswers)) ? parsedAnswers.length : 0;
+          const isShort = q.type === 'SHORT_ANSWER' || answersLen === 0;
+          if (isShort) {
+            return !!q.correct_answer_string && q.correct_answer_string.trim() !== '';
+          }
+          return true;
+        })
+        .map((q: any) => q.id);
       questionIds = allIds.sort(() => Math.random() - 0.5).slice(0, count);
     }
 
     if (questionIds.length === 0) {
       // Fallback: lấy tất cả arena_questions
-      const { data: questions } = await supabase.from('arena_questions').select('id');
-      questionIds = (questions?.map((q: any) => q.id) || []).sort(() => Math.random() - 0.5).slice(0, count);
+      const { data: questions } = await supabase.from('arena_questions').select('id, answers, correct_answer_string, type');
+      const filteredFallback = (questions || [])
+        .filter((q: any) => {
+          const parsedAnswers = typeof q.answers === 'string' ? JSON.parse(q.answers) : q.answers;
+          const answersLen = (parsedAnswers && Array.isArray(parsedAnswers)) ? parsedAnswers.length : 0;
+          const isShort = q.type === 'SHORT_ANSWER' || answersLen === 0;
+          if (isShort) {
+            return !!q.correct_answer_string && q.correct_answer_string.trim() !== '';
+          }
+          return true;
+        })
+        .map((q: any) => q.id);
+      questionIds = filteredFallback.sort(() => Math.random() - 0.5).slice(0, count);
     }
 
     const matchId = `match_${Date.now()}`;

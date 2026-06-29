@@ -700,7 +700,17 @@ export const TowerMode: React.FC = () => {
 
     // 1. Pull from arena_questions
     arenaQuestions
-      .filter(q => normalizeSubject(q.subject) === normalizeSubject(selectedSubject) && q.topic?.toLowerCase() === selectedTopic.toLowerCase())
+      .filter(q => {
+        const isMatch = normalizeSubject(q.subject) === normalizeSubject(selectedSubject) && q.topic?.toLowerCase() === selectedTopic.toLowerCase();
+        if (!isMatch) return false;
+        
+        const answersLen = (q.answers && Array.isArray(q.answers)) ? q.answers.length : 0;
+        const isShort = q.type === 'SHORT_ANSWER' || answersLen === 0;
+        if (isShort) {
+          return !!q.correct_answer_string && q.correct_answer_string.trim() !== '';
+        }
+        return true;
+      })
       .forEach(q => pool.push(q));
 
     // 2. Pull from published exams questions with same topic & subject
@@ -755,7 +765,18 @@ export const TowerMode: React.FC = () => {
         console.error("Supabase query error:", error);
       } else if (data && data.length > 0) {
         const mapped = data
-          .filter((q: any) => normalizeSubject(q.subject) === normalizeSubject(selectedSubject))
+          .filter((q: any) => {
+            const isSubjMatch = normalizeSubject(q.subject) === normalizeSubject(selectedSubject);
+            if (!isSubjMatch) return false;
+            
+            const parsedAnswers = typeof q.answers === 'string' ? JSON.parse(q.answers) : q.answers;
+            const answersLen = (parsedAnswers && Array.isArray(parsedAnswers)) ? parsedAnswers.length : 0;
+            const isShort = q.type === 'SHORT_ANSWER' || answersLen === 0;
+            if (isShort) {
+              return !!q.correct_answer_string && q.correct_answer_string.trim() !== '';
+            }
+            return true;
+          })
           .map((q: any) => ({
             id: q.id,
             content: q.content,
