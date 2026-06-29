@@ -319,9 +319,23 @@ export const TowerMode: React.FC = () => {
             fetchArenaProfile(user.id),
             fetchArenaQuestions(studentGrade ? { grade: studentGrade } : undefined),
             supabase.from('arena_topics').select('*').then(({ data }) => { if (data) setCustomTopics(data); }),
-            supabase.from('arena_questions').select('topic, subject, grade').then(({ data }) => {
-              if (data) {
-                const filtered = data
+            (async () => {
+              let qData: any[] = [];
+              let page = 0;
+              const pageSize = 1000;
+              while (true) {
+                const { data, error } = await supabase
+                  .from('arena_questions')
+                  .select('topic, subject, grade')
+                  .range(page * pageSize, (page + 1) * pageSize - 1);
+                
+                if (error || !data || data.length === 0) break;
+                qData = [...qData, ...data];
+                if (data.length < pageSize) break;
+                page++;
+              }
+              if (qData.length > 0) {
+                const filtered = qData
                   .filter(q => q.topic && q.topic.trim() && q.topic !== 'general')
                   .map(q => ({
                     topic: q.topic.trim(),
@@ -331,7 +345,7 @@ export const TowerMode: React.FC = () => {
                 const unique = Array.from(new Set(filtered.map(x => JSON.stringify(x)))).map(s => JSON.parse(s) as { topic: string; subject: string; grade: string });
                 setDbTopics(unique);
               }
-            })
+            })()
           ]);
         } catch (e) {
           console.error("Error loading tower mode setup:", e);
