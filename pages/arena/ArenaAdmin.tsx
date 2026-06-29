@@ -148,8 +148,12 @@ export const ArenaAdmin: React.FC = () => {
                     const existing = topicsMap.get(key);
                     if (existing) {
                         existing.questionCount += 1;
-                        if (q.grade && !existing.grade.split(', ').includes(q.grade)) {
-                            existing.grade = existing.grade ? `${existing.grade}, ${q.grade}` : q.grade;
+                        if (q.grade && existing.grade && typeof existing.grade === 'string') {
+                            if (!existing.grade.split(', ').includes(q.grade)) {
+                                existing.grade = `${existing.grade}, ${q.grade}`;
+                            }
+                        } else if (q.grade) {
+                            existing.grade = q.grade;
                         }
                     } else {
                         topicsMap.set(key, {
