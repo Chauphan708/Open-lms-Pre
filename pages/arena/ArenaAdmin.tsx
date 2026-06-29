@@ -64,6 +64,7 @@ export const ArenaAdmin: React.FC = () => {
     const [filterDifficulty, setFilterDifficulty] = useState(0);
     const [filterGrade, setFilterGrade] = useState('');
     const [filterTopic, setFilterTopic] = useState('');
+    const [filterType, setFilterType] = useState('');
     const [searchQuery, setSearchQuery] = useState('');
 
     const [editing, setEditing] = useState<ArenaQuestion | null>(null);
@@ -86,6 +87,7 @@ export const ArenaAdmin: React.FC = () => {
     // Bank import filter and server-side state
     const [bankFilterSubject, setBankFilterSubject] = useState('');
     const [bankSelectedIds, setBankSelectedIds] = useState<Set<string>>(new Set());
+    const [bankFilterType, setBankFilterType] = useState('');
     const [bankSearchTerm, setBankSearchTerm] = useState('');
     const [bankPage, setBankPage] = useState(1);
     const [bankQuestions, setBankQuestions] = useState<any[]>([]);
@@ -95,7 +97,7 @@ export const ArenaAdmin: React.FC = () => {
 
     useEffect(() => {
         setBankPage(1);
-    }, [bankFilterSubject, bankSearchTerm]);
+    }, [bankFilterSubject, bankSearchTerm, bankFilterType]);
 
     useEffect(() => {
         if (!showBankImport) return;
@@ -104,7 +106,12 @@ export const ArenaAdmin: React.FC = () => {
             setBankLoading(true);
             try {
                 let query = supabase.from('question_bank').select('*', { count: 'exact' });
-                query = query.in('type', ['MCQ', 'MCQ_MULTIPLE', 'SHORT_ANSWER']);
+                
+                if (bankFilterType) {
+                    query = query.eq('type', bankFilterType);
+                } else {
+                    query = query.in('type', ['MCQ', 'MCQ_MULTIPLE', 'SHORT_ANSWER']);
+                }
 
                 if (bankFilterSubject) {
                     query = query.eq('subject', bankFilterSubject);
@@ -130,7 +137,7 @@ export const ArenaAdmin: React.FC = () => {
         };
 
         fetchBankQuestions();
-    }, [showBankImport, bankFilterSubject, bankSearchTerm, bankPage]);
+    }, [showBankImport, bankFilterSubject, bankSearchTerm, bankPage, bankFilterType]);
 
     // AI Generate & Preview
     const [showAiGen, setShowAiGen] = useState(false);
@@ -384,12 +391,13 @@ export const ArenaAdmin: React.FC = () => {
                 difficulty: filterDifficulty || undefined,
                 grade: filterGrade || undefined,
                 topic: filterTopic || undefined,
+                type: filterType || undefined,
                 search: searchQuery || undefined
             }, shouldIncludeStats).then(() => setLoading(false));
         }, 300); // 300ms debounce to avoid spamming database on text typing
 
         return () => clearTimeout(delayDebounceFn);
-    }, [filterSubject, filterDifficulty, filterGrade, filterTopic, searchQuery, activeTab]);
+    }, [filterSubject, filterDifficulty, filterGrade, filterTopic, filterType, searchQuery, activeTab]);
 
     useEffect(() => {
         fetchAllTopics();
@@ -1738,6 +1746,13 @@ export const ArenaAdmin: React.FC = () => {
                         {uniqueTopics.map(topic => <option key={topic} value={topic}>{topic}</option>)}
                     </select>
 
+                    <select value={filterType} onChange={e => setFilterType(e.target.value)} className="border border-gray-200 rounded-lg px-2.5 py-1.5 text-xs outline-none focus:ring-2 focus:ring-indigo-500 bg-white font-bold text-gray-700 cursor-pointer hover:border-gray-300 dark:bg-slate-900 dark:border-slate-800 dark:text-slate-300">
+                        <option value="">Tất cả loại câu</option>
+                        <option value="MCQ">Trắc nghiệm (1 đáp án)</option>
+                        <option value="MCQ_MULTIPLE">Trắc nghiệm nhiều đáp án</option>
+                        <option value="SHORT_ANSWER">Tự luận ngắn (Điền từ)</option>
+                    </select>
+
                     <label className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 dark:bg-slate-850 px-3 py-1.5 rounded-lg border border-gray-200 transition-colors bg-white text-xs font-bold text-gray-600 select-none dark:border-slate-800 dark:text-slate-400 dark:hover:bg-slate-850/50">
                         <input
                             type="checkbox"
@@ -1875,6 +1890,7 @@ export const ArenaAdmin: React.FC = () => {
                                 difficulty: filterDifficulty || undefined,
                                 grade: filterGrade || undefined,
                                 topic: filterTopic || undefined,
+                                type: filterType || undefined,
                                 search: searchQuery || undefined
                             });
                             setLoadingMore(false);
@@ -2338,6 +2354,13 @@ export const ArenaAdmin: React.FC = () => {
                                             <option value="Lịch sử và Địa lí">Lịch sử và Địa lí</option>
                                             <option value="Công nghệ">Công nghệ</option>
                                             <option value="Tin học">Tin học</option>
+                                        </select>
+                                        
+                                        <select value={bankFilterType} onChange={e => setBankFilterType(e.target.value)} className="border rounded-lg px-3 py-1.5 text-sm bg-white cursor-pointer font-medium text-gray-700 dark:bg-slate-900 dark:border-slate-800 dark:text-slate-300">
+                                            <option value="">Tất cả loại câu</option>
+                                            <option value="MCQ">Trắc nghiệm (1 đáp án)</option>
+                                            <option value="MCQ_MULTIPLE">Trắc nghiệm nhiều đáp án</option>
+                                            <option value="SHORT_ANSWER">Tự luận ngắn</option>
                                         </select>
                                         <button onClick={selectAllBank} className="text-xs text-purple-600 font-bold hover:underline">
                                             {bankSelectedIds.size === bankQuestions.length && bankQuestions.length > 0 ? 'Bỏ chọn tất cả' : `Chọn tất cả (${bankQuestions.length})`}

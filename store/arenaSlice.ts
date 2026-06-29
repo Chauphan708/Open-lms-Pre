@@ -120,6 +120,7 @@ export const createArenaSlice: StateCreator<AppState, [], [], ArenaSliceState> =
     if (filters?.difficulty) query = query.eq('difficulty', filters.difficulty);
     if (filters?.grade) query = query.eq('grade', filters.grade);
     if (filters?.topic) query = query.eq('topic', filters.topic);
+    if (filters?.type) query = query.eq('type', filters.type);
     if (filters?.search?.trim()) {
       query = query.ilike('content', `%${filters.search.trim()}%`);
     }
@@ -187,6 +188,7 @@ export const createArenaSlice: StateCreator<AppState, [], [], ArenaSliceState> =
     if (filters?.difficulty) query = query.eq('difficulty', filters.difficulty);
     if (filters?.grade) query = query.eq('grade', filters.grade);
     if (filters?.topic) query = query.eq('topic', filters.topic);
+    if (filters?.type) query = query.eq('type', filters.type);
     if (filters?.search?.trim()) {
       query = query.ilike('content', `%${filters.search.trim()}%`);
     }

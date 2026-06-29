@@ -420,17 +420,16 @@ const QuestionBank: React.FC = () => {
           {grades.map(g => <option key={g} value={g}>Lớp {g}</option>)}
         </select>
 
-              <label className="block text-xs font-bold text-gray-500 mb-1.5 dark:text-slate-400">Chủ đề</label>
-              <select
-                value={filterTopic}
-                onChange={(e) => setFilterTopic(e.target.value)}
-                className="w-full bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-xl px-3 py-2 text-sm text-gray-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-              >
-                <option value="all">Tất cả chủ đề</option>
-                {topics.map(t => (
-                  <option key={t} value={t}>{t}</option>
-                ))}
-              </select>
+        <select
+          value={filterTopic}
+          onChange={(e) => setFilterTopic(e.target.value)}
+          className="bg-gray-50 dark:bg-slate-950 border border-gray-100 dark:border-slate-800 text-gray-700 dark:text-slate-200 rounded-xl text-sm px-4 py-2 outline-none focus:ring-2 focus:ring-emerald-500"
+        >
+          <option value="all">Tất cả Chủ đề</option>
+          {topics.map(t => (
+            <option key={t} value={t}>{t}</option>
+          ))}
+        </select>
 
         <select
           value={filterLevel}
