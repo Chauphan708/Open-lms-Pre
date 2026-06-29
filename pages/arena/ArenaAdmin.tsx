@@ -525,21 +525,25 @@ export const ArenaAdmin: React.FC = () => {
         setImporting(true);
         try {
             const selected = bankQuestions.filter(q => bankSelectedIds.has(q.id));
-            const converted: Omit<ArenaQuestion, 'id'>[] = selected.map(q => ({
-                content: q.content,
-                answers: q.type === 'SHORT_ANSWER' ? [] : q.options?.slice(0, 4) || [],
-                correct_index: q.correctOptionIndex ?? 0,
-                correct_indices: q.correctOptionIndices || [],
-                correct_answer_string: q.type === 'SHORT_ANSWER' 
-                    ? (q.options && q.options.length > 0 ? q.options[0] : (q.solution || ''))
-                    : '',
-                difficulty: levelToDifficulty(q.level),
-                subject: subjectMap[q.subject] || 'math',
-                topic: q.topic || 'general',
-                time_limit_seconds: 30,
-                xp_reward: 10,
-                type: q.type as any || 'MCQ'
-            }));
+            const converted: Omit<ArenaQuestion, 'id'>[] = selected.map(q => {
+                const inferredType = q.type ? q.type : (!q.options || q.options.length === 0 ? 'SHORT_ANSWER' : 'MCQ');
+                const isShort = inferredType === 'SHORT_ANSWER';
+                return {
+                    content: q.content,
+                    answers: isShort ? [] : q.options?.slice(0, 4) || [],
+                    correct_index: q.correctOptionIndex ?? 0,
+                    correct_indices: q.correctOptionIndices || [],
+                    correct_answer_string: isShort 
+                        ? (q.options && q.options.length > 0 ? q.options[0] : (q.solution || ''))
+                        : '',
+                    difficulty: levelToDifficulty(q.level),
+                    subject: subjectMap[q.subject] || 'math',
+                    topic: q.topic || 'general',
+                    time_limit_seconds: 30,
+                    xp_reward: 10,
+                    type: inferredType as any
+                };
+            });
             const count = await bulkAddArenaQuestions(converted);
             setImportResult({ count, skipped: converted.length - count });
             setBankSelectedIds(new Set());
@@ -621,17 +625,22 @@ export const ArenaAdmin: React.FC = () => {
                 'Tạo câu hỏi cho trò chơi Đấu Trí, ngắn gọn, rõ ràng, hấp dẫn.'
             );
             // Convert to ArenaQuestion list
-            const converted: Omit<ArenaQuestion, 'id'>[] = questions.map(q => ({
-                content: q.content,
-                answers: q.options.slice(0, 4),
-                correct_index: q.correctOptionIndex ?? 0,
-                difficulty: aiGenDifficulty,
-                subject: aiGenSubject,
-                topic: aiGenTopic.trim(),
-                time_limit_seconds: aiGenDifficulty === 3 ? 45 : aiGenDifficulty === 2 ? 30 : 20,
-                xp_reward: aiGenDifficulty === 3 ? 20 : aiGenDifficulty === 2 ? 15 : 10,
-                type: 'MCQ'
-            }));
+            const converted: Omit<ArenaQuestion, 'id'>[] = questions.map(q => {
+                const isShort = !q.options || q.options.length === 0;
+                return {
+                    content: q.content,
+                    answers: isShort ? [] : q.options.slice(0, 4),
+                    correct_index: q.correctOptionIndex ?? 0,
+                    correct_indices: [],
+                    correct_answer_string: isShort ? (q.solution || '') : '',
+                    difficulty: aiGenDifficulty,
+                    subject: aiGenSubject,
+                    topic: aiGenTopic.trim(),
+                    time_limit_seconds: aiGenDifficulty === 3 ? 45 : aiGenDifficulty === 2 ? 30 : 20,
+                    xp_reward: aiGenDifficulty === 3 ? 20 : aiGenDifficulty === 2 ? 15 : 10,
+                    type: isShort ? 'SHORT_ANSWER' : 'MCQ'
+                };
+            });
             
             setAiPreviewList(converted);
             setShowAiGen(false);
