@@ -505,17 +505,21 @@ export const createArenaSlice: StateCreator<AppState, [], [], ArenaSliceState> =
 
       if (uniqueIncoming.length === 0) return 0;
 
-      // 2. Fetch existing questions to check for duplicates in database
-      const incomingContents = uniqueIncoming.map(q => q.content.trim());
+      // 2. Check for duplicates in database by querying existing questions in the same topics
+      //    NOTE: We query by topic instead of .in('content', ...) because full question content
+      //    strings (especially with LaTeX) easily exceed Supabase's HTTP GET URL length limit (~8KB),
+      //    causing the request to hang indefinitely.
+      const topics = [...new Set(uniqueIncoming.map(q => (q.topic || 'general').trim()))];
       let existingContents: string[] = [];
       try {
         const { data, error } = await supabase
           .from('arena_questions')
           .select('content')
-          .in('content', incomingContents);
+          .in('topic', topics)
+          .limit(2000);
           
         if (!error && data) {
-          existingContents = data.map(row => row.content.trim().toLowerCase().replace(/\s+/g, ' '));
+          existingContents = data.map(row => (row.content || '').trim().toLowerCase().replace(/\s+/g, ' '));
         }
       } catch (dbErr) {
         console.error("Error checking duplicates:", dbErr);
