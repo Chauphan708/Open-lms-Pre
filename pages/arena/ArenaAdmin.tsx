@@ -341,6 +341,14 @@ export const ArenaAdmin: React.FC = () => {
         return Array.from(topics).sort();
     }, [allCombinedTopics, filterGrade, filterSubject]);
 
+    const displayedTopics = useMemo(() => {
+        return allCombinedTopics.filter(t => {
+            if (filterSubject && normalizeSubject(t.subject) !== normalizeSubject(filterSubject)) return false;
+            if (filterGrade && !t.grade.split(', ').includes(filterGrade)) return false;
+            return true;
+        });
+    }, [allCombinedTopics, filterSubject, filterGrade]);
+
     const handleGradeChange = (grade: string) => {
         setFilterGrade(grade);
         if (filterTopic && grade) {
@@ -2608,12 +2616,12 @@ export const ArenaAdmin: React.FC = () => {
 
                             {/* Topics List */}
                             <div className="space-y-2">
-                                <h4 className="font-bold text-xs text-gray-500 uppercase tracking-wider dark:text-slate-500">Danh sách chuyên đề ({allCombinedTopics.length})</h4>
-                                {allCombinedTopics.length === 0 ? (
+                                <h4 className="font-bold text-xs text-gray-500 uppercase tracking-wider dark:text-slate-500">Danh sách chuyên đề ({displayedTopics.length})</h4>
+                                {displayedTopics.length === 0 ? (
                                     <p className="text-sm text-gray-400 text-center py-6">Chưa có chuyên đề nào được tạo.</p>
                                 ) : (
                                     <div className="divide-y max-h-[40vh] overflow-y-auto border rounded-xl pr-1 dark:border-slate-800">
-                                        {allCombinedTopics.map(t => {
+                                        {displayedTopics.map(t => {
                                             const topicKey = t.id || `${t.subject}:${t.topic.toLowerCase()}`;
                                             const isEditing = editingTopicId === topicKey;
                                             return (
