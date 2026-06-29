@@ -113,7 +113,7 @@ export const createArenaSlice: StateCreator<AppState, [], [], ArenaSliceState> =
     }
   },
 
-  fetchArenaQuestions: async (filters) => {
+  fetchArenaQuestions: async (filters, includeStats = false) => {
     let query = supabase.from('arena_questions').select('*', { count: 'exact' });
     
     if (filters?.subject) query = query.eq('subject', filters.subject);
@@ -124,39 +124,55 @@ export const createArenaSlice: StateCreator<AppState, [], [], ArenaSliceState> =
       query = query.ilike('content', `%${filters.search.trim()}%`);
     }
 
-    const [
-      { data, count },
-      { count: totalCount },
-      { count: diff1 },
-      { count: diff2 },
-      { count: diff3 },
-      { count: diff4 }
-    ] = await Promise.all([
-      query.order('created_at', { ascending: false }).limit(50),
-      supabase.from('arena_questions').select('*', { count: 'exact', head: true }),
-      supabase.from('arena_questions').select('*', { count: 'exact', head: true }).eq('difficulty', 1),
-      supabase.from('arena_questions').select('*', { count: 'exact', head: true }).eq('difficulty', 2),
-      supabase.from('arena_questions').select('*', { count: 'exact', head: true }).eq('difficulty', 3),
-      supabase.from('arena_questions').select('*', { count: 'exact', head: true }).eq('difficulty', 4)
-    ]);
+    if (includeStats) {
+      const [
+        rList,
+        rTotal,
+        rDiff1,
+        rDiff2,
+        rDiff3,
+        rDiff4
+      ] = await Promise.all([
+        query.order('created_at', { ascending: false }).limit(50),
+        supabase.from('arena_questions').select('*', { count: 'exact', head: true }),
+        supabase.from('arena_questions').select('*', { count: 'exact', head: true }).eq('difficulty', 1),
+        supabase.from('arena_questions').select('*', { count: 'exact', head: true }).eq('difficulty', 2),
+        supabase.from('arena_questions').select('*', { count: 'exact', head: true }).eq('difficulty', 3),
+        supabase.from('arena_questions').select('*', { count: 'exact', head: true }).eq('difficulty', 4)
+      ]);
 
-    if (data) {
-      set({
-        arenaQuestions: data.map((q: any) => ({ 
-          ...q, 
-          answers: typeof q.answers === 'string' ? JSON.parse(q.answers) : q.answers,
-          correct_indices: typeof q.correct_indices === 'string' ? JSON.parse(q.correct_indices) : q.correct_indices
-        })),
-        arenaQuestionsHasMore: data.length === 50,
-        arenaFilteredCount: count || 0,
-        arenaTotalCount: totalCount || 0,
-        arenaDifficultyCounts: {
-          1: diff1 || 0,
-          2: diff2 || 0,
-          3: diff3 || 0,
-          4: diff4 || 0
-        }
-      });
+      if (rList.data) {
+        set({
+          arenaQuestions: rList.data.map((q: any) => ({ 
+            ...q, 
+            answers: typeof q.answers === 'string' ? JSON.parse(q.answers) : q.answers,
+            correct_indices: typeof q.correct_indices === 'string' ? JSON.parse(q.correct_indices) : q.correct_indices
+          })),
+          arenaQuestionsHasMore: rList.data.length === 50,
+          arenaFilteredCount: rList.count || 0,
+          arenaTotalCount: rTotal.count || 0,
+          arenaDifficultyCounts: {
+            1: rDiff1.count || 0,
+            2: rDiff2.count || 0,
+            3: rDiff3.count || 0,
+            4: rDiff4.count || 0
+          }
+        });
+      }
+    } else {
+      const { data, count, error } = await query.order('created_at', { ascending: false }).limit(50);
+      if (error) throw error;
+      if (data) {
+        set({
+          arenaQuestions: data.map((q: any) => ({ 
+            ...q, 
+            answers: typeof q.answers === 'string' ? JSON.parse(q.answers) : q.answers,
+            correct_indices: typeof q.correct_indices === 'string' ? JSON.parse(q.correct_indices) : q.correct_indices
+          })),
+          arenaQuestionsHasMore: data.length === 50,
+          arenaFilteredCount: count || 0
+        });
+      }
     }
   },
 
@@ -478,6 +494,7 @@ export const createArenaSlice: StateCreator<AppState, [], [], ArenaSliceState> =
     const uniqueIncoming: Omit<ArenaQuestion, 'id'>[] = [];
     const seenContents = new Set<string>();
     for (const q of questions) {
+      if (!q.content || !q.content.trim()) continue;
       const normalized = q.content.trim().toLowerCase().replace(/\s+/g, ' ');
       if (!seenContents.has(normalized)) {
         seenContents.add(normalized);

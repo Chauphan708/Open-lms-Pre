@@ -515,7 +515,7 @@ export interface AppState {
   fetchArenaProfile: (userId: string) => Promise<void>;
   createArenaProfile: (userId: string, avatarClass: AvatarClass) => Promise<void>;
   updateArenaProfile: (profile: Partial<ArenaProfile> & { id: string }) => Promise<void>;
-  fetchArenaQuestions: (filters?: { subject?: string; difficulty?: number; grade?: string; topic?: string; search?: string }) => Promise<void>;
+  fetchArenaQuestions: (filters?: { subject?: string; difficulty?: number; grade?: string; topic?: string; search?: string }, includeStats?: boolean) => Promise<void>;
   loadMoreArenaQuestions: (filters?: { subject?: string; difficulty?: number; grade?: string; topic?: string; search?: string }) => Promise<void>;
   addArenaQuestion: (q: Omit<ArenaQuestion, 'id'>) => Promise<boolean>;
   updateArenaQuestion: (q: ArenaQuestion) => Promise<boolean>;

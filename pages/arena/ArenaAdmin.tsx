@@ -316,11 +316,11 @@ export const ArenaAdmin: React.FC = () => {
                 grade: filterGrade || undefined,
                 topic: filterTopic || undefined,
                 search: searchQuery || undefined
-            }).then(() => setLoading(false));
+            }, activeTab === 'stats').then(() => setLoading(false));
         }, 300); // 300ms debounce to avoid spamming database on text typing
 
         return () => clearTimeout(delayDebounceFn);
-    }, [filterSubject, filterDifficulty, filterGrade, filterTopic, searchQuery]);
+    }, [filterSubject, filterDifficulty, filterGrade, filterTopic, searchQuery, activeTab]);
 
     useEffect(() => {
         fetchAllTopics();
