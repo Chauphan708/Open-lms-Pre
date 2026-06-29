@@ -51,6 +51,9 @@ export const ArenaAdmin: React.FC = () => {
     const [customTopics, setCustomTopics] = useState<{ id: string; subject: string; topic: string }[]>([]);
     const [newTopicName, setNewTopicName] = useState('');
     const [newTopicSubject, setNewTopicSubject] = useState('math');
+    const [editingTopicId, setEditingTopicId] = useState<string | null>(null);
+    const [editingTopicName, setEditingTopicName] = useState('');
+    const [editingTopicSubject, setEditingTopicSubject] = useState('math');
     
     // Filters & Search
     const [filterSubject, setFilterSubject] = useState('');
@@ -166,6 +169,20 @@ export const ArenaAdmin: React.FC = () => {
         if (error) {
             alert("Lỗi khi xóa chuyên đề: " + error.message);
         } else {
+            fetchCustomTopics();
+        }
+    };
+
+    const handleUpdateTopic = async (id: string) => {
+        if (!editingTopicName.trim()) return;
+        const { error } = await supabase.from('arena_topics').update({
+            subject: editingTopicSubject,
+            topic: editingTopicName.trim()
+        }).eq('id', id);
+        if (error) {
+            alert("Lỗi khi cập nhật chuyên đề: " + error.message);
+        } else {
+            setEditingTopicId(null);
             fetchCustomTopics();
         }
     };
@@ -2482,19 +2499,73 @@ export const ArenaAdmin: React.FC = () => {
                                     <p className="text-sm text-gray-400 text-center py-6">Chưa có chuyên đề tùy chỉnh nào được tạo.</p>
                                 ) : (
                                     <div className="divide-y max-h-[40vh] overflow-y-auto border rounded-xl pr-1 dark:border-slate-800">
-                                        {customTopics.map(t => (
-                                            <div key={t.id} className="p-3 flex items-center justify-between hover:bg-gray-50 dark:bg-slate-850 transition-colors dark:hover:bg-slate-850/50">
-                                                <div>
-                                                    <span className="text-[10px] bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded-full font-bold uppercase mr-2">
-                                                        {SUBJECTS.find(s => s.value === normalizeSubject(t.subject))?.label || t.subject}
-                                                    </span>
-                                                    <span className="text-sm font-semibold text-gray-800 dark:text-slate-200">{t.topic}</span>
+                                        {customTopics.map(t => {
+                                            const isEditing = editingTopicId === t.id;
+                                            return (
+                                                <div key={t.id} className="p-3 flex items-center justify-between hover:bg-gray-50 dark:bg-slate-850 transition-colors dark:hover:bg-slate-850/50">
+                                                    {isEditing ? (
+                                                        <div className="flex flex-1 items-center gap-2 mr-2">
+                                                            <select 
+                                                                value={editingTopicSubject} 
+                                                                onChange={e => setEditingTopicSubject(e.target.value)} 
+                                                                className="border rounded-lg px-2 py-1 text-xs font-bold bg-white dark:bg-slate-900 dark:border-slate-800"
+                                                            >
+                                                                {SUBJECTS.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
+                                                            </select>
+                                                            <input 
+                                                                type="text" 
+                                                                value={editingTopicName} 
+                                                                onChange={e => setEditingTopicName(e.target.value)} 
+                                                                className="flex-1 border rounded-lg px-2 py-1 text-xs outline-none focus:ring-1 focus:ring-purple-500 font-semibold dark:border-slate-800"
+                                                            />
+                                                            <button 
+                                                                onClick={() => handleUpdateTopic(t.id)} 
+                                                                className="p-1 text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors"
+                                                                title="Lưu"
+                                                            >
+                                                                <Save className="h-4 w-4" />
+                                                            </button>
+                                                            <button 
+                                                                onClick={() => setEditingTopicId(null)} 
+                                                                className="p-1 text-gray-500 hover:bg-gray-100 rounded-lg transition-colors"
+                                                                title="Hủy"
+                                                            >
+                                                                <X className="h-4 w-4" />
+                                                            </button>
+                                                        </div>
+                                                    ) : (
+                                                        <>
+                                                            <div>
+                                                                <span className="text-[10px] bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded-full font-bold uppercase mr-2">
+                                                                    {SUBJECTS.find(s => s.value === normalizeSubject(t.subject))?.label || t.subject}
+                                                                </span>
+                                                                <span className="text-sm font-semibold text-gray-800 dark:text-slate-200">{t.topic}</span>
+                                                            </div>
+                                                            <div className="flex items-center gap-1.5">
+                                                                <button 
+                                                                    onClick={() => {
+                                                                        setEditingTopicId(t.id);
+                                                                        setEditingTopicName(t.topic);
+                                                                        setEditingTopicSubject(normalizeSubject(t.subject));
+                                                                    }} 
+                                                                    className="p-1 text-blue-500 hover:bg-blue-50 rounded-lg transition-colors"
+                                                                    title="Chỉnh sửa"
+                                                                >
+                                                                    <Pencil className="h-4 w-4" />
+                                                                </button>
+                                                                <button 
+                                                                    onClick={() => handleDeleteTopic(t.id)} 
+                                                                    className="p-1 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                                                                    title="Xóa"
+                                                                >
+                                                                    <Trash2 className="h-4 w-4" />
+                                                                </button>
+                                                            </div>
+                                                        </>
+                                                    )}
                                                 </div>
-                                                <button onClick={() => handleDeleteTopic(t.id)} className="p-1 text-red-500 hover:bg-red-50 rounded-lg transition-colors">
-                                                    <Trash2 className="h-4 w-4" />
-                                                </button>
-                                            </div>
-                                        ))}
+                                            );
+                                        })}
                                     </div>
                                 )}
                             </div>
