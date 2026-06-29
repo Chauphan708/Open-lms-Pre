@@ -143,19 +143,55 @@ const MCQMultipleQuestion = React.memo(({ question, answer, isSubmitted, onSetAn
   );
 });
 
+const normalizeMath = (s: string) => {
+  if (!s) return '';
+  let processed = s.trim();
+
+  // 1. Loại bỏ các dấu ngoặc kép hoặc ngoặc đơn bao quanh chuỗi
+  processed = processed.replace(/^["']|["']$/g, '').trim();
+
+  // 2. Loại bỏ các ký tự $ bọc LaTeX
+  processed = processed.replace(/\$/g, '');
+
+  // 3. Chuẩn hóa các hàm LaTeX phân số phổ biến (\dfrac, \frac)
+  processed = processed.replace(/\\dfrac/g, '\\frac');
+
+  // 4. Loại bỏ các khoảng trắng thừa xung quanh dấu ngoặc nhọn của \frac
+  processed = processed.replace(/\\frac\s*\{\s*([^{}]+?)\s*\}\s*\{\s*([^{}]+?)\s*\}/g, '\\frac{$1}{$2}');
+
+  // 5. Chuyển đổi phân số LaTeX \frac{A}{B} thành dạng A/B và dọn dẹp khoảng trắng bên trong
+  processed = processed.replace(/\\frac\{([^{}]+?)\}\{([^{}]+?)\}/g, (match, p1, p2) => {
+    return `${p1.trim()}/${p2.trim()}`;
+  });
+
+  // 6. Chuyển đổi các dấu chia khác thành dấu gạch chéo /
+  processed = processed.replace(/[:÷⁄]/g, '/');
+
+  // 7. Chuẩn hóa dấu phẩy thập phân kiểu Việt Nam (ví dụ: 0,5 -> 0.5)
+  processed = processed.replace(/(\d),(\d)/g, '$1.$2');
+
+  // 8. Loại bỏ hoàn toàn khoảng trắng xung quanh các toán tử toán học
+  processed = processed.replace(/\s*([\+\-\*\/=])\s*/g, '$1');
+
+  // 9. Chuẩn hóa dấu âm đứng trước phân số
+  processed = processed.replace(/(?:\-\s*1)\s*\/\s*2/, '-1/2');
+
+  return processed.toLowerCase();
+};
+
 const ShortAnswerQuestion = React.memo(({ question, answer, isSubmitted, onSetAnswer, viewPassFail, caseSensitive }: any) => {
   const sAns = caseSensitive
-    ? String(answer || '').trim().replace(/\s+/g, ' ')
-    : String(answer || '').trim().toLowerCase().replace(/\s+/g, '');
+    ? normalizeMath(String(answer || '').trim().replace(/\s+/g, ' '))
+    : normalizeMath(String(answer || '').trim().toLowerCase().replace(/\s+/g, ''));
 
   const isCorrect = question.options && question.options.length > 0
     ? question.options.some((opt: any) => {
         const optStr = caseSensitive
-          ? String(opt || '').trim().replace(/\s+/g, ' ')
-          : String(opt || '').trim().toLowerCase().replace(/\s+/g, '');
+          ? normalizeMath(String(opt || '').trim().replace(/\s+/g, ' '))
+          : normalizeMath(String(opt || '').trim().toLowerCase().replace(/\s+/g, ''));
         return optStr === sAns;
       })
-    : sAns === (caseSensitive
+    : sAns === normalizeMath(caseSensitive
         ? String(question.solution || '').trim().replace(/\s+/g, ' ')
         : String(question.solution || '').trim().toLowerCase().replace(/\s+/g, ''));
 
@@ -1478,13 +1514,6 @@ export const ExamTake: React.FC = () => {
       } else if (q.type === 'SHORT_ANSWER') {
         const isCaseSensitive = !!assignmentSettings.caseSensitiveShortAnswer;
         
-        const normalizeMath = (s: string) => {
-            return s
-                .replace(/\$/g, '')
-                .replace(/\\frac\{([^{}]+)\}\{([^{}]+)\}/g, '$1/$2')
-                .replace(/:/g, '/');
-        };
-
         const sAns = isCaseSensitive
           ? normalizeMath(String(userAns || '').trim().replace(/\s+/g, ' '))
           : normalizeMath(String(userAns || '').trim().toLowerCase().replace(/\s+/g, ''));

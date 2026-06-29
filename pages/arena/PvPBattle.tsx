@@ -322,10 +322,20 @@ export const PvPBattle: React.FC = () => {
             const isCase = !!q.case_sensitive;
             
             const normalizeMath = (s: string) => {
-                return s
-                    .replace(/\$/g, '')
-                    .replace(/\\frac\{([^{}]+)\}\{([^{}]+)\}/g, '$1/$2')
-                    .replace(/:/g, '/');
+                if (!s) return '';
+                let processed = s.trim();
+                processed = processed.replace(/^["']|["']$/g, '').trim();
+                processed = processed.replace(/\$/g, '');
+                processed = processed.replace(/\\dfrac/g, '\\frac');
+                processed = processed.replace(/\\frac\s*\{\s*([^{}]+?)\s*\}\s*\{\s*([^{}]+?)\s*\}/g, '\\frac{$1}{$2}');
+                processed = processed.replace(/\\frac\{([^{}]+?)\}\{([^{}]+?)\}/g, (match, p1, p2) => {
+                    return `${p1.trim()}/${p2.trim()}`;
+                });
+                processed = processed.replace(/[:÷⁄]/g, '/');
+                processed = processed.replace(/(\d),(\d)/g, '$1.$2');
+                processed = processed.replace(/\s*([\+\-\*\/=])\s*/g, '$1');
+                processed = processed.replace(/(?:\-\s*1)\s*\/\s*2/, '-1/2');
+                return processed.toLowerCase();
             };
 
             const cleanUser = isCase
