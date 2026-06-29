@@ -67,7 +67,7 @@ export const TournamentLobby: React.FC = () => {
 
         // Create a PvP match with tournament settings
         const match = await createMatch(user.id, {
-            source: tournament.question_source,
+            source: `tournament_${tournament.question_source}` as any,
             subject: tournament.filter_subject,
             providedQuestionIds: pool,
             count: tournament.questions_per_match
@@ -82,7 +82,7 @@ export const TournamentLobby: React.FC = () => {
             await supabase.from('arena_matches').update({
                 player2_id: targetParticipant.student_id,
                 status: 'playing',
-                source: tournament.question_source,
+                source: `tournament_${tournament.question_source}`,
                 filter_subject: tournament.filter_subject,
             }).eq('id', match.id);
 

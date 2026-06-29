@@ -280,7 +280,7 @@ export const PvPBattle: React.FC = () => {
         if (opProfile) opponentAvatar.current = opProfile.avatar_class;
 
         // Load questions based on source
-        if (m.source === 'exam' && m.question_ids?.length > 0) {
+        if ((m.source === 'exam' || m.source === 'tournament_exam') && m.question_ids?.length > 0) {
             // Parse exam questions from IDs like "exam_examId_questionId"
             const examQuestions: ArenaQuestion[] = [];
             m.question_ids.forEach((qid: string) => {

@@ -70,6 +70,7 @@ export const ArenaStatsDashboard: React.FC = () => {
   const [selectedClass, setSelectedClass] = useState('');
   const [expandedStudentId, setExpandedStudentId] = useState<string | null>(null);
   const [studentDetailTab, setStudentDetailTab] = useState<Record<string, 'năng_lực' | 'lịch_sử' | 'huy_hiệu' | 'trang_bị'>>({});
+  const [logFilter, setLogFilter] = useState<'all' | 'tower' | 'pvp' | 'tournament'>('all');
   
   // Expanded Student Inventory
   const [expandedStudentInventory, setExpandedStudentInventory] = useState<any[]>([]);
@@ -478,11 +479,19 @@ export const ArenaStatsDashboard: React.FC = () => {
 
         {/* RECENT ACTIVITY LOG */}
         <div className="lg:col-span-2 bg-white rounded-3xl border border-gray-100 p-6 shadow-sm flex flex-col space-y-4">
-          <div>
-            <h3 className="text-base font-bold text-gray-900 flex items-center gap-1.5">
-              <Clock className="h-5 w-5 text-indigo-500" /> Nhật ký Đấu trường gần đây
-            </h3>
-            <p className="text-xs text-gray-500 mt-0.5">Các hoạt động PvP và Leo tháp thời gian thực của học sinh.</p>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <h3 className="text-base font-bold text-gray-900 flex items-center gap-1.5">
+                <Clock className="h-5 w-5 text-indigo-500" /> Nhật ký Đấu trường gần đây
+              </h3>
+              <p className="text-xs text-gray-500 mt-0.5">Các hoạt động PvP và Leo tháp thời gian thực của học sinh.</p>
+            </div>
+            <div className="flex bg-gray-100 p-1 rounded-lg">
+              <button onClick={() => setLogFilter('all')} className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all ${logFilter === 'all' ? 'bg-white shadow text-indigo-600' : 'text-gray-500 hover:text-gray-700'}`}>Tất cả</button>
+              <button onClick={() => setLogFilter('tower')} className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all ${logFilter === 'tower' ? 'bg-white shadow text-emerald-600' : 'text-gray-500 hover:text-gray-700'}`}>Leo tháp</button>
+              <button onClick={() => setLogFilter('pvp')} className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all ${logFilter === 'pvp' ? 'bg-white shadow text-rose-600' : 'text-gray-500 hover:text-gray-700'}`}>1v1 (PvP)</button>
+              <button onClick={() => setLogFilter('tournament')} className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all ${logFilter === 'tournament' ? 'bg-white shadow text-amber-600' : 'text-gray-500 hover:text-gray-700'}`}>Giải đấu GV</button>
+            </div>
           </div>
 
           <div className="flex-1 overflow-y-auto max-h-[360px] pr-1 custom-scrollbar space-y-3">
@@ -504,6 +513,13 @@ export const ArenaStatsDashboard: React.FC = () => {
                   data: m
                 }))
               ]
+              .filter(activity => {
+                if (logFilter === 'all') return true;
+                if (logFilter === 'tower') return activity.type === 'tower';
+                if (logFilter === 'pvp') return activity.type === 'pvp' && !(activity.data as any).source?.startsWith('tournament');
+                if (logFilter === 'tournament') return activity.type === 'pvp' && (activity.data as any).source?.startsWith('tournament');
+                return true;
+              })
               .sort((a, b) => b.date.getTime() - a.date.getTime())
               .map((activity, index) => {
                 if (activity.type === 'tower') {
