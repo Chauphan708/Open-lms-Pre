@@ -134,8 +134,21 @@ export const ArenaAdmin: React.FC = () => {
             // 1. Get custom topics from arena_topics table
             const { data: customData } = await supabase.from('arena_topics').select('*');
             
-            // 2. Get topics from questions in arena_questions table
-            const { data: qData } = await supabase.from('arena_questions').select('topic, subject, grade');
+            // 2. Get topics from questions in arena_questions table (in pages to bypass max_rows = 1000 limit)
+            let qData: any[] = [];
+            let page = 0;
+            const pageSize = 1000;
+            while (true) {
+                const { data, error } = await supabase
+                    .from('arena_questions')
+                    .select('topic, subject, grade')
+                    .range(page * pageSize, (page + 1) * pageSize - 1);
+                
+                if (error || !data || data.length === 0) break;
+                qData = [...qData, ...data];
+                if (data.length < pageSize) break;
+                page++;
+            }
 
             // Combine them into a unified list
             const topicsMap = new Map<string, { id?: string; topic: string; subject: string; grade: string; questionCount: number; isCustom: boolean }>();
