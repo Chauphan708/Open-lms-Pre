@@ -5,6 +5,7 @@ import { useStore } from '../../store';
 import { AvatarClass } from '../../types';
 import { Brain, Trophy, GraduationCap, BookOpen, Sparkles, Target, Heart, ArrowLeft, Star, Zap, HelpCircle, X, ShoppingBag } from 'lucide-react';
 import { getLeagueInfo } from './TowerMode';
+import toast from 'react-hot-toast';
 
 const AVATAR_CLASSES: { id: AvatarClass; name: string; icon: any; color: string; desc: string; emoji: string; lore: string }[] = [
     { id: 'scholar', name: 'Nhà Thông Thái', icon: BookOpen, color: '#6366f1', desc: 'Trí tuệ uyên bác', emoji: '📖', lore: '"Đọc vạn quyển sách, hiểu vạn lẽ đời"' },
