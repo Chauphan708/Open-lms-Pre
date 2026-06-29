@@ -123,28 +123,7 @@ export const ArenaAdmin: React.FC = () => {
     const [formExplanation, setFormExplanation] = useState('');
     const [formCaseSensitive, setFormCaseSensitive] = useState(false);
 
-    const [dbTopics, setDbTopics] = useState<{ topic: string; subject: string; grade: string }[]>([]);
 
-    const fetchDbTopics = async () => {
-        try {
-            const { data } = await supabase
-                .from('arena_questions')
-                .select('topic, subject, grade');
-            if (data) {
-                const filtered = data
-                    .filter(q => q.topic && q.topic.trim() && q.topic !== 'general')
-                    .map(q => ({
-                        topic: q.topic.trim(),
-                        subject: q.subject || 'math',
-                        grade: q.grade || '4'
-                    }));
-                const unique = Array.from(new Set(filtered.map(x => JSON.stringify(x)))).map(s => JSON.parse(s) as { topic: string; subject: string; grade: string });
-                setDbTopics(unique);
-            }
-        } catch (err) {
-            console.error("Error fetching db topics:", err);
-        }
-    };
 
     const fetchAllTopics = async () => {
         try {
@@ -343,12 +322,10 @@ export const ArenaAdmin: React.FC = () => {
 
     useEffect(() => {
         fetchAllTopics();
-        fetchDbTopics();
     }, []);
 
     useEffect(() => {
         fetchAllTopics();
-        fetchDbTopics();
     }, [arenaQuestions]);
 
     // Extract unique topics for filtering
@@ -367,8 +344,7 @@ export const ArenaAdmin: React.FC = () => {
     const handleGradeChange = (grade: string) => {
         setFilterGrade(grade);
         if (filterTopic && grade) {
-            const hasTopicInGrade = dbTopics.some(q => q.grade === grade && q.topic === filterTopic) ||
-                                     customTopics.some(t => t.topic === filterTopic);
+            const hasTopicInGrade = allCombinedTopics.some(t => t.grade.split(', ').includes(grade) && t.topic === filterTopic);
             if (!hasTopicInGrade) {
                 setFilterTopic('');
             }
@@ -378,8 +354,7 @@ export const ArenaAdmin: React.FC = () => {
     const handleSubjectChange = (subject: string) => {
         setFilterSubject(subject);
         if (filterTopic && subject) {
-            const hasTopicInSubject = dbTopics.some(q => normalizeSubject(q.subject) === normalizeSubject(subject) && q.topic === filterTopic) ||
-                                       customTopics.some(t => normalizeSubject(t.subject) === normalizeSubject(subject) && t.topic === filterTopic);
+            const hasTopicInSubject = allCombinedTopics.some(t => normalizeSubject(t.subject) === normalizeSubject(subject) && t.topic === filterTopic);
             if (!hasTopicInSubject) {
                 setFilterTopic('');
             }
