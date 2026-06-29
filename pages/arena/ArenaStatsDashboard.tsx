@@ -505,7 +505,6 @@ export const ArenaStatsDashboard: React.FC = () => {
                 }))
               ]
               .sort((a, b) => b.date.getTime() - a.date.getTime())
-              .slice(0, 10)
               .map((activity, index) => {
                 if (activity.type === 'tower') {
                   const t = activity.data as typeof enrichedAttempts[0];
