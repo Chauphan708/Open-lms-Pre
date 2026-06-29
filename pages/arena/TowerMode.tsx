@@ -22,6 +22,38 @@ import {
 } from '../../services/geminiService';
 import { playArenaSound, isSoundEnabled, setSoundEnabled } from '../../services/soundService';
 
+function shuffleArenaQuestion(question: ArenaQuestion): ArenaQuestion & { _shuffled?: boolean } {
+  if (!question || (question as any)._shuffled) return question;
+  if (question.type === 'SHORT_ANSWER') return question;
+  if (!question.answers || !Array.isArray(question.answers) || question.answers.length <= 1) return question;
+
+  const indices = question.answers.map((_, i) => i);
+  for (let i = indices.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [indices[i], indices[j]] = [indices[j], indices[i]];
+  }
+
+  const shuffledAnswers = indices.map(i => question.answers[i]);
+
+  let shuffledCorrectIndex = question.correct_index;
+  if (question.correct_index !== undefined && question.correct_index >= 0) {
+    shuffledCorrectIndex = indices.indexOf(question.correct_index);
+  }
+
+  let shuffledCorrectIndices = question.correct_indices;
+  if (question.correct_indices && Array.isArray(question.correct_indices)) {
+    shuffledCorrectIndices = question.correct_indices.map(oldIdx => indices.indexOf(oldIdx)).sort((a, b) => a - b);
+  }
+
+  return {
+    ...question,
+    answers: shuffledAnswers,
+    correct_index: shuffledCorrectIndex,
+    correct_indices: shuffledCorrectIndices,
+    _shuffled: true
+  } as any;
+}
+
 // Confetti Particle Class for HTML5 Canvas Visual Effect
 class ConfettiEffect {
   private canvas: HTMLCanvasElement;
@@ -273,7 +305,18 @@ export const TowerMode: React.FC = () => {
   // Question selection & state
   const [questionPool, setQuestionPool] = useState<ArenaQuestion[]>([]);
   const [usedIds, setUsedIds] = useState<Set<string>>(new Set());
-  const [currentQ, setCurrentQ] = useState<ArenaQuestion | null>(null);
+  const [currentQ, setCurrentQRaw] = useState<ArenaQuestion | null>(null);
+  const setCurrentQ = (qOrFn: ArenaQuestion | null | ((prev: ArenaQuestion | null) => ArenaQuestion | null)) => {
+    if (typeof qOrFn === 'function') {
+      setCurrentQRaw(prev => {
+        const next = qOrFn(prev);
+        if (next && (next as any)._shuffled) return next;
+        return next ? shuffleArenaQuestion(next) : null;
+      });
+    } else {
+      setCurrentQRaw(qOrFn ? shuffleArenaQuestion(qOrFn) : null);
+    }
+  };
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
   const [selectedOptions, setSelectedOptions] = useState<number[]>([]);
   const [showResult, setShowResult] = useState(false);
@@ -1385,7 +1428,7 @@ export const TowerMode: React.FC = () => {
           subject: selectedSubject,
           topic: selectedTopic
         }));
-        setRevengeQuestions(mappedQuestions);
+        setRevengeQuestions(mappedQuestions.map(shuffleArenaQuestion));
         setRevengeActive(true);
         setRevengeIndex(0);
         setRevengeWrongCount(0);

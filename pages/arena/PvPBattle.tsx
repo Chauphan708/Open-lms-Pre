@@ -11,6 +11,37 @@ import rehypeKatex from 'rehype-katex';
 import MathText from '../../components/MathText';
 import { playArenaSound, isSoundEnabled, setSoundEnabled } from '../../services/soundService';
 
+function shuffleArenaQuestion(question: ArenaQuestion): ArenaQuestion {
+  if (!question) return question;
+  if (question.type === 'SHORT_ANSWER') return question;
+  if (!question.answers || !Array.isArray(question.answers) || question.answers.length <= 1) return question;
+
+  const indices = question.answers.map((_, i) => i);
+  for (let i = indices.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [indices[i], indices[j]] = [indices[j], indices[i]];
+  }
+
+  const shuffledAnswers = indices.map(i => question.answers[i]);
+
+  let shuffledCorrectIndex = question.correct_index;
+  if (question.correct_index !== undefined && question.correct_index >= 0) {
+    shuffledCorrectIndex = indices.indexOf(question.correct_index);
+  }
+
+  let shuffledCorrectIndices = question.correct_indices;
+  if (question.correct_indices && Array.isArray(question.correct_indices)) {
+    shuffledCorrectIndices = question.correct_indices.map(oldIdx => indices.indexOf(oldIdx)).sort((a, b) => a - b);
+  }
+
+  return {
+    ...question,
+    answers: shuffledAnswers,
+    correct_index: shuffledCorrectIndex,
+    correct_indices: shuffledCorrectIndices
+  };
+}
+
 
 
 // Confetti Particle Class for HTML5 Canvas Visual Effect
@@ -296,7 +327,7 @@ export const PvPBattle: React.FC = () => {
                     }
                 }
             });
-            setQuestions(examQuestions);
+            setQuestions(examQuestions.map(shuffleArenaQuestion));
         } else if (m.question_ids && m.question_ids.length > 0) {
             const { data: qs } = await supabase.from('arena_questions').select('*').in('id', m.question_ids);
             if (qs) {
@@ -305,7 +336,7 @@ export const PvPBattle: React.FC = () => {
                     ...q,
                     answers: typeof q.answers === 'string' ? JSON.parse(q.answers) : q.answers,
                     correct_indices: typeof q.correct_indices === 'string' ? JSON.parse(q.correct_indices) : q.correct_indices
-                })));
+                })).map(shuffleArenaQuestion));
             }
         }
 
