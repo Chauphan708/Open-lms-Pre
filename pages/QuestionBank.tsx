@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useStore } from '../store';
 import { QuestionBankItem, QuestionType, ExamDifficulty } from '../types';
+import { supabase } from '../services/supabaseClient';
 import { 
   Search, Filter, Plus, Trash2, Edit2, Download, RefreshCw, 
   CheckCircle2, AlertCircle, Bookmark, Layers, GraduationCap, 
@@ -40,39 +41,97 @@ const QuestionBank: React.FC = () => {
   const [isSyncing, setIsSyncing] = useState(false);
   const [syncResult, setSyncResult] = useState<{ count: number; show: boolean }>({ count: 0, show: false });
   
+  // Server-side State
+  const [questions, setQuestions] = useState<QuestionBankItem[]>([]);
+  const [totalCount, setTotalCount] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [topics, setTopics] = useState<string[]>([]);
+  const itemsPerPage = 50;
+
   // Edit State
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editValues, setEditValues] = useState<Partial<QuestionBankItem>>({});
 
   const subjects = ['Toán', 'Tiếng Việt', 'Khoa học', 'Lịch sử và Địa lí', 'Công nghệ', 'Tiếng Anh', 'Tin học'];
   const grades = ['1', '2', '3', '4', '5'];
-  const allTopics = React.useMemo(() => {
-    const qBankTopics = questionBank
-      .filter(q => filterSubject === 'all' || q.subject === filterSubject)
-      .map(q => q.topic)
-      .filter(Boolean);
-    const examTopics = (exams || [])
-      .filter(e => !e.deletedAt && (filterSubject === 'all' || e.subject === filterSubject))
-      .map(e => e.topic)
-      .filter(Boolean);
-    return Array.from(new Set([...qBankTopics, ...examTopics, ...(customTopics || [])])).sort() as string[];
-  }, [questionBank, exams, customTopics, filterSubject]);
 
-  const filteredQuestions = questionBank.filter(q => {
-    const matchesSearch = q.content.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesSubject = filterSubject === 'all' || q.subject === filterSubject;
-    const matchesGrade = filterGrade === 'all' || q.grade === filterGrade;
-    const matchesLevel = filterLevel === 'all' || q.level === filterLevel;
-    const matchesType = filterType === 'all' || q.type === filterType;
-    const matchesTopic = filterTopic === 'all' || q.topic === filterTopic;
-    return matchesSearch && matchesSubject && matchesGrade && matchesLevel && matchesType && matchesTopic;
-  });
+  // Fetch unique topics based on current subject filter
+  useEffect(() => {
+    const fetchTopics = async () => {
+      try {
+        let query = supabase.from('question_bank').select('topic');
+        if (filterSubject !== 'all') {
+          query = query.eq('subject', filterSubject);
+        }
+        const { data } = await query;
+        if (data) {
+          const uniqueTopics = Array.from(new Set(data.map(d => d.topic).filter(Boolean))) as string[];
+          setTopics(uniqueTopics.sort());
+        }
+      } catch (err) {
+        console.error('Lỗi khi tải chủ đề:', err);
+      }
+    };
+    fetchTopics();
+  }, [filterSubject]);
+
+  // Main questions fetcher
+  const fetchQuestions = async () => {
+    setLoading(true);
+    try {
+      let query = supabase.from('question_bank').select('*', { count: 'exact' });
+
+      if (searchTerm) {
+        query = query.ilike('content', `%${searchTerm}%`);
+      }
+      if (filterSubject !== 'all') {
+        query = query.eq('subject', filterSubject);
+      }
+      if (filterGrade !== 'all') {
+        query = query.eq('grade', filterGrade);
+      }
+      if (filterLevel !== 'all') {
+        query = query.eq('level', filterLevel);
+      }
+      if (filterType !== 'all') {
+        query = query.eq('type', filterType);
+      }
+      if (filterTopic !== 'all') {
+        query = query.eq('topic', filterTopic);
+      }
+
+      const start = (currentPage - 1) * itemsPerPage;
+      const end = start + itemsPerPage - 1;
+      query = query.range(start, end).order('created_at', { ascending: false });
+
+      const { data, count, error } = await query;
+      if (error) throw error;
+
+      setQuestions((data as QuestionBankItem[]) || []);
+      setTotalCount(count || 0);
+    } catch (err) {
+      console.error('Lỗi khi tải câu hỏi:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchQuestions();
+  }, [searchTerm, filterSubject, filterGrade, filterLevel, filterType, filterTopic, currentPage]);
+
+  // Reset page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, filterSubject, filterGrade, filterLevel, filterType, filterTopic]);
 
   const handleSync = async () => {
     setIsSyncing(true);
     try {
       const count = await syncQuestionsFromExams();
       setSyncResult({ count, show: true });
+      fetchQuestions(); // Refresh list after sync
       setTimeout(() => setSyncResult(prev => ({ ...prev, show: false })), 3000);
     } catch (error) {
       console.error("Sync failed:", error);
@@ -84,6 +143,7 @@ const QuestionBank: React.FC = () => {
   const handleDelete = async (id: string) => {
     if (window.confirm("Bạn có chắc chắn muốn xóa câu hỏi này?")) {
       await deleteQuestionFromBank(id);
+      fetchQuestions(); // Refresh current page
     }
   };
 
@@ -103,6 +163,7 @@ const QuestionBank: React.FC = () => {
       if (success) {
         setEditingId(null);
         setEditValues({});
+        fetchQuestions(); // Refresh current page after editing
       } else {
         alert("Lỗi khi cập nhật câu hỏi.");
       }
@@ -127,7 +188,7 @@ const QuestionBank: React.FC = () => {
   };
 
   const handleDownloadDocx = async () => {
-    if (filteredQuestions.length === 0) {
+    if (questions.length === 0) {
       alert("Không có câu hỏi nào để tải về.");
       return;
     }
@@ -157,7 +218,7 @@ const QuestionBank: React.FC = () => {
             alignment: AlignmentType.CENTER,
             spacing: { after: 400 },
           }),
-          ...filteredQuestions.flatMap((q, index) => {
+          ...questions.flatMap((q, index) => {
             const elements: any[] = [];
             
             // Question main content
@@ -296,7 +357,7 @@ const QuestionBank: React.FC = () => {
           
           <div className="flex items-center gap-4 mt-2 text-xs font-medium">
             <div className="bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-300 px-2 py-1 rounded-md border border-emerald-100 dark:border-emerald-900/50">
-              Hiển thị {filteredQuestions.length} / {questionBank.length} câu hỏi
+              Hiển thị {questions.length} / {totalCount} câu hỏi
             </div>
             <div className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400">
               <Check className="h-3.5 w-3.5" /> Đã lưu đám mây
@@ -359,14 +420,17 @@ const QuestionBank: React.FC = () => {
           {grades.map(g => <option key={g} value={g}>Lớp {g}</option>)}
         </select>
 
-        <select
-          value={filterTopic}
-          onChange={(e) => setFilterTopic(e.target.value)}
-          className="bg-gray-50 dark:bg-slate-950 border border-gray-100 dark:border-slate-800 text-gray-700 dark:text-slate-200 rounded-xl text-sm px-4 py-2 outline-none focus:ring-2 focus:ring-emerald-500"
-        >
-          <option value="all">Tất cả Chủ đề</option>
-          {allTopics.map(t => <option key={t} value={t}>{t}</option>)}
-        </select>
+              <label className="block text-xs font-bold text-gray-500 mb-1.5 dark:text-slate-400">Chủ đề</label>
+              <select
+                value={filterTopic}
+                onChange={(e) => setFilterTopic(e.target.value)}
+                className="w-full bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-xl px-3 py-2 text-sm text-gray-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              >
+                <option value="all">Tất cả chủ đề</option>
+                {topics.map(t => (
+                  <option key={t} value={t}>{t}</option>
+                ))}
+              </select>
 
         <select
           value={filterLevel}
@@ -402,7 +466,16 @@ const QuestionBank: React.FC = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50 dark:divide-slate-800 text-gray-900 dark:text-slate-100">
-              {filteredQuestions.length === 0 ? (
+              {loading ? (
+                <tr>
+                  <td colSpan={4} className="px-6 py-12 text-center text-gray-400 dark:text-slate-500">
+                    <div className="flex flex-col items-center gap-2">
+                      <RefreshCw className="h-10 w-10 animate-spin text-emerald-600" />
+                      <p>Đang tải dữ liệu từ máy chủ...</p>
+                    </div>
+                  </td>
+                </tr>
+              ) : questions.length === 0 ? (
                 <tr>
                   <td colSpan={4} className="px-6 py-12 text-center text-gray-400 dark:text-slate-500">
                     <div className="flex flex-col items-center gap-2">
@@ -412,7 +485,7 @@ const QuestionBank: React.FC = () => {
                   </td>
                 </tr>
               ) : (
-                filteredQuestions.map((q) => {
+                questions.map((q) => {
                   const isEditing = editingId === q.id;
                   
                   return (
@@ -618,6 +691,34 @@ const QuestionBank: React.FC = () => {
               )}
             </tbody>
           </table>
+          
+          {/* Pagination Controls */}
+          {Math.ceil(totalCount / itemsPerPage) > 1 && (
+            <div className="flex justify-between items-center px-6 py-4 bg-gray-50/50 dark:bg-slate-900/30 border-t dark:border-slate-800">
+              <div className="text-xs text-gray-500 dark:text-slate-400">
+                Hiển thị {Math.min(totalCount, (currentPage - 1) * itemsPerPage + 1)} - {Math.min(totalCount, currentPage * itemsPerPage)} trong số {totalCount} câu hỏi
+              </div>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                  disabled={currentPage === 1 || loading}
+                  className="px-3.5 py-1.5 text-xs font-bold bg-white dark:bg-slate-900 border dark:border-slate-800 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-800 disabled:opacity-50 text-gray-750 dark:text-slate-200 transition-colors"
+                >
+                  Trước
+                </button>
+                <span className="text-xs self-center font-bold text-gray-700 dark:text-slate-300">
+                  Trang {currentPage} / {Math.ceil(totalCount / itemsPerPage)}
+                </span>
+                <button
+                  onClick={() => setCurrentPage(prev => Math.min(Math.ceil(totalCount / itemsPerPage), prev + 1))}
+                  disabled={currentPage === Math.ceil(totalCount / itemsPerPage) || loading}
+                  className="px-3.5 py-1.5 text-xs font-bold bg-white dark:bg-slate-900 border dark:border-slate-800 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-800 disabled:opacity-50 text-gray-750 dark:text-slate-200 transition-colors"
+                >
+                  Sau
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

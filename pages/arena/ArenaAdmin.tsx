@@ -83,9 +83,54 @@ export const ArenaAdmin: React.FC = () => {
     const [validParsedQuestions, setValidParsedQuestions] = useState<Omit<ArenaQuestion, 'id'>[]>([]);
     const [invalidQuestionsText, setInvalidQuestionsText] = useState('');
 
-    // Bank import filter
+    // Bank import filter and server-side state
     const [bankFilterSubject, setBankFilterSubject] = useState('');
     const [bankSelectedIds, setBankSelectedIds] = useState<Set<string>>(new Set());
+    const [bankSearchTerm, setBankSearchTerm] = useState('');
+    const [bankPage, setBankPage] = useState(1);
+    const [bankQuestions, setBankQuestions] = useState<any[]>([]);
+    const [bankTotalCount, setBankTotalCount] = useState(0);
+    const [bankLoading, setBankLoading] = useState(false);
+    const bankItemsPerPage = 50;
+
+    useEffect(() => {
+        setBankPage(1);
+    }, [bankFilterSubject, bankSearchTerm]);
+
+    useEffect(() => {
+        if (!showBankImport) return;
+
+        const fetchBankQuestions = async () => {
+            setBankLoading(true);
+            try {
+                let query = supabase.from('question_bank').select('*', { count: 'exact' });
+                query = query.in('type', ['MCQ', 'MCQ_MULTIPLE', 'SHORT_ANSWER']);
+
+                if (bankFilterSubject) {
+                    query = query.eq('subject', bankFilterSubject);
+                }
+                if (bankSearchTerm) {
+                    query = query.ilike('content', `%${bankSearchTerm}%`);
+                }
+
+                const start = (bankPage - 1) * bankItemsPerPage;
+                const end = start + bankItemsPerPage - 1;
+                query = query.range(start, end).order('created_at', { ascending: false });
+
+                const { data, count, error } = await query;
+                if (!error && data) {
+                    setBankQuestions(data);
+                    setBankTotalCount(count || 0);
+                }
+            } catch (err) {
+                console.error("Error fetching bank questions:", err);
+            } finally {
+                setBankLoading(false);
+            }
+        };
+
+        fetchBankQuestions();
+    }, [showBankImport, bankFilterSubject, bankSearchTerm, bankPage]);
 
     // AI Generate & Preview
     const [showAiGen, setShowAiGen] = useState(false);
@@ -471,7 +516,7 @@ export const ArenaAdmin: React.FC = () => {
         if (bankSelectedIds.size === 0) return;
         setImporting(true);
         try {
-            const selected = bankMCQs.filter(q => bankSelectedIds.has(q.id));
+            const selected = bankQuestions.filter(q => bankSelectedIds.has(q.id));
             const converted: Omit<ArenaQuestion, 'id'>[] = selected.map(q => ({
                 content: q.content,
                 answers: q.type === 'SHORT_ANSWER' ? [] : q.options?.slice(0, 4) || [],
@@ -508,10 +553,10 @@ export const ArenaAdmin: React.FC = () => {
     };
 
     const selectAllBank = () => {
-        if (bankSelectedIds.size === bankMCQs.length) {
+        if (bankSelectedIds.size === bankQuestions.length) {
             setBankSelectedIds(new Set());
         } else {
-            setBankSelectedIds(new Set(bankMCQs.map(q => q.id)));
+            setBankSelectedIds(new Set(bankQuestions.map(q => q.id)));
         }
     };
 
@@ -2269,6 +2314,19 @@ export const ArenaAdmin: React.FC = () => {
                                     <div className="bg-purple-50 border border-purple-100 rounded-xl p-3 text-sm text-purple-700 dark:border-slate-800">
                                         <p>Chọn câu hỏi trắc nghiệm (MCQ, MCQ Multiple hoặc Điền từ Short Answer) từ Ngân hàng đề để thêm vào kho Đấu Trí. Hệ thống sẽ tự động đồng bộ hóa cấu trúc.</p>
                                     </div>
+                                    
+                                    <div className="flex gap-2">
+                                        <div className="relative flex-1">
+                                            <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
+                                            <input
+                                                type="text"
+                                                placeholder="Tìm kiếm câu hỏi ngân hàng..."
+                                                value={bankSearchTerm}
+                                                onChange={e => setBankSearchTerm(e.target.value)}
+                                                className="w-full pl-9 pr-4 py-1.5 border rounded-lg text-sm bg-white dark:bg-slate-900 dark:border-slate-800 dark:text-slate-300"
+                                            />
+                                        </div>
+                                    </div>
 
                                     <div className="flex items-center gap-3">
                                         <select value={bankFilterSubject} onChange={e => setBankFilterSubject(e.target.value)} className="border rounded-lg px-3 py-1.5 text-sm bg-white cursor-pointer font-medium text-gray-700 dark:bg-slate-900 dark:border-slate-800 dark:text-slate-300">
@@ -2282,19 +2340,23 @@ export const ArenaAdmin: React.FC = () => {
                                             <option value="Tin học">Tin học</option>
                                         </select>
                                         <button onClick={selectAllBank} className="text-xs text-purple-600 font-bold hover:underline">
-                                            {bankSelectedIds.size === bankMCQs.length && bankMCQs.length > 0 ? 'Bỏ chọn tất cả' : `Chọn tất cả (${bankMCQs.length})`}
+                                            {bankSelectedIds.size === bankQuestions.length && bankQuestions.length > 0 ? 'Bỏ chọn tất cả' : `Chọn tất cả (${bankQuestions.length})`}
                                         </button>
                                         <span className="text-xs text-gray-400 ml-auto">Đã chọn: <strong className="text-purple-600">{bankSelectedIds.size}</strong></span>
                                     </div>
 
                                     <div className="border rounded-xl divide-y max-h-[40vh] overflow-y-auto bg-gray-50 dark:bg-slate-850/50 dark:border-slate-800">
-                                        {bankMCQs.length === 0 ? (
+                                        {bankLoading ? (
+                                            <div className="p-6 text-center text-gray-400 bg-white dark:bg-slate-900">
+                                                <Loader2 className="h-6 w-6 animate-spin text-purple-600 mx-auto mb-2" />
+                                                <p>Đang tải dữ liệu từ ngân hàng...</p>
+                                            </div>
+                                        ) : bankQuestions.length === 0 ? (
                                             <div className="p-6 text-center text-gray-400 bg-white dark:bg-slate-900">
                                                 <p className="font-medium">Ngân hàng đề chưa có câu hỏi phù hợp.</p>
-                                                <p className="text-xs mt-1">Hãy tạo bài tập trước rồi quay lại đây.</p>
                                             </div>
                                         ) : (
-                                            bankMCQs.map(q => (
+                                            bankQuestions.map(q => (
                                                 <label key={q.id} className={`flex gap-3 p-3 text-sm cursor-pointer hover:bg-purple-50 transition-colors bg-white dark:bg-slate-900 ${bankSelectedIds.has(q.id) ? 'bg-purple-50/40 border-l-4 border-purple-500' : ''} `}>
                                                     <input type="checkbox" checked={bankSelectedIds.has(q.id)} onChange={() => toggleBankSelect(q.id)} className="w-4 h-4 mt-0.5 text-purple-600 rounded cursor-pointer" />
                                                     <div className="flex-1 min-w-0">
@@ -2310,6 +2372,30 @@ export const ArenaAdmin: React.FC = () => {
                                             ))
                                         )}
                                     </div>
+
+                                    {/* Bank Pagination */}
+                                    {Math.ceil(bankTotalCount / bankItemsPerPage) > 1 && (
+                                        <div className="flex justify-between items-center px-4 py-2 bg-white dark:bg-slate-900 border rounded-xl dark:border-slate-800">
+                                            <span className="text-[10px] text-gray-400">Hiển thị {Math.min(bankTotalCount, (bankPage - 1) * bankItemsPerPage + 1)} - {Math.min(bankTotalCount, bankPage * bankItemsPerPage)} / {bankTotalCount}</span>
+                                            <div className="flex gap-2">
+                                                <button
+                                                    onClick={() => setBankPage(prev => Math.max(1, prev - 1))}
+                                                    disabled={bankPage === 1 || bankLoading}
+                                                    className="px-2 py-1 text-[10px] border rounded bg-white dark:bg-slate-900 text-gray-700 dark:text-slate-300 disabled:opacity-50 font-bold"
+                                                >
+                                                    Trước
+                                                </button>
+                                                <span className="text-[10px] font-bold text-gray-700 dark:text-slate-300 self-center">Trang {bankPage}/{Math.ceil(bankTotalCount / bankItemsPerPage)}</span>
+                                                <button
+                                                    onClick={() => setBankPage(prev => Math.min(Math.ceil(bankTotalCount / bankItemsPerPage), prev + 1))}
+                                                    disabled={bankPage === Math.ceil(bankTotalCount / bankItemsPerPage) || bankLoading}
+                                                    className="px-2 py-1 text-[10px] border rounded bg-white dark:bg-slate-900 text-gray-700 dark:text-slate-300 disabled:opacity-50 font-bold"
+                                                >
+                                                    Sau
+                                                </button>
+                                            </div>
+                                        </div>
+                                    )}
 
                                     {bankSelectedIds.size > 0 && (
                                         <button onClick={handleBankImport} disabled={importing}
