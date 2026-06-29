@@ -338,7 +338,10 @@ export const ArenaAdmin: React.FC = () => {
     }, []);
 
     useEffect(() => {
-        fetchAllTopics();
+        const timer = setTimeout(() => {
+            fetchAllTopics();
+        }, 500);
+        return () => clearTimeout(timer);
     }, [arenaQuestions]);
 
     // Extract unique topics for filtering
@@ -357,7 +360,8 @@ export const ArenaAdmin: React.FC = () => {
     const displayedTopics = useMemo(() => {
         return allCombinedTopics.filter(t => {
             if (modalFilterSubject && normalizeSubject(t.subject) !== normalizeSubject(modalFilterSubject)) return false;
-            if (modalFilterGrade && !t.grade.split(', ').includes(modalFilterGrade)) return false;
+            if (modalFilterGrade && t.grade && typeof t.grade === 'string' && !t.grade.split(', ').includes(modalFilterGrade)) return false;
+            if (modalFilterGrade && (!t.grade || typeof t.grade !== 'string')) return false;
             return true;
         });
     }, [allCombinedTopics, modalFilterSubject, modalFilterGrade]);
@@ -453,26 +457,32 @@ export const ArenaAdmin: React.FC = () => {
     const handleBankImport = async () => {
         if (bankSelectedIds.size === 0) return;
         setImporting(true);
-        const selected = bankMCQs.filter(q => bankSelectedIds.has(q.id));
-        const converted: Omit<ArenaQuestion, 'id'>[] = selected.map(q => ({
-            content: q.content,
-            answers: q.type === 'SHORT_ANSWER' ? [] : q.options?.slice(0, 4) || [],
-            correct_index: q.correctOptionIndex ?? 0,
-            correct_indices: q.correctOptionIndices || [],
-            correct_answer_string: q.type === 'SHORT_ANSWER' 
-                ? (q.options && q.options.length > 0 ? q.options[0] : (q.solution || ''))
-                : '',
-            difficulty: levelToDifficulty(q.level),
-            subject: subjectMap[q.subject] || 'math',
-            topic: q.topic || 'general',
-            time_limit_seconds: 30,
-            xp_reward: 10,
-            type: q.type as any || 'MCQ'
-        }));
-        const count = await bulkAddArenaQuestions(converted);
-        setImportResult({ count, skipped: converted.length - count });
-        setImporting(false);
-        setBankSelectedIds(new Set());
+        try {
+            const selected = bankMCQs.filter(q => bankSelectedIds.has(q.id));
+            const converted: Omit<ArenaQuestion, 'id'>[] = selected.map(q => ({
+                content: q.content,
+                answers: q.type === 'SHORT_ANSWER' ? [] : q.options?.slice(0, 4) || [],
+                correct_index: q.correctOptionIndex ?? 0,
+                correct_indices: q.correctOptionIndices || [],
+                correct_answer_string: q.type === 'SHORT_ANSWER' 
+                    ? (q.options && q.options.length > 0 ? q.options[0] : (q.solution || ''))
+                    : '',
+                difficulty: levelToDifficulty(q.level),
+                subject: subjectMap[q.subject] || 'math',
+                topic: q.topic || 'general',
+                time_limit_seconds: 30,
+                xp_reward: 10,
+                type: q.type as any || 'MCQ'
+            }));
+            const count = await bulkAddArenaQuestions(converted);
+            setImportResult({ count, skipped: converted.length - count });
+            setBankSelectedIds(new Set());
+        } catch (err: any) {
+            console.error("Lỗi khi import từ ngân hàng:", err);
+            alert(`Lỗi khi import: ${err.message || err}`);
+        } finally {
+            setImporting(false);
+        }
     };
 
     const toggleBankSelect = (id: string) => {
@@ -577,7 +587,6 @@ export const ArenaAdmin: React.FC = () => {
             setImportResult({ count, skipped: aiPreviewList.length - count });
             setAiPreviewList([]);
             setShowAiPreviewModal(false);
-            await fetchArenaQuestions();
         } catch (err: any) {
             console.error("Lỗi khi lưu câu hỏi từ AI:", err);
             alert(`Lỗi khi lưu câu hỏi: ${err.message || err}`);
@@ -1133,7 +1142,6 @@ export const ArenaAdmin: React.FC = () => {
             // Clear lists
             setValidParsedQuestions([]);
             setImportErrors([]);
-            await fetchArenaQuestions();
         } catch (error: any) {
             console.error("Lỗi import câu hỏi đúng:", error);
             alert("Lỗi khi thêm câu hỏi: " + (error.message || error));
@@ -1508,11 +1516,16 @@ export const ArenaAdmin: React.FC = () => {
     const handleImport = async () => {
         if (importPreview.length === 0) return;
         setImporting(true);
-        const count = await bulkAddArenaQuestions(importPreview);
-        setImportResult({ count, skipped: importPreview.length - count });
-        setImporting(false);
-        setImportPreview([]);
-        await fetchArenaQuestions();
+        try {
+            const count = await bulkAddArenaQuestions(importPreview);
+            setImportResult({ count, skipped: importPreview.length - count });
+            setImportPreview([]);
+        } catch (err: any) {
+            console.error("Lỗi khi import CSV:", err);
+            alert(`Lỗi khi import: ${err.message || err}`);
+        } finally {
+            setImporting(false);
+        }
     };
 
     if (loading) {
