@@ -406,7 +406,7 @@ export const ExamResults: React.FC = () => {
                                     isCorrect = (q.options && q.options.length > 0)
                                        ? q.options.some(opt => String(opt).trim().toLowerCase().replace(/\s+/g, '') === sAns)
                                        : (isSolutionShort && sAns === solString.toLowerCase().replace(/\s+/g, ''));
-                                 } else if (['MATCHING', 'ORDERING', 'DRAG_DROP'].includes(q.type)) {
+                                 } else if (['MATCHING', 'ORDERING', 'DRAG_DROP', 'SENTENCE_SCRAMBLE'].includes(q.type)) {
                                     if (Array.isArray(userAns) && userAns.length === q.options.length) {
                                        let isAllCorrect = true;
                                        for (let i = 0; i < q.options.length; i++) {
@@ -920,7 +920,7 @@ export const ExamResults: React.FC = () => {
                                  isCorrect = (q.options && q.options.length > 0)
                                     ? q.options.some(opt => String(opt).trim().toLowerCase() === sAns)
                                     : (isSolutionShort && sAns === solString.toLowerCase());
-                              } else if (['MATCHING', 'ORDERING', 'DRAG_DROP'].includes(q.type)) {
+                              } else if (['MATCHING', 'ORDERING', 'DRAG_DROP', 'SENTENCE_SCRAMBLE'].includes(q.type)) {
                                  if (Array.isArray(userAns) && userAns.length === q.options.length) {
                                     let isAllCorrect = true;
                                     for (let i = 0; i < q.options.length; i++) {

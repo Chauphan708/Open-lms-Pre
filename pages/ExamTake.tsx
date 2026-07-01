@@ -649,6 +649,132 @@ const DragDropQuestion = React.memo(({ question, answer, isSubmitted, onSetAnswe
   );
 });
 
+const SentenceScrambleQuestion = React.memo(({ question, answer, isSubmitted, onSetAnswer, viewPassFail, canViewSolution, shuffledIndices }: any) => {
+  const currentAns = Array.isArray(answer) ? answer : [];
+  
+  const unusedIndices: number[] = [];
+  const usedCounts: Record<string, number> = {};
+  
+  currentAns.forEach((w: string) => {
+    usedCounts[w] = (usedCounts[w] || 0) + 1;
+  });
+  
+  const localUsedCounts = { ...usedCounts };
+  shuffledIndices.forEach((i: number) => {
+    const word = question.options[i];
+    if (localUsedCounts[word] > 0) {
+      localUsedCounts[word]--;
+    } else {
+      unusedIndices.push(i);
+    }
+  });
+
+  const handleWordClick = (word: string) => {
+    if (isSubmitted) return;
+    onSetAnswer([...currentAns, word]);
+  };
+
+  const handleRemoveWord = (indexToRemove: number) => {
+    if (isSubmitted) return;
+    const newAns = [...currentAns];
+    newAns.splice(indexToRemove, 1);
+    onSetAnswer(newAns);
+  };
+
+  const handleReset = () => {
+    if (isSubmitted) return;
+    onSetAnswer([]);
+  };
+
+  const handleHint = () => {
+    if (isSubmitted) return;
+    const nextIndex = currentAns.length;
+    if (nextIndex < question.options.length) {
+       const nextWord = question.options[nextIndex];
+       if (nextWord) {
+         alert(`Gợi ý: Chữ cái đầu tiên của từ tiếp theo là: "${nextWord.charAt(0)}"`);
+       }
+    }
+  };
+
+  let isAllCorrect = false;
+  if (isSubmitted && viewPassFail) {
+    if (currentAns.length === question.options.length) {
+      isAllCorrect = currentAns.every((w: string, i: number) => w === question.options[i]);
+    }
+  }
+
+  return (
+    <div className="space-y-6 max-w-3xl">
+      <div className="flex items-center gap-2 text-indigo-700 bg-indigo-50 p-3 rounded-lg border border-indigo-100">
+        <Sparkles className="h-5 w-5" />
+        <span className="text-sm font-semibold">Bấm vào các từ bên dưới để sắp xếp chúng thành câu đúng nghĩa.</span>
+      </div>
+
+      <div className={`p-6 rounded-2xl border-2 transition-all ${isSubmitted && viewPassFail ? (isAllCorrect ? 'bg-green-50 border-green-300' : 'bg-red-50 border-red-300') : 'bg-white border-gray-200'}`}>
+        <label className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 block">CÂU CỦA BẠN:</label>
+        <div className="flex flex-wrap gap-2 min-h-[60px] p-4 rounded-xl border border-dashed border-gray-300 bg-gray-50/50">
+          {currentAns.map((word: string, i: number) => (
+            <button
+              key={i}
+              onClick={() => handleRemoveWord(i)}
+              disabled={isSubmitted}
+              className={`px-4 py-2 rounded-xl text-lg font-bold shadow-sm transition-transform active:scale-95 ${isSubmitted ? 'bg-indigo-100 text-indigo-800 cursor-default' : 'bg-indigo-100 text-indigo-800 hover:bg-indigo-200 cursor-pointer'}`}
+            >
+              {word}
+            </button>
+          ))}
+          {currentAns.length === 0 && <span className="text-gray-400 italic mt-2 text-sm">Chưa có từ nào được chọn...</span>}
+        </div>
+
+        {isSubmitted && viewPassFail && canViewSolution && !isAllCorrect && (
+           <div className="mt-4 p-4 bg-green-100 border border-green-300 rounded-lg">
+             <span className="text-xs font-bold text-green-800 uppercase tracking-wider block mb-2">CÂU ĐÚNG PHẢI LÀ:</span>
+             <div className="flex flex-wrap gap-2">
+               {question.options.map((w: string, i: number) => (
+                 <span key={i} className="px-4 py-2 bg-green-500 text-white font-bold rounded-xl shadow-sm">{w}</span>
+               ))}
+             </div>
+           </div>
+        )}
+      </div>
+
+      {!isSubmitted && (
+        <div className="p-6 rounded-2xl bg-slate-50 border border-slate-200">
+          <label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3 block">TỪ XÁO TRỘN:</label>
+          <div className="flex flex-wrap gap-3">
+            {unusedIndices.map((i: number) => {
+              const word = question.options[i];
+              return (
+                <button
+                  key={i}
+                  onClick={() => handleWordClick(word)}
+                  className="px-5 py-2.5 bg-white border border-slate-200 text-slate-700 rounded-xl text-lg font-bold shadow-sm hover:shadow-md hover:border-indigo-300 transition-all active:scale-95 cursor-pointer"
+                >
+                  {word}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {!isSubmitted && (
+        <div className="flex items-center gap-4 mt-6">
+          <button onClick={handleReset} className="flex items-center gap-2 px-4 py-2 bg-slate-100 text-slate-600 rounded-lg hover:bg-slate-200 font-semibold text-sm transition-colors">
+            <RotateCcw className="h-4 w-4" />
+            Xếp lại từ đầu
+          </button>
+          <button onClick={handleHint} className="flex items-center gap-2 px-4 py-2 bg-yellow-50 text-yellow-700 border border-yellow-200 rounded-lg hover:bg-yellow-100 font-semibold text-sm transition-colors ml-auto">
+            <Lightbulb className="h-4 w-4" />
+            Gợi ý chữ cái đầu
+          </button>
+        </div>
+      )}
+    </div>
+  );
+});
+
 export const ExamTake: React.FC = () => {
   const { id } = useParams();
   const [searchParams] = useSearchParams();
@@ -1651,7 +1777,7 @@ export const ExamTake: React.FC = () => {
         } else {
            console.log(`DEBUG: Q${idx + 1} SHORT_ANSWER INCORRECT. User: "${sAns}", Expected in options: ${JSON.stringify(q.options)}, Solution: "${solString}" (Short: ${isSolutionShort})`);
         }
-      } else if (['MATCHING', 'ORDERING', 'DRAG_DROP'].includes(q.type)) {
+      } else if (['MATCHING', 'ORDERING', 'DRAG_DROP', 'SENTENCE_SCRAMBLE'].includes(q.type)) {
         if (Array.isArray(userAns) && userAns.length === q.options.length) {
           let isAllCorrect = true;
           for (let i = 0; i < q.options.length; i++) {
@@ -2402,6 +2528,18 @@ export const ExamTake: React.FC = () => {
 
                   {q.type === 'DRAG_DROP' && (
                     <DragDropQuestion
+                      question={q}
+                      answer={answers[q.id]}
+                      onSetAnswer={(val: any) => handleSetAnswer(q.id, val)}
+                      isSubmitted={isSubmitted}
+                      viewPassFail={viewPassFail}
+                      canViewSolution={canViewSolution}
+                      shuffledIndices={shuffledIndices}
+                    />
+                  )}
+
+                  {q.type === 'SENTENCE_SCRAMBLE' && (
+                    <SentenceScrambleQuestion
                       question={q}
                       answer={answers[q.id]}
                       onSetAnswer={(val: any) => handleSetAnswer(q.id, val)}

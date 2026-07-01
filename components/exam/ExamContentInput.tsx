@@ -126,6 +126,7 @@ export const ExamContentInput: React.FC<ExamContentInputProps> = ({
                   <option value="MCQ_MULTIPLE">Trắc nghiệm nhiều lựa chọn (ABCD)</option>
                   <option value="MATCHING">Nối cột (Ghép đôi)</option>
                   <option value="ORDERING">Sắp xếp theo thứ tự</option>
+                  <option value="SENTENCE_SCRAMBLE">Xếp từ thành câu</option>
                   <option value="DRAG_DROP">Kéo thả / Điền khuyết</option>
                   <option value="SHORT_ANSWER">Tự luận ngắn</option>
                 </select>

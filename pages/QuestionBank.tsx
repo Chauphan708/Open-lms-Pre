@@ -19,6 +19,7 @@ const TYPE_LABELS: Record<QuestionType, string> = {
   MCQ: 'Trắc nghiệm',
   MATCHING: 'Nối cột',
   ORDERING: 'Sắp xếp',
+  SENTENCE_SCRAMBLE: 'Xếp từ thành câu',
   DRAG_DROP: 'Kéo thả',
   SHORT_ANSWER: 'Tự luận ngắn',
   MCQ_MULTIPLE: 'Trắc nghiệm nhiều đáp án'
@@ -293,7 +294,7 @@ const QuestionBank: React.FC = () => {
               }));
 
               elements.push(new Paragraph({ text: "", spacing: { after: 200 } }));
-            } else if ((q.type === 'ORDERING' || q.type === 'DRAG_DROP') && q.options) {
+            } else if ((q.type === 'ORDERING' || q.type === 'DRAG_DROP' || q.type === 'SENTENCE_SCRAMBLE') && q.options) {
               elements.push(
                 new Paragraph({
                   children: [

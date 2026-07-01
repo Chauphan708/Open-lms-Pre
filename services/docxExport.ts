@@ -150,9 +150,9 @@ export const exportToDocx = async ({ questions, title, subject, grade, duration,
         // Nhãn loại câu hỏi hiển thị phụ chú
         const typeLabel: Record<string, string> = {
             MCQ: '',
-            MCQ_MULTIPLE: ' (Chọn nhiều đáp án đúng)',
-            SHORT_ANSWER: ' (Tự luận ngắn)',
+            MCQ_MULTIPLE: ' (Chọn nhiều đáp án)',
             ORDERING: ' (Sắp xếp theo thứ tự đúng)',
+            SENTENCE_SCRAMBLE: ' (Xếp từ thành câu)',
             MATCHING: ' (Nối cột)',
             DRAG_DROP: ' (Điền khuyết)',
         };
@@ -193,7 +193,7 @@ export const exportToDocx = async ({ questions, title, subject, grade, duration,
         }
 
         // --- ORDERING: Sắp xếp thứ tự ---
-        if (q.type === 'ORDERING' && q.options?.length) {
+        if ((q.type === 'ORDERING' || q.type === 'SENTENCE_SCRAMBLE') && q.options?.length) {
             // Xáo trộn thứ tự để in ra (không xáo random để đề in nhất quán, chỉ đánh số)
             q.options.forEach((opt, oIdx) => {
                 sections.push(new Paragraph({
@@ -295,7 +295,7 @@ export const exportToDocx = async ({ questions, title, subject, grade, duration,
             } else if (q.type === 'MCQ_MULTIPLE' && q.correctOptionIndices?.length) {
                 const letters = q.correctOptionIndices.map(i => String.fromCharCode(65 + i)).join(', ');
                 answerParts.push(new TextRun({ text: letters, color: "FF0000", bold: true }));
-            } else if (q.type === 'ORDERING') {
+            } else if (q.type === 'ORDERING' || q.type === 'SENTENCE_SCRAMBLE') {
                 answerParts.push(new TextRun({ text: q.options?.map((_, i) => i + 1).join(' → ') || '', color: "FF0000", bold: true }));
             } else if (q.type === 'MATCHING') {
                 const pairs = q.options?.map((o, i) => {

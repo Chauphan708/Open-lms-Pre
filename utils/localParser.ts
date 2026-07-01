@@ -14,7 +14,7 @@ const QUESTION_START_REGEX = /(?:^|\n)\s*(?:Câu\s*(?:hỏi\s*)?|Bài\s*|Questio
 const QUESTION_START_ALT_REGEX = /(?:^|\n)\s*(\d+)\s*[.)]\s+/g;
 
 // Regex for options
-const OPTION_REGEX = /^\s*([A-Da-d])\s*[.):\]]\s*(.+)/;
+const OPTION_REGEX = /^\s*([A-Za-z])\s*[.):\]]\s*(.+)/;
 
 // Regex for correct answer (captures the whole remaining line so we can check if it's A/B/C/D or text)
 const ANSWER_REGEX = /(?:Đáp\s*án\s*(?:đúng)?\s*[:.]\s*)(.+)/i;
@@ -136,10 +136,10 @@ function parseOneBlock(block: string, index: number): Question | null {
         const answerMatch = trimmed.match(ANSWER_REGEX);
         if (answerMatch) {
             const ansRaw = answerMatch[1].trim();
-            const lettersOnlyMatch = ansRaw.replace(/và|and/gi, ',').match(/^([A-Da-d][\s,.-]*)+$/i) || ansRaw.match(/^(([A-Da-d])(?:[\s,.]+|$)){2,}/i);
+            const lettersOnlyMatch = ansRaw.replace(/và|and/gi, ',').match(/^([A-Za-z][\s,.-]*)+$/i) || ansRaw.match(/^(([A-Za-z])(?:[\s,.]+|$)){2,}/i);
             
             if (lettersOnlyMatch) {
-                const letters = ansRaw.match(/([A-Da-d])/gi);
+                const letters = ansRaw.match(/([A-Za-z])/gi);
                 if (letters) {
                     const uniqueIndices = Array.from(new Set(letters.map(l => l.toUpperCase().charCodeAt(0) - 65)))
                         .filter(idx => idx >= 0 && idx < options.length);
@@ -151,10 +151,10 @@ function parseOneBlock(block: string, index: number): Question | null {
                     }
                 }
             } else {
-                const letterMatch = ansRaw.match(/^([A-Da-d])(?:[.):]|\s|$)/i);
+                const letterMatch = ansRaw.match(/^([A-Za-z])(?:[.):]|\s|$)/i);
                 if (letterMatch) {
                     const answerLetter = letterMatch[1].toUpperCase();
-                    correctOptionIndex = answerLetter.charCodeAt(0) - 65; // A=0, B=1, C=2, D=3
+                    correctOptionIndex = answerLetter.charCodeAt(0) - 65; // A=0, B=1, etc.
                 } else {
                     shortAnswerText = ansRaw;
                 }
@@ -267,7 +267,11 @@ function parseOneBlock(block: string, index: number): Question | null {
 
     // Logic đặc biệt cho câu hỏi Sắp xếp (Ordering)
     const isOrderingKeywords = /sắp xếp|thứ tự|xếp theo|từ bé đến lớn|từ lớn đến bé|từ nhỏ đến lớn|từ lớn đến nhỏ|từ thấp đến cao|từ cao đến thấp|từ ngắn.* đến dài|từ dài.* đến ngắn|tăng dần|giảm dần|ordering|arrange|sort/i.test(content);
-    if (isOrderingKeywords && type === 'MCQ') {
+    const isSentenceScrambleKeywords = /xếp từ thành câu|sắp xếp từ|ghép từ thành câu|xếp các từ/i.test(content);
+    if (isSentenceScrambleKeywords && type === 'MCQ') {
+        type = 'SENTENCE_SCRAMBLE';
+        correctOptionIndex = undefined;
+    } else if (isOrderingKeywords && type === 'MCQ') {
         type = 'ORDERING';
         // Câu hỏi sắp xếp không có đáp án đúng theo kiểu ABCD
         correctOptionIndex = undefined;

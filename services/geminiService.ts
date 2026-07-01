@@ -113,7 +113,7 @@ const QUESTION_SCHEMA: Schema = {
       hint: { type: Type.STRING, description: "A pedagogical hint explaining the method/formula to use WITHOUT giving the answer." },
       level: { type: Type.STRING, description: "Difficulty level. Must be one of: NHAN_BIET, KET_NOI, VAN_DUNG" },
       topic: { type: Type.STRING, description: "The specific knowledge topic/chapter this question belongs to, e.g. 'Phân số', 'Hình học phẳng'" },
-      questionType: { type: Type.STRING, description: "Type of question. Must be one of: MCQ, SHORT_ANSWER, MATCHING, ORDERING, DRAG_DROP" }
+      questionType: { type: Type.STRING, description: "Type of question. Must be one of: MCQ, SHORT_ANSWER, MATCHING, ORDERING, DRAG_DROP, SENTENCE_SCRAMBLE" }
     },
     required: ["content", "options", "correctOptionIndex", "solution", "hint", "level", "topic", "questionType"],
   }
@@ -143,7 +143,7 @@ export const parseQuestionsFromText = async (rawText: string): Promise<Question[
     6. **HINT & SOLUTION**: Always try to extract or generate a 'hint' (method) and 'solution' (full steps).
     7. **LEVEL (REQUIRED)**: Classify each question's difficulty as one of: NHAN_BIET, KET_NOI, VAN_DUNG.
     8. **TOPIC (REQUIRED)**: Identify the specific knowledge topic/chapter for each question.
-    9. **questionType (REQUIRED)**: Detect the question format: MCQ, SHORT_ANSWER, MATCHING, ORDERING, or DRAG_DROP.
+    9. **questionType (REQUIRED)**: Detect the question format: MCQ, SHORT_ANSWER, MATCHING, ORDERING, DRAG_DROP, or SENTENCE_SCRAMBLE.
     10. **CRITICAL**: The 'content' field MUST ONLY contain the question itself. DO NOT include the answer, solution, or "Đáp án:" in the 'content' field. The exact answer goes into the 'options' array for SHORT_ANSWER, and the explanation goes into the 'solution' field.
     
     Raw Text:
@@ -396,6 +396,7 @@ export const generateQuestionsByTopic = async (
       "topic": "${cleanTopic}",
       "questionType": "MATCHING"
     }`;
+        break;
       case 'ORDERING':
         return `
     QUESTION TYPE: ORDERING (Sắp xếp theo thứ tự)
@@ -414,6 +415,24 @@ export const generateQuestionsByTopic = async (
       "level": "${levelCode}",
       "topic": "${cleanTopic}",
       "questionType": "ORDERING"
+    }`;
+      case 'SENTENCE_SCRAMBLE':
+        return `
+    QUESTION TYPE: SENTENCE_SCRAMBLE (Xếp từ thành câu)
+    - 'content': Describe the task. E.g., "Sắp xếp các từ sau thành câu hoàn chỉnh."
+    - 'options': Array of words/phrases representing the items in their **CORRECT EXPECTED ORDER** in the sentence. The UI will shuffle them automatically. 
+    - 'solution': (Optional) explanation.
+    - 'correctOptionIndex': MUST be -1 or null (not used).
+    
+    EXAMPLE JSON for ONE sentence scramble question:
+    {
+      "topic": "${cleanTopic}",
+      "level": "${levelCode}",
+      "content": "Sắp xếp các từ sau thành câu hoàn chỉnh.",
+      "options": ["Hôm nay", "trời", "rất", "đẹp", "và", "mát mẻ."],
+      "correctOptionIndex": -1,
+      "solution": "Ghép các từ theo thứ tự chủ ngữ, vị ngữ hợp lý.",
+      "questionType": "SENTENCE_SCRAMBLE"
     }`;
       case 'DRAG_DROP':
         return `

@@ -113,6 +113,7 @@ export const ExamQuestionEditModal: React.FC<ExamQuestionEditModalProps> = ({
                 <option value="MCQ_MULTIPLE">Trắc nghiệm nhiều lựa chọn (ABCD)</option>
                 <option value="MATCHING">Nối cột (Trái ||| Phải)</option>
                 <option value="ORDERING">Sắp xếp thứ tự đúng</option>
+                <option value="SENTENCE_SCRAMBLE">Xếp từ thành câu</option>
                 <option value="DRAG_DROP">Kéo thả / Điền khuyết</option>
                 <option value="SHORT_ANSWER">Tự luận ngắn</option>
               </select>
@@ -257,11 +258,12 @@ export const ExamQuestionEditModal: React.FC<ExamQuestionEditModalProps> = ({
             </div>
           )}
 
-          {['MATCHING', 'ORDERING', 'DRAG_DROP'].includes(editingQuestion.type) && (
+          {['MATCHING', 'ORDERING', 'DRAG_DROP', 'SENTENCE_SCRAMBLE'].includes(editingQuestion.type) && (
             <div>
               <label className="block text-sm font-bold text-gray-700 dark:text-slate-300 mb-1 flex items-center justify-between">
                 {editingQuestion.type === 'MATCHING' && "Các cặp nối (Format: Nửa trái ||| Nửa phải)"}
                 {editingQuestion.type === 'ORDERING' && "Các mục cần sắp xếp (Nhập theo thứ tự ĐÚNG)"}
+                {editingQuestion.type === 'SENTENCE_SCRAMBLE' && "Các từ cần ghép (Nhập theo thứ tự ĐÚNG của câu)"}
                 {editingQuestion.type === 'DRAG_DROP' && "Các từ/phần điền khuyết (Bao gồm cả đáp án đúng và gây nhiễu)"}
                 <button onClick={() => setEditingQuestion({ ...editingQuestion, options: [...editingQuestion.options, editingQuestion.type === 'MATCHING' ? 'Vế Trái ||| Vế Phải' : 'Mục mới'] })} className="text-xs text-indigo-600 dark:text-indigo-400 font-medium hover:underline">+ Thêm mục</button>
               </label>
