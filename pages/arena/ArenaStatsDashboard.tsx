@@ -2,7 +2,7 @@ import React, { useEffect, useState, useMemo } from 'react';
 import { supabase } from '../../services/supabaseClient';
 import { 
   Brain, Trophy, Target, Search, Users, ChevronRight, ChevronDown, 
-  TrendingUp, BarChart3, Clock, AlertTriangle, CheckCircle, RefreshCw, X, ShieldAlert 
+  TrendingUp, BarChart3, Clock, AlertTriangle, CheckCircle, RefreshCw, X, ShieldAlert, Download 
 } from 'lucide-react';
 import MathText from '../../components/MathText';
 
@@ -71,6 +71,7 @@ export const ArenaStatsDashboard: React.FC = () => {
   const [expandedStudentId, setExpandedStudentId] = useState<string | null>(null);
   const [studentDetailTab, setStudentDetailTab] = useState<Record<string, 'năng_lực' | 'lịch_sử' | 'huy_hiệu' | 'trang_bị'>>({});
   const [logFilter, setLogFilter] = useState<'all' | 'tower' | 'pvp' | 'tournament'>('all');
+  const [selectedExportIds, setSelectedExportIds] = useState<Set<string>>(new Set());
   
   // Expanded Student Inventory
   const [expandedStudentInventory, setExpandedStudentInventory] = useState<any[]>([]);
@@ -368,6 +369,76 @@ export const ArenaStatsDashboard: React.FC = () => {
     setExpandedStudentId(expandedStudentId === id ? null : id);
   };
 
+  // Export tower data as CSV
+  const exportTowerCSV = (studentIds: string[]) => {
+    const rows: string[][] = [];
+    const headers = ['Họ tên', 'Lớp', 'Ngày giờ', 'Chủ đề', 'Môn học', 'Khối', 'Tầng đạt được', 'Số đúng', 'Tổng câu hỏi', 'Tỉ lệ đúng (%)', 'Kết quả', 'XP nhận', 'ELO thay đổi'];
+
+    studentIds.forEach(sid => {
+      const stud = students.find(s => s.id === sid);
+      const name = stud?.profiles?.name || 'Học sinh ẩn danh';
+      const cls = stud?.profiles?.class_name || 'Chưa xếp lớp';
+      const attempts = enrichedAttempts.filter(a => a.student_id === sid);
+
+      if (attempts.length === 0) {
+        rows.push([
+          `"${name}"`, `"${cls}"`, '', '', '', '', '', '', '', '', 'Chưa có dữ liệu leo tháp', '', ''
+        ]);
+      } else {
+        attempts.forEach(a => {
+          const accuracy = a.total_questions > 0 ? Math.round((a.correct_answers / a.total_questions) * 100) : 0;
+          rows.push([
+            `"${name}"`,
+            `"${cls}"`,
+            `"${new Date(a.created_at).toLocaleString('vi-VN')}"`,
+            `"${(a.topic || 'general').replace(/"/g, '""')}"`,
+            `"${a.subject || ''}"`,
+            `"${a.grade || ''}"`,
+            String(a.end_floor),
+            String(a.correct_answers),
+            String(a.total_questions),
+            String(accuracy),
+            a.is_victory ? 'Chiến thắng' : 'Thất bại',
+            String(a.xp_gained),
+            String(a.elo_change >= 0 ? `+${a.elo_change}` : a.elo_change)
+          ]);
+        });
+      }
+    });
+
+    const csvContent = '\ufeff' + [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    const dateStr = new Date().toLocaleDateString('vi-VN').replace(/\//g, '-');
+    const label = studentIds.length === 1 
+      ? (students.find(s => s.id === studentIds[0])?.profiles?.name || 'hoc_sinh').replace(/\s+/g, '_')
+      : `${studentIds.length}_hoc_sinh`;
+    link.download = `leo_thap_${label}_${dateStr}.csv`;
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(link.href);
+  };
+
+  const toggleExportSelect = (id: string) => {
+    setSelectedExportIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const toggleSelectAllExport = () => {
+    if (selectedExportIds.size === filteredStudents.length) {
+      setSelectedExportIds(new Set());
+    } else {
+      setSelectedExportIds(new Set(filteredStudents.map(s => s.id)));
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-[40vh] flex items-center justify-center">
@@ -639,6 +710,20 @@ export const ArenaStatsDashboard: React.FC = () => {
                 <option key={c} value={c}>Lớp {c}</option>
               ))}
             </select>
+
+            {/* Export Tower Data Button */}
+            <button
+              onClick={() => {
+                const ids = selectedExportIds.size > 0 ? Array.from(selectedExportIds) : filteredStudents.map(s => s.id);
+                if (ids.length === 0) return;
+                exportTowerCSV(ids);
+              }}
+              className="flex items-center gap-1.5 px-3 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 rounded-xl text-xs font-bold transition-all"
+              title={selectedExportIds.size > 0 ? `Xuất dữ liệu leo tháp của ${selectedExportIds.size} HS đã chọn` : 'Xuất dữ liệu leo tháp tất cả HS đang hiển thị'}
+            >
+              <Download className="h-3.5 w-3.5" />
+              {selectedExportIds.size > 0 ? `Xuất leo tháp (${selectedExportIds.size} HS)` : 'Xuất leo tháp'}
+            </button>
           </div>
         </div>
 
@@ -647,12 +732,21 @@ export const ArenaStatsDashboard: React.FC = () => {
           <table className="w-full text-left text-xs border-collapse">
             <thead>
               <tr className="bg-gray-50/70 border-b border-gray-100 text-gray-400 uppercase font-black tracking-wider">
+                <th className="p-4 w-10">
+                  <input 
+                    type="checkbox" 
+                    checked={filteredStudents.length > 0 && selectedExportIds.size === filteredStudents.length}
+                    onChange={toggleSelectAllExport}
+                    className="w-3.5 h-3.5 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
+                    title="Chọn tất cả để xuất dữ liệu"
+                  />
+                </th>
                 <th className="p-4 w-8"></th>
                 <th className="p-4">Học Sinh</th>
                 <th className="p-4 text-center">Khối Lớp</th>
                 <th className="p-4 text-center">Điểm ELO</th>
                 <th className="p-4 text-center">Tầng Tháp</th>
-                <th className="p-4 text-center">PvP PvP (Thắng/Thua)</th>
+                <th className="p-4 text-center">PvP (Thắng/Thua)</th>
                 <th className="p-4 text-center">Tổng XP Arena</th>
                 <th className="p-4 text-right">Hành động</th>
               </tr>
@@ -660,7 +754,7 @@ export const ArenaStatsDashboard: React.FC = () => {
             <tbody>
               {filteredStudents.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="p-8 text-center text-gray-400 font-medium italic">
+                  <td colSpan={9} className="p-8 text-center text-gray-400 font-medium italic">
                     Không tìm thấy học sinh nào phù hợp bộ lọc.
                   </td>
                 </tr>
@@ -699,6 +793,14 @@ export const ArenaStatsDashboard: React.FC = () => {
                         onClick={() => toggleStudentExpand(s.id)}
                         className={`border-b border-gray-100/80 hover:bg-indigo-50/20 cursor-pointer transition-all ${isExpanded ? 'bg-indigo-50/30' : ''}`}
                       >
+                        <td className="p-4 text-center" onClick={e => e.stopPropagation()}>
+                          <input 
+                            type="checkbox" 
+                            checked={selectedExportIds.has(s.id)}
+                            onChange={() => toggleExportSelect(s.id)}
+                            className="w-3.5 h-3.5 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
+                          />
+                        </td>
                         <td className="p-4 text-center">
                           {isExpanded ? (
                             <ChevronDown className="h-4.5 w-4.5 text-gray-500" />
@@ -745,12 +847,21 @@ export const ArenaStatsDashboard: React.FC = () => {
                           {s.total_xp.toLocaleString()}
                         </td>
                         <td className="p-4 text-right">
-                          <button 
-                            onClick={(e) => { e.stopPropagation(); toggleStudentExpand(s.id); }}
-                            className="px-3 py-1.5 bg-gray-50 hover:bg-indigo-50 text-gray-600 hover:text-indigo-600 font-bold rounded-lg transition-colors border border-gray-200/50 text-[10px]"
-                          >
-                            {isExpanded ? 'Ẩn chi tiết' : 'Xem chi tiết'}
-                          </button>
+                          <div className="flex items-center justify-end gap-1.5">
+                            <button 
+                              onClick={(e) => { e.stopPropagation(); exportTowerCSV([s.id]); }}
+                              className="px-2.5 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-600 font-bold rounded-lg transition-colors border border-emerald-200/50 text-[10px] flex items-center gap-1"
+                              title="Xuất dữ liệu leo tháp của học sinh này"
+                            >
+                              <Download className="h-3 w-3" /> Xuất
+                            </button>
+                            <button 
+                              onClick={(e) => { e.stopPropagation(); toggleStudentExpand(s.id); }}
+                              className="px-3 py-1.5 bg-gray-50 hover:bg-indigo-50 text-gray-600 hover:text-indigo-600 font-bold rounded-lg transition-colors border border-gray-200/50 text-[10px]"
+                            >
+                              {isExpanded ? 'Ẩn chi tiết' : 'Xem chi tiết'}
+                            </button>
+                          </div>
                         </td>
                       </tr>
 
@@ -774,7 +885,7 @@ export const ArenaStatsDashboard: React.FC = () => {
 
                         return (
                           <tr className="bg-gray-50/40 border-b border-gray-100 animate-in slide-in-from-top duration-300">
-                            <td colSpan={8} className="p-5">
+                            <td colSpan={9} className="p-5">
                               {/* Sub-tab selection */}
                               <div className="flex gap-4 border-b border-gray-200/60 pb-2.5 mb-4 text-[10px] sm:text-xs font-bold">
                                 <button 
