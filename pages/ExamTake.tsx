@@ -180,6 +180,55 @@ const normalizeMath = (s: string) => {
   return processed.toLowerCase();
 };
 
+const evaluateAnswer = (q: any, userAns: any, caseSensitive: boolean = false): boolean => {
+  if (userAns === undefined || userAns === null) return false;
+
+  if (q.type === 'MCQ') {
+    return userAns === q.correctOptionIndex;
+  }
+  
+  if (q.type === 'MCQ_MULTIPLE') {
+    const correctArray = q.correctOptionIndices || [];
+    const userArray = Array.isArray(userAns) ? userAns : [];
+    if (correctArray.length === 0 || correctArray.length !== userArray.length) return false;
+    return correctArray.every((val: any) => userArray.includes(val));
+  }
+  
+  if (q.type === 'SHORT_ANSWER') {
+    const sAns = caseSensitive
+      ? normalizeMath(String(userAns || '').trim())
+      : normalizeMath(String(userAns || '').trim().toLowerCase());
+    
+    const solString = String(q.solution || '').trim();
+    const isSolutionShort = solString !== '' && solString.split(/\s+/).length < 10;
+    
+    return (q.options && q.options.length > 0)
+      ? q.options.some((opt: any) => {
+          const optStr = caseSensitive
+            ? normalizeMath(String(opt || '').trim())
+            : normalizeMath(String(opt || '').trim().toLowerCase());
+          return optStr === sAns;
+        })
+      : (isSolutionShort && sAns === normalizeMath(caseSensitive
+          ? solString
+          : solString.toLowerCase()));
+  }
+  
+  if (['MATCHING', 'ORDERING', 'DRAG_DROP', 'SENTENCE_SCRAMBLE'].includes(q.type)) {
+    if (!Array.isArray(userAns) || userAns.length !== q.options.length) return false;
+    for (let i = 0; i < q.options.length; i++) {
+      const expected = q.options[i];
+      const actual = userAns[i];
+      const normExpected = String(expected || '').trim().toLowerCase().replace(/\s*\|\|\|\s*/g, '|||');
+      const normActual = String(actual || '').trim().toLowerCase().replace(/\s*\|\|\|\s*/g, '|||');
+      if (normActual !== normExpected) return false;
+    }
+    return true;
+  }
+  
+  return false;
+};
+
 const isFractionAnswer = (question: any): boolean => {
   if (!question) return false;
   const targets: string[] = [];
@@ -312,27 +361,6 @@ const ShortAnswerQuestion = React.memo(({ question, answer, isSubmitted, onSetAn
               {isFractionMode ? "Chuyển sang nhập dòng đơn (số thường/chữ)" : "Chuyển sang nhập phân số đứng"}
             </button>
           </div>
-        </div>
-      )}
-      {isSubmitted && viewPassFail && (
-        <div className="mt-3 flex flex-col gap-2 px-2">
-          <div className="flex items-center gap-2">
-            {isCorrect
-              ? <><CheckCircle className="h-5 w-5 text-green-600" /><span className="text-green-700 font-bold">Hệ thống chấp nhận đáp án này</span></>
-              : <><X className="h-5 w-5 text-red-600" /><span className="text-red-700 font-bold">Sai (Không khớp đáp án mẫu)</span></>}
-          </div>
-          {!isCorrect && (
-            <div className="mt-2 text-sm text-gray-600 flex items-center gap-2 bg-gray-50 p-3 rounded-lg border border-gray-100">
-              <span className="font-medium text-gray-500">Đáp án mẫu:</span>
-              <span className="font-bold text-gray-800">
-                <MathText inline>
-                  {question.options && question.options.length > 0 
-                    ? question.options.map((opt: any) => String(opt)).join(' / ') 
-                    : String(question.solution || '')}
-                </MathText>
-              </span>
-            </div>
-          )}
         </div>
       )}
     </div>
@@ -1721,89 +1749,16 @@ export const ExamTake: React.FC = () => {
       }
 
       const userAns = answers[q.id];
-      let isCorrect = false;
+      const isCaseSensitive = !!assignmentSettings.caseSensitiveShortAnswer;
+      const isCorrect = evaluateAnswer(q, userAns, isCaseSensitive);
 
       console.log(`DEBUG: Scoring Question ${idx + 1} (${q.type}):`, {
          questionId: q.id,
          userAnswer: userAns,
-         correctOption: q.correctOptionIndex,
-         solution: q.solution,
-         options: q.options,
+         isCorrect,
          isNotScored: q.isNotScored
       });
 
-      if (q.type === 'MCQ') {
-        if (userAns === q.correctOptionIndex) {
-           isCorrect = true;
-           console.log(`DEBUG: Q${idx + 1} MCQ CORRECT`);
-        } else {
-           console.log(`DEBUG: Q${idx + 1} MCQ INCORRECT. User: ${userAns}, Expected: ${q.correctOptionIndex}`);
-        }
-      } else if (q.type === 'MCQ_MULTIPLE') {
-        const correctArray = q.correctOptionIndices || [];
-        const userArray = Array.isArray(userAns) ? userAns : [];
-        if (correctArray.length > 0 && correctArray.length === userArray.length && correctArray.every(val => userArray.includes(val))) {
-           isCorrect = true;
-           console.log(`DEBUG: Q${idx + 1} MCQ_MULTIPLE CORRECT`);
-        } else {
-           console.log(`DEBUG: Q${idx + 1} MCQ_MULTIPLE INCORRECT. User: ${userArray}, Expected: ${correctArray}`);
-        }
-      } else if (q.type === 'SHORT_ANSWER') {
-        const isCaseSensitive = !!assignmentSettings.caseSensitiveShortAnswer;
-        
-        const sAns = isCaseSensitive
-          ? normalizeMath(String(userAns || '').trim().replace(/\s+/g, ' '))
-          : normalizeMath(String(userAns || '').trim().toLowerCase().replace(/\s+/g, ''));
-        
-        // CẢI TIẾN: Chỉ so khớp với solution nếu nó ngắn (thường là đáp án ngắn), 
-        // nếu solution dài dằng dặc thì đó là lời giải chi tiết, không dùng để chấm điểm tự động.
-        const solString = String(q.solution || '').trim();
-        const isSolutionShort = solString !== '' && solString.split(/\s+/).length < 10;
-        
-        // So khớp với danh sách options (đáp án chấp nhận được) HOẶC solution (nếu nó ngắn)
-        isCorrect = (q.options && q.options.length > 0)
-          ? q.options.some(opt => {
-              const optStr = isCaseSensitive
-                ? normalizeMath(String(opt || '').trim().replace(/\s+/g, ' '))
-                : normalizeMath(String(opt || '').trim().toLowerCase().replace(/\s+/g, ''));
-              return optStr === sAns;
-            })
-          : (isSolutionShort && sAns === normalizeMath(isCaseSensitive
-              ? solString.replace(/\s+/g, ' ')
-              : solString.toLowerCase().replace(/\s+/g, '')));
-
-        if (isCorrect) {
-           console.log(`DEBUG: Q${idx + 1} SHORT_ANSWER CORRECT. User: "${sAns}"`);
-        } else {
-           console.log(`DEBUG: Q${idx + 1} SHORT_ANSWER INCORRECT. User: "${sAns}", Expected in options: ${JSON.stringify(q.options)}, Solution: "${solString}" (Short: ${isSolutionShort})`);
-        }
-      } else if (['MATCHING', 'ORDERING', 'DRAG_DROP', 'SENTENCE_SCRAMBLE'].includes(q.type)) {
-        if (Array.isArray(userAns) && userAns.length === q.options.length) {
-          let isAllCorrect = true;
-          for (let i = 0; i < q.options.length; i++) {
-            const expected = q.options[i];
-            const actual = userAns[i];
-            
-            // Normalize for comparison
-            const normExpected = String(expected || '').trim().toLowerCase().replace(/\s*\|\|\|\s*/g, '|||');
-            const normActual = String(actual || '').trim().toLowerCase().replace(/\s*\|\|\|\s*/g, '|||');
-            
-            if (normActual !== normExpected) {
-              isAllCorrect = false;
-              console.log(`DEBUG: Q${idx + 1} ${q.type} Mismatch at index ${i}: Expected "${normExpected}", Got "${normActual}"`);
-              break;
-            }
-          }
-          if (isAllCorrect) {
-             isCorrect = true;
-             console.log(`DEBUG: Q${idx + 1} ${q.type} CORRECT`);
-          } else {
-             console.log(`DEBUG: Q${idx + 1} ${q.type} INCORRECT`);
-          }
-        } else {
-           console.log(`DEBUG: Q${idx + 1} ${q.type} INCORRECT (Format mismatch/empty)`);
-        }
-      }
 
       if (isCorrect && !q.isNotScored) {
          correctCount++;
@@ -2428,6 +2383,7 @@ export const ExamTake: React.FC = () => {
             const actualIndex = viewMode === 'scroll' || isSubmitted ? index : currentQuestionIndex;
             // Get the shuffled indices for this question
             const shuffledIndices = shuffledOptionsMap[q.id] || q.options.map((_, i) => i);
+            const isQuestionCorrect = evaluateAnswer(q, answers[q.id], assignmentSettings?.caseSensitiveShortAnswer);
 
             return (
               <div id={`question-container-${actualIndex}`} data-index={actualIndex} key={q.id} className="bg-white p-4 md:p-6 rounded-xl border border-gray-200 shadow-sm scroll-mt-[100px] md:scroll-mt-24">
@@ -2550,6 +2506,70 @@ export const ExamTake: React.FC = () => {
                     />
                   )}
                 </div>
+
+                {/* UNIFIED CORRECTNESS FEEDBACK BANNER */}
+                {isSubmitted && viewPassFail && (
+                  <div className={`mt-4 p-4 rounded-xl border flex items-start gap-3 shadow-sm animate-fade-in ${
+                    isQuestionCorrect 
+                      ? 'bg-green-50 border-green-200 text-green-900' 
+                      : 'bg-red-50 border-red-200 text-red-900'
+                  }`}>
+                    {isQuestionCorrect ? (
+                      <>
+                        <CheckCircle className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
+                        <div>
+                          <strong className="text-green-800 text-sm font-extrabold block">Hệ thống chấp nhận đáp án này (Chính xác)</strong>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <X className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" />
+                        <div className="flex-1">
+                          <strong className="text-red-800 text-sm font-extrabold block">Chưa chính xác</strong>
+                          
+                          {q.type === 'MCQ_MULTIPLE' && (
+                            <p className="text-xs text-red-700 mt-1 font-medium leading-relaxed">
+                              Lưu ý: Đối với câu hỏi chọn nhiều đáp án, bạn phải tích chọn đầy đủ tất cả các đáp án đúng và không được chọn thừa/chọn sai đáp án để đạt điểm tối đa.
+                            </p>
+                          )}
+
+                          {q.type === 'SHORT_ANSWER' && (
+                            <div className="mt-2 text-xs text-gray-700 bg-gray-55/80 p-2.5 rounded-lg border border-gray-200">
+                              <strong className="text-gray-600 mr-1.5">Đáp án mẫu:</strong>
+                              <span className="font-bold text-gray-800">
+                                <MathText inline>
+                                  {q.options && q.options.length > 0 
+                                    ? q.options.map((opt: any) => String(opt)).join(' / ') 
+                                    : String(q.solution || '')}
+                                </MathText>
+                              </span>
+                            </div>
+                          )}
+
+                          {q.type === 'MCQ' && canViewSolution && q.correctOptionIndex !== undefined && (
+                            <div className="mt-2 text-xs text-gray-700 bg-gray-55/80 p-2.5 rounded-lg border border-gray-200">
+                              <strong className="text-gray-600 mr-1.5">Đáp án đúng:</strong>
+                              <span className="font-bold text-gray-800">
+                                {q.options[q.correctOptionIndex]}
+                              </span>
+                            </div>
+                          )}
+
+                          {q.type === 'MCQ_MULTIPLE' && canViewSolution && q.correctOptionIndices && (
+                            <div className="mt-2 text-xs text-gray-700 bg-gray-55/80 p-2.5 rounded-lg border border-gray-200">
+                              <strong className="text-gray-600 mr-1.5">Các đáp án đúng:</strong>
+                              <span className="font-bold text-gray-800 block mt-1 space-y-1">
+                                {q.correctOptionIndices.map((ci: number) => (
+                                  <span key={ci} className="block">• {q.options[ci]}</span>
+                                ))}
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      </>
+                    )}
+                  </div>
+                )}
 
                 {/* HINT BOX: Check viewHint setting */}
                 {isSubmitted && q.hint && assignmentSettings.viewHint && (
