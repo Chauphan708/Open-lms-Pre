@@ -38,6 +38,14 @@ export const useStore = create<AppState>((set, get, api) => ({
     // Refresh logged-in user profile from Supabase to keep it fresh and ensure className is mapped correctly
     if (currentUser?.id) {
       try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) {
+          console.warn("Supabase session expired. Logging out...");
+          set({ user: null });
+          localStorage.removeItem('user_session');
+          return;
+        }
+
         const { data: freshProfile } = await supabase
           .from('profiles')
           .select('*')
