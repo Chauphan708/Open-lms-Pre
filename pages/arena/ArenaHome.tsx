@@ -562,22 +562,22 @@ export const ArenaHome: React.FC = () => {
 
                     {/* Scrollable Badges Grid */}
                     <div className="flex-1 overflow-y-auto pr-1 space-y-3 custom-scrollbar">
-                        <div className="grid grid-cols-3 gap-2">
+                        <div className="grid grid-cols-2 gap-3">
                             {filteredBadges.map(badge => {
                                 const isUnlocked = arenaProfile.unlocked_badges?.includes(badge.id);
                                 return (
                                     <div 
                                         key={badge.id}
                                         title={`${badge.name}: ${badge.desc}`}
-                                        className={`p-2 rounded-xl border flex flex-col items-center text-center transition-all duration-300 dark:border-slate-800 relative origin-center hover:z-50 hover:scale-[2.5] md:hover:scale-[3] hover:bg-[#0f172a] hover:opacity-100 hover:shadow-2xl cursor-default ${
+                                        className={`p-3 rounded-xl border flex flex-col items-center text-center transition-all duration-300 dark:border-slate-800 ${
                                             isUnlocked 
-                                                ? 'border-purple-500/30 bg-purple-950/10 text-white shadow-md shadow-purple-950/20 hover:border-purple-500/80' 
-                                                : 'border-white/5 bg-white/5 text-gray-500 opacity-40 hover:border-gray-500/50'
+                                                ? 'border-purple-500/30 bg-purple-950/10 text-white shadow-md shadow-purple-950/20' 
+                                                : 'border-white/5 bg-white/5 text-gray-500 opacity-40'
                                         } `}
                                     >
-                                        <span className={`text-2xl mb-1 ${isUnlocked ? 'animate-pulse' : 'filter grayscale'} `}>{badge.emoji}</span>
-                                        <h4 className="text-[10px] font-black truncate w-full text-gray-200">{badge.name}</h4>
-                                        <p className="text-[8px] text-gray-400 mt-0.5 leading-tight line-clamp-2 h-5 flex items-center justify-center">{badge.desc}</p>
+                                        <span className={`text-4xl mb-2 ${isUnlocked ? 'animate-pulse' : 'filter grayscale'} `}>{badge.emoji}</span>
+                                        <h4 className="text-xs font-black truncate w-full text-gray-200">{badge.name}</h4>
+                                        <p className="text-[10px] text-gray-400 mt-1 leading-tight line-clamp-2 h-7 flex items-center justify-center">{badge.desc}</p>
                                         {isUnlocked ? (
                                             <span className="text-[7px] bg-purple-500/20 text-purple-400 px-1 py-0.5 rounded mt-1 font-bold uppercase whitespace-nowrap">Đã mở</span>
                                         ) : (
