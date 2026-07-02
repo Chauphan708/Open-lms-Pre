@@ -15,7 +15,7 @@ const AVATAR_CLASSES: { id: AvatarClass; name: string; icon: any; color: string;
 ];
 
 export const ArenaHome: React.FC = () => {
-    const { user, arenaProfile, fetchArenaProfile, createArenaProfile } = useStore();
+    const { user, arenaProfile, fetchArenaProfile, createArenaProfile, updateArenaProfile } = useStore();
     const navigate = useNavigate();
     const [loading, setLoading] = useState(true);
     const [selecting, setSelecting] = useState(false);
@@ -40,6 +40,33 @@ export const ArenaHome: React.FC = () => {
     useEffect(() => {
         loadProfile();
     }, [user]);
+
+    // Automatically check and unlock ELO and PvP badges when profile updates
+    useEffect(() => {
+        if (!arenaProfile) return;
+        
+        let needsUpdate = false;
+        const badges = [...(arenaProfile.unlocked_badges || [])];
+        
+        // 1. Check Elo Champion (Elo >= 1500)
+        if (arenaProfile.elo_rating >= 1500 && !badges.includes('elo_champion')) {
+            badges.push('elo_champion');
+            needsUpdate = true;
+        }
+        
+        // 2. Check PvP Conqueror (wins >= 5)
+        if (arenaProfile.wins >= 5 && !badges.includes('pvp_conqueror')) {
+            badges.push('pvp_conqueror');
+            needsUpdate = true;
+        }
+        
+        if (needsUpdate) {
+            updateArenaProfile({
+                id: arenaProfile.id,
+                unlocked_badges: badges
+            }).catch(err => console.error("Lỗi khi tự động mở khóa huy hiệu:", err));
+        }
+    }, [arenaProfile, updateArenaProfile]);
 
     const handleCreateProfile = async () => {
         if (!user || !selectedClass) return;
