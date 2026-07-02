@@ -43,7 +43,7 @@ export const createArenaSlice: StateCreator<AppState, [], [], ArenaSliceState> =
     const profile = { 
       id: userId, 
       avatar_class: avatarClass, 
-      elo_rating: 1000, 
+      elo_rating: 0, 
       total_xp: 0, 
       wins: 0, 
       losses: 0, 
@@ -60,7 +60,7 @@ export const createArenaSlice: StateCreator<AppState, [], [], ArenaSliceState> =
     const { error } = await supabase.from('arena_profiles').insert(profile);
     if (error) {
       console.warn('Lỗi tạo Arena Profile với cột mới, đang thử lại với các cột tối giản...', error.message);
-      const minProfile = { id: userId, avatar_class: avatarClass, elo_rating: 1000, total_xp: 0, wins: 0, losses: 0, tower_floor: 1 };
+      const minProfile = { id: userId, avatar_class: avatarClass, elo_rating: 0, total_xp: 0, wins: 0, losses: 0, tower_floor: 1 };
       const { error: err2 } = await supabase.from('arena_profiles').insert(minProfile);
       if (err2) {
         console.error('Lỗi tạo Arena Profile tối giản:', err2);
@@ -95,7 +95,7 @@ export const createArenaSlice: StateCreator<AppState, [], [], ArenaSliceState> =
           arenaProfile: {
             ...current,
             total_xp: current.total_xp + Math.max(0, xpGained),
-            elo_rating: Math.max(500, current.elo_rating + eloChange),
+            elo_rating: Math.max(0, current.elo_rating + eloChange),
             tower_floor: newFloor !== null ? newFloor : current.tower_floor
           }
         });

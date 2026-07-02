@@ -62,16 +62,16 @@ const ARENA_BADGES = [
   { id: 'tower_master', name: 'Bậc Thầy Chinh Phục', desc: 'Làm chủ 100% chuyên đề đầu tiên', emoji: '🏆' },
   
   // Nhóm Elo
-  { id: 'elo_1100', name: 'Tập Sự Khởi Đầu', desc: 'Đạt thứ hạng Elo >= 1100', emoji: '🥉' },
-  { id: 'elo_1200', name: 'Cao Thủ Thực Thụ', desc: 'Đạt thứ hạng Elo >= 1200', emoji: '🥈' },
-  { id: 'elo_1300', name: 'Chiến Binh Ưu Tú', desc: 'Đạt thứ hạng Elo >= 1300', emoji: '🥇' },
-  { id: 'elo_champion', name: 'Nhà Thông Thái Vô Song', desc: 'Đạt thứ hạng Elo >= 1500', emoji: '👑' },
-  { id: 'elo_1800', name: 'Kỷ Lục Gia Đấu Trường', desc: 'Đạt thứ hạng Elo >= 1800', emoji: '💎' },
-  { id: 'elo_2000', name: 'Thần Thoại Đấu Trí', desc: 'Đạt thứ hạng Elo >= 2000', emoji: '✨' },
-  { id: 'elo_3000', name: 'Đại Sư Đấu Trường', desc: 'Đạt thứ hạng Elo >= 3000', emoji: '🔮' },
-  { id: 'elo_5000', name: 'Huyền Thoại Bất Bại', desc: 'Đạt thứ hạng Elo >= 5000', emoji: '🌀' },
-  { id: 'elo_8000', name: 'Chúa Tể Đấu Trường', desc: 'Đạt thứ hạng Elo >= 8000', emoji: '🌌' },
-  { id: 'elo_10000', name: 'Đấng Sáng Tạo Trí Tuệ', desc: 'Đạt thứ hạng Elo >= 10000', emoji: '🕉' },
+  { id: 'elo_10', name: 'Tập Sự Khởi Đầu', desc: 'Đạt thứ hạng Elo >= 10', emoji: '🥉' },
+  { id: 'elo_20', name: 'Cao Thủ Thực Thụ', desc: 'Đạt thứ hạng Elo >= 20', emoji: '🥈' },
+  { id: 'elo_30', name: 'Chiến Binh Ưu Tú', desc: 'Đạt thứ hạng Elo >= 30', emoji: '🥇' },
+  { id: 'elo_50', name: 'Nhà Thông Thái Vô Song', desc: 'Đạt thứ hạng Elo >= 50', emoji: '👑' },
+  { id: 'elo_80', name: 'Kỷ Lục Gia Đấu Trường', desc: 'Đạt thứ hạng Elo >= 80', emoji: '💎' },
+  { id: 'elo_100', name: 'Thần Thoại Đấu Trí', desc: 'Đạt thứ hạng Elo >= 100', emoji: '✨' },
+  { id: 'elo_150', name: 'Đại Sư Đấu Trường', desc: 'Đạt thứ hạng Elo >= 150', emoji: '🔮' },
+  { id: 'elo_200', name: 'Huyền Thoại Bất Bại', desc: 'Đạt thứ hạng Elo >= 200', emoji: '🌀' },
+  { id: 'elo_300', name: 'Chúa Tể Đấu Trường', desc: 'Đạt thứ hạng Elo >= 300', emoji: '🌌' },
+  { id: 'elo_500', name: 'Đấng Sáng Tạo Trí Tuệ', desc: 'Đạt thứ hạng Elo >= 500', emoji: '🕉' },
 
   // Nhóm XP
   { id: 'xp_1000', name: 'Tích Tiểu Thành Đại', desc: 'Đạt từ 1,000 XP trở lên', emoji: '🌱' },

@@ -22,6 +22,16 @@ import {
 } from '../../services/geminiService';
 import { playArenaSound, isSoundEnabled, setSoundEnabled } from '../../services/soundService';
 
+const getMasteryEloBonus = (mastery: number): number => {
+  if (mastery >= 100) return 15;
+  if (mastery >= 90) return 5;
+  if (mastery >= 80) return 4;
+  if (mastery >= 70) return 3;
+  if (mastery >= 50) return 2;
+  if (mastery >= 30) return 1;
+  return 0;
+};
+
 function shuffleArenaQuestion(question: ArenaQuestion): ArenaQuestion & { _shuffled?: boolean } {
   if (!question || (question as any)._shuffled) return question;
   if (question.type === 'SHORT_ANSWER') return question;
@@ -1070,7 +1080,14 @@ export const TowerMode: React.FC = () => {
       xp = Math.round(baseXP * xpMultiplier);
       setXpGained(xp);
 
-      elo = currentDifficulty * 5;
+      // Streak Elo Reward: 5 consecutive -> +1, 10 consecutive -> +2 (using modulo to scale infinitely)
+      if (newStreak > 0) {
+        if (newStreak % 10 === 5) {
+          elo = 1;
+        } else if (newStreak % 10 === 0) {
+          elo = 2;
+        }
+      }
       setEloGained(elo);
 
       // Compute latest totals for session
@@ -1147,14 +1164,18 @@ export const TowerMode: React.FC = () => {
       masteryChange = -masteryLoss;
       xp = 0;
       setXpGained(0);
-      elo = -3;
-      setEloGained(-3);
+      
+      // Streak Incorrect Penalty: 2 consecutive wrong -> -1 Elo
+      if (newConsecutiveWrong >= 2) {
+        elo = -1;
+      }
+      setEloGained(elo);
 
       // Compute latest totals for session
       const finalCorrectAnswers = correctAnswersCount;
       const finalTotalQuestions = totalQuestionsCount + 1;
       const finalXpGainedRun = xpGainedSession;
-      const finalEloChangeRun = eloChangedSession - 3;
+      const finalEloChangeRun = eloChangedSession + elo;
 
       setCorrectAnswersCount(finalCorrectAnswers);
       setTotalQuestionsCount(finalTotalQuestions);
@@ -1178,8 +1199,10 @@ export const TowerMode: React.FC = () => {
         if (currentDifficulty > 1) {
           finalDifficulty = currentDifficulty - 1;
           setCurrentDifficulty(finalDifficulty);
-          setConsecutiveWrong(0); // reset
         }
+        // Always reset wrong streak after penalty + level-down check
+        setConsecutiveWrong(0);
+        newConsecutiveWrong = 0;
       }
     }
 
@@ -1187,7 +1210,7 @@ export const TowerMode: React.FC = () => {
     await updateArenaProfile({
       id: arenaProfile.id,
       total_xp: arenaProfile.total_xp + (correct ? xp : 0),
-      elo_rating: Math.max(500, arenaProfile.elo_rating + (correct ? elo : -3))
+      elo_rating: Math.max(0, arenaProfile.elo_rating + elo)
     });
   };
 
@@ -1276,11 +1299,22 @@ export const TowerMode: React.FC = () => {
 
     // Update profile ELO/losses
     if (arenaProfile) {
-      const updatedMastery = { ...(arenaProfile.topic_mastery || {}), [selectedTopic]: finalMastery };
+      const currentHighestMastery = (arenaProfile.topic_mastery || {})[selectedTopic] || 0;
+      const newMasteryToSave = Math.max(currentHighestMastery, finalMastery);
+      
+      const oldBonus = getMasteryEloBonus(currentHighestMastery);
+      const newBonus = getMasteryEloBonus(newMasteryToSave);
+      const masteryEloDiff = newBonus - oldBonus;
+      
+      const totalEloChange = actualElo + masteryEloDiff;
+      const newElo = Math.max(0, arenaProfile.elo_rating + totalEloChange);
+
+      const updatedMastery = { ...(arenaProfile.topic_mastery || {}), [selectedTopic]: newMasteryToSave };
       await updateArenaProfile({
         id: arenaProfile.id,
         losses: arenaProfile.losses + 1,
-        topic_mastery: updatedMastery
+        topic_mastery: updatedMastery,
+        elo_rating: newElo
       });
 
       // Save tower attempt log to Supabase
@@ -1291,7 +1325,7 @@ export const TowerMode: React.FC = () => {
           topic: selectedTopic,
           grade: selectedGrade || '5',
           xp_gained: actualXp,
-          elo_change: actualElo,
+          elo_change: totalEloChange,
           end_floor: currentDifficulty,
           is_victory: false,
           correct_answers: actualCorrect,
@@ -1333,14 +1367,25 @@ export const TowerMode: React.FC = () => {
     const actualCorrect = correctCount !== undefined ? correctCount : correctAnswersCount;
     const actualTotal = totalCount !== undefined ? totalCount : totalQuestionsCount;
     const actualXp = xpGainedRun !== undefined ? xpGainedRun : (xpGainedSession || 50);
-    const actualElo = eloChangeRun !== undefined ? eloChangeRun : (eloChangedSession || 15);
+    const actualElo = eloChangeRun !== undefined ? eloChangeRun : (eloChangedSession || 0);
 
     if (arenaProfile) {
-      const updatedMastery = { ...(arenaProfile.topic_mastery || {}), [selectedTopic]: 100 };
+      const currentHighestMastery = (arenaProfile.topic_mastery || {})[selectedTopic] || 0;
+      const newMasteryToSave = Math.max(currentHighestMastery, 100);
+      
+      const oldBonus = getMasteryEloBonus(currentHighestMastery);
+      const newBonus = getMasteryEloBonus(newMasteryToSave);
+      const masteryEloDiff = newBonus - oldBonus;
+      
+      const totalEloChange = actualElo + masteryEloDiff;
+      const newElo = Math.max(0, arenaProfile.elo_rating + totalEloChange);
+
+      const updatedMastery = { ...(arenaProfile.topic_mastery || {}), [selectedTopic]: newMasteryToSave };
       await updateArenaProfile({
         id: arenaProfile.id,
         wins: arenaProfile.wins + 1,
-        topic_mastery: updatedMastery
+        topic_mastery: updatedMastery,
+        elo_rating: newElo
       });
 
       // Complete Daily Quest q2: "Tích lũy tri thức: Đạt 100% Mastery ở chuyên đề bất kỳ"
@@ -1357,7 +1402,7 @@ export const TowerMode: React.FC = () => {
           topic: selectedTopic,
           grade: selectedGrade || '5',
           xp_gained: actualXp,
-          elo_change: actualElo,
+          elo_change: totalEloChange,
           end_floor: currentDifficulty,
           is_victory: true,
           correct_answers: actualCorrect,
@@ -1504,7 +1549,7 @@ export const TowerMode: React.FC = () => {
         updateArenaProfile({
           id: arenaProfile.id,
           total_xp: arenaProfile.total_xp + rewardXp,
-          elo_rating: arenaProfile.elo_rating + 20
+          elo_rating: arenaProfile.elo_rating + 2
         });
       }
     }

@@ -28,16 +28,16 @@ const ARENA_BADGES: Badge[] = [
     { id: 'tower_master', name: 'Bậc Thầy Chinh Phục', desc: 'Làm chủ 100% chuyên đề đầu tiên', emoji: '🏆', category: 'general' },
 
     // Nhóm Elo
-    { id: 'elo_1100', name: 'Tập Sự Khởi Đầu', desc: 'Đạt thứ hạng Elo >= 1100', emoji: '🥉', category: 'elo' },
-    { id: 'elo_1200', name: 'Cao Thủ Thực Thụ', desc: 'Đạt thứ hạng Elo >= 1200', emoji: '🥈', category: 'elo' },
-    { id: 'elo_1300', name: 'Chiến Binh Ưu Tú', desc: 'Đạt thứ hạng Elo >= 1300', emoji: '🥇', category: 'elo' },
-    { id: 'elo_champion', name: 'Nhà Thông Thái Vô Song', desc: 'Đạt thứ hạng Elo >= 1500', emoji: '👑', category: 'elo' },
-    { id: 'elo_1800', name: 'Kỷ Lục Gia Đấu Trường', desc: 'Đạt thứ hạng Elo >= 1800', emoji: '💎', category: 'elo' },
-    { id: 'elo_2000', name: 'Thần Thoại Đấu Trí', desc: 'Đạt thứ hạng Elo >= 2000', emoji: '✨', category: 'elo' },
-    { id: 'elo_3000', name: 'Đại Sư Đấu Trường', desc: 'Đạt thứ hạng Elo >= 3000', emoji: '🔮', category: 'elo' },
-    { id: 'elo_5000', name: 'Huyền Thoại Bất Bại', desc: 'Đạt thứ hạng Elo >= 5000', emoji: '🌀', category: 'elo' },
-    { id: 'elo_8000', name: 'Chúa Tể Đấu Trường', desc: 'Đạt thứ hạng Elo >= 8000', emoji: '🌌', category: 'elo' },
-    { id: 'elo_10000', name: 'Đấng Sáng Tạo Trí Tuệ', desc: 'Đạt thứ hạng Elo >= 10000', emoji: '🕉️', category: 'elo' },
+    { id: 'elo_10', name: 'Tập Sự Khởi Đầu', desc: 'Đạt thứ hạng Elo >= 10', emoji: '🥉', category: 'elo' },
+    { id: 'elo_20', name: 'Cao Thủ Thực Thụ', desc: 'Đạt thứ hạng Elo >= 20', emoji: '🥈', category: 'elo' },
+    { id: 'elo_30', name: 'Chiến Binh Ưu Tú', desc: 'Đạt thứ hạng Elo >= 30', emoji: '🥇', category: 'elo' },
+    { id: 'elo_50', name: 'Nhà Thông Thái Vô Song', desc: 'Đạt thứ hạng Elo >= 50', emoji: '👑', category: 'elo' },
+    { id: 'elo_80', name: 'Kỷ Lục Gia Đấu Trường', desc: 'Đạt thứ hạng Elo >= 80', emoji: '💎', category: 'elo' },
+    { id: 'elo_100', name: 'Thần Thoại Đấu Trí', desc: 'Đạt thứ hạng Elo >= 100', emoji: '✨', category: 'elo' },
+    { id: 'elo_150', name: 'Đại Sư Đấu Trường', desc: 'Đạt thứ hạng Elo >= 150', emoji: '🔮', category: 'elo' },
+    { id: 'elo_200', name: 'Huyền Thoại Bất Bại', desc: 'Đạt thứ hạng Elo >= 200', emoji: '🌀', category: 'elo' },
+    { id: 'elo_300', name: 'Chúa Tể Đấu Trường', desc: 'Đạt thứ hạng Elo >= 300', emoji: '🌌', category: 'elo' },
+    { id: 'elo_500', name: 'Đấng Sáng Tạo Trí Tuệ', desc: 'Đạt thứ hạng Elo >= 500', emoji: '🕉️', category: 'elo' },
 
     // Nhóm XP
     { id: 'xp_1000', name: 'Tích Tiểu Thành Đại', desc: 'Đạt từ 1,000 XP trở lên', emoji: '🌱', category: 'xp' },
@@ -165,16 +165,16 @@ export const ArenaHome: React.FC = () => {
         };
 
         // 1. Elo Milestones
-        checkUnlock('elo_1100', arenaProfile.elo_rating >= 1100);
-        checkUnlock('elo_1200', arenaProfile.elo_rating >= 1200);
-        checkUnlock('elo_1300', arenaProfile.elo_rating >= 1300);
-        checkUnlock('elo_champion', arenaProfile.elo_rating >= 1500);
-        checkUnlock('elo_1800', arenaProfile.elo_rating >= 1800);
-        checkUnlock('elo_2000', arenaProfile.elo_rating >= 2000);
-        checkUnlock('elo_3000', arenaProfile.elo_rating >= 3000);
-        checkUnlock('elo_5000', arenaProfile.elo_rating >= 5000);
-        checkUnlock('elo_8000', arenaProfile.elo_rating >= 8000);
-        checkUnlock('elo_10000', arenaProfile.elo_rating >= 10000);
+        checkUnlock('elo_10', arenaProfile.elo_rating >= 10);
+        checkUnlock('elo_20', arenaProfile.elo_rating >= 20);
+        checkUnlock('elo_30', arenaProfile.elo_rating >= 30);
+        checkUnlock('elo_50', arenaProfile.elo_rating >= 50);
+        checkUnlock('elo_80', arenaProfile.elo_rating >= 80);
+        checkUnlock('elo_100', arenaProfile.elo_rating >= 100);
+        checkUnlock('elo_150', arenaProfile.elo_rating >= 150);
+        checkUnlock('elo_200', arenaProfile.elo_rating >= 200);
+        checkUnlock('elo_300', arenaProfile.elo_rating >= 300);
+        checkUnlock('elo_500', arenaProfile.elo_rating >= 500);
 
         // 2. XP Milestones
         checkUnlock('xp_1000', arenaProfile.total_xp >= 1000);
