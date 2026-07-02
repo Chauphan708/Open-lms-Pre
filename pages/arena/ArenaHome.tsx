@@ -1,5 +1,5 @@
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useStore } from '../../store';
 import { supabase } from '../../services/supabaseClient';
@@ -15,6 +15,57 @@ const AVATAR_CLASSES: { id: AvatarClass; name: string; icon: any; color: string;
     { id: 'explorer', name: 'Nhà Thám Hiểm', icon: Heart, color: '#f59e0b', desc: 'Dũng cảm khám phá', emoji: '🌍', lore: '"Mỗi câu hỏi là một vùng đất mới"' },
 ];
 
+interface Badge {
+    id: string;
+    name: string;
+    desc: string;
+    emoji: string;
+    category: 'general' | 'elo' | 'xp' | 'activity' | 'topic';
+}
+
+const ARENA_BADGES: Badge[] = [
+    { id: 'math_genius', name: 'Thiên Tài Trí Tuệ', desc: 'Đúng 10 câu liên tiếp', emoji: '🌟', category: 'general' },
+    { id: 'tower_master', name: 'Bậc Thầy Chinh Phục', desc: 'Làm chủ 100% chuyên đề đầu tiên', emoji: '🏆', category: 'general' },
+
+    // Nhóm Elo
+    { id: 'elo_1100', name: 'Tập Sự Khởi Đầu', desc: 'Đạt thứ hạng Elo >= 1100', emoji: '🥉', category: 'elo' },
+    { id: 'elo_1200', name: 'Cao Thủ Thực Thụ', desc: 'Đạt thứ hạng Elo >= 1200', emoji: '🥈', category: 'elo' },
+    { id: 'elo_1300', name: 'Chiến Binh Ưu Tú', desc: 'Đạt thứ hạng Elo >= 1300', emoji: '🥇', category: 'elo' },
+    { id: 'elo_champion', name: 'Nhà Thông Thái Vô Song', desc: 'Đạt thứ hạng Elo >= 1500', emoji: '👑', category: 'elo' },
+    { id: 'elo_1800', name: 'Kỷ Lục Gia Đấu Trường', desc: 'Đạt thứ hạng Elo >= 1800', emoji: '💎', category: 'elo' },
+    { id: 'elo_2000', name: 'Thần Thoại Đấu Trí', desc: 'Đạt thứ hạng Elo >= 2000', emoji: '✨', category: 'elo' },
+    { id: 'elo_3000', name: 'Đại Sư Đấu Trường', desc: 'Đạt thứ hạng Elo >= 3000', emoji: '🔮', category: 'elo' },
+    { id: 'elo_5000', name: 'Huyền Thoại Bất Bại', desc: 'Đạt thứ hạng Elo >= 5000', emoji: '🌀', category: 'elo' },
+    { id: 'elo_8000', name: 'Chúa Tể Đấu Trường', desc: 'Đạt thứ hạng Elo >= 8000', emoji: '🌌', category: 'elo' },
+    { id: 'elo_10000', name: 'Đấng Sáng Tạo Trí Tuệ', desc: 'Đạt thứ hạng Elo >= 10000', emoji: '🕉️', category: 'elo' },
+
+    // Nhóm XP
+    { id: 'xp_1000', name: 'Tích Tiểu Thành Đại', desc: 'Đạt từ 1,000 XP trở lên', emoji: '🌱', category: 'xp' },
+    { id: 'xp_accumulator', name: 'Học Giả Uyên Bác', desc: 'Đạt từ 5,000 XP trở lên', emoji: '⚡', category: 'xp' },
+    { id: 'xp_10000', name: 'Đại Học Giả', desc: 'Đạt từ 10,000 XP trở lên', emoji: '☄️', category: 'xp' },
+    { id: 'xp_30000', name: 'Đỉnh Cao Tri Thức', desc: 'Đạt từ 30,000 XP trở lên', emoji: '🌌', category: 'xp' },
+    { id: 'xp_50000', name: 'Kho Tàng Tri Thức', desc: 'Đạt từ 50,000 XP trở lên', emoji: '🌠', category: 'xp' },
+    { id: 'xp_100000', name: 'Vũ Trụ Trí Tuệ', desc: 'Đạt từ 100,000 XP trở lên', emoji: '🪐', category: 'xp' },
+
+    // Nhóm Tháp & PvP
+    { id: 'tower_floor_5', name: 'Bản Lĩnh Leo Tháp', desc: 'Chinh phục Tầng 5 tháp leo cấp', emoji: '🧗', category: 'activity' },
+    { id: 'tower_floor_10', name: 'Chinh Phục Đỉnh Cao', desc: 'Chinh phục Tầng 10 tháp leo cấp', emoji: '🏰', category: 'activity' },
+    { id: 'pvp_rookie', name: 'Tân Binh Đấu Trường', desc: 'Tham gia 1 trận PvP 1v1', emoji: '🛡️', category: 'activity' },
+    { id: 'pvp_conqueror', name: 'Chiến Thần Võ Đài', desc: 'Thắng 5 trận PvP 1v1', emoji: '⚔️', category: 'activity' },
+    { id: 'pvp_master', name: 'Độc Cô Cầu Bại', desc: 'Thắng 15 trận PvP 1v1', emoji: '🥇', category: 'activity' },
+    { id: 'perfect_win', name: 'Chiến Thắng Tuyệt Đối', desc: 'Thắng 1 trận PvP với 100% HP', emoji: '💯', category: 'activity' },
+
+    // Nhóm Chuyên đề & Khám phá & Cửa hàng
+    { id: 'multi_topic_3', name: 'Tam Bảo Tri Thức', desc: 'Làm chủ 100% ít nhất 3 chuyên đề', emoji: '🍀', category: 'topic' },
+    { id: 'multi_topic_5', name: 'Học Giả Đa Năng', desc: 'Làm chủ 100% ít nhất 5 chuyên đề', emoji: '📚', category: 'topic' },
+    { id: 'multi_topic_10', name: 'Học Giả Vượt Trội', desc: 'Làm chủ 100% ít nhất 10 chuyên đề', emoji: '📕', category: 'topic' },
+    { id: 'multi_topic_20', name: 'Học Giả Siêu Cấp', desc: 'Làm chủ 100% ít nhất 20 chuyên đề', emoji: '📘', category: 'topic' },
+    { id: 'multi_topic_50', name: 'Huyền Thoại Trí Thức', desc: 'Làm chủ 100% ít nhất 50 chuyên đề', emoji: '📜', category: 'topic' },
+    { id: 'topic_explorer_15', name: 'Nhà Thám Hiểm Chủ Đề', desc: 'Leo tháp ở ít nhất 15 chuyên đề', emoji: '🗺️', category: 'topic' },
+    { id: 'topic_explorer_30', name: 'Nhà Thám Hiểm Vĩ Đại', desc: 'Leo tháp ở ít nhất 30 chuyên đề', emoji: '🧭', category: 'topic' },
+    { id: 'shop_collector', name: 'Nhà Sưu Tầm Trang Bị', desc: 'Sở hữu ít nhất 3 vật phẩm trong túi đồ', emoji: '🎒', category: 'topic' }
+];
+
 export const ArenaHome: React.FC = () => {
     const { user, arenaProfile, fetchArenaProfile, createArenaProfile, updateArenaProfile } = useStore();
     const navigate = useNavigate();
@@ -24,6 +75,11 @@ export const ArenaHome: React.FC = () => {
     const [showHelp, setShowHelp] = useState(false);
     const [fetchError, setFetchError] = useState<string | null>(null);
     const [pvpWins, setPvpWins] = useState(0);
+    const [pvpPlayed, setPvpPlayed] = useState(0);
+    const [perfectWinAchieved, setPerfectWinAchieved] = useState(false);
+    const [uniqueTopicsCount, setUniqueTopicsCount] = useState(0);
+    const [inventoryItemsCount, setInventoryItemsCount] = useState(0);
+    const [selectedBadgeCategory, setSelectedBadgeCategory] = useState<'all' | 'elo_xp' | 'activity' | 'topic'>('all');
 
     const loadProfile = async () => {
         if (!user) return;
@@ -32,15 +88,48 @@ export const ArenaHome: React.FC = () => {
         try {
             await fetchArenaProfile(user.id);
             
-            // Query actual PvP wins count (where student is the winner in a finished match)
-            const { count, error } = await supabase
+            // 1. Query actual PvP wins & games
+            const { data: matchesData } = await supabase
                 .from('arena_matches')
-                .select('id', { count: 'exact', head: true })
-                .eq('winner_id', user.id)
+                .select('player1_id, player2_id, player1_hp, player2_hp, winner_id, status')
+                .or(`player1_id.eq.${user.id},player2_id.eq.${user.id}`)
                 .eq('status', 'finished');
+            
+            if (matchesData) {
+                const totalMatchesPlayed = matchesData.length;
+                const actualWins = matchesData.filter(m => m.winner_id === user.id).length;
+                const hasPerfectWin = matchesData.some(m => {
+                    if (m.winner_id !== user.id) return false;
+                    if (m.player1_id === user.id && m.player1_hp === 100) return true;
+                    if (m.player2_id === user.id && m.player2_hp === 100) return true;
+                    return false;
+                });
                 
-            if (!error && count !== null) {
-                setPvpWins(count);
+                setPvpWins(actualWins);
+                setPvpPlayed(totalMatchesPlayed);
+                setPerfectWinAchieved(hasPerfectWin);
+            }
+
+            // 2. Query tower attempts unique topics count
+            const { data: attemptsData } = await supabase
+                .from('arena_tower_attempts')
+                .select('topic')
+                .eq('student_id', user.id);
+            
+            if (attemptsData) {
+                const uniqueTopicsPlayed = new Set(attemptsData.map(a => a.topic?.toLowerCase().trim()).filter(Boolean)).size;
+                setUniqueTopicsCount(uniqueTopicsPlayed);
+            }
+
+            // 3. Query inventory items count
+            const { data: invData } = await supabase
+                .from('arena_inventory')
+                .select('quantity')
+                .eq('student_id', user.id);
+            
+            if (invData) {
+                const totalInvItems = invData.reduce((sum, item) => sum + (item.quantity || 0), 0);
+                setInventoryItemsCount(totalInvItems);
             }
         } catch (err: any) {
             console.error("Failed loading arena profile:", err);
@@ -61,25 +150,61 @@ export const ArenaHome: React.FC = () => {
         let needsUpdate = false;
         const badges = [...(arenaProfile.unlocked_badges || [])];
         
-        // 1. Check Elo Champion (Elo >= 1500)
-        if (arenaProfile.elo_rating >= 1500 && !badges.includes('elo_champion')) {
-            badges.push('elo_champion');
-            needsUpdate = true;
-        }
-        
-        // 2. Check PvP Conqueror (actual PvP wins >= 5)
-        const hasPvpConquerorBadge = badges.includes('pvp_conqueror');
-        if (pvpWins >= 5 && !hasPvpConquerorBadge) {
-            badges.push('pvp_conqueror');
-            needsUpdate = true;
-        } else if (pvpWins < 5 && hasPvpConquerorBadge) {
-            // Lock it back if they got it incorrectly (e.g. from tower wins)
-            const idx = badges.indexOf('pvp_conqueror');
-            if (idx > -1) {
-                badges.splice(idx, 1);
+        const checkUnlock = (badgeId: string, condition: boolean) => {
+            const hasBadge = badges.includes(badgeId);
+            if (condition && !hasBadge) {
+                badges.push(badgeId);
                 needsUpdate = true;
+            } else if (!condition && hasBadge) {
+                const idx = badges.indexOf(badgeId);
+                if (idx > -1) {
+                    badges.splice(idx, 1);
+                    needsUpdate = true;
+                }
             }
-        }
+        };
+
+        // 1. Elo Milestones
+        checkUnlock('elo_1100', arenaProfile.elo_rating >= 1100);
+        checkUnlock('elo_1200', arenaProfile.elo_rating >= 1200);
+        checkUnlock('elo_1300', arenaProfile.elo_rating >= 1300);
+        checkUnlock('elo_champion', arenaProfile.elo_rating >= 1500);
+        checkUnlock('elo_1800', arenaProfile.elo_rating >= 1800);
+        checkUnlock('elo_2000', arenaProfile.elo_rating >= 2000);
+        checkUnlock('elo_3000', arenaProfile.elo_rating >= 3000);
+        checkUnlock('elo_5000', arenaProfile.elo_rating >= 5000);
+        checkUnlock('elo_8000', arenaProfile.elo_rating >= 8000);
+        checkUnlock('elo_10000', arenaProfile.elo_rating >= 10000);
+
+        // 2. XP Milestones
+        checkUnlock('xp_1000', arenaProfile.total_xp >= 1000);
+        checkUnlock('xp_accumulator', arenaProfile.total_xp >= 5000);
+        checkUnlock('xp_10000', arenaProfile.total_xp >= 10000);
+        checkUnlock('xp_30000', arenaProfile.total_xp >= 30000);
+        checkUnlock('xp_50000', arenaProfile.total_xp >= 50000);
+        checkUnlock('xp_100000', arenaProfile.total_xp >= 100000);
+
+        // 3. Tower & PvP Milestones
+        checkUnlock('tower_floor_5', arenaProfile.tower_floor >= 5);
+        checkUnlock('tower_floor_10', arenaProfile.tower_floor >= 10);
+        checkUnlock('pvp_rookie', pvpPlayed >= 1);
+        checkUnlock('pvp_conqueror', pvpWins >= 5);
+        checkUnlock('pvp_master', pvpWins >= 15);
+        checkUnlock('perfect_win', perfectWinAchieved);
+
+        // 4. Topic Mastery Milestones
+        const masteryList = Object.values(arenaProfile.topic_mastery || {});
+        const masteredTopicsCount = masteryList.filter(m => (m as number) >= 100).length;
+        
+        checkUnlock('tower_master', masteredTopicsCount >= 1);
+        checkUnlock('multi_topic_3', masteredTopicsCount >= 3);
+        checkUnlock('multi_topic_5', masteredTopicsCount >= 5);
+        checkUnlock('multi_topic_10', masteredTopicsCount >= 10);
+        checkUnlock('multi_topic_20', masteredTopicsCount >= 20);
+        checkUnlock('multi_topic_50', masteredTopicsCount >= 50);
+        checkUnlock('topic_explorer_15', uniqueTopicsCount >= 15);
+        checkUnlock('topic_explorer_30', uniqueTopicsCount >= 30);
+        checkUnlock('shop_collector', inventoryItemsCount >= 3);
         
         if (needsUpdate) {
             updateArenaProfile({
@@ -87,7 +212,17 @@ export const ArenaHome: React.FC = () => {
                 unlocked_badges: badges
             }).catch(err => console.error("Lỗi khi tự động mở khóa huy hiệu:", err));
         }
-    }, [arenaProfile, pvpWins, updateArenaProfile]);
+    }, [arenaProfile, pvpWins, pvpPlayed, perfectWinAchieved, uniqueTopicsCount, inventoryItemsCount, updateArenaProfile]);
+
+    const filteredBadges = useMemo(() => {
+        return ARENA_BADGES.filter(b => {
+            if (selectedBadgeCategory === 'all') return true;
+            if (selectedBadgeCategory === 'elo_xp') return b.category === 'elo' || b.category === 'xp';
+            if (selectedBadgeCategory === 'activity') return b.category === 'general' || b.category === 'activity';
+            if (selectedBadgeCategory === 'topic') return b.category === 'topic';
+            return true;
+        });
+    }, [selectedBadgeCategory]);
 
     const handleCreateProfile = async () => {
         if (!user || !selectedClass) return;
@@ -396,38 +531,62 @@ export const ArenaHome: React.FC = () => {
                 </div>
 
                 {/* Column 2: Badge Collection */}
-                <div className="glass-card rounded-2xl p-6 border border-white/5 dark:border-slate-800">
-                    <h3 className="text-lg font-black text-white mb-4 flex items-center gap-2">
-                        🏆 Bộ Sưu Tập Huy Hiệu
-                    </h3>
-                    <div className="grid grid-cols-2 gap-3">
+                <div className="glass-card rounded-2xl p-6 border border-white/5 dark:border-slate-800 flex flex-col h-[400px]">
+                    <div className="flex justify-between items-center mb-3">
+                        <h3 className="text-lg font-black text-white flex items-center gap-2">
+                            🏆 Huy Hiệu ({arenaProfile.unlocked_badges?.length || 0}/32)
+                        </h3>
+                    </div>
+                    
+                    {/* Category Filter Tabs */}
+                    <div className="flex flex-wrap gap-1 mb-3 text-[10px] font-bold">
                         {[
-                            { id: 'math_genius', name: 'Thiên Tài Trí Tuệ', desc: 'Đúng 10 câu liên tiếp', emoji: '🌟' },
-                            { id: 'tower_master', name: 'Bậc Thầy Chinh Phục', desc: 'Làm chủ 100% chuyên đề', emoji: '🏆' },
-                            { id: 'elo_champion', name: 'Nhà Thông Thái Vô Song', desc: 'Đạt thứ hạng Elo >= 1500', emoji: '👑' },
-                            { id: 'pvp_conqueror', name: 'Chiến Thần Võ Đài', desc: 'Thắng 5 trận PvP 1v1', emoji: '⚔️' }
-                        ].map(badge => {
-                            const isUnlocked = arenaProfile.unlocked_badges?.includes(badge.id);
-                            return (
-                                <div 
-                                    key={badge.id}
-                                    className={`p-3 rounded-xl border flex flex-col items-center text-center transition-all dark:border-slate-800 ${
-                                        isUnlocked 
-                                            ? 'border-purple-500/30 bg-purple-950/10 text-white shadow-md shadow-purple-950/20' 
-                                            : 'border-white/5 bg-white/5 text-gray-500 opacity-40'
-                                    } `}
-                                >
-                                    <span className={`text-3xl mb-1.5 ${isUnlocked ? 'animate-pulse' : 'filter grayscale'} `}>{badge.emoji}</span>
-                                    <h4 className="text-xs font-black truncate w-full">{badge.name}</h4>
-                                    <p className="text-[9px] text-gray-400 mt-1 leading-tight">{badge.desc}</p>
-                                    {isUnlocked ? (
-                                        <span className="text-[8px] bg-purple-500/20 text-purple-400 px-1.5 py-0.5 rounded mt-1.5 font-bold uppercase">Đã mở khóa</span>
-                                    ) : (
-                                        <span className="text-[8px] bg-white/5 text-gray-500 px-1.5 py-0.5 rounded mt-1.5 font-bold uppercase dark:text-slate-500">Chưa mở khóa</span>
-                                    )}
-                                </div>
-                            );
-                        })}
+                            { id: 'all', label: 'Tất cả' },
+                            { id: 'elo_xp', label: 'Elo & XP' },
+                            { id: 'activity', label: 'Thi đấu' },
+                            { id: 'topic', label: 'Chuyên đề' }
+                        ].map(tab => (
+                            <button
+                                key={tab.id}
+                                onClick={() => setSelectedBadgeCategory(tab.id as any)}
+                                className={`px-2 py-1 rounded transition-all border ${
+                                    selectedBadgeCategory === tab.id
+                                        ? 'bg-purple-600 border-purple-500 text-white shadow-sm shadow-purple-500/20'
+                                        : 'border-white/5 bg-white/5 text-gray-400 hover:text-white'
+                                }`}
+                            >
+                                {tab.label}
+                            </button>
+                        ))}
+                    </div>
+
+                    {/* Scrollable Badges Grid */}
+                    <div className="flex-1 overflow-y-auto pr-1 space-y-3 custom-scrollbar">
+                        <div className="grid grid-cols-3 gap-2">
+                            {filteredBadges.map(badge => {
+                                const isUnlocked = arenaProfile.unlocked_badges?.includes(badge.id);
+                                return (
+                                    <div 
+                                        key={badge.id}
+                                        title={`${badge.name}: ${badge.desc}`}
+                                        className={`p-2 rounded-xl border flex flex-col items-center text-center transition-all duration-300 dark:border-slate-800 ${
+                                            isUnlocked 
+                                                ? 'border-purple-500/30 bg-purple-950/10 text-white shadow-md shadow-purple-950/20' 
+                                                : 'border-white/5 bg-white/5 text-gray-500 opacity-40'
+                                        } `}
+                                    >
+                                        <span className={`text-2xl mb-1 ${isUnlocked ? 'animate-pulse' : 'filter grayscale'} `}>{badge.emoji}</span>
+                                        <h4 className="text-[10px] font-black truncate w-full text-gray-200">{badge.name}</h4>
+                                        <p className="text-[8px] text-gray-400 mt-0.5 leading-tight line-clamp-2 h-5 flex items-center justify-center">{badge.desc}</p>
+                                        {isUnlocked ? (
+                                            <span className="text-[7px] bg-purple-500/20 text-purple-400 px-1 py-0.5 rounded mt-1 font-bold uppercase whitespace-nowrap">Đã mở</span>
+                                        ) : (
+                                            <span className="text-[7px] bg-white/5 text-gray-600 px-1 py-0.5 rounded mt-1 font-bold uppercase dark:text-slate-600 whitespace-nowrap">Khóa</span>
+                                        )}
+                                    </div>
+                                );
+                            })}
+                        </div>
                     </div>
                 </div>
             </div>

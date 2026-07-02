@@ -670,18 +670,37 @@ export const TowerMode: React.FC = () => {
     let newUnlock = false;
     let unlockedName = '';
 
-    if (streakCombo >= 10 && !badges.includes('math_genius')) {
-      badges.push('math_genius');
+    const addBadge = (badgeId: string, nameWithEmoji: string) => {
+      if (!badges.includes(badgeId)) {
+        badges.push(badgeId);
+        newUnlock = true;
+        unlockedName = nameWithEmoji;
+      }
+    };
+
+    if (streakCombo >= 10) {
+      addBadge('math_genius', 'Thiên Tài Trí Tuệ 🌟 (Chuỗi 10 câu đúng)');
       title = 'Thiên Tài Trí Tuệ';
-      newUnlock = true;
-      unlockedName = 'Thiên Tài Trí Tuệ 🌟 (Chuỗi 10 câu đúng)';
     }
-    if (finalMastery >= 100 && !badges.includes('tower_master')) {
-      badges.push('tower_master');
+
+    const topicMastery = { ...(arenaProfile.topic_mastery || {}) };
+    if (finalMastery >= 100) {
+      topicMastery[selectedTopic] = 100;
+    }
+    const masteredTopicsCount = Object.values(topicMastery).filter(m => (m as number) >= 100).length;
+
+    if (masteredTopicsCount >= 1) {
+      addBadge('tower_master', 'Bậc Thầy Chinh Phục 🏆 (Làm chủ 100% chuyên đề)');
       title = 'Bậc Thầy Chinh Phục';
-      newUnlock = true;
-      unlockedName = 'Bậc Thầy Chinh Phục 🏆 (Làm chủ 100% chuyên đề)';
     }
+    if (masteredTopicsCount >= 3) addBadge('multi_topic_3', 'Tam Bảo Tri Thức 🍀 (Làm chủ 3 chuyên đề)');
+    if (masteredTopicsCount >= 5) addBadge('multi_topic_5', 'Học Giả Đa Năng 📚 (Làm chủ 5 chuyên đề)');
+    if (masteredTopicsCount >= 10) addBadge('multi_topic_10', 'Học Giả Vượt Trội 📕 (Làm chủ 10 chuyên đề)');
+    if (masteredTopicsCount >= 20) addBadge('multi_topic_20', 'Học Giả Siêu Cấp 📘 (Làm chủ 20 chuyên đề)');
+    if (masteredTopicsCount >= 50) addBadge('multi_topic_50', 'Huyền Thoại Trí Thức 📜 (Làm chủ 50 chuyên đề)');
+
+    if (arenaProfile.tower_floor >= 5) addBadge('tower_floor_5', 'Bản Lĩnh Leo Tháp 🧗 (Đạt tầng 5)');
+    if (arenaProfile.tower_floor >= 10) addBadge('tower_floor_10', 'Chinh Phục Đỉnh Cao 🏰 (Đạt tầng 10)');
 
     if (newUnlock) {
       await updateArenaProfile({

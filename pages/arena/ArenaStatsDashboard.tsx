@@ -57,6 +57,49 @@ interface MatchHistory {
   player2_name?: string;
 }
 
+const ARENA_BADGES = [
+  { id: 'math_genius', name: 'Thiên Tài Trí Tuệ', desc: 'Đúng 10 câu liên tiếp', emoji: '🌟' },
+  { id: 'tower_master', name: 'Bậc Thầy Chinh Phục', desc: 'Làm chủ 100% chuyên đề đầu tiên', emoji: '🏆' },
+  
+  // Nhóm Elo
+  { id: 'elo_1100', name: 'Tập Sự Khởi Đầu', desc: 'Đạt thứ hạng Elo >= 1100', emoji: '🥉' },
+  { id: 'elo_1200', name: 'Cao Thủ Thực Thụ', desc: 'Đạt thứ hạng Elo >= 1200', emoji: '🥈' },
+  { id: 'elo_1300', name: 'Chiến Binh Ưu Tú', desc: 'Đạt thứ hạng Elo >= 1300', emoji: '🥇' },
+  { id: 'elo_champion', name: 'Nhà Thông Thái Vô Song', desc: 'Đạt thứ hạng Elo >= 1500', emoji: '👑' },
+  { id: 'elo_1800', name: 'Kỷ Lục Gia Đấu Trường', desc: 'Đạt thứ hạng Elo >= 1800', emoji: '💎' },
+  { id: 'elo_2000', name: 'Thần Thoại Đấu Trí', desc: 'Đạt thứ hạng Elo >= 2000', emoji: '✨' },
+  { id: 'elo_3000', name: 'Đại Sư Đấu Trường', desc: 'Đạt thứ hạng Elo >= 3000', emoji: '🔮' },
+  { id: 'elo_5000', name: 'Huyền Thoại Bất Bại', desc: 'Đạt thứ hạng Elo >= 5000', emoji: '🌀' },
+  { id: 'elo_8000', name: 'Chúa Tể Đấu Trường', desc: 'Đạt thứ hạng Elo >= 8000', emoji: '🌌' },
+  { id: 'elo_10000', name: 'Đấng Sáng Tạo Trí Tuệ', desc: 'Đạt thứ hạng Elo >= 10000', emoji: '🕉' },
+
+  // Nhóm XP
+  { id: 'xp_1000', name: 'Tích Tiểu Thành Đại', desc: 'Đạt từ 1,000 XP trở lên', emoji: '🌱' },
+  { id: 'xp_accumulator', name: 'Học Giả Uyên Bác', desc: 'Đạt từ 5,000 XP trở lên', emoji: '⚡' },
+  { id: 'xp_10000', name: 'Đại Học Giả', desc: 'Đạt từ 10,000 XP trở lên', emoji: '☄️' },
+  { id: 'xp_30000', name: 'Đỉnh Cao Tri Thức', desc: 'Đạt từ 30,000 XP trở lên', emoji: '🌌' },
+  { id: 'xp_50000', name: 'Kho Tàng Tri Thức', desc: 'Đạt từ 50,000 XP trở lên', emoji: '🌠' },
+  { id: 'xp_100000', name: 'Vũ Trụ Trí Tuệ', desc: 'Đạt từ 100,000 XP trở lên', emoji: '🪐' },
+
+  // Nhóm Tháp & PvP
+  { id: 'tower_floor_5', name: 'Bản Lĩnh Leo Tháp', desc: 'Chinh phục Tầng 5 tháp leo cấp', emoji: '🧗' },
+  { id: 'tower_floor_10', name: 'Chinh Phục Đỉnh Cao', desc: 'Chinh phục Tầng 10 tháp leo cấp', emoji: '🏰' },
+  { id: 'pvp_rookie', name: 'Tân Binh Đấu Trường', desc: 'Tham gia 1 trận PvP 1v1', emoji: '🛡️' },
+  { id: 'pvp_conqueror', name: 'Chiến Thần Võ Đài', desc: 'Thắng 5 trận PvP 1v1', emoji: '⚔️' },
+  { id: 'pvp_master', name: 'Độc Cô Cầu Bại', desc: 'Thắng 15 trận PvP 1v1', emoji: '🥇' },
+  { id: 'perfect_win', name: 'Chiến Thắng Tuyệt Đối', desc: 'Thắng 1 trận PvP với 100% HP', emoji: '💯' },
+
+  // Nhóm Chuyên đề & Khám phá & Cửa hàng
+  { id: 'multi_topic_3', name: 'Tam Bảo Tri Thức', desc: 'Làm chủ 100% ít nhất 3 chuyên đề', emoji: '🍀' },
+  { id: 'multi_topic_5', name: 'Học Giả Đa Năng', desc: 'Làm chủ 100% ít nhất 5 chuyên đề', emoji: '📚' },
+  { id: 'multi_topic_10', name: 'Học Giả Vượt Trội', desc: 'Làm chủ 100% ít nhất 10 chuyên đề', emoji: '📕' },
+  { id: 'multi_topic_20', name: 'Học Giả Siêu Cấp', desc: 'Làm chủ 100% ít nhất 20 chuyên đề', emoji: '📘' },
+  { id: 'multi_topic_50', name: 'Huyền Thoại Trí Thức', desc: 'Làm chủ 100% ít nhất 50 chuyên đề', emoji: '📜' },
+  { id: 'topic_explorer_15', name: 'Nhà Thám Hiểm Chủ Đề', desc: 'Leo tháp ở ít nhất 15 chuyên đề', emoji: '🗺️' },
+  { id: 'topic_explorer_30', name: 'Nhà Thám Hiểm Vĩ Đại', desc: 'Leo tháp ở ít nhất 30 chuyên đề', emoji: '🧭' },
+  { id: 'shop_collector', name: 'Nhà Sưu Tầm Trang Bị', desc: 'Sở hữu ít nhất 3 vật phẩm trong túi đồ', emoji: '🎒' }
+];
+
 export const ArenaStatsDashboard: React.FC = () => {
   const [students, setStudents] = useState<StudentArenaData[]>([]);
   const [towerAttempts, setTowerAttempts] = useState<TowerAttempt[]>([]);
@@ -1076,38 +1119,35 @@ export const ArenaStatsDashboard: React.FC = () => {
 
                               {/* Tab Content 3: Badges Achieved */}
                               {activeTab === 'huy_hiệu' && (
-                                <div className="bg-white rounded-2xl border p-5 shadow-sm space-y-4 animate-in fade-in">
+                                <div className="bg-white rounded-2xl border p-5 shadow-sm space-y-4 animate-in fade-in flex flex-col max-h-[500px]">
                                   <h4 className="font-bold text-gray-950 flex items-center gap-1 text-[11px] uppercase tracking-wider text-gray-400">
-                                    🏆 Bộ sưu tập Huy hiệu danh dự
+                                    🏆 Bộ sưu tập Huy hiệu danh dự ({s.unlocked_badges?.length || 0}/32)
                                   </h4>
-                                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                    {[
-                                      { id: 'math_genius', name: 'Thiên Tài Trí Tuệ', desc: 'Trả lời đúng 10 câu liên tiếp', emoji: '🌟' },
-                                      { id: 'tower_master', name: 'Bậc Thầy Chinh Phục', desc: 'Đạt 100% mastery ở chuyên đề', emoji: '🏆' },
-                                      { id: 'elo_champion', name: 'Nhà Thông Thái Vô Song', desc: 'Đạt thứ hạng Elo >= 1500', emoji: '👑' },
-                                      { id: 'pvp_conqueror', name: 'Chiến Thần Võ Đài', desc: 'Thắng lũy kế 5 trận PvP', emoji: '⚔️' }
-                                    ].map(badge => {
-                                      const isUnlocked = s.unlocked_badges?.includes(badge.id);
-                                      return (
-                                        <div 
-                                          key={badge.id}
-                                          className={`p-4 rounded-2xl border flex flex-col items-center text-center transition-all ${
-                                            isUnlocked 
-                                              ? 'border-purple-200 bg-purple-50/30 text-gray-900 shadow-sm' 
-                                              : 'border-gray-100 bg-gray-50/50 text-gray-400 opacity-60'
-                                          }`}
-                                        >
-                                          <span className={`text-3xl mb-2 ${isUnlocked ? 'animate-pulse' : 'filter grayscale'}`}>{badge.emoji}</span>
-                                          <h5 className="font-bold text-xs text-gray-950">{badge.name}</h5>
-                                          <p className="text-[10px] text-gray-500 mt-1 leading-normal">{badge.desc}</p>
-                                          {isUnlocked ? (
-                                            <span className="text-[8px] bg-emerald-500/10 text-emerald-600 px-2 py-0.5 rounded mt-3 font-bold border border-emerald-500/20">🏆 ĐÃ ĐẠT</span>
-                                          ) : (
-                                            <span className="text-[8px] bg-gray-200/50 text-gray-400 px-2 py-0.5 rounded mt-3 font-bold">CHƯA ĐẠT</span>
-                                          )}
-                                        </div>
-                                      );
-                                    })}
+                                  <div className="overflow-y-auto pr-1 flex-1 max-h-[380px] custom-scrollbar">
+                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                                      {ARENA_BADGES.map(badge => {
+                                        const isUnlocked = s.unlocked_badges?.includes(badge.id);
+                                        return (
+                                          <div 
+                                            key={badge.id}
+                                            className={`p-3 rounded-2xl border flex flex-col items-center text-center transition-all duration-300 ${
+                                              isUnlocked 
+                                                ? 'border-purple-200 bg-purple-50/40 text-gray-900 shadow-sm' 
+                                                : 'border-gray-100 bg-gray-50/30 text-gray-400 opacity-50'
+                                            }`}
+                                          >
+                                            <span className={`text-2xl mb-1.5 ${isUnlocked ? 'animate-pulse' : 'filter grayscale'}`}>{badge.emoji}</span>
+                                            <h5 className="font-bold text-xs text-gray-950 truncate w-full">{badge.name}</h5>
+                                            <p className="text-[9px] text-gray-500 mt-1 leading-normal line-clamp-2 h-7 flex items-center justify-center">{badge.desc}</p>
+                                            {isUnlocked ? (
+                                              <span className="text-[7px] bg-emerald-500/10 text-emerald-600 px-1.5 py-0.5 rounded mt-2.5 font-bold border border-emerald-500/20 whitespace-nowrap">🏆 ĐÃ ĐẠT</span>
+                                            ) : (
+                                              <span className="text-[7px] bg-gray-200/50 text-gray-400 px-1.5 py-0.5 rounded mt-2.5 font-bold whitespace-nowrap">CHƯA ĐẠT</span>
+                                            )}
+                                          </div>
+                                        );
+                                      })}
+                                    </div>
                                   </div>
                                 </div>
                               )}
