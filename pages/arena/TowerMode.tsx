@@ -252,7 +252,7 @@ const FractionInput = ({ value, onChange }: any) => {
 
 export const TowerMode: React.FC = () => {
   const navigate = useNavigate();
-  const [customTopics, setCustomTopics] = useState<{ id: string; subject: string; topic: string }[]>([]);
+  const [customTopics, setCustomTopics] = useState<{ id: string; subject: string; topic: string; is_hidden?: boolean }[]>([]);
   const { 
     user, 
     arenaProfile, 
@@ -614,7 +614,8 @@ export const TowerMode: React.FC = () => {
 
     const visibleTopics = merged.filter(t => {
       const isHidden = (studentHiddenTopics || []).some((ht: string) => ht.toLowerCase() === t.topic.toLowerCase()) ||
-                       (user && Array.isArray(user.hidden_topics) && user.hidden_topics.some((ht: string) => ht.toLowerCase() === t.topic.toLowerCase()));
+                       (user && Array.isArray(user.hidden_topics) && user.hidden_topics.some((ht: string) => ht.toLowerCase() === t.topic.toLowerCase())) ||
+                       customTopics.some(ct => ct.topic.toLowerCase() === t.topic.toLowerCase() && ct.is_hidden === true);
       return !isHidden;
     });
 

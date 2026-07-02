@@ -6,7 +6,7 @@ import { Document, Packer, Paragraph, TextRun, AlignmentType } from 'docx';
 import { useStore } from '../../store';
 import { ArenaQuestion } from '../../types';
 import { generateQuestionsByTopic, parseArenaQuestionsFromText } from '../../services/geminiService';
-import { Brain, Plus, Pencil, Trash2, Save, X, BookOpen, Filter, ArrowLeft, Upload, Download, FileText, CheckCircle, AlertTriangle, Sparkles, Loader2, Trophy, Search } from 'lucide-react';
+import { Brain, Plus, Pencil, Trash2, Save, X, BookOpen, Filter, ArrowLeft, Upload, Download, FileText, CheckCircle, AlertTriangle, Sparkles, Loader2, Trophy, Search, Eye, EyeOff } from 'lucide-react';
 import MathText from '../../components/MathText';
 import { ArenaStatsDashboard } from './ArenaStatsDashboard';
 
@@ -48,7 +48,7 @@ export const ArenaAdmin: React.FC = () => {
 
     // Custom Topics States
     const [showTopicManager, setShowTopicManager] = useState(false);
-    const [allCombinedTopics, setAllCombinedTopics] = useState<{ id?: string; subject: string; topic: string; grade: string; questionCount: number; isCustom: boolean }[]>([]);
+    const [allCombinedTopics, setAllCombinedTopics] = useState<{ id?: string; subject: string; topic: string; grade: string; questionCount: number; isCustom: boolean; is_hidden?: boolean }[]>([]);
     const [newTopicName, setNewTopicName] = useState('');
     const [newTopicSubject, setNewTopicSubject] = useState('math');
     const [newTopicGrade, setNewTopicGrade] = useState('5');
@@ -203,7 +203,7 @@ export const ArenaAdmin: React.FC = () => {
             }
 
             // Combine them into a unified list
-            const topicsMap = new Map<string, { id?: string; topic: string; subject: string; grade: string; questionCount: number; isCustom: boolean }>();
+            const topicsMap = new Map<string, { id?: string; topic: string; subject: string; grade: string; questionCount: number; isCustom: boolean; is_hidden: boolean }>();
 
             // Process questions first to count questions per topic and get their grades
             if (qData) {
@@ -226,8 +226,37 @@ export const ArenaAdmin: React.FC = () => {
                             subject: normalizeSubject(q.subject || 'math'),
                             grade: q.grade || '5',
                             questionCount: 1,
-                            isCustom: false
+                            isCustom: false,
+                            is_hidden: false
                         });
+                    }
+                });
+            }
+
+            // Process published exams
+            if (exams) {
+                exams.forEach(exam => {
+                    if (exam.status === 'PUBLISHED' && exam.topic) {
+                        const key = `${normalizeSubject(exam.subject || 'math')}:${exam.topic.trim().toLowerCase()}`;
+                        const existing = topicsMap.get(key);
+                        if (existing) {
+                            if (exam.grade && existing.grade && typeof existing.grade === 'string') {
+                                if (!existing.grade.split(', ').includes(exam.grade)) {
+                                    existing.grade = `${existing.grade}, ${exam.grade}`;
+                                }
+                            } else if (exam.grade) {
+                                existing.grade = exam.grade;
+                            }
+                        } else {
+                            topicsMap.set(key, {
+                                topic: exam.topic.trim(),
+                                subject: normalizeSubject(exam.subject || 'math'),
+                                grade: exam.grade || '5',
+                                questionCount: 0,
+                                isCustom: false,
+                                is_hidden: false
+                            });
+                        }
                     }
                 });
             }
@@ -241,6 +270,7 @@ export const ArenaAdmin: React.FC = () => {
                     if (existing) {
                         existing.id = t.id;
                         existing.isCustom = true;
+                        existing.is_hidden = t.is_hidden || false;
                         if ((t as any).grade) {
                             existing.grade = (t as any).grade;
                         }
@@ -251,7 +281,8 @@ export const ArenaAdmin: React.FC = () => {
                             subject: normalizeSubject(t.subject || 'math'),
                             grade: (t as any).grade || '5',
                             questionCount: 0,
-                            isCustom: true
+                            isCustom: true,
+                            is_hidden: t.is_hidden || false
                         });
                     }
                 });
@@ -262,6 +293,32 @@ export const ArenaAdmin: React.FC = () => {
             setAllCombinedTopics(mergedList);
         } catch (err) {
             console.error("Error loading combined topics:", err);
+        }
+    };
+
+    const handleToggleTopicVisibility = async (topicName: string, subject: string, grade: string, currentHidden: boolean, id?: string) => {
+        try {
+            const nextHidden = !currentHidden;
+            if (id) {
+                const { error } = await supabase
+                    .from('arena_topics')
+                    .update({ is_hidden: nextHidden })
+                    .eq('id', id);
+                if (error) throw error;
+            } else {
+                const { error } = await supabase
+                    .from('arena_topics')
+                    .insert({
+                        topic: topicName,
+                        subject: normalizeSubject(subject),
+                        grade: grade.split(', ')[0] || '5',
+                        is_hidden: nextHidden
+                    });
+                if (error) throw error;
+            }
+            await fetchAllTopics();
+        } catch (err: any) {
+            alert("Lỗi khi thay đổi trạng thái ẩn/hiện chuyên đề: " + err.message);
         }
     };
 
@@ -2858,38 +2915,54 @@ export const ArenaAdmin: React.FC = () => {
                                                         </div>
                                                     ) : (
                                                         <>
-                                                            <div className="flex flex-wrap items-center gap-1.5">
+                                                            <div className="flex flex-wrap items-center gap-1.5 flex-1 mr-2">
                                                                 <span className="text-[9px] bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded-full font-bold uppercase">
                                                                     {SUBJECTS.find(s => s.value === normalizeSubject(t.subject))?.label || t.subject}
                                                                 </span>
                                                                 <span className="text-[9px] bg-amber-50 text-amber-700 px-2 py-0.5 rounded-full font-bold">
                                                                     Lớp {t.grade}
                                                                 </span>
-                                                                <span className="text-sm font-semibold text-gray-800 dark:text-slate-200">{t.topic}</span>
+                                                                <span className={`text-sm font-semibold ${t.is_hidden ? 'text-gray-400 line-through italic' : 'text-gray-800 dark:text-slate-200'}`}>
+                                                                    {t.topic}
+                                                                </span>
                                                                 {t.questionCount > 0 && (
-                                                                    <span className="text-xs text-gray-400 font-medium">({t.questionCount} câu hỏi)</span>
+                                                                    <span className="text-xs text-gray-400 font-medium">({t.questionCount} câu)</span>
+                                                                )}
+                                                                {!t.isCustom && (
+                                                                    <span className="text-[8px] bg-purple-50 text-purple-600 px-1.5 py-0.5 rounded font-black border border-purple-100 uppercase" title="Chuyên đề tự động lấy từ Đề thi đã xuất bản">Từ Đề thi</span>
                                                                 )}
                                                             </div>
                                                             <div className="flex items-center gap-1.5">
                                                                 <button 
-                                                                    onClick={() => {
-                                                                        setEditingTopicId(topicKey);
-                                                                        setEditingTopicName(t.topic);
-                                                                        setEditingTopicSubject(normalizeSubject(t.subject));
-                                                                        setEditingTopicGrade(t.grade.split(', ')[0] || '5');
-                                                                    }} 
-                                                                    className="p-1 text-blue-500 hover:bg-blue-50 rounded-lg transition-colors"
-                                                                    title="Chỉnh sửa"
+                                                                    onClick={() => handleToggleTopicVisibility(t.topic, t.subject, t.grade, t.is_hidden || false, t.id)} 
+                                                                    className={`p-1.5 rounded-lg transition-colors ${t.is_hidden ? 'text-red-500 hover:bg-red-50' : 'text-emerald-600 hover:bg-emerald-50'}`}
+                                                                    title={t.is_hidden ? "Chuyên đề đang ẨN với HS - Bấm để hiện" : "Chuyên đề đang HIỆN với HS - Bấm để ẩn"}
                                                                 >
-                                                                    <Pencil className="h-4 w-4" />
+                                                                    {t.is_hidden ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                                                                 </button>
-                                                                <button 
-                                                                    onClick={() => handleDeleteTopic(t.topic, normalizeSubject(t.subject), t.id, t.questionCount)} 
-                                                                    className="p-1 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-                                                                    title="Xóa"
-                                                                >
-                                                                    <Trash2 className="h-4 w-4" />
-                                                                </button>
+                                                                {t.id && (
+                                                                    <>
+                                                                        <button 
+                                                                            onClick={() => {
+                                                                                setEditingTopicId(topicKey);
+                                                                                setEditingTopicName(t.topic);
+                                                                                setEditingTopicSubject(normalizeSubject(t.subject));
+                                                                                setEditingTopicGrade(t.grade.split(', ')[0] || '5');
+                                                                            }} 
+                                                                            className="p-1 text-blue-500 hover:bg-blue-50 rounded-lg transition-colors"
+                                                                            title="Chỉnh sửa"
+                                                                        >
+                                                                            <Pencil className="h-4 w-4" />
+                                                                        </button>
+                                                                        <button 
+                                                                            onClick={() => handleDeleteTopic(t.topic, normalizeSubject(t.subject), t.id, t.questionCount)} 
+                                                                            className="p-1 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                                                                            title="Xóa"
+                                                                        >
+                                                                            <Trash2 className="h-4 w-4" />
+                                                                        </button>
+                                                                    </>
+                                                                )}
                                                             </div>
                                                         </>
                                                     )}
