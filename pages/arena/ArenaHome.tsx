@@ -569,10 +569,10 @@ export const ArenaHome: React.FC = () => {
                                     <div 
                                         key={badge.id}
                                         title={`${badge.name}: ${badge.desc}`}
-                                        className={`p-2 rounded-xl border flex flex-col items-center text-center transition-all duration-300 dark:border-slate-800 ${
+                                        className={`p-2 rounded-xl border flex flex-col items-center text-center transition-all duration-300 dark:border-slate-800 relative origin-center hover:z-50 hover:scale-[2.5] md:hover:scale-[3] hover:bg-[#0f172a] hover:opacity-100 hover:shadow-2xl cursor-default ${
                                             isUnlocked 
-                                                ? 'border-purple-500/30 bg-purple-950/10 text-white shadow-md shadow-purple-950/20' 
-                                                : 'border-white/5 bg-white/5 text-gray-500 opacity-40'
+                                                ? 'border-purple-500/30 bg-purple-950/10 text-white shadow-md shadow-purple-950/20 hover:border-purple-500/80' 
+                                                : 'border-white/5 bg-white/5 text-gray-500 opacity-40 hover:border-gray-500/50'
                                         } `}
                                     >
                                         <span className={`text-2xl mb-1 ${isUnlocked ? 'animate-pulse' : 'filter grayscale'} `}>{badge.emoji}</span>
