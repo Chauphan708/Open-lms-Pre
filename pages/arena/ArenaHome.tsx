@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useStore } from '../../store';
+import { supabase } from '../../services/supabaseClient';
 import { AvatarClass } from '../../types';
 import { Brain, Trophy, GraduationCap, BookOpen, Sparkles, Target, Heart, ArrowLeft, Star, Zap, HelpCircle, X, ShoppingBag } from 'lucide-react';
 import { getLeagueInfo } from './TowerMode';
@@ -22,6 +23,7 @@ export const ArenaHome: React.FC = () => {
     const [selectedClass, setSelectedClass] = useState<AvatarClass | null>(null);
     const [showHelp, setShowHelp] = useState(false);
     const [fetchError, setFetchError] = useState<string | null>(null);
+    const [pvpWins, setPvpWins] = useState(0);
 
     const loadProfile = async () => {
         if (!user) return;
@@ -29,6 +31,17 @@ export const ArenaHome: React.FC = () => {
         setLoading(true);
         try {
             await fetchArenaProfile(user.id);
+            
+            // Query actual PvP wins count (where student is the winner in a finished match)
+            const { count, error } = await supabase
+                .from('arena_matches')
+                .select('id', { count: 'exact', head: true })
+                .eq('winner_id', user.id)
+                .eq('status', 'finished');
+                
+            if (!error && count !== null) {
+                setPvpWins(count);
+            }
         } catch (err: any) {
             console.error("Failed loading arena profile:", err);
             setFetchError(err.message || 'Lỗi kết nối máy chủ');
@@ -54,10 +67,18 @@ export const ArenaHome: React.FC = () => {
             needsUpdate = true;
         }
         
-        // 2. Check PvP Conqueror (wins >= 5)
-        if (arenaProfile.wins >= 5 && !badges.includes('pvp_conqueror')) {
+        // 2. Check PvP Conqueror (actual PvP wins >= 5)
+        const hasPvpConquerorBadge = badges.includes('pvp_conqueror');
+        if (pvpWins >= 5 && !hasPvpConquerorBadge) {
             badges.push('pvp_conqueror');
             needsUpdate = true;
+        } else if (pvpWins < 5 && hasPvpConquerorBadge) {
+            // Lock it back if they got it incorrectly (e.g. from tower wins)
+            const idx = badges.indexOf('pvp_conqueror');
+            if (idx > -1) {
+                badges.splice(idx, 1);
+                needsUpdate = true;
+            }
         }
         
         if (needsUpdate) {
@@ -66,7 +87,7 @@ export const ArenaHome: React.FC = () => {
                 unlocked_badges: badges
             }).catch(err => console.error("Lỗi khi tự động mở khóa huy hiệu:", err));
         }
-    }, [arenaProfile, updateArenaProfile]);
+    }, [arenaProfile, pvpWins, updateArenaProfile]);
 
     const handleCreateProfile = async () => {
         if (!user || !selectedClass) return;
