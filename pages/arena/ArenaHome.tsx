@@ -610,10 +610,11 @@ export const ArenaHome: React.FC = () => {
                                     <Trophy className="h-5 w-5 text-yellow-400" />
                                     <h4 className="font-bold text-yellow-300">Elo — Điểm Xếp Hạng</h4>
                                 </div>
-                                <ul className="text-sm text-gray-300 space-y-1">
-                                    <li>• Bắt đầu với <strong className="text-yellow-400">1000 Elo</strong></li>
-                                    <li>• <span className="text-emerald-400 font-bold">Thắng PvP</span> → Elo tăng · <span className="text-red-400 font-bold">Thua</span> → Elo giảm</li>
-                                    <li className="text-xs text-gray-400 italic">💡 Thắng đối thủ Elo cao hơn → nhận nhiều điểm hơn!</li>
+                                <ul className="text-sm text-gray-300 space-y-1.5">
+                                    <li>• Khởi điểm từ <strong className="text-yellow-400">0 Elo</strong>. Elo không bao giờ âm.</li>
+                                    <li>• <span className="text-emerald-400 font-bold">Tháp Leo Cấp</span>: 5 câu đúng liên tiếp <strong className="text-yellow-400">+1 Elo</strong>, 10 câu <strong className="text-yellow-400">+2 Elo</strong>. Sai 2 câu liên tiếp <strong className="text-red-400">-1 Elo</strong>.</li>
+                                    <li>• <span className="text-purple-400 font-bold">Thành Thạo (Mastery)</span>: Đạt các mốc % chuyên đề thưởng Elo (Tối đa <strong className="text-yellow-400">+15 Elo</strong> ở 100%).</li>
+                                    <li>• <span className="text-blue-400 font-bold">PvP 1v1</span>: Thắng đối thủ Elo cao → nhận nhiều điểm hơn!</li>
                                 </ul>
                             </div>
 
