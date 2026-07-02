@@ -2533,7 +2533,7 @@ export const ExamTake: React.FC = () => {
                             </p>
                           )}
 
-                          {q.type === 'SHORT_ANSWER' && (
+                          {q.type === 'SHORT_ANSWER' && canViewSolution && (
                             <div className="mt-2 text-xs text-gray-700 bg-gray-55/80 p-2.5 rounded-lg border border-gray-200">
                               <strong className="text-gray-600 mr-1.5">Đáp án mẫu:</strong>
                               <span className="font-bold text-gray-800">
