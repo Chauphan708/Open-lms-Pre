@@ -262,7 +262,7 @@ const FractionInput = ({ value, onChange }: any) => {
 
 export const TowerMode: React.FC = () => {
   const navigate = useNavigate();
-  const [customTopics, setCustomTopics] = useState<{ id: string; subject: string; topic: string; is_hidden?: boolean }[]>([]);
+  const [customTopics, setCustomTopics] = useState<{ id: string; subject: string; topic: string; is_hidden?: boolean; source?: string }[]>([]);
   const { 
     user, 
     arenaProfile, 
@@ -277,8 +277,9 @@ export const TowerMode: React.FC = () => {
   const [started, setStarted] = useState(false);
   const [loading, setLoading] = useState(true);
   const [selectedTopic, setSelectedTopic] = useState<string>('');
+  const [selectedTopicSource, setSelectedTopicSource] = useState<string>('arena');
   const [selectedSubject, setSelectedSubject] = useState<string>('math');
-  const [availableTopics, setAvailableTopics] = useState<{ topic: string; label: string; subject: string }[]>([]);
+  const [availableTopics, setAvailableTopics] = useState<{ topic: string; label: string; subject: string; source?: string }[]>([]);
   const [dbTopics, setDbTopics] = useState<{ topic: string; subject: string; grade: string }[]>([]);
   const [selectedGrade, setSelectedGrade] = useState<string>('');
   const [allowedGrades, setAllowedGrades] = useState<string[]>([]);
@@ -554,79 +555,59 @@ export const TowerMode: React.FC = () => {
     let studentGrade = selectedGrade;
 
     // Combine preset topics and dynamically found topics
-    const dynamicTopics: { topic: string; label: string; subject: string }[] = [];
+    const dynamicTopics: { topic: string; label: string; subject: string; source?: string }[] = [];
     
-    // Look in dbTopics (unpaginated)
+    // Look in dbTopics (unpaginated) — Arena questions (source = A)
     dbTopics.forEach(q => {
       if (studentGrade && q.grade && q.grade !== studentGrade) return;
-      const exists = dynamicTopics.some(t => t.topic.toLowerCase() === q.topic.toLowerCase());
+      const exists = dynamicTopics.some(t => t.topic.toLowerCase() === q.topic.toLowerCase() && t.source === 'arena');
       if (!exists) {
         dynamicTopics.push({
           topic: q.topic,
-          label: `📋 Chuyên đề: ${q.topic}`,
-          subject: normalizeSubject(q.subject) || 'math'
+          label: `A - ${q.topic}`,
+          subject: normalizeSubject(q.subject) || 'math',
+          source: 'arena'
         });
       }
     });
 
-    // Look in exams
-    exams.forEach(exam => {
-      if (exam.status === 'PUBLISHED' && exam.topic) {
-        if (studentGrade && exam.grade && exam.grade !== studentGrade) return;
-        const exists = dynamicTopics.some(t => t.topic.toLowerCase() === exam.topic!.toLowerCase());
-        if (!exists) {
-          dynamicTopics.push({
-            topic: exam.topic,
-            label: `📋 Chuyên đề: ${exam.topic}`,
-            subject: normalizeSubject(exam.subject) || 'math'
-          });
-        }
-      }
-    });
-
-    // Look in customTopics
+    // Look in customTopics with source='exam' and is_hidden=false — Exam topics activated by GV
     customTopics.forEach(ct => {
-      const hasQuestionsOfDifferentGrade = dbTopics.some(q => q.topic?.toLowerCase() === ct.topic.toLowerCase() && q.grade && q.grade !== studentGrade);
-      const hasQuestionsOfSameGrade = dbTopics.some(q => q.topic?.toLowerCase() === ct.topic.toLowerCase() && q.grade === studentGrade);
-      
-      if (studentGrade && hasQuestionsOfDifferentGrade && !hasQuestionsOfSameGrade) {
-        return; // Skip if it belongs to another grade
-      }
-
-      const exists = dynamicTopics.some(t => t.topic.toLowerCase() === ct.topic.toLowerCase());
+      if (ct.source !== 'exam' || ct.is_hidden) return;
+      const exists = dynamicTopics.some(t => t.topic.toLowerCase() === ct.topic.toLowerCase() && t.source === 'exam');
       if (!exists) {
         dynamicTopics.push({
           topic: ct.topic,
-          label: `📋 Chuyên đề: ${ct.topic}`,
-          subject: normalizeSubject(ct.subject)
+          label: `E - ${ct.topic}`,
+          subject: normalizeSubject(ct.subject) || 'math',
+          source: 'exam'
         });
       }
     });
 
 
 
-    // Merge default presets and dynamic ones, filtering by student grade if available
-    const merged: { topic: string; label: string; subject: string }[] = [];
+    // Merge dynamic topics
+    const merged: { topic: string; label: string; subject: string; source?: string }[] = [];
     
-    // System default topics block removed to only display teacher-created and pushed topics
-
     dynamicTopics.forEach(dt => {
-      // For dynamic topics from exams or bank, check if their source matches studentGrade
-      const topicGradeMatch = dt.label.match(/lớp\s*(\d+)/i);
-      if (topicGradeMatch && studentGrade) {
-        if (topicGradeMatch[1] !== studentGrade) return;
-      }
-      const exists = merged.some(m => m.topic.toLowerCase() === dt.topic.toLowerCase());
+      // Don't deduplicate across sources — A and E topics with same name stay separate
+      const exists = merged.some(m => m.topic.toLowerCase() === dt.topic.toLowerCase() && m.source === dt.source);
       if (!exists) {
         merged.push(dt);
       }
     });
 
     const visibleTopics = merged.filter(t => {
-      const isHidden = (studentHiddenTopics || []).some((ht: string) => ht.toLowerCase() === t.topic.toLowerCase()) ||
-                       (user && Array.isArray(user.hidden_topics) && user.hidden_topics.some((ht: string) => ht.toLowerCase() === t.topic.toLowerCase())) ||
-                       customTopics.some(ct => ct.topic.toLowerCase() === t.topic.toLowerCase() && ct.is_hidden === true);
-      return !isHidden;
+      // For Arena topics (A), check if hidden by GV via arena_topics
+      if (t.source === 'arena') {
+        const isHidden = (studentHiddenTopics || []).some((ht: string) => ht.toLowerCase() === t.topic.toLowerCase()) ||
+                         (user && Array.isArray(user.hidden_topics) && user.hidden_topics.some((ht: string) => ht.toLowerCase() === t.topic.toLowerCase())) ||
+                         customTopics.some(ct => ct.topic.toLowerCase() === t.topic.toLowerCase() && ct.source === 'arena' && ct.is_hidden === true);
+        return !isHidden;
+      }
+      // Exam topics (E) are already filtered (only source='exam' + is_hidden=false from customTopics)
+      return true;
     });
 
     setAvailableTopics(visibleTopics);
@@ -634,7 +615,10 @@ export const TowerMode: React.FC = () => {
     // Default select first topic for math if none selected yet
     if (!selectedTopic) {
       const firstMath = visibleTopics.find(t => t.subject === 'math');
-      if (firstMath) setSelectedTopic(firstMath.topic);
+      if (firstMath) {
+        setSelectedTopic(firstMath.topic);
+        setSelectedTopicSource(firstMath.source || 'arena');
+      }
     }
   }, [loading, arenaQuestions, exams, user, dbTopics, customTopics, selectedTopic, studentHiddenTopics]);
 
@@ -728,44 +712,46 @@ export const TowerMode: React.FC = () => {
   const buildQuestionPool = (): ArenaQuestion[] => {
     const pool: ArenaQuestion[] = [];
 
-    // 1. Pull from arena_questions
-    arenaQuestions
-      .filter(q => {
-        const isMatch = normalizeSubject(q.subject) === normalizeSubject(selectedSubject) && q.topic?.toLowerCase() === selectedTopic.toLowerCase();
-        if (!isMatch) return false;
-        
-        const answersLen = (q.answers && Array.isArray(q.answers)) ? q.answers.length : 0;
-        const isShort = q.type === 'SHORT_ANSWER' || answersLen === 0;
-        if (isShort) {
-          return !!q.correct_answer_string && q.correct_answer_string.trim() !== '';
-        }
-        return true;
-      })
-      .forEach(q => pool.push(q));
-
-    // 2. Pull from published exams questions with same topic & subject
-    exams
-      .filter(e => e.status === 'PUBLISHED' && normalizeSubject(e.subject) === normalizeSubject(selectedSubject))
-      .forEach(exam => {
-        exam.questions
-          .filter(q => q.type === 'MCQ' && q.options.length >= 4 && q.correctOptionIndex !== undefined && (q.topic?.toLowerCase() === selectedTopic.toLowerCase() || exam.topic?.toLowerCase() === selectedTopic.toLowerCase()))
-          .forEach(q => {
-            const mappedDiff = q.level === 'VAN_DUNG' ? 3 : q.level === 'KET_NOI' ? 2 : 1;
-            // Avoid duplicate content
-            const duplicate = pool.some(p => p.content.toLowerCase().trim() === q.content.toLowerCase().trim());
-            if (!duplicate) {
-              pool.push({
-                id: `exam_${exam.id}_${q.id}`,
-                content: q.content,
-                answers: q.options.slice(0, 4),
-                correct_index: q.correctOptionIndex!,
-                difficulty: mappedDiff,
-                subject: normalizeSubject(selectedSubject),
-                topic: selectedTopic
-              });
-            }
-          });
-      });
+    if (selectedTopicSource === 'arena') {
+      // 1. Pull from arena_questions
+      arenaQuestions
+        .filter(q => {
+          const isMatch = normalizeSubject(q.subject) === normalizeSubject(selectedSubject) && q.topic?.toLowerCase() === selectedTopic.toLowerCase();
+          if (!isMatch) return false;
+          
+          const answersLen = (q.answers && Array.isArray(q.answers)) ? q.answers.length : 0;
+          const isShort = q.type === 'SHORT_ANSWER' || answersLen === 0;
+          if (isShort) {
+            return !!q.correct_answer_string && q.correct_answer_string.trim() !== '';
+          }
+          return true;
+        })
+        .forEach(q => pool.push(q));
+    } else {
+      // 2. Pull from published exams questions with same topic & subject
+      exams
+        .filter(e => e.status === 'PUBLISHED' && normalizeSubject(e.subject) === normalizeSubject(selectedSubject))
+        .forEach(exam => {
+          exam.questions
+            .filter(q => q.type === 'MCQ' && q.options.length >= 4 && q.correctOptionIndex !== undefined && (q.topic?.toLowerCase() === selectedTopic.toLowerCase() || exam.topic?.toLowerCase() === selectedTopic.toLowerCase()))
+            .forEach(q => {
+              const mappedDiff = q.level === 'VAN_DUNG' ? 3 : q.level === 'KET_NOI' ? 2 : 1;
+              // Avoid duplicate content
+              const duplicate = pool.some(p => p.content.toLowerCase().trim() === q.content.toLowerCase().trim());
+              if (!duplicate) {
+                pool.push({
+                  id: `exam_${exam.id}_${q.id}`,
+                  content: q.content,
+                  answers: q.options.slice(0, 4),
+                  correct_index: q.correctOptionIndex!,
+                  difficulty: mappedDiff,
+                  subject: normalizeSubject(selectedSubject),
+                  topic: selectedTopic
+                });
+              }
+            });
+        });
+    }
 
     return pool;
   };
@@ -779,50 +765,52 @@ export const TowerMode: React.FC = () => {
     let studentGrade = selectedGrade;
 
     try {
-      // Query all matching questions for this topic directly from Supabase (bypassing the 50-limit store pagination)
-      let query = supabase
-        .from('arena_questions')
-        .select('*')
-        .eq('topic', selectedTopic);
-      
-      if (studentGrade) {
-        query = query.eq('grade', studentGrade);
-      }
-      
-      const { data, error } = await query;
-      
-      if (error) {
-        console.error("Supabase query error:", error);
-      } else if (data && data.length > 0) {
-        const mapped = data
-          .filter((q: any) => {
-            const isSubjMatch = normalizeSubject(q.subject) === normalizeSubject(selectedSubject);
-            if (!isSubjMatch) return false;
-            
-            const parsedAnswers = typeof q.answers === 'string' ? JSON.parse(q.answers) : q.answers;
-            const answersLen = (parsedAnswers && Array.isArray(parsedAnswers)) ? parsedAnswers.length : 0;
-            const isShort = q.type === 'SHORT_ANSWER' || answersLen === 0;
-            if (isShort) {
-              return !!q.correct_answer_string && q.correct_answer_string.trim() !== '';
-            }
-            return true;
-          })
-          .map((q: any) => ({
-            id: q.id,
-            content: q.content,
-            answers: typeof q.answers === 'string' ? JSON.parse(q.answers) : q.answers,
-            correct_index: q.correct_index,
-            correct_indices: typeof q.correct_indices === 'string' ? JSON.parse(q.correct_indices) : q.correct_indices,
-            correct_answer_string: q.correct_answer_string,
-            difficulty: q.difficulty || 1,
-            subject: normalizeSubject(q.subject),
-            topic: q.topic,
-            guide: q.guide,
-            explanation: q.explanation,
-            type: q.type || 'MCQ',
-            time_limit_seconds: q.time_limit_seconds || 30
-          }));
-        pool = mapped;
+      if (selectedTopicSource === 'arena') {
+        // Query all matching questions for this topic directly from Supabase (bypassing the 50-limit store pagination)
+        let query = supabase
+          .from('arena_questions')
+          .select('*')
+          .eq('topic', selectedTopic);
+        
+        if (studentGrade) {
+          query = query.eq('grade', studentGrade);
+        }
+        
+        const { data, error } = await query;
+        
+        if (error) {
+          console.error("Supabase query error:", error);
+        } else if (data && data.length > 0) {
+          const mapped = data
+            .filter((q: any) => {
+              const isSubjMatch = normalizeSubject(q.subject) === normalizeSubject(selectedSubject);
+              if (!isSubjMatch) return false;
+              
+              const parsedAnswers = typeof q.answers === 'string' ? JSON.parse(q.answers) : q.answers;
+              const answersLen = (parsedAnswers && Array.isArray(parsedAnswers)) ? parsedAnswers.length : 0;
+              const isShort = q.type === 'SHORT_ANSWER' || answersLen === 0;
+              if (isShort) {
+                return !!q.correct_answer_string && q.correct_answer_string.trim() !== '';
+              }
+              return true;
+            })
+            .map((q: any) => ({
+              id: q.id,
+              content: q.content,
+              answers: typeof q.answers === 'string' ? JSON.parse(q.answers) : q.answers,
+              correct_index: q.correct_index,
+              correct_indices: typeof q.correct_indices === 'string' ? JSON.parse(q.correct_indices) : q.correct_indices,
+              correct_answer_string: q.correct_answer_string,
+              difficulty: q.difficulty || 1,
+              subject: normalizeSubject(q.subject),
+              topic: q.topic,
+              guide: q.guide,
+              explanation: q.explanation,
+              type: q.type || 'MCQ',
+              time_limit_seconds: q.time_limit_seconds || 30
+            }));
+          pool = mapped;
+        }
       }
     } catch (err) {
       console.error("Failed to query questions from DB:", err);
@@ -1810,12 +1798,15 @@ export const TowerMode: React.FC = () => {
               <div className="space-y-2.5 max-h-[300px] lg:max-h-[420px] overflow-y-auto pr-1 custom-scrollbar">
                 {availableTopics.filter(t => t.subject === selectedSubject).map((topicObj) => {
                   const mastery = arenaProfile?.topic_mastery?.[topicObj.topic] || 0;
-                  const isSelected = selectedTopic === topicObj.topic;
+                  const isSelected = selectedTopic === topicObj.topic && selectedTopicSource === (topicObj.source || 'arena');
                   
                   return (
                     <button
-                      key={topicObj.topic}
-                      onClick={() => setSelectedTopic(topicObj.topic)}
+                      key={`${topicObj.source}-${topicObj.topic}`}
+                      onClick={() => {
+                        setSelectedTopic(topicObj.topic);
+                        setSelectedTopicSource(topicObj.source || 'arena');
+                      }}
                       className={`w-full p-4 lg:p-5 rounded-xl border text-left flex items-center justify-between transition-all dark:border-slate-800 ${isSelected ? 'border-amber-500/50 bg-amber-500/10 glow-active' : 'border-white/5 bg-white/5 hover:bg-white/10'} `}
                     >
                       <div className="flex-1 pr-4">

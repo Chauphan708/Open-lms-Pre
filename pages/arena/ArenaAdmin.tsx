@@ -48,7 +48,7 @@ export const ArenaAdmin: React.FC = () => {
 
     // Custom Topics States
     const [showTopicManager, setShowTopicManager] = useState(false);
-    const [allCombinedTopics, setAllCombinedTopics] = useState<{ id?: string; subject: string; topic: string; grade: string; questionCount: number; isCustom: boolean; is_hidden?: boolean }[]>([]);
+    const [allCombinedTopics, setAllCombinedTopics] = useState<{ id?: string; subject: string; topic: string; grade: string; questionCount: number; isCustom: boolean; is_hidden?: boolean; source: 'arena' | 'exam' }[]>([]);
     const [newTopicName, setNewTopicName] = useState('');
     const [newTopicSubject, setNewTopicSubject] = useState('math');
     const [newTopicGrade, setNewTopicGrade] = useState('5');
@@ -202,14 +202,14 @@ export const ArenaAdmin: React.FC = () => {
                 page++;
             }
 
-            // Combine them into a unified list
-            const topicsMap = new Map<string, { id?: string; topic: string; subject: string; grade: string; questionCount: number; isCustom: boolean; is_hidden: boolean }>();
+            // Build separate maps for Arena and Exam topics
+            const topicsMap = new Map<string, { id?: string; topic: string; subject: string; grade: string; questionCount: number; isCustom: boolean; is_hidden: boolean; source: 'arena' | 'exam' }>();
 
-            // Process questions first to count questions per topic and get their grades
+            // Process Arena questions (source = 'arena')
             if (qData) {
                 qData.forEach(q => {
                     if (!q.topic || !q.topic.trim() || q.topic === 'general') return;
-                    const key = `${normalizeSubject(q.subject || 'math')}:${q.topic.trim().toLowerCase()}`;
+                    const key = `arena:${normalizeSubject(q.subject || 'math')}:${q.topic.trim().toLowerCase()}`;
                     const existing = topicsMap.get(key);
                     if (existing) {
                         existing.questionCount += 1;
@@ -227,19 +227,21 @@ export const ArenaAdmin: React.FC = () => {
                             grade: q.grade || '5',
                             questionCount: 1,
                             isCustom: false,
-                            is_hidden: false
+                            is_hidden: false,
+                            source: 'arena'
                         });
                     }
                 });
             }
 
-            // Process published exams
+            // Process published exams (source = 'exam') — SEPARATE from arena
             if (exams) {
                 exams.forEach(exam => {
-                    if (exam.status === 'PUBLISHED' && exam.topic) {
-                        const key = `${normalizeSubject(exam.subject || 'math')}:${exam.topic.trim().toLowerCase()}`;
+                    if (exam.status === 'PUBLISHED' && exam.topic && !exam.deletedAt) {
+                        const key = `exam:${normalizeSubject(exam.subject || 'math')}:${exam.topic.trim().toLowerCase()}`;
                         const existing = topicsMap.get(key);
                         if (existing) {
+                            existing.questionCount += (exam.questionCount || 0);
                             if (exam.grade && existing.grade && typeof existing.grade === 'string') {
                                 if (!existing.grade.split(', ').includes(exam.grade)) {
                                     existing.grade = `${existing.grade}, ${exam.grade}`;
@@ -252,20 +254,22 @@ export const ArenaAdmin: React.FC = () => {
                                 topic: exam.topic.trim(),
                                 subject: normalizeSubject(exam.subject || 'math'),
                                 grade: exam.grade || '5',
-                                questionCount: 0,
+                                questionCount: exam.questionCount || 0,
                                 isCustom: false,
-                                is_hidden: false
+                                is_hidden: true, // Exam topics hidden by default until GV activates
+                                source: 'exam'
                             });
                         }
                     }
                 });
             }
 
-            // Process custom topics from table
+            // Process custom topics from arena_topics table
             if (customData) {
                 customData.forEach(t => {
                     if (!t.topic || !t.topic.trim()) return;
-                    const key = `${normalizeSubject(t.subject || 'math')}:${t.topic.trim().toLowerCase()}`;
+                    const topicSource = (t as any).source || 'arena';
+                    const key = `${topicSource}:${normalizeSubject(t.subject || 'math')}:${t.topic.trim().toLowerCase()}`;
                     const existing = topicsMap.get(key);
                     if (existing) {
                         existing.id = t.id;
@@ -282,14 +286,19 @@ export const ArenaAdmin: React.FC = () => {
                             grade: (t as any).grade || '5',
                             questionCount: 0,
                             isCustom: true,
-                            is_hidden: t.is_hidden || false
+                            is_hidden: t.is_hidden || false,
+                            source: topicSource as 'arena' | 'exam'
                         });
                     }
                 });
             }
 
             const mergedList = Array.from(topicsMap.values());
-            mergedList.sort((a, b) => a.topic.localeCompare(b.topic));
+            mergedList.sort((a, b) => {
+                // Sort by source first (arena before exam), then by name
+                if (a.source !== b.source) return a.source === 'arena' ? -1 : 1;
+                return a.topic.localeCompare(b.topic);
+            });
             setAllCombinedTopics(mergedList);
         } catch (err) {
             console.error("Error loading combined topics:", err);
@@ -312,7 +321,8 @@ export const ArenaAdmin: React.FC = () => {
                         topic: topicName,
                         subject: normalizeSubject(subject),
                         grade: grade.split(', ')[0] || '5',
-                        is_hidden: nextHidden
+                        is_hidden: nextHidden,
+                        source: 'arena'
                     });
                 if (error) throw error;
             }
@@ -328,7 +338,8 @@ export const ArenaAdmin: React.FC = () => {
         let { error } = await supabase.from('arena_topics').insert({
             subject: newTopicSubject,
             topic: newTopicName.trim(),
-            grade: newTopicGrade
+            grade: newTopicGrade,
+            source: 'arena'
         });
         
         // Fallback if grade column is missing
@@ -467,18 +478,26 @@ export const ArenaAdmin: React.FC = () => {
         return () => clearTimeout(timer);
     }, [arenaQuestions]);
 
-    // Extract unique topics for filtering
+    // Extract unique topics for filtering (with A/E prefix)
     const uniqueTopics = useMemo(() => {
-        const topics = new Set<string>();
+        const topics: { value: string; label: string; source: 'arena' | 'exam' }[] = [];
         
         allCombinedTopics.forEach(t => {
-            if (t.questionCount === 0) return; // Hide topics that have 0 questions in Arena
+            if (t.source === 'arena' && t.questionCount === 0) return; // Hide arena topics with 0 questions
+            if (t.source === 'exam' && t.is_hidden) return; // Hide exam topics not activated by GV
             if (filterGrade && t.grade && !t.grade.split(', ').includes(filterGrade)) return;
             if (filterSubject && normalizeSubject(t.subject) !== normalizeSubject(filterSubject)) return;
-            topics.add(t.topic.trim());
+            const prefix = t.source === 'arena' ? 'A' : 'E';
+            const value = `${t.source}::${t.topic.trim()}`;
+            if (!topics.some(x => x.value === value)) {
+                topics.push({ value, label: `${prefix} - ${t.topic.trim()}`, source: t.source });
+            }
         });
 
-        return Array.from(topics).sort();
+        return topics.sort((a, b) => {
+            if (a.source !== b.source) return a.source === 'arena' ? -1 : 1;
+            return a.label.localeCompare(b.label);
+        });
     }, [allCombinedTopics, filterGrade, filterSubject]);
 
     const displayedTopics = useMemo(() => {
@@ -522,7 +541,17 @@ export const ArenaAdmin: React.FC = () => {
         const matchesSubject = !filterSubject || normalizeSubject(q.subject) === normalizeSubject(filterSubject);
         const matchesDifficulty = !filterDifficulty || q.difficulty === filterDifficulty;
         const matchesGrade = !filterGrade || q.grade === filterGrade;
-        const matchesTopic = !filterTopic || q.topic === filterTopic;
+        // Parse source::topic format from new filter
+        let matchesTopic = true;
+        if (filterTopic) {
+            const topicName = filterTopic.includes('::') ? filterTopic.split('::')[1] : filterTopic;
+            const topicSource = filterTopic.includes('::') ? filterTopic.split('::')[0] : 'arena';
+            if (topicSource === 'exam') {
+                matchesTopic = false; // Exam topics don't have arena_questions, so hide all
+            } else {
+                matchesTopic = q.topic === topicName;
+            }
+        }
         
         const qContent = q.content || '';
         const qTopic = q.topic || '';
@@ -1808,9 +1837,9 @@ export const ArenaAdmin: React.FC = () => {
                         {['1', '2', '3', '4', '5'].map(g => <option key={g} value={g}>Lớp {g}</option>)}
                     </select>
 
-                    <select value={filterTopic} onChange={e => setFilterTopic(e.target.value)} className="border border-gray-200 rounded-lg px-2.5 py-1.5 text-xs outline-none focus:ring-2 focus:ring-indigo-500 bg-white font-bold text-gray-700 cursor-pointer hover:border-gray-300 max-w-[150px] truncate dark:bg-slate-900 dark:border-slate-800 dark:text-slate-300">
+                    <select value={filterTopic} onChange={e => setFilterTopic(e.target.value)} className="border border-gray-200 rounded-lg px-2.5 py-1.5 text-xs outline-none focus:ring-2 focus:ring-indigo-500 bg-white font-bold text-gray-700 cursor-pointer hover:border-gray-300 max-w-[220px] truncate dark:bg-slate-900 dark:border-slate-800 dark:text-slate-300">
                         <option value="">Tất cả chủ đề</option>
-                        {uniqueTopics.map(topic => <option key={topic} value={topic}>{topic}</option>)}
+                        {uniqueTopics.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
                     </select>
 
                     <select value={filterType} onChange={e => setFilterType(e.target.value)} className="border border-gray-200 rounded-lg px-2.5 py-1.5 text-xs outline-none focus:ring-2 focus:ring-indigo-500 bg-white font-bold text-gray-700 cursor-pointer hover:border-gray-300 dark:bg-slate-900 dark:border-slate-800 dark:text-slate-300">
@@ -2917,6 +2946,9 @@ export const ArenaAdmin: React.FC = () => {
                                                     ) : (
                                                         <>
                                                             <div className="flex flex-wrap items-center gap-1.5 flex-1 mr-2">
+                                                                <span className={`text-[9px] px-2 py-0.5 rounded-full font-black uppercase ${t.source === 'arena' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-violet-50 text-violet-700 border border-violet-200'}`}>
+                                                                    {t.source === 'arena' ? 'A' : 'E'}
+                                                                </span>
                                                                 <span className="text-[9px] bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded-full font-bold uppercase">
                                                                     {SUBJECTS.find(s => s.value === normalizeSubject(t.subject))?.label || t.subject}
                                                                 </span>
@@ -2929,39 +2961,64 @@ export const ArenaAdmin: React.FC = () => {
                                                                 {t.questionCount > 0 && (
                                                                     <span className="text-xs text-gray-400 font-medium">({t.questionCount} câu)</span>
                                                                 )}
-                                                                {!t.isCustom && (
-                                                                    <span className="text-[8px] bg-purple-50 text-purple-600 px-1.5 py-0.5 rounded font-black border border-purple-100 uppercase" title="Chuyên đề tự động lấy từ Đề thi đã xuất bản">Từ Đề thi</span>
-                                                                )}
                                                             </div>
                                                             <div className="flex items-center gap-1.5">
-                                                                <button 
-                                                                    onClick={() => handleToggleTopicVisibility(t.topic, t.subject, t.grade, t.is_hidden || false, t.id)} 
-                                                                    className={`p-1.5 rounded-lg transition-colors ${t.is_hidden ? 'text-red-500 hover:bg-red-50' : 'text-emerald-600 hover:bg-emerald-50'}`}
-                                                                    title={t.is_hidden ? "Chuyên đề đang ẨN với HS - Bấm để hiện" : "Chuyên đề đang HIỆN với HS - Bấm để ẩn"}
-                                                                >
-                                                                    {t.is_hidden ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                                                                </button>
-                                                                {t.id && (
+                                                                {t.source === 'exam' && !t.id ? (
+                                                                    /* Exam topic not yet activated — show "Đưa vào Arena" button */
+                                                                    <button
+                                                                        onClick={async () => {
+                                                                            try {
+                                                                                await supabase.from('arena_topics').insert({
+                                                                                    topic: t.topic,
+                                                                                    subject: normalizeSubject(t.subject),
+                                                                                    grade: t.grade.split(', ')[0] || '5',
+                                                                                    is_hidden: false,
+                                                                                    source: 'exam'
+                                                                                });
+                                                                                await fetchAllTopics();
+                                                                            } catch (err: any) {
+                                                                                alert('Lỗi: ' + err.message);
+                                                                            }
+                                                                        }}
+                                                                        className="px-2.5 py-1 text-xs font-bold bg-violet-100 text-violet-700 rounded-lg hover:bg-violet-200 transition-colors flex items-center gap-1"
+                                                                        title="Đưa chủ đề này vào Arena để HS thấy"
+                                                                    >
+                                                                        <Plus className="h-3.5 w-3.5" /> Đưa vào Arena
+                                                                    </button>
+                                                                ) : (
                                                                     <>
                                                                         <button 
-                                                                            onClick={() => {
-                                                                                setEditingTopicId(topicKey);
-                                                                                setEditingTopicName(t.topic);
-                                                                                setEditingTopicSubject(normalizeSubject(t.subject));
-                                                                                setEditingTopicGrade(t.grade.split(', ')[0] || '5');
-                                                                            }} 
-                                                                            className="p-1 text-blue-500 hover:bg-blue-50 rounded-lg transition-colors"
-                                                                            title="Chỉnh sửa"
+                                                                            onClick={() => handleToggleTopicVisibility(t.topic, t.subject, t.grade, t.is_hidden || false, t.id)} 
+                                                                            className={`p-1.5 rounded-lg transition-colors ${t.is_hidden ? 'text-red-500 hover:bg-red-50' : 'text-emerald-600 hover:bg-emerald-50'}`}
+                                                                            title={t.is_hidden ? "Chuyên đề đang ẨN với HS - Bấm để hiện" : "Chuyên đề đang HIỆN với HS - Bấm để ẩn"}
                                                                         >
-                                                                            <Pencil className="h-4 w-4" />
+                                                                            {t.is_hidden ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                                                                         </button>
-                                                                        <button 
-                                                                            onClick={() => handleDeleteTopic(t.topic, normalizeSubject(t.subject), t.id, t.questionCount)} 
-                                                                            className="p-1 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-                                                                            title="Xóa"
-                                                                        >
-                                                                            <Trash2 className="h-4 w-4" />
-                                                                        </button>
+                                                                        {t.id && (
+                                                                            <>
+                                                                                {t.source === 'arena' && (
+                                                                                    <button 
+                                                                                        onClick={() => {
+                                                                                            setEditingTopicId(topicKey);
+                                                                                            setEditingTopicName(t.topic);
+                                                                                            setEditingTopicSubject(normalizeSubject(t.subject));
+                                                                                            setEditingTopicGrade(t.grade.split(', ')[0] || '5');
+                                                                                        }} 
+                                                                                        className="p-1 text-blue-500 hover:bg-blue-50 rounded-lg transition-colors"
+                                                                                        title="Chỉnh sửa"
+                                                                                    >
+                                                                                        <Pencil className="h-4 w-4" />
+                                                                                    </button>
+                                                                                )}
+                                                                                <button 
+                                                                                    onClick={() => handleDeleteTopic(t.topic, normalizeSubject(t.subject), t.id, t.questionCount)} 
+                                                                                    className="p-1 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                                                                                    title={t.source === 'exam' ? "Gỡ khỏi Arena" : "Xóa"}
+                                                                                >
+                                                                                    <Trash2 className="h-4 w-4" />
+                                                                                </button>
+                                                                            </>
+                                                                        )}
                                                                     </>
                                                                 )}
                                                             </div>
