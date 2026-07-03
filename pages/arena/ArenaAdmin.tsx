@@ -472,6 +472,7 @@ export const ArenaAdmin: React.FC = () => {
         const topics = new Set<string>();
         
         allCombinedTopics.forEach(t => {
+            if (t.questionCount === 0) return; // Hide topics that have 0 questions in Arena
             if (filterGrade && t.grade && !t.grade.split(', ').includes(filterGrade)) return;
             if (filterSubject && normalizeSubject(t.subject) !== normalizeSubject(filterSubject)) return;
             topics.add(t.topic.trim());
