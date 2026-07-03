@@ -264,7 +264,8 @@ export const useStore = create<AppState>((set, get, api) => ({
         durationMinutes: Number(e.durationMinutes || e.duration_minutes || e.durationminutes || 0),
         questionCount: e.questionCount || e.question_count || e.questioncount,
         category: e.category || (String(e.id).startsWith('exam_matrix_') ? 'EXAM' : 'TASK'),
-        classId: String(e.classId || e.class_id || e.classid || '')
+        classId: String(e.classId || e.class_id || e.classid || ''),
+        deletedAt: e.deletedAt || e.deleted_at || e.deletedat
       }));
       set({ exams: mappedExams as Exam[] });
     }
@@ -340,7 +341,8 @@ export const useStore = create<AppState>((set, get, api) => ({
         createdAt: a.createdAt || a.created_at || a.createdat,
         startTime: a.startTime || a.start_time || a.starttime,
         endTime: a.endTime || a.end_time || a.endtime,
-        status: a.status || 'active'
+        status: a.status || 'active',
+        deletedAt: a.deletedAt || a.deleted_at || a.deletedat
       }));
       
       if (isStudent) {
