@@ -141,7 +141,7 @@ function parseOneBlock(block: string, index: number): Question | null {
             if (lettersOnlyMatch) {
                 const letters = ansRaw.match(/([A-Za-z])/gi);
                 if (letters) {
-                    const uniqueIndices = Array.from(new Set(letters.map(l => l.toUpperCase().charCodeAt(0) - 65)))
+                    const uniqueIndices = letters.map(l => l.toUpperCase().charCodeAt(0) - 65)
                         .filter(idx => idx >= 0 && idx < options.length);
                     
                     if (uniqueIndices.length > 1) {
@@ -218,7 +218,7 @@ function parseOneBlock(block: string, index: number): Question | null {
                     if (lettersOnlyMatch) {
                         const letters = ansRaw.match(/([A-Da-d])/gi);
                         if (letters && letters.length > 1) {
-                            correctOptionIndices = Array.from(new Set(letters.map(l => l.toUpperCase().charCodeAt(0) - 65)));
+                            correctOptionIndices = letters.map(l => l.toUpperCase().charCodeAt(0) - 65);
                         } else if (letters && letters.length === 1) {
                             correctOptionIndex = letters[0].toUpperCase().charCodeAt(0) - 65;
                         }
@@ -254,7 +254,7 @@ function parseOneBlock(block: string, index: number): Question | null {
     }
 
     // Phân loại dựa trên cấu trúc (Ưu tiên số 1) và từ khóa (Ưu tiên số 2)
-    const hasBlanksInContent = content.includes('[__]');
+    const hasBlanksInContent = /\[__\]|\[\.\.\.\]|\[\s*\]|___/.test(content);
     const hasInlineDropdownPipes = options.some(opt => opt.includes('|||'));
     const hasPipeInOptions = options.some(opt => opt.includes('|') && !opt.includes('|||'));
     const isMatchingKeywords = /nối|ghép|matching|khớp/i.test(content);
@@ -282,10 +282,26 @@ function parseOneBlock(block: string, index: number): Question | null {
         const isWordClassifyKeywords = /phân loại.*từ|phân nhóm.*từ|phân loại|phân nhóm|xếp.*từ.*nhóm/i.test(content);
         const isFillInPassageKeywords = /điền.*đoạn văn|điền.*chỗ trống.*đoạn|điền.*vào đoạn/i.test(content);
         const isInlineDropdownKeywords = /thả xuống|dropdown|thả.*chỗ trống|chọn.*điền.*đoạn văn/i.test(content);
+        const isDragDropKeywords = /kéo thả|điền khuyết/i.test(content);
         
         if (isWordClassifyKeywords && options.some(opt => opt.includes('|'))) {
             type = 'WORD_CLASSIFY';
             options = options.map(opt => opt.includes('|') ? opt.replace(/\s*\|\s*/, ' ||| ') : opt);
+            correctOptionIndex = undefined;
+        } else if (isInlineDropdownKeywords && hasInlineDropdownPipes) {
+            type = 'INLINE_DROPDOWN';
+            correctOptionIndex = undefined;
+        } else if (isDragDropKeywords) {
+            type = 'DRAG_DROP';
+            correctOptionIndex = undefined;
+        } else if (isSentenceScrambleKeywords) {
+            type = 'SENTENCE_SCRAMBLE';
+            correctOptionIndex = undefined;
+        } else if (isFillInPassageKeywords && (type === 'MCQ' || type === 'MCQ_MULTIPLE')) {
+            type = 'FILL_IN_PASSAGE';
+            correctOptionIndex = undefined;
+        } else if (isOrderingKeywords && (type === 'MCQ' || type === 'MCQ_MULTIPLE')) {
+            type = 'ORDERING';
             correctOptionIndex = undefined;
         } else if (isInlineDropdownKeywords && hasInlineDropdownPipes) {
             type = 'INLINE_DROPDOWN';
