@@ -1499,7 +1499,7 @@ export const ExamTake: React.FC = () => {
   const generateShuffles = useCallback(() => {
     if (!exam) return {};
     const map: Record<string, number[]> = {};
-    exam.questions.forEach(q => {
+    exam?.questions.forEach(q => {
       if (q.options && Array.isArray(q.options)) {
         const indices = q.options.map((_, i) => i);
         map[q.id] = shuffleArray(indices);
@@ -1551,7 +1551,7 @@ export const ExamTake: React.FC = () => {
 
       // NOTE: For reviewed attempts, use Standard Order to avoid confusion
       const standardMap: Record<string, number[]> = {};
-      exam.questions.forEach(q => {
+      exam?.questions.forEach(q => {
         standardMap[q.id] = q.options.map((_, i) => i);
       });
       setShuffledOptionsMap(standardMap);
@@ -1577,7 +1577,7 @@ export const ExamTake: React.FC = () => {
             if (typeof parsed.timeLeft === 'number' && isFinite(parsed.timeLeft)) {
               setTimeLeft(parsed.timeLeft);
             } else {
-              const dur = assignment?.durationMinutes || exam.durationMinutes || 45;
+              const dur = assignment?.durationMinutes || exam?.durationMinutes || 45;
               setTimeLeft(dur * 60);
             }
 
@@ -1586,7 +1586,7 @@ export const ExamTake: React.FC = () => {
             else setExamStartTime(Date.now());
 
             const now = Date.now();
-            const dur = assignment?.durationMinutes || exam.durationMinutes || 45;
+            const dur = assignment?.durationMinutes || exam?.durationMinutes || 45;
             const expiresAt = parsed.examExpiresAt || ((parsed.examStartTime || now) + (parsed.timeLeft || dur * 60) * 1000);
             setExamExpiresAt(expiresAt);
             const remaining = Math.max(0, Math.floor((expiresAt - now) / 1000));
@@ -1602,7 +1602,7 @@ export const ExamTake: React.FC = () => {
       
       // Fallback: Fresh Start (if no draft or draft mismatch)
       setShuffledOptionsMap(generateShuffles());
-      const duration = (assignment?.durationMinutes || exam.durationMinutes || 45);
+      const duration = (assignment?.durationMinutes || exam?.durationMinutes || 45);
       const initialSeconds = duration * 60;
       setTimeLeft(initialSeconds);
       setExamExpiresAt(Date.now() + initialSeconds * 1000);
@@ -1687,7 +1687,7 @@ export const ExamTake: React.FC = () => {
     observerRef.current = new IntersectionObserver(handleIntersect, options);
 
     // Attach observer to all question containers
-    exam.questions.forEach((q, idx) => {
+    exam?.questions.forEach((q, idx) => {
       const el = document.getElementById(`question-container-${idx}`);
       if (el) observerRef.current?.observe(el);
     });
@@ -1964,7 +1964,7 @@ export const ExamTake: React.FC = () => {
       });
 
       // Calc temporary score
-      const tempScore = answered > 0 ? (correct / exam.questions.length) * 10 : 0;
+      const tempScore = answered > 0 ? (correct / exam?.questions?.length || 0) * 10 : 0;
 
       updateLiveParticipantProgress(liveSessionId, user.id, {
         answeredCount: answered,
@@ -1974,6 +1974,210 @@ export const ExamTake: React.FC = () => {
       });
     }
   }, [answers, liveSessionId, user, exam, isSubmitted, updateLiveParticipantProgress]);
+
+  const formatTime = (seconds: number | null) => {
+    if (seconds === null) return "--:--";
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    return `${m}:${s < 10 ? '0' : ''}${s}`;
+  };
+
+  const handleSetAnswer = (questionId: string, value: any) => {
+    if (isSubmitted) return;
+    setAnswers(prev => ({ ...prev, [questionId]: value }));
+  };
+
+  const handleSubmit = () => {
+    if (isSubmitted) return;
+    setShowSubmitConfirm(true);
+  };
+
+  const performSubmit = async () => {
+    setShowSubmitConfirm(false);
+    if (isSubmitted) return;
+    setIsSaving(false); // Immediate stop saving indicator
+
+    // Remove draft and exit fullscreen
+    if (exam) {
+      localStorage.removeItem(`exam_draft_${exam.id}`);
+    }
+    if (document.exitFullscreen && document.fullscreenElement) {
+      document.exitFullscreen().catch(err => console.log(err));
+    }
+
+    // Calculate Score
+    let correctCount = 0;
+    let scoredQuestionCount = 0;
+
+    exam?.questions.forEach((q, idx) => {
+      if (!q.isNotScored) {
+        scoredQuestionCount++;
+      }
+
+      const userAns = answers[q.id];
+      const isCaseSensitive = !!assignmentSettings.caseSensitiveShortAnswer;
+      const isCorrect = evaluateAnswer(q, userAns, isCaseSensitive);
+
+      console.log(`DEBUG: Scoring Question ${idx + 1} (${q.type}):`, {
+         questionId: q.id,
+         userAnswer: userAns,
+         isCorrect,
+         isNotScored: q.isNotScored
+      });
+
+
+      if (isCorrect && !q.isNotScored) {
+         correctCount++;
+      }
+    });
+
+    const finalScore = scoredQuestionCount > 0 ? (correctCount / scoredQuestionCount) * 10 : 0;
+    setScore(finalScore);
+    setIsSubmitted(true);
+
+    // Final Update for Live Session
+    if (liveSessionId && user) {
+      updateLiveParticipantProgress(liveSessionId, user.id, {
+        answeredCount: Object.keys(answers).length,
+        correctCount: correctCount,
+        wrongCount: Object.keys(answers).length - correctCount,
+        score: finalScore
+      });
+    }
+
+    // Calculate total time
+    let totalTimeSpentSec = 0;
+    if (examStartTime) {
+      totalTimeSpentSec = Math.floor((Date.now() - examStartTime) / 1000);
+    } else {
+      // fallback if starting time lost: deduce from original duration
+      const originalDuration = assignment?.durationMinutes || exam?.durationMinutes;
+      totalTimeSpentSec = Math.max(0, (originalDuration * 60) - (timeLeft || 0));
+    }
+
+    // Save Attempt
+    const attempt: Attempt = {
+      id: crypto.randomUUID(),
+      examId: String(exam?.id || ''),
+      assignmentId: String(assignmentId || assignment?.id || ''),
+      studentId: String(user?.id || 'guest'),
+      answers,
+      score: finalScore,
+      submittedAt: new Date().toISOString(),
+      cheatWarnings: Number(cheatWarnings || 0),
+      totalTimeSpentSec: Number(totalTimeSpentSec || 0),
+      timeSpentPerQuestion: timeSpentPerQuestion
+    };
+    console.log("DEBUG: Final Attempt Payload to send:", attempt);
+    
+    setIsSubmitted(true); // Show local result first
+    
+    // Áp dụng ngay Standard Map (cố định thứ tự) khi xem đáp án
+    const standardMap: Record<string, number[]> = {};
+    exam?.questions.forEach(q => {
+      if (q.options && Array.isArray(q.options)) {
+        standardMap[q.id] = q.options.map((_, i) => i);
+      } else {
+        standardMap[q.id] = [];
+      }
+    });
+    setShuffledOptionsMap(standardMap);
+    
+    const success = await addAttempt(attempt);
+    if (!success) {
+       console.error("DEBUG: addAttempt returned false.");
+    } else {
+       console.log("DEBUG: addAttempt SUCCESS.");
+    }
+
+     // BỔ SUNG LOGIC: Tự động ghi nhận điểm hành vi theo mốc linh hoạt & cộng dồn
+    if (user && user.id && assignment?.classId && exam) {
+      const percentage = (correctCount / exam?.questions?.length || 0) * 100;
+      
+      // 1. Xác định mốc điểm cao nhất đạt được dựa trên cấu hình linh hoạt
+      // thresholds được sắp xếp tăng dần theo percentage trong store
+      let targetTotalPoints = 0;
+      let activeThresholdLabel = "Có làm bài online";
+      
+      const sortedThresholds = [...autoPointThresholds].sort((a, b) => a.percentage - b.percentage);
+      
+      for (const threshold of sortedThresholds) {
+        if (percentage >= threshold.percentage) {
+          targetTotalPoints = threshold.points;
+          activeThresholdLabel = `Làm đúng từ ${threshold.percentage}% bài làm online`;
+          if (threshold.percentage === 0) activeThresholdLabel = "Có làm bài online";
+          if (threshold.percentage === 100) activeThresholdLabel = "Làm đúng 100% bài làm online";
+        }
+      }
+
+      try {
+        const identifyKey = `[Tự động - ${assignment.id}]`;
+
+        // 2. Tính tổng điểm tự động đã nhận cho bài tập này
+        const { data: existingLogs, error: checkError } = await supabase
+          .from('behavior_logs')
+          .select('points')
+          .eq('student_id', user.id)
+          .eq('class_id', assignment.classId)
+          .like('reason', `${identifyKey}%`);
+
+        if (!checkError) {
+          const currentEarnedPoints = (existingLogs || []).reduce((sum, log) => sum + log.points, 0);
+          
+          // 3. Nếu mốc mới cao hơn tổng đã nhận, cập nhật lại (Xóa cũ - Thêm mới để chỉ có 1 dòng duy nhất)
+          if (targetTotalPoints > currentEarnedPoints) {
+            // Xóa tất cả log tự động cũ của bài tập này cho học sinh này
+            if (existingLogs && existingLogs.length > 0) {
+              await supabase
+                .from('behavior_logs')
+                .delete()
+                .eq('student_id', user.id)
+                .eq('class_id', assignment.classId)
+                .like('reason', `${identifyKey}%`);
+            }
+
+            let reasonText = activeThresholdLabel;
+            let finalPoints = targetTotalPoints;
+
+            if (cheatWarnings > 0) {
+              const penalty = Math.min(finalPoints, 2);
+              finalPoints -= penalty;
+              reasonText += ` (Cảnh báo gian lận ${cheatWarnings} lần, -${penalty}đ)`;
+            }
+
+            if (finalPoints > 0) {
+              const finalReasonText = `${identifyKey} ${reasonText}`;
+              const newLog = {
+                id: `log_auto_${Date.now()}`,
+                student_id: user.id,
+                class_id: assignment.classId,
+                points: finalPoints,
+                reason: finalReasonText,
+                recorded_by: assignment.teacherId || 'system',
+                created_at: new Date().toISOString()
+              };
+              await supabase.from('behavior_logs').insert(newLog);
+
+              // 4. Thêm thông báo cho học sinh về việc cộng điểm
+              const notifRaw = {
+                id: `notif_auto_points_${Date.now()}`,
+                user_id: user.id,
+                type: 'SUCCESS',
+                title: 'Đã nhận điểm cộng!',
+                message: `Bạn được cộng ${finalPoints} điểm hành vi: ${reasonText}`,
+                is_read: false,
+                created_at: new Date().toISOString(),
+                link: '/student/history'
+              };
+              await supabase.from('notifications').insert(notifRaw);
+            }
+          }
+        }
+      } catch (err) {
+        console.error("Error awarding automatic points:", err);
+      }
+    }
+  };
 
   if (isLoadingDirect || isAttemptsLoading) return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -2114,216 +2318,12 @@ export const ExamTake: React.FC = () => {
     );
   }
 
-  const formatTime = (seconds: number | null) => {
-    if (seconds === null) return "--:--";
-    const m = Math.floor(seconds / 60);
-    const s = seconds % 60;
-    return `${m}:${s < 10 ? '0' : ''}${s}`;
-  };
-
-  const handleSetAnswer = (questionId: string, value: any) => {
-    if (isSubmitted) return;
-    setAnswers(prev => ({ ...prev, [questionId]: value }));
-  };
-
-  const handleSubmit = () => {
-    if (isSubmitted) return;
-    setShowSubmitConfirm(true);
-  };
-
-  const performSubmit = async () => {
-    setShowSubmitConfirm(false);
-    if (isSubmitted) return;
-    setIsSaving(false); // Immediate stop saving indicator
-
-    // Remove draft and exit fullscreen
-    if (exam) {
-      localStorage.removeItem(`exam_draft_${exam.id}`);
-    }
-    if (document.exitFullscreen && document.fullscreenElement) {
-      document.exitFullscreen().catch(err => console.log(err));
-    }
-
-    // Calculate Score
-    let correctCount = 0;
-    let scoredQuestionCount = 0;
-
-    exam.questions.forEach((q, idx) => {
-      if (!q.isNotScored) {
-        scoredQuestionCount++;
-      }
-
-      const userAns = answers[q.id];
-      const isCaseSensitive = !!assignmentSettings.caseSensitiveShortAnswer;
-      const isCorrect = evaluateAnswer(q, userAns, isCaseSensitive);
-
-      console.log(`DEBUG: Scoring Question ${idx + 1} (${q.type}):`, {
-         questionId: q.id,
-         userAnswer: userAns,
-         isCorrect,
-         isNotScored: q.isNotScored
-      });
-
-
-      if (isCorrect && !q.isNotScored) {
-         correctCount++;
-      }
-    });
-
-    const finalScore = scoredQuestionCount > 0 ? (correctCount / scoredQuestionCount) * 10 : 0;
-    setScore(finalScore);
-    setIsSubmitted(true);
-
-    // Final Update for Live Session
-    if (liveSessionId && user) {
-      updateLiveParticipantProgress(liveSessionId, user.id, {
-        answeredCount: Object.keys(answers).length,
-        correctCount: correctCount,
-        wrongCount: Object.keys(answers).length - correctCount,
-        score: finalScore
-      });
-    }
-
-    // Calculate total time
-    let totalTimeSpentSec = 0;
-    if (examStartTime) {
-      totalTimeSpentSec = Math.floor((Date.now() - examStartTime) / 1000);
-    } else {
-      // fallback if starting time lost: deduce from original duration
-      const originalDuration = assignment?.durationMinutes || exam.durationMinutes;
-      totalTimeSpentSec = Math.max(0, (originalDuration * 60) - (timeLeft || 0));
-    }
-
-    // Save Attempt
-    const attempt: Attempt = {
-      id: crypto.randomUUID(),
-      examId: String(exam.id),
-      assignmentId: String(assignmentId || assignment?.id || ''),
-      studentId: String(user?.id || 'guest'),
-      answers,
-      score: finalScore,
-      submittedAt: new Date().toISOString(),
-      cheatWarnings: Number(cheatWarnings || 0),
-      totalTimeSpentSec: Number(totalTimeSpentSec || 0),
-      timeSpentPerQuestion: timeSpentPerQuestion
-    };
-    console.log("DEBUG: Final Attempt Payload to send:", attempt);
-    
-    setIsSubmitted(true); // Show local result first
-    
-    // Áp dụng ngay Standard Map (cố định thứ tự) khi xem đáp án
-    const standardMap: Record<string, number[]> = {};
-    exam.questions.forEach(q => {
-      if (q.options && Array.isArray(q.options)) {
-        standardMap[q.id] = q.options.map((_, i) => i);
-      } else {
-        standardMap[q.id] = [];
-      }
-    });
-    setShuffledOptionsMap(standardMap);
-    
-    const success = await addAttempt(attempt);
-    if (!success) {
-       console.error("DEBUG: addAttempt returned false.");
-    } else {
-       console.log("DEBUG: addAttempt SUCCESS.");
-    }
-
-     // BỔ SUNG LOGIC: Tự động ghi nhận điểm hành vi theo mốc linh hoạt & cộng dồn
-    if (user && user.id && assignment?.classId && exam) {
-      const percentage = (correctCount / exam.questions.length) * 100;
-      
-      // 1. Xác định mốc điểm cao nhất đạt được dựa trên cấu hình linh hoạt
-      // thresholds được sắp xếp tăng dần theo percentage trong store
-      let targetTotalPoints = 0;
-      let activeThresholdLabel = "Có làm bài online";
-      
-      const sortedThresholds = [...autoPointThresholds].sort((a, b) => a.percentage - b.percentage);
-      
-      for (const threshold of sortedThresholds) {
-        if (percentage >= threshold.percentage) {
-          targetTotalPoints = threshold.points;
-          activeThresholdLabel = `Làm đúng từ ${threshold.percentage}% bài làm online`;
-          if (threshold.percentage === 0) activeThresholdLabel = "Có làm bài online";
-          if (threshold.percentage === 100) activeThresholdLabel = "Làm đúng 100% bài làm online";
-        }
-      }
-
-      try {
-        const identifyKey = `[Tự động - ${assignment.id}]`;
-
-        // 2. Tính tổng điểm tự động đã nhận cho bài tập này
-        const { data: existingLogs, error: checkError } = await supabase
-          .from('behavior_logs')
-          .select('points')
-          .eq('student_id', user.id)
-          .eq('class_id', assignment.classId)
-          .like('reason', `${identifyKey}%`);
-
-        if (!checkError) {
-          const currentEarnedPoints = (existingLogs || []).reduce((sum, log) => sum + log.points, 0);
-          
-          // 3. Nếu mốc mới cao hơn tổng đã nhận, cập nhật lại (Xóa cũ - Thêm mới để chỉ có 1 dòng duy nhất)
-          if (targetTotalPoints > currentEarnedPoints) {
-            // Xóa tất cả log tự động cũ của bài tập này cho học sinh này
-            if (existingLogs && existingLogs.length > 0) {
-              await supabase
-                .from('behavior_logs')
-                .delete()
-                .eq('student_id', user.id)
-                .eq('class_id', assignment.classId)
-                .like('reason', `${identifyKey}%`);
-            }
-
-            let reasonText = activeThresholdLabel;
-            let finalPoints = targetTotalPoints;
-
-            if (cheatWarnings > 0) {
-              const penalty = Math.min(finalPoints, 2);
-              finalPoints -= penalty;
-              reasonText += ` (Cảnh báo gian lận ${cheatWarnings} lần, -${penalty}đ)`;
-            }
-
-            if (finalPoints > 0) {
-              const finalReasonText = `${identifyKey} ${reasonText}`;
-              const newLog = {
-                id: `log_auto_${Date.now()}`,
-                student_id: user.id,
-                class_id: assignment.classId,
-                points: finalPoints,
-                reason: finalReasonText,
-                recorded_by: assignment.teacherId || 'system',
-                created_at: new Date().toISOString()
-              };
-              await supabase.from('behavior_logs').insert(newLog);
-
-              // 4. Thêm thông báo cho học sinh về việc cộng điểm
-              const notifRaw = {
-                id: `notif_auto_points_${Date.now()}`,
-                user_id: user.id,
-                type: 'SUCCESS',
-                title: 'Đã nhận điểm cộng!',
-                message: `Bạn được cộng ${finalPoints} điểm hành vi: ${reasonText}`,
-                is_read: false,
-                created_at: new Date().toISOString(),
-                link: '/student/history'
-              };
-              await supabase.from('notifications').insert(notifRaw);
-            }
-          }
-        }
-      } catch (err) {
-        console.error("Error awarding automatic points:", err);
-      }
-    }
-  };
-
   const formatScore = (val: number | null) => {
     if (val === null) return '--';
     return val.toFixed(1).replace('.', ',');
   };
 
-  const unansweredCount = exam.questions.length - answersCount;
+  const unansweredCount = exam?.questions?.length || 0 - answersCount;
 
   return (
     <div className="max-w-5xl mx-auto pb-20 relative select-none">
@@ -2338,7 +2338,7 @@ export const ExamTake: React.FC = () => {
             
             <h3 className="text-2xl font-black text-gray-900 mb-2">Xác nhận nộp bài?</h3>
             <p className="text-gray-600 mb-6 font-medium leading-relaxed">
-              Bạn đã hoàn thành <span className="text-indigo-600 font-black">{answersCount}/{exam.questions.length}</span> câu hỏi.
+              Bạn đã hoàn thành <span className="text-indigo-600 font-black">{answersCount}/{exam?.questions?.length || 0}</span> câu hỏi.
               {unansweredCount > 0 && (
                 <span className="block mt-2 text-orange-600 font-bold italic">
                   * Chú ý: Còn {unansweredCount} câu chưa có câu trả lời!
@@ -2402,7 +2402,7 @@ export const ExamTake: React.FC = () => {
                 Tiến độ làm bài
               </h3>
               <div className="bg-indigo-50 text-indigo-700 px-3 py-1 rounded-full font-black text-xs">
-                {answersCount}/{exam.questions.length}
+                {answersCount}/{exam?.questions?.length || 0}
               </div>
             </div>
             
@@ -2545,7 +2545,7 @@ export const ExamTake: React.FC = () => {
           <div className="lg:hidden py-2 border-t border-gray-100">
             <div className="flex flex-wrap gap-2 items-center">
               <div className="bg-indigo-50 text-indigo-700 px-2 py-1 rounded-md font-black text-[10px] border border-indigo-100">
-                {answersCount}/{exam.questions.length}
+                {answersCount}/{exam?.questions?.length || 0}
               </div>
               <div className="flex flex-wrap gap-1.5 flex-1">
                 {exam.questions.map((q, idx) => {
@@ -2621,7 +2621,7 @@ export const ExamTake: React.FC = () => {
             {viewScore ? (
               <>
                 <div className="text-5xl font-extrabold mb-2 text-gray-900">{formatScore(score)}</div>
-                <p className="text-gray-600">Bạn đã trả lời đúng <span className="font-bold">{Math.round(((score || 0) / 10) * exam.questions.length)}</span> / {exam.questions.length} câu hỏi</p>
+                <p className="text-gray-600">Bạn đã trả lời đúng <span className="font-bold">{Math.round(((score || 0) / 10) * exam?.questions?.length || 0)}</span> / {exam?.questions?.length || 0} câu hỏi</p>
               </>
             ) : (
               <div className="py-4 text-gray-500 italic">
@@ -2674,7 +2674,7 @@ export const ExamTake: React.FC = () => {
             <div className="sticky top-[100px] bg-white p-5 rounded-2xl shadow-xl border border-indigo-100 flex flex-col max-h-[calc(100vh-140px)] transition-all">
               <div className="text-sm font-bold text-gray-700 mb-3 flex items-center justify-between">
                 <span>Danh sách câu hỏi</span>
-                <span className="text-[10px] bg-indigo-50 text-indigo-600 px-1.5 py-0.5 rounded font-black">{answersCount} / {exam.questions.length}</span>
+                <span className="text-[10px] bg-indigo-50 text-indigo-600 px-1.5 py-0.5 rounded font-black">{answersCount} / {exam?.questions?.length || 0}</span>
               </div>
               <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar mb-4">
                 <div className="grid grid-cols-4 gap-2">
@@ -2764,7 +2764,7 @@ export const ExamTake: React.FC = () => {
         <div className="flex-1 space-y-6">
           {viewMode === 'single' && !isSubmitted && (
             <div className="mb-4 bg-white p-4 rounded-xl border flex items-center justify-between text-sm shadow-sm">
-              <span className="font-bold text-gray-600">Câu hỏi {currentQuestionIndex + 1} / {exam.questions.length}</span>
+              <span className="font-bold text-gray-600">Câu hỏi {currentQuestionIndex + 1} / {exam?.questions?.length || 0}</span>
               <div className="flex gap-2">
                 <button
                   disabled={currentQuestionIndex === 0}
@@ -2774,7 +2774,7 @@ export const ExamTake: React.FC = () => {
                   Trước
                 </button>
                 <button
-                  disabled={currentQuestionIndex === exam.questions.length - 1}
+                  disabled={currentQuestionIndex === (exam?.questions?.length || 0) - 1}
                   onClick={() => setCurrentQuestionIndex(prev => prev + 1)}
                   className="px-3 py-1.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 transition-all font-medium"
                 >
