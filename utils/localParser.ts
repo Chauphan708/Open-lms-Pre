@@ -253,43 +253,53 @@ function parseOneBlock(block: string, index: number): Question | null {
         type = 'MCQ_MULTIPLE';
     }
 
-    // Logic đặc biệt cho câu hỏi Nối cột (Matching)
-    const isMatchingKeywords = /nối|ghép|matching|khớp/i.test(content);
-    const hasPipeInOptions = options.some(opt => opt.includes('|'));
-
-    if (isMatchingKeywords && hasPipeInOptions) {
-        type = 'MATCHING';
-        // Chuẩn hóa options sang định dạng nội bộ "Vế 1 ||| Vế 2"
-        options = options.map(opt => opt.includes('|') ? opt.replace(/\s*\|\s*/, ' ||| ') : opt);
-        // Câu hỏi nối cột thường không có đáp án đúng theo kiểu ABCD trong text thô
-        correctOptionIndex = undefined;
-    }
-
-    // Logic đặc biệt cho câu hỏi Sắp xếp (Ordering)
-    const isOrderingKeywords = /sắp xếp|thứ tự|xếp theo|từ bé đến lớn|từ lớn đến bé|từ nhỏ đến lớn|từ lớn đến nhỏ|từ thấp đến cao|từ cao đến thấp|từ ngắn.* đến dài|từ dài.* đến ngắn|tăng dần|giảm dần|ordering|arrange|sort/i.test(content);
-    const isSentenceScrambleKeywords = /xếp từ thành câu|sắp xếp từ|ghép từ thành câu|xếp.*từ.*câu/i.test(content);
-    const isWordClassifyKeywords = /phân loại.*từ|phân nhóm.*từ|phân loại|phân nhóm|xếp.*từ.*nhóm/i.test(content);
-    const isFillInPassageKeywords = /điền.*đoạn văn|điền.*chỗ trống.*đoạn|điền.*vào đoạn/i.test(content);
-    const isInlineDropdownKeywords = /thả xuống|dropdown|thả.*chỗ trống|chọn.*điền.*đoạn văn/i.test(content);
+    // Phân loại dựa trên cấu trúc (Ưu tiên số 1) và từ khóa (Ưu tiên số 2)
+    const hasBlanksInContent = content.includes('[__]');
     const hasInlineDropdownPipes = options.some(opt => opt.includes('|||'));
-    
-    if (isWordClassifyKeywords && hasPipeInOptions) {
-        type = 'WORD_CLASSIFY';
-        options = options.map(opt => opt.includes('|') ? opt.replace(/\s*\|\s*/, ' ||| ') : opt);
+    const hasPipeInOptions = options.some(opt => opt.includes('|') && !opt.includes('|||'));
+    const isMatchingKeywords = /nối|ghép|matching|khớp/i.test(content);
+
+    if (hasBlanksInContent) {
+        if (hasInlineDropdownPipes) {
+            type = 'INLINE_DROPDOWN';
+        } else {
+            type = 'FILL_IN_PASSAGE';
+        }
         correctOptionIndex = undefined;
-    } else if (isInlineDropdownKeywords || hasInlineDropdownPipes) {
-        type = 'INLINE_DROPDOWN';
+    } else if (hasPipeInOptions) {
+        if (isMatchingKeywords) {
+            type = 'MATCHING';
+            options = options.map(opt => opt.replace(/\s*\|\s*/, ' ||| '));
+        } else {
+            type = 'WORD_CLASSIFY';
+            options = options.map(opt => opt.replace(/\s*\|\s*/, ' ||| '));
+        }
         correctOptionIndex = undefined;
-    } else if (isFillInPassageKeywords && type === 'MCQ') {
-        type = 'FILL_IN_PASSAGE';
-        correctOptionIndex = undefined;
-    } else if (isSentenceScrambleKeywords && type === 'MCQ') {
-        type = 'SENTENCE_SCRAMBLE';
-        correctOptionIndex = undefined;
-    } else if (isOrderingKeywords && type === 'MCQ') {
-        type = 'ORDERING';
-        // Câu hỏi sắp xếp không có đáp án đúng theo kiểu ABCD
-        correctOptionIndex = undefined;
+    } else {
+        // Phân loại theo từ khóa (Nếu không có đặc trưng cấu trúc rõ ràng)
+        const isOrderingKeywords = /sắp xếp|thứ tự|xếp theo|từ bé đến lớn|từ lớn đến bé|từ nhỏ đến lớn|từ lớn đến nhỏ|từ thấp đến cao|từ cao đến thấp|từ ngắn.* đến dài|từ dài.* đến ngắn|tăng dần|giảm dần|ordering|arrange|sort/i.test(content);
+        const isSentenceScrambleKeywords = /xếp từ thành câu|sắp xếp từ|ghép từ thành câu|xếp.*từ.*câu/i.test(content);
+        const isWordClassifyKeywords = /phân loại.*từ|phân nhóm.*từ|phân loại|phân nhóm|xếp.*từ.*nhóm/i.test(content);
+        const isFillInPassageKeywords = /điền.*đoạn văn|điền.*chỗ trống.*đoạn|điền.*vào đoạn/i.test(content);
+        const isInlineDropdownKeywords = /thả xuống|dropdown|thả.*chỗ trống|chọn.*điền.*đoạn văn/i.test(content);
+        
+        if (isWordClassifyKeywords && options.some(opt => opt.includes('|'))) {
+            type = 'WORD_CLASSIFY';
+            options = options.map(opt => opt.includes('|') ? opt.replace(/\s*\|\s*/, ' ||| ') : opt);
+            correctOptionIndex = undefined;
+        } else if (isInlineDropdownKeywords && hasInlineDropdownPipes) {
+            type = 'INLINE_DROPDOWN';
+            correctOptionIndex = undefined;
+        } else if (isFillInPassageKeywords && type === 'MCQ') {
+            type = 'FILL_IN_PASSAGE';
+            correctOptionIndex = undefined;
+        } else if (isSentenceScrambleKeywords && type === 'MCQ') {
+            type = 'SENTENCE_SCRAMBLE';
+            correctOptionIndex = undefined;
+        } else if (isOrderingKeywords && type === 'MCQ') {
+            type = 'ORDERING';
+            correctOptionIndex = undefined;
+        }
     }
 
     if (type === 'SHORT_ANSWER' && shortAnswerText) {
