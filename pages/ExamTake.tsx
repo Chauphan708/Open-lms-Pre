@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useStore } from '../store';
 import { useClassFunStore } from '../services/classFunStore';
-import { Clock, CheckCircle, AlertTriangle, Lock, Ban, ChevronLeft, Radio, Sparkles, MessageSquareQuote, RotateCcw, Lightbulb, BrainCircuit, Book, Send, ShieldAlert, Menu, X, ListOrdered, Loader2, ChevronDown } from 'lucide-react';
+import { Clock, CheckCircle, AlertTriangle, Lock, Ban, ChevronLeft, Radio, Sparkles, MessageSquareQuote, RotateCcw, Lightbulb, BrainCircuit, Book, Send, ShieldAlert, Menu, X, ListOrdered, Loader2, ChevronDown, ChevronUp } from 'lucide-react';
 import { Attempt, Exam } from '../types';
 import { analyzeStudentAttempt } from '../services/geminiService';
 import { DictionaryWidget } from '../components/DictionaryWidget'; // IMPORT WIDGET
@@ -594,53 +594,126 @@ const MatchingQuestion = React.memo(({ question, answer, isSubmitted, onSetAnswe
 });
 
 const OrderingQuestion = React.memo(({ question, answer, isSubmitted, onSetAnswer, viewPassFail, canViewSolution, shuffledIndices }: any) => {
-  const currentAns = Array.isArray(answer) ? answer : Array(question.options.length).fill("");
-  const availableOptions = shuffledIndices.map((i: number) => question.options[i]);
+  // If no student answer, initialize with shuffled indices order
+  const currentAns = useMemo(() => {
+    if (Array.isArray(answer) && answer.length === question.options.length) {
+      return answer;
+    }
+    // Initialize with shuffled order
+    return shuffledIndices.map((i: number) => question.options[i]);
+  }, [answer, question.options, shuffledIndices]);
 
-  const handleOrderChange = (index: number, val: string) => {
-    if (isSubmitted) return;
-    const newArr = [...currentAns];
-    newArr[index] = val;
-    onSetAnswer(newArr);
+  useEffect(() => {
+    if (!answer && currentAns.length > 0) {
+      onSetAnswer(currentAns);
+    }
+  }, [answer, currentAns, onSetAnswer]);
+
+  const [draggedIdx, setDraggedIdx] = useState<number | null>(null);
+
+  const handleDragStart = (e: React.DragEvent, index: number) => {
+    if (isSubmitted) {
+      e.preventDefault();
+      return;
+    }
+    setDraggedIdx(index);
+  };
+
+  const handleDragOver = (e: React.DragEvent, index: number) => {
+    if (isSubmitted || draggedIdx === null || draggedIdx === index) return;
+    e.preventDefault();
+  };
+
+  const handleDrop = (e: React.DragEvent, targetIdx: number) => {
+    if (isSubmitted || draggedIdx === null) return;
+    e.preventDefault();
+    const newAns = [...currentAns];
+    // Move item from draggedIdx to targetIdx
+    const [draggedItem] = newAns.splice(draggedIdx, 1);
+    newAns.splice(targetIdx, 0, draggedItem);
+    onSetAnswer(newAns);
+    setDraggedIdx(null);
+  };
+
+  // Support click-to-move for mobile (up and down buttons)
+  const handleMoveUp = (index: number) => {
+    if (isSubmitted || index === 0) return;
+    const newAns = [...currentAns];
+    const temp = newAns[index];
+    newAns[index] = newAns[index - 1];
+    newAns[index - 1] = temp;
+    onSetAnswer(newAns);
+  };
+
+  const handleMoveDown = (index: number) => {
+    if (isSubmitted || index === currentAns.length - 1) return;
+    const newAns = [...currentAns];
+    const temp = newAns[index];
+    newAns[index] = newAns[index + 1];
+    newAns[index + 1] = temp;
+    onSetAnswer(newAns);
   };
 
   return (
     <div className="space-y-4 max-w-3xl">
       <div className="bg-indigo-50 p-4 rounded-xl border border-indigo-100 flex items-start gap-3 mb-4">
         <ListOrdered className="h-5 w-5 text-indigo-600 mt-0.5" />
-        <p className="text-sm text-indigo-800 font-medium italic">Sắp xếp các mục bên dưới theo đúng thứ tự logic từ trên xuống dưới.</p>
+        <p className="text-sm text-indigo-800 font-medium">Kéo thả các mục để sắp xếp lại vị trí, hoặc dùng mũi tên ▲ ▼ để di chuyển chúng lên xuống.</p>
       </div>
-      {question.options.map((_: any, idx: number) => {
-        const isCorrect = isSubmitted && viewPassFail && currentAns[idx] === question.options[idx];
-        const isWrong = isSubmitted && viewPassFail && currentAns[idx] !== question.options[idx] && currentAns[idx];
-        const val = currentAns[idx] || '';
 
-        return (
-          <div key={idx} className={`p-4 rounded-2xl border-2 flex gap-4 items-center transition-all shadow-sm ${isCorrect ? 'bg-green-50 border-green-200' : isWrong ? 'bg-red-50 border-red-200' : 'bg-white border-gray-100'}`}>
-            <div className="w-12 h-12 flex-shrink-0 bg-gray-900 text-white rounded-xl flex items-center justify-center font-black italic shadow-lg">
-              #{idx + 1}
-            </div>
-            <div className="flex-1">
-              <select
-                disabled={isSubmitted}
-                className={`w-full p-3 border-2 rounded-xl bg-white font-bold transition-all outline-none ${val ? 'border-indigo-300 text-indigo-900' : 'border-gray-200 text-gray-400'}`}
-                value={val}
-                onChange={(e) => handleOrderChange(idx, e.target.value)}
-              >
-                <option value="">--- Chọn nội dung cho vị trí này ---</option>
-                {availableOptions.map((opt: string, i: number) => (
-                  <option key={i} value={opt}>{opt}</option>
-                ))}
-              </select>
-            </div>
-            {isSubmitted && viewPassFail && canViewSolution && isWrong && (
-              <div className="hidden md:block bg-green-600 text-white text-[10px] font-bold py-1 px-3 rounded-lg shadow-sm">
-                ĐÚNG: {question.options[idx]}
+      <div className="space-y-3">
+        {currentAns.map((item: string, idx: number) => {
+          const isCorrect = isSubmitted && viewPassFail && item === question.options[idx];
+          const isWrong = isSubmitted && viewPassFail && item !== question.options[idx];
+
+          return (
+            <div
+              key={idx}
+              draggable={!isSubmitted}
+              onDragStart={(e) => handleDragStart(e, idx)}
+              onDragOver={(e) => handleDragOver(e, idx)}
+              onDrop={(e) => handleDrop(e, idx)}
+              className={`p-4 rounded-2xl border-2 flex gap-4 items-center transition-all shadow-sm ${
+                isCorrect ? 'bg-green-50 border-green-300' : 
+                isWrong ? 'bg-red-50 border-red-300' : 
+                'bg-white border-slate-200 hover:border-indigo-300 cursor-grab active:cursor-grabbing'
+              } ${isSubmitted ? 'cursor-default' : ''}`}
+            >
+              <div className="w-10 h-10 flex-shrink-0 bg-slate-900 text-white rounded-xl flex items-center justify-center font-bold text-sm">
+                #{idx + 1}
               </div>
-            )}
-          </div>
-        );
-      })}
+              <div className="flex-1 font-bold text-slate-700">
+                {item}
+              </div>
+              
+              {!isSubmitted && (
+                <div className="flex flex-col gap-1">
+                  <button
+                    disabled={idx === 0}
+                    onClick={() => handleMoveUp(idx)}
+                    className="p-1 hover:bg-slate-100 text-slate-400 hover:text-slate-600 rounded disabled:opacity-30 disabled:hover:bg-transparent"
+                  >
+                    <ChevronUp className="h-4 w-4" />
+                  </button>
+                  <button
+                    disabled={idx === currentAns.length - 1}
+                    onClick={() => handleMoveDown(idx)}
+                    className="p-1 hover:bg-slate-100 text-slate-400 hover:text-slate-600 rounded disabled:opacity-30 disabled:hover:bg-transparent"
+                  >
+                    <ChevronDown className="h-4 w-4" />
+                  </button>
+                </div>
+              )}
+
+              {isSubmitted && viewPassFail && canViewSolution && isWrong && (
+                <div className="bg-green-500 text-white text-[10px] font-bold py-1 px-3 rounded-lg shadow-sm">
+                  ĐÚNG LÀ: {question.options[idx]}
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 });
@@ -776,15 +849,7 @@ const DragDropQuestion = React.memo(({ question, answer, isSubmitted, onSetAnswe
         </div>
       )}
 
-      {/* Reset button */}
-      {!isSubmitted && (
-        <div className="flex items-center gap-4">
-          <button onClick={handleReset} className="flex items-center gap-2 px-4 py-2 bg-slate-100 text-slate-600 rounded-lg hover:bg-slate-200 font-semibold text-sm transition-colors">
-            <RotateCcw className="h-4 w-4" />
-            Làm lại
-          </button>
-        </div>
-      )}
+
     </div>
   );
 });
@@ -901,10 +966,7 @@ const SentenceScrambleQuestion = React.memo(({ question, answer, isSubmitted, on
 
       {!isSubmitted && (
         <div className="flex items-center gap-4 mt-6">
-          <button onClick={handleReset} className="flex items-center gap-2 px-4 py-2 bg-slate-100 text-slate-600 rounded-lg hover:bg-slate-200 font-semibold text-sm transition-colors">
-            <RotateCcw className="h-4 w-4" />
-            Xếp lại từ đầu
-          </button>
+
           <button onClick={handleHint} className="flex items-center gap-2 px-4 py-2 bg-yellow-50 text-yellow-700 border border-yellow-200 rounded-lg hover:bg-yellow-100 font-semibold text-sm transition-colors ml-auto">
             <Lightbulb className="h-4 w-4" />
             Gợi ý chữ cái đầu
