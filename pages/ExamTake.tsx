@@ -646,54 +646,145 @@ const OrderingQuestion = React.memo(({ question, answer, isSubmitted, onSetAnswe
 });
 
 const DragDropQuestion = React.memo(({ question, answer, isSubmitted, onSetAnswer, viewPassFail, canViewSolution, shuffledIndices }: any) => {
-  const currentAns = Array.isArray(answer) ? answer : Array(question.options.length).fill("");
+  const currentAns: string[] = Array.isArray(answer) ? answer : Array((question.content.match(/\[\.\.\.\]|\[\s*\]|___|\[__\]/g) || []).length).fill('');
   const availableOptions = shuffledIndices.map((i: number) => question.options[i]);
 
-  const handleDropChange = (index: number, val: string) => {
+  // Split content into parts around the blanks
+  const parts = useMemo(() => {
+    return question.content.replace(/\[\.\.\.\]|\[\s*\]|___/g, '[__]').split('[__]');
+  }, [question.content]);
+
+  const [selectedWord, setSelectedWord] = useState<string | null>(null);
+
+  const handleSelectWord = (word: string) => {
     if (isSubmitted) return;
-    const newArr = [...currentAns];
-    newArr[index] = val;
-    onSetAnswer(newArr);
+    setSelectedWord(selectedWord === word ? null : word);
+  };
+
+  const handleBlankClick = (blankIdx: number) => {
+    if (isSubmitted) return;
+    if (selectedWord) {
+      // Assign selected word
+      const newAns = [...currentAns];
+      newAns[blankIdx] = selectedWord;
+      onSetAnswer(newAns);
+      setSelectedWord(null);
+    } else {
+      // Remove word from blank
+      const newAns = [...currentAns];
+      newAns[blankIdx] = '';
+      onSetAnswer(newAns);
+    }
+  };
+
+  const handleDragStart = (e: React.DragEvent, word: string) => {
+    if (isSubmitted) {
+      e.preventDefault();
+      return;
+    }
+    e.dataTransfer.setData('text/plain', word);
+  };
+
+  const handleDropOnBlank = (e: React.DragEvent, blankIdx: number) => {
+    if (isSubmitted) return;
+    e.preventDefault();
+    const word = e.dataTransfer.getData('text/plain');
+    if (word) {
+      const newAns = [...currentAns];
+      newAns[blankIdx] = word;
+      onSetAnswer(newAns);
+    }
+  };
+
+  const handleReset = () => {
+    if (isSubmitted) return;
+    onSetAnswer(Array(parts.length - 1).fill(''));
+    setSelectedWord(null);
+  };
+
+  const getBlankCorrectness = (blankIdx: number) => {
+    if (!isSubmitted || !viewPassFail) return null;
+    const expected = String(question.options[blankIdx] || '').trim();
+    const actual = String(currentAns[blankIdx] || '').trim();
+    return actual === expected ? 'correct' : 'wrong';
   };
 
   return (
-    <div className="bg-gray-50/50 p-6 rounded-3xl border-2 border-dashed border-gray-200 shadow-inner">
-      <div className="flex items-center gap-2 mb-6 text-gray-600">
-        <Sparkles className="h-5 w-5 text-indigo-500" />
-        <p className="text-sm font-bold">Điền lựa chọn vào các ô trống tương ứng:</p>
+    <div className="space-y-6 max-w-3xl">
+      <div className="flex items-center gap-2 text-indigo-700 bg-indigo-50 p-3 rounded-lg border border-indigo-100">
+        <Sparkles className="h-5 w-5" />
+        <span className="text-sm font-semibold">Kéo các từ gợi ý và thả vào các ô trống phù hợp, hoặc bấm vào từ rồi bấm vào ô trống để điền. Bấm vào ô đã điền để rút từ lại.</span>
       </div>
-      <div className="flex flex-wrap gap-6 justify-center md:justify-start">
-        {Array(question.options.length).fill(0).map((_, idx) => {
-          const isCorrect = isSubmitted && viewPassFail && currentAns[idx] === question.options[idx];
-          const isWrong = isSubmitted && viewPassFail && currentAns[idx] !== question.options[idx] && currentAns[idx];
-          const val = currentAns[idx] || '';
 
-          return (
-            <div key={idx} className={`flex flex-col gap-2 p-4 rounded-2xl border-2 shadow-sm transition-all w-full sm:w-64 ${isCorrect ? 'bg-green-50 border-green-300' : isWrong ? 'bg-red-50 border-red-300' : 'bg-white border-gray-200'}`}>
-              <div className="flex justify-between items-center">
-                <label className="text-xs font-black text-gray-400 uppercase tracking-tighter">Vị trí [{idx + 1}]</label>
-                {val && !isSubmitted && <span className="w-2 h-2 rounded-full bg-indigo-500 animate-pulse"></span>}
-              </div>
-              <select
-                disabled={isSubmitted}
-                className={`p-2 border-2 rounded-lg bg-transparent font-medium transition-all outline-none ${val ? 'border-indigo-500 text-indigo-900 bg-indigo-50/20' : 'border-gray-200 text-gray-400'}`}
-                value={val}
-                onChange={(e) => handleDropChange(idx, e.target.value)}
-              >
-                <option value="">(Trống)</option>
-                {availableOptions.map((opt: string, i: number) => (
-                  <option key={i} value={opt}>{opt}</option>
-                ))}
-              </select>
-              {isSubmitted && viewPassFail && canViewSolution && isWrong && (
-                <div className="text-[10px] text-green-700 font-black mt-1 p-1 bg-green-100 rounded text-center">
-                  PHẢI LÀ: {question.options[idx]}
-                </div>
-              )}
-            </div>
-          );
-        })}
+      {/* Passage with inline drop zones */}
+      <div className="p-6 rounded-2xl border-2 leading-[2.5] text-base transition-all bg-white border-gray-200">
+        {parts.map((part: string, i: number) => (
+          <React.Fragment key={i}>
+            <span className="whitespace-pre-wrap">{part}</span>
+            {i < parts.length - 1 && (() => {
+              const correctness = getBlankCorrectness(i);
+              const val = currentAns[i] || '';
+              return (
+                <span
+                  onDragOver={(e) => !isSubmitted && e.preventDefault()}
+                  onDrop={(e) => handleDropOnBlank(e, i)}
+                  onClick={() => handleBlankClick(i)}
+                  className={`inline-flex items-center justify-center align-middle mx-1 px-3 py-0.5 min-w-[120px] min-h-[36px] rounded-lg border-2 border-dashed font-bold transition-all text-base cursor-pointer select-none ${
+                    correctness === 'correct' ? 'bg-green-50 border-green-500 text-green-700' :
+                    correctness === 'wrong' ? 'bg-red-50 border-red-500 text-red-700' :
+                    val ? 'bg-indigo-50 border-indigo-500 text-indigo-800 shadow-sm border-solid' :
+                    'bg-slate-50 border-slate-300 text-slate-400 hover:border-indigo-400 hover:bg-indigo-50/20'
+                  }`}
+                >
+                  {val || '...'}
+                  {correctness === 'wrong' && canViewSolution && (
+                    <span className="text-xs text-green-700 font-bold ml-1.5">({question.options[i]})</span>
+                  )}
+                </span>
+              );
+            })()}
+          </React.Fragment>
+        ))}
       </div>
+
+      {/* Draggable options bank */}
+      {!isSubmitted && (
+        <div className="p-5 rounded-2xl border border-slate-200 bg-slate-50/50">
+          <label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3 block">CÁC TỪ GỢI Ý:</label>
+          <div className="flex flex-wrap gap-2.5">
+            {availableOptions.map((opt: string, idx: number) => {
+              // Check if option is already used
+              const isUsed = currentAns.includes(opt);
+              return (
+                <button
+                  key={idx}
+                  disabled={isUsed}
+                  draggable={!isUsed}
+                  onDragStart={(e) => handleDragStart(e, opt)}
+                  onClick={() => handleSelectWord(opt)}
+                  className={`px-4 py-2 rounded-xl text-base font-bold border-2 transition-all active:scale-95 ${
+                    isUsed ? 'bg-gray-100 text-gray-300 border-gray-100 cursor-not-allowed' :
+                    selectedWord === opt ? 'bg-indigo-500 text-white border-indigo-500 shadow-md scale-105' :
+                    'bg-white text-slate-700 border-slate-200 hover:border-indigo-300 hover:shadow-sm cursor-grab active:cursor-grabbing'
+                  }`}
+                >
+                  {opt}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Reset button */}
+      {!isSubmitted && (
+        <div className="flex items-center gap-4">
+          <button onClick={handleReset} className="flex items-center gap-2 px-4 py-2 bg-slate-100 text-slate-600 rounded-lg hover:bg-slate-200 font-semibold text-sm transition-colors">
+            <RotateCcw className="h-4 w-4" />
+            Làm lại
+          </button>
+        </div>
+      )}
     </div>
   );
 });
@@ -867,14 +958,11 @@ const WordClassifyQuestion = React.memo(({ question, answer, isSubmitted, onSetA
     return map;
   }, [items, currentAns, categories]);
 
-  const [selectedWordIndex, setSelectedWordIndex] = useState<number | null>(null);
-
-  const handleAssignToCategory = (category: string) => {
-    if (isSubmitted || selectedWordIndex === null) return;
+  const handleAssignToCategory = (itemIndex: number, category: string) => {
+    if (isSubmitted) return;
     const newAns = [...currentAns];
-    newAns[selectedWordIndex] = category;
+    newAns[itemIndex] = category;
     onSetAnswer(newAns);
-    setSelectedWordIndex(null);
   };
 
   const handleUnassign = (itemIndex: number) => {
@@ -884,10 +972,39 @@ const WordClassifyQuestion = React.memo(({ question, answer, isSubmitted, onSetA
     onSetAnswer(newAns);
   };
 
-  const handleReset = () => {
+  const handleDragStart = (e: React.DragEvent, itemIndex: number) => {
+    if (isSubmitted) {
+      e.preventDefault();
+      return;
+    }
+    e.dataTransfer.setData('text/plain', itemIndex.toString());
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
+  const handleRootDragOver = (e: React.DragEvent) => {
+    if (!isSubmitted) {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+    }
+  };
+
+  const handleRootDrop = (e: React.DragEvent) => {
     if (isSubmitted) return;
-    onSetAnswer(Array(question.options.length).fill(''));
-    setSelectedWordIndex(null);
+    e.preventDefault();
+    const itemIndex = e.dataTransfer.getData('text/plain');
+    if (itemIndex !== '') {
+      handleUnassign(Number(itemIndex));
+    }
+  };
+
+  const handleCategoryDrop = (e: React.DragEvent, cat: string) => {
+    if (isSubmitted) return;
+    e.preventDefault();
+    e.stopPropagation();
+    const itemIndex = e.dataTransfer.getData('text/plain');
+    if (itemIndex !== '') {
+      handleAssignToCategory(Number(itemIndex), cat);
+    }
   };
 
   // Shuffle unassigned words for display
@@ -911,28 +1028,28 @@ const WordClassifyQuestion = React.memo(({ question, answer, isSubmitted, onSetA
   };
 
   return (
-    <div className="space-y-5 max-w-3xl">
+    <div 
+      className="space-y-5 max-w-3xl"
+      onDragOver={handleRootDragOver}
+      onDrop={handleRootDrop}
+    >
       <div className="flex items-center gap-2 text-indigo-700 bg-indigo-50 p-3 rounded-lg border border-indigo-100">
         <Sparkles className="h-5 w-5" />
-        <span className="text-sm font-semibold">Bấm vào từ, sau đó bấm vào nhóm phù hợp để phân loại.</span>
+        <span className="text-sm font-semibold">Kéo từ và thả vào nhóm phù hợp để phân loại. Kéo từ ra ngoài không gian nhóm để đưa về vị trí ban đầu.</span>
       </div>
 
       {/* Unassigned words pool */}
       <div className="p-5 rounded-2xl border-2 border-dashed border-gray-300 bg-gray-50/50 min-h-[70px]">
         <div className="flex flex-wrap gap-2.5 justify-center">
           {shuffledUnassigned.map((item: any) => (
-            <button
+            <div
               key={item.index}
-              onClick={() => !isSubmitted && setSelectedWordIndex(selectedWordIndex === item.index ? null : item.index)}
-              disabled={isSubmitted}
-              className={`px-4 py-2 rounded-xl text-base font-bold border-2 transition-all active:scale-95 ${
-                selectedWordIndex === item.index
-                  ? 'bg-indigo-500 text-white border-indigo-500 shadow-md'
-                  : 'bg-white text-slate-700 border-slate-200 hover:border-indigo-300 hover:shadow-sm'
-              } ${isSubmitted ? 'cursor-default' : 'cursor-pointer'}`}
+              draggable={!isSubmitted}
+              onDragStart={(e) => handleDragStart(e, item.index)}
+              className={`px-4 py-2 rounded-xl text-base font-bold border-2 transition-all active:scale-95 bg-white text-slate-700 border-slate-200 hover:border-indigo-300 hover:shadow-sm ${isSubmitted ? 'cursor-default' : 'cursor-grab active:cursor-grabbing'}`}
             >
               {item.word}
-            </button>
+            </div>
           ))}
           {shuffledUnassigned.length === 0 && !isSubmitted && (
             <span className="text-gray-400 italic text-sm py-2">Tất cả từ đã được phân loại</span>
@@ -946,13 +1063,11 @@ const WordClassifyQuestion = React.memo(({ question, answer, isSubmitted, onSetA
           const color = CATEGORY_COLORS[catIdx % CATEGORY_COLORS.length];
           const assignedWords = wordsByCategory[cat] || [];
           return (
-            <button
+            <div
               key={cat}
-              onClick={() => handleAssignToCategory(cat)}
-              disabled={isSubmitted || selectedWordIndex === null}
-              className={`p-4 rounded-2xl border-2 transition-all text-left w-full ${color.bg} ${color.border} ${
-                selectedWordIndex !== null && !isSubmitted ? 'hover:shadow-md cursor-pointer ring-2 ring-indigo-200' : ''
-              } ${isSubmitted ? 'cursor-default' : ''}`}
+              onDragOver={handleRootDragOver}
+              onDrop={(e) => handleCategoryDrop(e, cat)}
+              className={`p-4 rounded-2xl border-2 transition-all text-left w-full ${color.bg} ${color.border}`}
             >
               <span className={`inline-block px-3 py-1 rounded-full text-xs font-black uppercase tracking-wide mb-3 ${color.label}`}>
                 {cat}
@@ -961,21 +1076,22 @@ const WordClassifyQuestion = React.memo(({ question, answer, isSubmitted, onSetA
                 {assignedWords.map((item: any) => {
                   const correctness = getItemCorrectness(item.index);
                   return (
-                    <span
+                    <div
                       key={item.index}
-                      onClick={(e) => { e.stopPropagation(); handleUnassign(item.index); }}
-                      className={`px-3 py-1.5 rounded-lg text-sm font-bold border cursor-pointer transition-all ${
+                      draggable={!isSubmitted}
+                      onDragStart={(e) => handleDragStart(e, item.index)}
+                      className={`px-3 py-1.5 rounded-lg text-sm font-bold border transition-all ${
                         correctness === 'correct' ? 'bg-green-100 border-green-300 text-green-800' :
                         correctness === 'wrong' ? 'bg-red-100 border-red-300 text-red-800' :
                         `${color.tag}`
-                      } ${isSubmitted ? 'cursor-default' : 'active:scale-95'}`}
+                      } ${isSubmitted ? 'cursor-default' : 'cursor-grab active:cursor-grabbing hover:shadow-md'}`}
                     >
                       {item.word}
-                    </span>
+                    </div>
                   );
                 })}
               </div>
-            </button>
+            </div>
           );
         })}
       </div>
@@ -998,16 +1114,6 @@ const WordClassifyQuestion = React.memo(({ question, answer, isSubmitted, onSetA
               );
             })}
           </div>
-        </div>
-      )}
-
-      {/* Reset button */}
-      {!isSubmitted && (
-        <div className="flex items-center gap-4">
-          <button onClick={handleReset} className="flex items-center gap-2 px-4 py-2 bg-slate-100 text-slate-600 rounded-lg hover:bg-slate-200 font-semibold text-sm transition-colors">
-            <RotateCcw className="h-4 w-4" />
-            Làm lại
-          </button>
         </div>
       )}
     </div>

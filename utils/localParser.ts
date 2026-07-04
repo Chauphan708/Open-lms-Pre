@@ -254,6 +254,12 @@ function parseOneBlock(block: string, index: number): Question | null {
     }
 
     // Phân loại dựa trên cấu trúc (Ưu tiên số 1) và từ khóa (Ưu tiên số 2)
+    const isOrderingKeywords = /sắp xếp|thứ tự|xếp theo|từ bé đến lớn|từ lớn đến bé|từ nhỏ đến lớn|từ lớn đến nhỏ|từ thấp đến cao|từ cao đến thấp|từ ngắn.* đến dài|từ dài.* đến ngắn|tăng dần|giảm dần|ordering|arrange|sort/i.test(content);
+        const isSentenceScrambleKeywords = /xếp từ thành câu|sắp xếp từ|ghép từ thành câu|xếp.*từ.*câu/i.test(content);
+        const isWordClassifyKeywords = /phân loại.*từ|phân nhóm.*từ|phân loại|phân nhóm|xếp.*từ.*nhóm/i.test(content);
+        const isFillInPassageKeywords = /điền.*đoạn văn|điền.*chỗ trống.*đoạn|điền.*vào đoạn/i.test(content);
+        const isInlineDropdownKeywords = /thả xuống|dropdown|thả.*chỗ trống|chọn.*điền.*đoạn văn/i.test(content);
+        const isDragDropKeywords = /kéo thả|điền khuyết/i.test(content);
     const hasBlanksInContent = /\[__\]|\[\.\.\.\]|\[\s*\]|___/.test(content);
     const hasInlineDropdownPipes = options.some(opt => opt.includes('|||'));
     const hasPipeInOptions = options.some(opt => opt.includes('|') && !opt.includes('|||'));
@@ -262,6 +268,8 @@ function parseOneBlock(block: string, index: number): Question | null {
     if (hasBlanksInContent) {
         if (hasInlineDropdownPipes) {
             type = 'INLINE_DROPDOWN';
+        } else if (isDragDropKeywords) {
+            type = 'DRAG_DROP';
         } else {
             type = 'FILL_IN_PASSAGE';
         }
@@ -277,12 +285,7 @@ function parseOneBlock(block: string, index: number): Question | null {
         correctOptionIndex = undefined;
     } else {
         // Phân loại theo từ khóa (Nếu không có đặc trưng cấu trúc rõ ràng)
-        const isOrderingKeywords = /sắp xếp|thứ tự|xếp theo|từ bé đến lớn|từ lớn đến bé|từ nhỏ đến lớn|từ lớn đến nhỏ|từ thấp đến cao|từ cao đến thấp|từ ngắn.* đến dài|từ dài.* đến ngắn|tăng dần|giảm dần|ordering|arrange|sort/i.test(content);
-        const isSentenceScrambleKeywords = /xếp từ thành câu|sắp xếp từ|ghép từ thành câu|xếp.*từ.*câu/i.test(content);
-        const isWordClassifyKeywords = /phân loại.*từ|phân nhóm.*từ|phân loại|phân nhóm|xếp.*từ.*nhóm/i.test(content);
-        const isFillInPassageKeywords = /điền.*đoạn văn|điền.*chỗ trống.*đoạn|điền.*vào đoạn/i.test(content);
-        const isInlineDropdownKeywords = /thả xuống|dropdown|thả.*chỗ trống|chọn.*điền.*đoạn văn/i.test(content);
-        const isDragDropKeywords = /kéo thả|điền khuyết/i.test(content);
+        
         
         if (isWordClassifyKeywords && options.some(opt => opt.includes('|'))) {
             type = 'WORD_CLASSIFY';
