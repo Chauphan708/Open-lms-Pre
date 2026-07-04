@@ -395,6 +395,7 @@ export const ExamList: React.FC = () => {
                   <option value="SHORT_ANSWER">Tự luận</option>
                   <option value="WORD_CLASSIFY">Phân loại từ</option>
                   <option value="FILL_IN_PASSAGE">Điền vào đoạn văn</option>
+                  <option value="INLINE_DROPDOWN">Trắc nghiệm thả xuống (Inline Dropdown)</option>
                 </select>
               </div>
             </div>

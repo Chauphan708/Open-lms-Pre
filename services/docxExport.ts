@@ -156,13 +156,30 @@ export const exportToDocx = async ({ questions, title, subject, grade, duration,
             MATCHING: ' (Nối cột)',
             DRAG_DROP: ' (Điền khuyết)',
             WORD_CLASSIFY: ' (Phân loại từ)',
-            FILL_IN_PASSAGE: ' (Điền vào đoạn văn)'
+            FILL_IN_PASSAGE: ' (Điền vào đoạn văn)',
+            INLINE_DROPDOWN: ' (Trắc nghiệm thả xuống)'
         };
+
+        let displayContent = q.content;
+        if (q.type === 'INLINE_DROPDOWN' && q.options) {
+            let blankIndex = 0;
+            displayContent = q.content.replace(/\[__\]/g, () => {
+                const optString = q.options[blankIndex] || '';
+                const parts = optString.split('|||');
+                const correct = parts[0]?.trim();
+                const distractorsStr = parts[1]?.trim();
+                const distractors = distractorsStr ? distractorsStr.split('|').map((s: string) => s.trim()) : [];
+                let allOpts = [correct, ...distractors].filter(Boolean);
+                allOpts.sort(); // Predictable sort for paper export
+                blankIndex++;
+                return `(${allOpts.join(' / ')})`;
+            });
+        }
 
         sections.push(new Paragraph({
             children: [
                 new TextRun({ text: `Câu ${idx + 1}: `, bold: true }),
-                ...parseContentWithMath(q.content),
+                ...parseContentWithMath(displayContent),
                 ...(typeLabel[q.type] ? [new TextRun({ text: typeLabel[q.type], italics: true, color: '555555' })] : []),
             ],
             spacing: { before: 200 }

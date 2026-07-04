@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useStore } from '../store';
 import { useClassFunStore } from '../services/classFunStore';
-import { Clock, CheckCircle, AlertTriangle, Lock, Ban, ChevronLeft, Radio, Sparkles, MessageSquareQuote, RotateCcw, Lightbulb, BrainCircuit, Book, Send, ShieldAlert, Menu, X, ListOrdered, Loader2 } from 'lucide-react';
+import { Clock, CheckCircle, AlertTriangle, Lock, Ban, ChevronLeft, Radio, Sparkles, MessageSquareQuote, RotateCcw, Lightbulb, BrainCircuit, Book, Send, ShieldAlert, Menu, X, ListOrdered, Loader2, ChevronDown } from 'lucide-react';
 import { Attempt, Exam } from '../types';
 import { analyzeStudentAttempt } from '../services/geminiService';
 import { DictionaryWidget } from '../components/DictionaryWidget'; // IMPORT WIDGET
@@ -230,6 +230,17 @@ const evaluateAnswer = (q: any, userAns: any, caseSensitive: boolean = false): b
     if (!Array.isArray(userAns) || userAns.length !== q.options.length) return false;
     for (let i = 0; i < q.options.length; i++) {
       const expected = String(q.options[i] || '').trim();
+      const actual = String(userAns[i] || '').trim();
+      if (actual !== expected) return false;
+    }
+    return true;
+  }
+
+  if (q.type === 'INLINE_DROPDOWN') {
+    if (!Array.isArray(userAns) || userAns.length !== q.options.length) return false;
+    for (let i = 0; i < q.options.length; i++) {
+      const rawOpt = String(q.options[i] || '');
+      const expected = rawOpt.split('|||')[0].trim();
       const actual = String(userAns[i] || '').trim();
       if (actual !== expected) return false;
     }
@@ -1077,6 +1088,114 @@ const FillInPassageQuestion = React.memo(({ question, answer, isSubmitted, onSet
       </div>
 
       {/* Reset button */}
+      {!isSubmitted && (
+        <div className="flex items-center gap-4">
+          <button onClick={handleReset} className="flex items-center gap-2 px-4 py-2 bg-slate-100 text-slate-600 rounded-lg hover:bg-slate-200 font-semibold text-sm transition-colors">
+            <RotateCcw className="h-4 w-4" />
+            Làm lại
+          </button>
+        </div>
+      )}
+    </div>
+  );
+});
+
+const InlineDropdownQuestion = React.memo(({ question, answer, isSubmitted, onSetAnswer, viewPassFail, canViewSolution }: any) => {
+  const blankCount = (question.content.match(/\[__\]/g) || []).length;
+  const currentAns: string[] = Array.isArray(answer) ? answer : Array(blankCount).fill('');
+
+  const parts = useMemo(() => {
+    return question.content.split('[__]');
+  }, [question.content]);
+
+  const handleChange = (index: number, value: string) => {
+    if (isSubmitted) return;
+    const newAns = [...currentAns];
+    newAns[index] = value;
+    onSetAnswer(newAns);
+  };
+
+  const handleReset = () => {
+    if (isSubmitted) return;
+    onSetAnswer(Array(blankCount).fill(''));
+  };
+
+  // Parse and shuffle options for each dropdown
+  const dropdownOptions = useMemo(() => {
+    return Array(blankCount).fill(0).map((_, i) => {
+      const rawOpt = question.options[i] || '';
+      const [correct, distractorsStr] = rawOpt.split('|||').map((s: string) => s.trim());
+      const distractors = distractorsStr ? distractorsStr.split('|').map((s: string) => s.trim()) : [];
+      let allOpts = [correct, ...distractors].filter(Boolean);
+      // Shuffle them randomly
+      for (let j = allOpts.length - 1; j > 0; j--) {
+        const k = Math.floor(Math.random() * (j + 1));
+        [allOpts[j], allOpts[k]] = [allOpts[k], allOpts[j]];
+      }
+      return { correct, allOpts };
+    });
+  }, [question.options, blankCount]);
+
+  const getBlankCorrectness = (index: number) => {
+    if (!isSubmitted || !viewPassFail) return null;
+    const expected = dropdownOptions[index]?.correct || '';
+    const actual = String(currentAns[index] || '').trim();
+    return actual === expected ? 'correct' : 'wrong';
+  };
+
+  return (
+    <div className="space-y-5 max-w-3xl">
+      <div className="flex items-center gap-2 text-indigo-700 bg-indigo-50 p-3 rounded-lg border border-indigo-100">
+        <Sparkles className="h-5 w-5" />
+        <span className="text-sm font-semibold">Chọn đáp án đúng từ trình đơn thả xuống cho mỗi ô trống.</span>
+      </div>
+
+      <div className={`p-6 rounded-2xl border-2 leading-[2.2] text-base transition-all ${
+        isSubmitted && viewPassFail
+          ? 'bg-white border-gray-200'
+          : 'bg-white border-gray-200'
+      }`}>
+        {parts.map((part: string, i: number) => (
+          <React.Fragment key={i}>
+            <span className="whitespace-pre-wrap">{part}</span>
+            {i < parts.length - 1 && (() => {
+              const correctness = getBlankCorrectness(i);
+              const { correct, allOpts } = dropdownOptions[i] || { correct: '', allOpts: [] };
+              
+              return (
+                <span className="inline-block align-baseline mx-0.5 relative">
+                  <select
+                    value={currentAns[i] || ''}
+                    onChange={(e) => handleChange(i, e.target.value)}
+                    disabled={isSubmitted}
+                    className={`appearance-none bg-transparent font-bold outline-none border-b-2 py-0.5 pr-6 pl-2 text-base transition-colors cursor-pointer ${
+                      correctness === 'correct' ? 'border-green-500 text-green-700' :
+                      correctness === 'wrong' ? 'border-red-500 text-red-700' :
+                      currentAns[i] ? 'border-indigo-400 text-indigo-800' :
+                      'border-gray-300 text-gray-600'
+                    } ${isSubmitted ? '' : 'focus:border-indigo-500 hover:bg-slate-50 rounded-t'}`}
+                  >
+                    <option value="" disabled>---</option>
+                    {allOpts.map((opt: string, optIdx: number) => (
+                      <option key={optIdx} value={opt}>{opt}</option>
+                    ))}
+                  </select>
+                  <ChevronDown className={`absolute right-1 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none ${
+                    correctness === 'correct' ? 'text-green-700' :
+                    correctness === 'wrong' ? 'text-red-700' :
+                    currentAns[i] ? 'text-indigo-800' : 'text-gray-400'
+                  }`} />
+                  
+                  {correctness === 'wrong' && canViewSolution && (
+                    <span className="text-xs text-green-700 font-bold ml-1">({correct})</span>
+                  )}
+                </span>
+              );
+            })()}
+          </React.Fragment>
+        ))}
+      </div>
+
       {!isSubmitted && (
         <div className="flex items-center gap-4">
           <button onClick={handleReset} className="flex items-center gap-2 px-4 py-2 bg-slate-100 text-slate-600 rounded-lg hover:bg-slate-200 font-semibold text-sm transition-colors">
@@ -2806,6 +2925,17 @@ export const ExamTake: React.FC = () => {
 
                   {q.type === 'FILL_IN_PASSAGE' && (
                     <FillInPassageQuestion
+                      question={q}
+                      answer={answers[q.id]}
+                      onSetAnswer={(val: any) => handleSetAnswer(q.id, val)}
+                      isSubmitted={isSubmitted}
+                      viewPassFail={viewPassFail}
+                      canViewSolution={canViewSolution}
+                    />
+                  )}
+
+                  {q.type === 'INLINE_DROPDOWN' && (
+                    <InlineDropdownQuestion
                       question={q}
                       answer={answers[q.id]}
                       onSetAnswer={(val: any) => handleSetAnswer(q.id, val)}

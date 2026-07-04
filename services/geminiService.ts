@@ -489,6 +489,24 @@ export const generateQuestionsByTopic = async (
       "topic": "${cleanTopic}",
       "questionType": "FILL_IN_PASSAGE"
     }`;
+      case 'INLINE_DROPDOWN':
+        return `
+    QUESTION TYPE: INLINE_DROPDOWN (Trắc nghiệm thả xuống)
+    - 'content': A paragraph with EXACTLY ONE OR MORE blanks marked as "[__]". E.g., "Hôm nay là một ngày [__], bầu trời [__]."
+    - 'options': An array matching the blanks IN ORDER. Each string MUST be formatted as "CorrectAnswer ||| Distractor1 | Distractor2".
+    - 'correctOptionIndex': MUST be -1.
+    - 'solution': The full passage with correct answers.
+    
+    EXAMPLE JSON for ONE inline dropdown question:
+    {
+      "content": "Hôm nay là một ngày [__], bầu trời [__].",
+      "options": ["đẹp trời ||| xấu trời | mưa bão", "trong xanh ||| xám xịt | tối đen"],
+      "correctOptionIndex": -1,
+      "solution": "Hôm nay là một ngày đẹp trời, bầu trời trong xanh.",
+      "level": "${levelCode}",
+      "topic": "${cleanTopic}",
+      "questionType": "INLINE_DROPDOWN"
+    }`;
       case 'SHORT_ANSWER':
         return `
     QUESTION TYPE: SHORT_ANSWER (Tự luận ngắn)

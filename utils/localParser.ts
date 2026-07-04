@@ -270,10 +270,15 @@ function parseOneBlock(block: string, index: number): Question | null {
     const isSentenceScrambleKeywords = /xếp từ thành câu|sắp xếp từ|ghép từ thành câu|xếp các từ/i.test(content);
     const isWordClassifyKeywords = /phân loại từ|xếp từ vào nhóm|phân nhóm từ/i.test(content);
     const isFillInPassageKeywords = /điền vào chỗ trống trong đoạn|điền vào đoạn văn|điền .+ thích hợp vào đoạn|điền .+ thích hợp vào chỗ trống trong đoạn/i.test(content);
+    const isInlineDropdownKeywords = /trắc nghiệm thả xuống|chọn từ điền vào chỗ trống|chọn đại từ thích hợp điền vào chỗ trống|chọn từ thích hợp điền vào đoạn văn/i.test(content);
+    const hasInlineDropdownPipes = options.some(opt => opt.includes('|||'));
     
     if (isWordClassifyKeywords && hasPipeInOptions) {
         type = 'WORD_CLASSIFY';
         options = options.map(opt => opt.includes('|') ? opt.replace(/\s*\|\s*/, ' ||| ') : opt);
+        correctOptionIndex = undefined;
+    } else if (isInlineDropdownKeywords || hasInlineDropdownPipes) {
+        type = 'INLINE_DROPDOWN';
         correctOptionIndex = undefined;
     } else if (isFillInPassageKeywords && type === 'MCQ') {
         type = 'FILL_IN_PASSAGE';

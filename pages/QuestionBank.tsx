@@ -22,6 +22,7 @@ const TYPE_LABELS: Record<QuestionType, string> = {
   SENTENCE_SCRAMBLE: 'Xếp từ thành câu',
   WORD_CLASSIFY: 'Phân loại từ',
   FILL_IN_PASSAGE: 'Điền đoạn văn',
+  INLINE_DROPDOWN: 'Trắc nghiệm thả xuống',
   DRAG_DROP: 'Kéo thả',
   SHORT_ANSWER: 'Tự luận ngắn',
   MCQ_MULTIPLE: 'Trắc nghiệm nhiều đáp án'
@@ -296,7 +297,7 @@ const QuestionBank: React.FC = () => {
               }));
 
               elements.push(new Paragraph({ text: "", spacing: { after: 200 } }));
-            } else if ((q.type === 'ORDERING' || q.type === 'DRAG_DROP' || q.type === 'SENTENCE_SCRAMBLE' || q.type === 'WORD_CLASSIFY' || q.type === 'FILL_IN_PASSAGE') && q.options) {
+            } else if ((q.type === 'ORDERING' || q.type === 'DRAG_DROP' || q.type === 'SENTENCE_SCRAMBLE' || q.type === 'WORD_CLASSIFY' || q.type === 'FILL_IN_PASSAGE' || q.type === 'INLINE_DROPDOWN') && q.options) {
               elements.push(
                 new Paragraph({
                   children: [
