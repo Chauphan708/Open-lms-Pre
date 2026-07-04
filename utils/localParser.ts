@@ -10,6 +10,7 @@
 import { Question, QuestionType } from '../types';
 
 // Regex to split text into question blocks
+const TYPE_IDENTIFIER_REGEX = /(?:Loại\s*câu\s*hỏi|Question\s*type)\s*[:.-]\s*(.+)/i;
 const QUESTION_START_REGEX = /(?:^|\n)\s*(?:Câu\s*(?:hỏi\s*)?|Bài\s*|Question\s*)(\d+)\s*[:.)\]]\s*/gi;
 const QUESTION_START_ALT_REGEX = /(?:^|\n)\s*(\d+)\s*[.)]\s+/g;
 
@@ -114,6 +115,7 @@ function parseOneBlock(block: string, index: number): Question | null {
     let hint = '';
     let shortAnswerText = '';
     let parsedLevel: any = undefined;
+    let explicitType: QuestionType | null = null;
 
     // Track parsing state
     let parsingState: 'content' | 'options' | 'answer' | 'solution' | 'hint' = 'content';
@@ -123,6 +125,23 @@ function parseOneBlock(block: string, index: number): Question | null {
     for (const line of lines) {
         const trimmed = line.trim();
         if (!trimmed) continue;
+
+        // Check if this line is an explicit question type identifier
+        const typeMatch = trimmed.match(TYPE_IDENTIFIER_REGEX);
+        if (typeMatch) {
+            const rawType = typeMatch[1].trim();
+            if (/dropdown|thả\s*xuống/i.test(rawType)) explicitType = 'INLINE_DROPDOWN';
+            else if (/drag\s*drop|kéo\s*thả|điền\s*khuyết/i.test(rawType)) explicitType = 'DRAG_DROP';
+            else if (/fill\s*passage|điền\s*đoạn\s*văn/i.test(rawType)) explicitType = 'FILL_IN_PASSAGE';
+            else if (/matching|nối\s*cột|ghép\s*đôi/i.test(rawType)) explicitType = 'MATCHING';
+            else if (/word\s*classify|phân\s*loại\s*từ|phân\s*nhóm/i.test(rawType)) explicitType = 'WORD_CLASSIFY';
+            else if (/sentence\s*scramble|xếp\s*từ\s*thành\s*câu|xếp\s*từ/i.test(rawType)) explicitType = 'SENTENCE_SCRAMBLE';
+            else if (/ordering|sắp\s*xếp\s*thứ\s*tự|thứ\s*tự/i.test(rawType)) explicitType = 'ORDERING';
+            else if (/mcq\s*multiple|chọn\s*nhiều|đa\s*đáp\s*án/i.test(rawType)) explicitType = 'MCQ_MULTIPLE';
+            else if (/mcq|trắc\s*nghiệm\s*đơn/i.test(rawType)) explicitType = 'MCQ';
+            else if (/short\s*answer|tự\s*luận\s*ngắn|tự\s*luận/i.test(rawType)) explicitType = 'SHORT_ANSWER';
+            continue;
+        }
 
         // Check if this line is an option (A. / B. / C. / D.)
         const optionMatch = trimmed.match(OPTION_REGEX);
@@ -244,80 +263,67 @@ function parseOneBlock(block: string, index: number): Question | null {
     // Must have at least content
     if (!content) return null;
 
-    // Determine question type
-    let type: QuestionType = options.length >= 2 ? 'MCQ' : 'SHORT_ANSWER';
-    
-    const isMultipleChoiceKeywords = /chọn nhiều|nhiều đáp án|multiple choice|với các đáp án/i.test(content);
-    
-    if ((correctOptionIndices !== undefined && correctOptionIndices.length > 1) || (isMultipleChoiceKeywords && options.length >= 2)) {
-        type = 'MCQ_MULTIPLE';
-    }
+    // Normalization Rule 1: Normalize all blanks to [__]
+    content = content.replace(/\[\.\.\.\]|\[\s*\]|___/g, '[__]');
 
-    // Phân loại dựa trên cấu trúc (Ưu tiên số 1) và từ khóa (Ưu tiên số 2)
-    const isOrderingKeywords = /sắp xếp|thứ tự|xếp theo|từ bé đến lớn|từ lớn đến bé|từ nhỏ đến lớn|từ lớn đến nhỏ|từ thấp đến cao|từ cao đến thấp|từ ngắn.* đến dài|từ dài.* đến ngắn|tăng dần|giảm dần|ordering|arrange|sort/i.test(content);
-        const isSentenceScrambleKeywords = /xếp từ thành câu|sắp xếp từ|ghép từ thành câu|xếp.*từ.*câu/i.test(content);
-        const isWordClassifyKeywords = /phân loại.*từ|phân nhóm.*từ|phân loại|phân nhóm|xếp.*từ.*nhóm/i.test(content);
-        const isFillInPassageKeywords = /điền.*đoạn văn|điền.*chỗ trống.*đoạn|điền.*vào đoạn/i.test(content);
-        const isInlineDropdownKeywords = /thả xuống|dropdown|thả.*chỗ trống|chọn.*điền.*đoạn văn/i.test(content);
-        const isDragDropKeywords = /kéo thả|điền khuyết/i.test(content);
-    const hasBlanksInContent = /\[__\]|\[\.\.\.\]|\[\s*\]|___/.test(content);
-    const hasInlineDropdownPipes = options.some(opt => opt.includes('|||'));
+    // Normalization Rule 2: Clean multiple pipes in options if Word Classify
     const hasPipeInOptions = options.some(opt => opt.includes('|') && !opt.includes('|||'));
-    const isMatchingKeywords = /nối|ghép|matching|khớp/i.test(content);
 
-    if (hasBlanksInContent) {
-        if (hasInlineDropdownPipes) {
-            type = 'INLINE_DROPDOWN';
-        } else if (isDragDropKeywords) {
-            type = 'DRAG_DROP';
-        } else {
-            type = 'FILL_IN_PASSAGE';
-        }
-        correctOptionIndex = undefined;
-    } else if (hasPipeInOptions) {
-        if (isMatchingKeywords) {
-            type = 'MATCHING';
-            options = options.map(opt => opt.replace(/\s*\|\s*/, ' ||| '));
-        } else {
-            type = 'WORD_CLASSIFY';
-            options = options.map(opt => opt.replace(/\s*\|\s*/, ' ||| '));
+    // Determine question type using Decision Tree
+    let type: QuestionType = 'MCQ';
+    
+    // Priority 1: Explicit identifier from Loại câu hỏi
+    if (explicitType) {
+        type = explicitType;
+        if (type === 'WORD_CLASSIFY' || type === 'MATCHING') {
+            options = options.map(opt => opt.includes('|') ? opt.replace(/\s*\|\s*/, ' ||| ') : opt);
         }
         correctOptionIndex = undefined;
     } else {
-        // Phân loại theo từ khóa (Nếu không có đặc trưng cấu trúc rõ ràng)
-        
-        
-        if (isWordClassifyKeywords && options.some(opt => opt.includes('|'))) {
-            type = 'WORD_CLASSIFY';
-            options = options.map(opt => opt.includes('|') ? opt.replace(/\s*\|\s*/, ' ||| ') : opt);
+        // Priority 2: Structure-first detection
+        const hasBlanksInContent = content.includes('[__]');
+        const hasInlineDropdownPipes = options.some(opt => opt.includes('|||'));
+        const isMatchingKeywords = /nối|ghép|matching|khớp/i.test(content);
+        const isDragDropKeywords = /kéo thả|điền khuyết/i.test(content);
+
+        if (hasBlanksInContent) {
+            if (hasInlineDropdownPipes) {
+                type = 'INLINE_DROPDOWN';
+            } else if (isDragDropKeywords) {
+                type = 'DRAG_DROP';
+            } else {
+                type = 'FILL_IN_PASSAGE';
+            }
             correctOptionIndex = undefined;
-        } else if (isInlineDropdownKeywords && hasInlineDropdownPipes) {
-            type = 'INLINE_DROPDOWN';
+        } else if (hasPipeInOptions) {
+            if (isMatchingKeywords) {
+                type = 'MATCHING';
+                options = options.map(opt => opt.replace(/\s*\|\s*/, ' ||| '));
+            } else {
+                type = 'WORD_CLASSIFY';
+                options = options.map(opt => opt.replace(/\s*\|\s*/, ' ||| '));
+            }
             correctOptionIndex = undefined;
-        } else if (isDragDropKeywords) {
-            type = 'DRAG_DROP';
-            correctOptionIndex = undefined;
-        } else if (isSentenceScrambleKeywords) {
-            type = 'SENTENCE_SCRAMBLE';
-            correctOptionIndex = undefined;
-        } else if (isFillInPassageKeywords && (type === 'MCQ' || type === 'MCQ_MULTIPLE')) {
-            type = 'FILL_IN_PASSAGE';
-            correctOptionIndex = undefined;
-        } else if (isOrderingKeywords && (type === 'MCQ' || type === 'MCQ_MULTIPLE')) {
-            type = 'ORDERING';
-            correctOptionIndex = undefined;
-        } else if (isInlineDropdownKeywords && hasInlineDropdownPipes) {
-            type = 'INLINE_DROPDOWN';
-            correctOptionIndex = undefined;
-        } else if (isFillInPassageKeywords && type === 'MCQ') {
-            type = 'FILL_IN_PASSAGE';
-            correctOptionIndex = undefined;
-        } else if (isSentenceScrambleKeywords && type === 'MCQ') {
-            type = 'SENTENCE_SCRAMBLE';
-            correctOptionIndex = undefined;
-        } else if (isOrderingKeywords && type === 'MCQ') {
-            type = 'ORDERING';
-            correctOptionIndex = undefined;
+        } else {
+            // Priority 3: Keywords & answers-based detection
+            const isOrderingKeywords = /sắp xếp|thứ tự|xếp theo|từ bé đến lớn|từ lớn đến bé|từ nhỏ đến lớn|từ lớn đến nhỏ|từ thấp đến cao|từ cao đến thấp|từ ngắn.* đến dài|từ dài.* đến ngắn|tăng dần|giảm dần|ordering|arrange|sort/i.test(content);
+            const isSentenceScrambleKeywords = /xếp từ thành câu|sắp xếp từ|ghép từ thành câu|xếp.*từ.*câu/i.test(content);
+            
+            const isMultipleChoiceKeywords = /chọn nhiều|nhiều đáp án|multiple choice/i.test(content);
+            const hasMultipleAnswers = (correctOptionIndices !== undefined && correctOptionIndices.length > 1);
+
+            if (isSentenceScrambleKeywords) {
+                type = 'SENTENCE_SCRAMBLE';
+                correctOptionIndex = undefined;
+            } else if (isOrderingKeywords) {
+                type = 'ORDERING';
+                correctOptionIndex = undefined;
+            } else if (hasMultipleAnswers || (isMultipleChoiceKeywords && options.length >= 2)) {
+                type = 'MCQ_MULTIPLE';
+            } else {
+                // Priority 4: Default based on options count
+                type = options.length >= 2 ? 'MCQ' : 'SHORT_ANSWER';
+            }
         }
     }
 
