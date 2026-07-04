@@ -393,6 +393,8 @@ export const ExamList: React.FC = () => {
                   <option value="MATCHING">Nối cột</option>
                   <option value="ORDERING">Sắp xếp</option>
                   <option value="SHORT_ANSWER">Tự luận</option>
+                  <option value="WORD_CLASSIFY">Phân loại từ</option>
+                  <option value="FILL_IN_PASSAGE">Điền vào đoạn văn</option>
                 </select>
               </div>
             </div>

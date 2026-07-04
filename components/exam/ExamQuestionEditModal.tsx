@@ -115,6 +115,8 @@ export const ExamQuestionEditModal: React.FC<ExamQuestionEditModalProps> = ({
                 <option value="ORDERING">Sắp xếp thứ tự đúng</option>
                 <option value="SENTENCE_SCRAMBLE">Xếp từ thành câu</option>
                 <option value="DRAG_DROP">Kéo thả / Điền khuyết</option>
+                <option value="WORD_CLASSIFY">Phân loại từ</option>
+                <option value="FILL_IN_PASSAGE">Điền vào đoạn văn</option>
                 <option value="SHORT_ANSWER">Tự luận ngắn</option>
               </select>
             </div>
@@ -258,17 +260,19 @@ export const ExamQuestionEditModal: React.FC<ExamQuestionEditModalProps> = ({
             </div>
           )}
 
-          {['MATCHING', 'ORDERING', 'DRAG_DROP', 'SENTENCE_SCRAMBLE'].includes(editingQuestion.type) && (
+          {['MATCHING', 'ORDERING', 'DRAG_DROP', 'SENTENCE_SCRAMBLE', 'WORD_CLASSIFY', 'FILL_IN_PASSAGE'].includes(editingQuestion.type) && (
             <div>
               <label className="block text-sm font-bold text-gray-700 dark:text-slate-300 mb-1 flex items-center justify-between">
                 {editingQuestion.type === 'MATCHING' && "Các cặp nối (Format: Nửa trái ||| Nửa phải)"}
                 {editingQuestion.type === 'ORDERING' && "Các mục cần sắp xếp (Nhập theo thứ tự ĐÚNG)"}
                 {editingQuestion.type === 'SENTENCE_SCRAMBLE' && "Các từ cần ghép (Nhập theo thứ tự ĐÚNG của câu)"}
                 {editingQuestion.type === 'DRAG_DROP' && "Các từ/phần điền khuyết (Bao gồm cả đáp án đúng và gây nhiễu)"}
-                <button onClick={() => setEditingQuestion({ ...editingQuestion, options: [...editingQuestion.options, editingQuestion.type === 'MATCHING' ? 'Vế Trái ||| Vế Phải' : 'Mục mới'] })} className="text-xs text-indigo-600 dark:text-indigo-400 font-medium hover:underline">+ Thêm mục</button>
+                {editingQuestion.type === 'WORD_CLASSIFY' && "Các cặp phân loại (Format: Tên nhóm ||| Từ). Dùng _NONE_ cho từ nhiễu."}
+                {editingQuestion.type === 'FILL_IN_PASSAGE' && "Các đáp án đúng cho từng chỗ trống [__] (theo thứ tự)"}
+                <button onClick={() => setEditingQuestion({ ...editingQuestion, options: [...editingQuestion.options, editingQuestion.type === 'MATCHING' ? 'Vế Trái ||| Vế Phải' : editingQuestion.type === 'WORD_CLASSIFY' ? 'Tên nhóm ||| Từ' : 'Mục mới'] })} className="text-xs text-indigo-600 dark:text-indigo-400 font-medium hover:underline">+ Thêm mục</button>
               </label>
-              {editingQuestion.type === 'DRAG_DROP' && (
-                <p className="text-xs text-gray-500 dark:text-slate-400 mb-2 italic">Ghi chú: Trong phần "Nội dung câu hỏi" ở trên, dùng <code className="bg-gray-100 dark:bg-slate-800 dark:text-slate-300 px-1 rounded">[__]</code> để đánh dấu ô trống học sinh cần kéo thả/điền chữ vào.</p>
+              {(editingQuestion.type === 'DRAG_DROP' || editingQuestion.type === 'FILL_IN_PASSAGE') && (
+                <p className="text-xs text-gray-500 dark:text-slate-400 mb-2 italic">Ghi chú: Trong phần "Nội dung câu hỏi" ở trên, dùng <code className="bg-gray-100 dark:bg-slate-800 dark:text-slate-300 px-1 rounded">[__]</code> để đánh dấu ô trống học sinh cần điền vào.</p>
               )}
               {editingQuestion.options.map((opt, i) => (
                 <div key={i} className="flex items-center gap-2 mb-2 group">

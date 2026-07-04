@@ -127,6 +127,8 @@ export const ExamContentInput: React.FC<ExamContentInputProps> = ({
                   <option value="MATCHING">Nối cột (Ghép đôi)</option>
                   <option value="ORDERING">Sắp xếp theo thứ tự</option>
                   <option value="SENTENCE_SCRAMBLE">Xếp từ thành câu</option>
+                  <option value="WORD_CLASSIFY">Phân loại từ</option>
+                  <option value="FILL_IN_PASSAGE">Điền vào đoạn văn</option>
                   <option value="DRAG_DROP">Kéo thả / Điền khuyết</option>
                   <option value="SHORT_ANSWER">Tự luận ngắn</option>
                 </select>

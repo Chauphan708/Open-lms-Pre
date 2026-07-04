@@ -268,7 +268,17 @@ function parseOneBlock(block: string, index: number): Question | null {
     // Logic đặc biệt cho câu hỏi Sắp xếp (Ordering)
     const isOrderingKeywords = /sắp xếp|thứ tự|xếp theo|từ bé đến lớn|từ lớn đến bé|từ nhỏ đến lớn|từ lớn đến nhỏ|từ thấp đến cao|từ cao đến thấp|từ ngắn.* đến dài|từ dài.* đến ngắn|tăng dần|giảm dần|ordering|arrange|sort/i.test(content);
     const isSentenceScrambleKeywords = /xếp từ thành câu|sắp xếp từ|ghép từ thành câu|xếp các từ/i.test(content);
-    if (isSentenceScrambleKeywords && type === 'MCQ') {
+    const isWordClassifyKeywords = /phân loại từ|xếp từ vào nhóm|phân nhóm từ/i.test(content);
+    const isFillInPassageKeywords = /điền vào chỗ trống trong đoạn|điền vào đoạn văn|điền .+ thích hợp vào đoạn|điền .+ thích hợp vào chỗ trống trong đoạn/i.test(content);
+    
+    if (isWordClassifyKeywords && hasPipeInOptions) {
+        type = 'WORD_CLASSIFY';
+        options = options.map(opt => opt.includes('|') ? opt.replace(/\s*\|\s*/, ' ||| ') : opt);
+        correctOptionIndex = undefined;
+    } else if (isFillInPassageKeywords && type === 'MCQ') {
+        type = 'FILL_IN_PASSAGE';
+        correctOptionIndex = undefined;
+    } else if (isSentenceScrambleKeywords && type === 'MCQ') {
         type = 'SENTENCE_SCRAMBLE';
         correctOptionIndex = undefined;
     } else if (isOrderingKeywords && type === 'MCQ') {

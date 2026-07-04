@@ -104,7 +104,7 @@ export const MatrixConfig: React.FC<MatrixConfigProps> = ({ onGenerate, subject,
                     const mcqCount = Math.round((mcqPercent / 100) * count);
                     const essayCount = count - mcqCount;
 
-                    const TN_TYPES = ['MCQ', 'MCQ_MULTIPLE', 'MATCHING', 'ORDERING', 'DRAG_DROP', 'SENTENCE_SCRAMBLE'];
+                    const TN_TYPES = ['MCQ', 'MCQ_MULTIPLE', 'MATCHING', 'ORDERING', 'DRAG_DROP', 'SENTENCE_SCRAMBLE', 'WORD_CLASSIFY', 'FILL_IN_PASSAGE'];
                     const levelQuestions = topicQuestions.filter(q => q.level === level);
                     const mcqs = levelQuestions.filter(q => TN_TYPES.includes(q.type));
                     const essays = levelQuestions.filter(q => q.type === 'SHORT_ANSWER');

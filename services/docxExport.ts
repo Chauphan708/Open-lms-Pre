@@ -155,6 +155,8 @@ export const exportToDocx = async ({ questions, title, subject, grade, duration,
             SENTENCE_SCRAMBLE: ' (Xếp từ thành câu)',
             MATCHING: ' (Nối cột)',
             DRAG_DROP: ' (Điền khuyết)',
+            WORD_CLASSIFY: ' (Phân loại từ)',
+            FILL_IN_PASSAGE: ' (Điền vào đoạn văn)'
         };
 
         sections.push(new Paragraph({
@@ -267,6 +269,38 @@ export const exportToDocx = async ({ questions, title, subject, grade, duration,
                 indent: { left: 720 },
                 spacing: { before: 80 }
             }));
+        }
+
+        // --- WORD_CLASSIFY: Phân loại từ ---
+        if (q.type === 'WORD_CLASSIFY' && q.options?.length) {
+            const words = q.options.map(opt => {
+                const parts = opt.split('|||');
+                return (parts[1] || opt).trim();
+            });
+            const categories = Array.from(new Set(q.options.map(opt => {
+                const parts = opt.split('|||');
+                return (parts[0] || '_NONE_').trim();
+            }).filter(c => c !== '_NONE_')));
+
+            sections.push(new Paragraph({
+                children: [
+                    new TextRun({ text: '   Các từ cần phân loại: ', italics: true, bold: true }),
+                    ...words.flatMap((opt, i) => [
+                        new TextRun({ text: opt, bold: true }),
+                        ...(i < words.length - 1 ? [new TextRun({ text: '   /   ' })] : [])
+                    ])
+                ],
+                indent: { left: 720 },
+                spacing: { before: 80 }
+            }));
+            
+            categories.forEach(cat => {
+                sections.push(new Paragraph({
+                    children: [new TextRun({ text: `   Nhóm [${cat}]: ................................................................` })],
+                    indent: { left: 720 },
+                    spacing: { before: 80 }
+                }));
+            });
         }
 
         // --- SHORT_ANSWER: Tự luận ngắn ---

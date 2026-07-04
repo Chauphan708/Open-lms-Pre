@@ -23,6 +23,8 @@ export const ExamQuestionPreview: React.FC<ExamQuestionPreviewProps> = ({
       case 'MATCHING': return 'Nối cột';
       case 'ORDERING': return 'Sắp xếp';
       case 'SENTENCE_SCRAMBLE': return 'Xếp từ thành câu';
+      case 'WORD_CLASSIFY': return 'Phân loại từ';
+      case 'FILL_IN_PASSAGE': return 'Điền đoạn văn';
       case 'DRAG_DROP': return 'Kéo thả / Điền khuyết';
       case 'SHORT_ANSWER': return 'Tự luận ngắn';
       default: return type;
@@ -168,7 +170,7 @@ export const ExamQuestionPreview: React.FC<ExamQuestionPreviewProps> = ({
                     </div>
                   )}
 
-                  {['ORDERING', 'DRAG_DROP', 'SENTENCE_SCRAMBLE'].includes(q.type) && (
+                  {['ORDERING', 'DRAG_DROP', 'SENTENCE_SCRAMBLE', 'WORD_CLASSIFY', 'FILL_IN_PASSAGE'].includes(q.type) && (
                     <div className="mt-3 space-y-2">
                       {q.options.map((opt, i) => (
                         <div key={i} className="p-2.5 rounded-lg border bg-gray-50 dark:bg-slate-950/40 border-gray-200 dark:border-slate-800 text-sm flex items-center gap-3">

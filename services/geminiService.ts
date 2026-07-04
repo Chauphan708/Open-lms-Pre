@@ -453,6 +453,42 @@ export const generateQuestionsByTopic = async (
       "topic": "${cleanTopic}",
       "questionType": "DRAG_DROP"
     }`;
+      case 'WORD_CLASSIFY':
+        return `
+    QUESTION TYPE: WORD_CLASSIFY (Phân loại từ)
+    - 'content': Describe the classification task. E.g., "Xếp các từ sau vào 2 nhóm: Danh từ và Động từ."
+    - 'options': An array of strings formatted as "CategoryName ||| Word". E.g., ["Danh từ ||| Bàn học", "Động từ ||| Chạy"]. The UI will auto-shuffle.
+    - 'correctOptionIndex': MUST be -1.
+    - 'solution': Detail which word goes to which category.
+    
+    EXAMPLE JSON for ONE word classify question:
+    {
+      "content": "Xếp các từ sau vào 2 nhóm: Danh từ và Động từ.",
+      "options": ["Danh từ ||| Bàn học", "Danh từ ||| Xe đạp", "Động từ ||| Chạy", "Động từ ||| Bơi"],
+      "correctOptionIndex": -1,
+      "solution": "Bàn học, xe đạp là danh từ. Chạy, bơi là động từ.",
+      "level": "${levelCode}",
+      "topic": "${cleanTopic}",
+      "questionType": "WORD_CLASSIFY"
+    }`;
+      case 'FILL_IN_PASSAGE':
+        return `
+    QUESTION TYPE: FILL_IN_PASSAGE (Điền vào đoạn văn)
+    - 'content': A passage with EXACTLY ONE OR MORE blanks marked as "[__]". E.g., "Mùa [__] đến, cây cối đâm chồi nảy lộc. Chim [__] hót ríu rít."
+    - 'options': An array of EXACT correct words matching the blanks IN ORDER.
+    - 'correctOptionIndex': MUST be -1.
+    - 'solution': The full passage with correct answers.
+    
+    EXAMPLE JSON for ONE fill in passage question:
+    {
+      "content": "Mùa [__] đến, hoa đào nở rộ. Chim [__] hót ríu rít.",
+      "options": ["xuân", "én"],
+      "correctOptionIndex": -1,
+      "solution": "Mùa xuân đến, hoa đào nở rộ. Chim én hót ríu rít.",
+      "level": "${levelCode}",
+      "topic": "${cleanTopic}",
+      "questionType": "FILL_IN_PASSAGE"
+    }`;
       case 'SHORT_ANSWER':
         return `
     QUESTION TYPE: SHORT_ANSWER (Tự luận ngắn)

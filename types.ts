@@ -52,7 +52,7 @@ export interface Class {
   studentIds: string[];
 }
 
-export type QuestionType = 'MCQ' | 'MATCHING' | 'ORDERING' | 'DRAG_DROP' | 'SHORT_ANSWER' | 'MCQ_MULTIPLE' | 'SENTENCE_SCRAMBLE';
+export type QuestionType = 'MCQ' | 'MATCHING' | 'ORDERING' | 'DRAG_DROP' | 'SHORT_ANSWER' | 'MCQ_MULTIPLE' | 'SENTENCE_SCRAMBLE' | 'WORD_CLASSIFY' | 'FILL_IN_PASSAGE';
 export type ExamDifficulty = 'NHAN_BIET' | 'KET_NOI' | 'VAN_DUNG';
 
 export interface Question {

@@ -166,7 +166,7 @@ export const ExamMatrix: React.FC = () => {
     };
 
     const sortByType = () => {
-        const TN_TYPES = ['MCQ', 'MATCHING', 'ORDERING', 'DRAG_DROP', 'SENTENCE_SCRAMBLE'];
+        const TN_TYPES = ['MCQ', 'MATCHING', 'ORDERING', 'DRAG_DROP', 'SENTENCE_SCRAMBLE', 'WORD_CLASSIFY', 'FILL_IN_PASSAGE'];
         const levelOrder: Record<string, number> = { 'NHAN_BIET': 1, 'KET_NOI': 2, 'VAN_DUNG': 3 };
         
         const sorted = [...questions].sort((a, b) => {
@@ -211,7 +211,7 @@ export const ExamMatrix: React.FC = () => {
     };
 
     const getTypeLabel = (type: QuestionType) => {
-        const TN_TYPES = ['MCQ', 'MATCHING', 'ORDERING', 'DRAG_DROP', 'SENTENCE_SCRAMBLE'];
+        const TN_TYPES = ['MCQ', 'MATCHING', 'ORDERING', 'DRAG_DROP', 'SENTENCE_SCRAMBLE', 'WORD_CLASSIFY', 'FILL_IN_PASSAGE'];
         if (TN_TYPES.includes(type)) return 'TN';
         if (type === 'SHORT_ANSWER') return 'TL';
         return type;

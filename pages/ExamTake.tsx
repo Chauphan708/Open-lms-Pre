@@ -214,7 +214,7 @@ const evaluateAnswer = (q: any, userAns: any, caseSensitive: boolean = false): b
           : solString.toLowerCase()));
   }
   
-  if (['MATCHING', 'ORDERING', 'DRAG_DROP', 'SENTENCE_SCRAMBLE'].includes(q.type)) {
+  if (['MATCHING', 'ORDERING', 'DRAG_DROP', 'SENTENCE_SCRAMBLE', 'WORD_CLASSIFY'].includes(q.type)) {
     if (!Array.isArray(userAns) || userAns.length !== q.options.length) return false;
     for (let i = 0; i < q.options.length; i++) {
       const expected = q.options[i];
@@ -222,6 +222,16 @@ const evaluateAnswer = (q: any, userAns: any, caseSensitive: boolean = false): b
       const normExpected = String(expected || '').trim().toLowerCase().replace(/\s*\|\|\|\s*/g, '|||');
       const normActual = String(actual || '').trim().toLowerCase().replace(/\s*\|\|\|\s*/g, '|||');
       if (normActual !== normExpected) return false;
+    }
+    return true;
+  }
+
+  if (q.type === 'FILL_IN_PASSAGE') {
+    if (!Array.isArray(userAns) || userAns.length !== q.options.length) return false;
+    for (let i = 0; i < q.options.length; i++) {
+      const expected = String(q.options[i] || '').trim();
+      const actual = String(userAns[i] || '').trim();
+      if (actual !== expected) return false;
     }
     return true;
   }
@@ -796,6 +806,282 @@ const SentenceScrambleQuestion = React.memo(({ question, answer, isSubmitted, on
           <button onClick={handleHint} className="flex items-center gap-2 px-4 py-2 bg-yellow-50 text-yellow-700 border border-yellow-200 rounded-lg hover:bg-yellow-100 font-semibold text-sm transition-colors ml-auto">
             <Lightbulb className="h-4 w-4" />
             Gợi ý chữ cái đầu
+          </button>
+        </div>
+      )}
+    </div>
+  );
+});
+
+const CATEGORY_COLORS = [
+  { bg: 'bg-amber-50', border: 'border-amber-200', text: 'text-amber-700', label: 'bg-amber-100 text-amber-800', tag: 'bg-amber-100 text-amber-700 border-amber-200' },
+  { bg: 'bg-sky-50', border: 'border-sky-200', text: 'text-sky-700', label: 'bg-sky-100 text-sky-800', tag: 'bg-sky-100 text-sky-700 border-sky-200' },
+  { bg: 'bg-rose-50', border: 'border-rose-200', text: 'text-rose-700', label: 'bg-rose-100 text-rose-800', tag: 'bg-rose-100 text-rose-700 border-rose-200' },
+  { bg: 'bg-emerald-50', border: 'border-emerald-200', text: 'text-emerald-700', label: 'bg-emerald-100 text-emerald-800', tag: 'bg-emerald-100 text-emerald-700 border-emerald-200' },
+  { bg: 'bg-violet-50', border: 'border-violet-200', text: 'text-violet-700', label: 'bg-violet-100 text-violet-800', tag: 'bg-violet-100 text-violet-700 border-violet-200' },
+  { bg: 'bg-orange-50', border: 'border-orange-200', text: 'text-orange-700', label: 'bg-orange-100 text-orange-800', tag: 'bg-orange-100 text-orange-700 border-orange-200' },
+];
+
+const WordClassifyQuestion = React.memo(({ question, answer, isSubmitted, onSetAnswer, viewPassFail, canViewSolution, shuffledIndices }: any) => {
+  const currentAns: string[] = Array.isArray(answer) ? answer : Array(question.options.length).fill('');
+
+  // Parse options: each is "Category ||| Word"
+  const items = useMemo(() => {
+    return question.options.map((opt: string, idx: number) => {
+      const parts = opt.split('|||').map((s: string) => s.trim());
+      return { category: parts[0] || '_NONE_', word: parts[1] || opt, index: idx };
+    });
+  }, [question.options]);
+
+  // Extract unique categories (exclude _NONE_)
+  const categories = useMemo(() => {
+    const cats = new Set<string>();
+    items.forEach((item: any) => { if (item.category !== '_NONE_') cats.add(item.category); });
+    return Array.from(cats);
+  }, [items]);
+
+  // Words assigned to each category by student
+  const wordsByCategory = useMemo(() => {
+    const map: Record<string, { word: string; index: number }[]> = {};
+    categories.forEach(c => { map[c] = []; });
+    map['_UNASSIGNED_'] = [];
+    items.forEach((item: any, i: number) => {
+      const assigned = currentAns[i] || '';
+      if (assigned && categories.includes(assigned)) {
+        map[assigned].push({ word: item.word, index: i });
+      } else {
+        map['_UNASSIGNED_'].push({ word: item.word, index: i });
+      }
+    });
+    return map;
+  }, [items, currentAns, categories]);
+
+  const [selectedWordIndex, setSelectedWordIndex] = useState<number | null>(null);
+
+  const handleAssignToCategory = (category: string) => {
+    if (isSubmitted || selectedWordIndex === null) return;
+    const newAns = [...currentAns];
+    newAns[selectedWordIndex] = category;
+    onSetAnswer(newAns);
+    setSelectedWordIndex(null);
+  };
+
+  const handleUnassign = (itemIndex: number) => {
+    if (isSubmitted) return;
+    const newAns = [...currentAns];
+    newAns[itemIndex] = '';
+    onSetAnswer(newAns);
+  };
+
+  const handleReset = () => {
+    if (isSubmitted) return;
+    onSetAnswer(Array(question.options.length).fill(''));
+    setSelectedWordIndex(null);
+  };
+
+  // Shuffle unassigned words for display
+  const shuffledUnassigned = useMemo(() => {
+    const unassigned = wordsByCategory['_UNASSIGNED_'] || [];
+    if (!shuffledIndices || shuffledIndices.length === 0) return unassigned;
+    const unassignedSet = new Set(unassigned.map((u: any) => u.index));
+    const ordered = shuffledIndices.filter((i: number) => unassignedSet.has(i));
+    return ordered.map((i: number) => unassigned.find((u: any) => u.index === i)).filter(Boolean);
+  }, [wordsByCategory, shuffledIndices]);
+
+  // Check correctness per item
+  const getItemCorrectness = (itemIndex: number) => {
+    if (!isSubmitted || !viewPassFail) return null;
+    const correctCategory = items[itemIndex].category;
+    const studentCategory = currentAns[itemIndex] || '';
+    if (correctCategory === '_NONE_') {
+      return studentCategory === '' || studentCategory === '_NONE_' ? 'correct' : 'wrong';
+    }
+    return studentCategory === correctCategory ? 'correct' : 'wrong';
+  };
+
+  return (
+    <div className="space-y-5 max-w-3xl">
+      <div className="flex items-center gap-2 text-indigo-700 bg-indigo-50 p-3 rounded-lg border border-indigo-100">
+        <Sparkles className="h-5 w-5" />
+        <span className="text-sm font-semibold">Bấm vào từ, sau đó bấm vào nhóm phù hợp để phân loại.</span>
+      </div>
+
+      {/* Unassigned words pool */}
+      <div className="p-5 rounded-2xl border-2 border-dashed border-gray-300 bg-gray-50/50 min-h-[70px]">
+        <div className="flex flex-wrap gap-2.5 justify-center">
+          {shuffledUnassigned.map((item: any) => (
+            <button
+              key={item.index}
+              onClick={() => !isSubmitted && setSelectedWordIndex(selectedWordIndex === item.index ? null : item.index)}
+              disabled={isSubmitted}
+              className={`px-4 py-2 rounded-xl text-base font-bold border-2 transition-all active:scale-95 ${
+                selectedWordIndex === item.index
+                  ? 'bg-indigo-500 text-white border-indigo-500 shadow-md'
+                  : 'bg-white text-slate-700 border-slate-200 hover:border-indigo-300 hover:shadow-sm'
+              } ${isSubmitted ? 'cursor-default' : 'cursor-pointer'}`}
+            >
+              {item.word}
+            </button>
+          ))}
+          {shuffledUnassigned.length === 0 && !isSubmitted && (
+            <span className="text-gray-400 italic text-sm py-2">Tất cả từ đã được phân loại</span>
+          )}
+        </div>
+      </div>
+
+      {/* Category boxes */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        {categories.map((cat, catIdx) => {
+          const color = CATEGORY_COLORS[catIdx % CATEGORY_COLORS.length];
+          const assignedWords = wordsByCategory[cat] || [];
+          return (
+            <button
+              key={cat}
+              onClick={() => handleAssignToCategory(cat)}
+              disabled={isSubmitted || selectedWordIndex === null}
+              className={`p-4 rounded-2xl border-2 transition-all text-left w-full ${color.bg} ${color.border} ${
+                selectedWordIndex !== null && !isSubmitted ? 'hover:shadow-md cursor-pointer ring-2 ring-indigo-200' : ''
+              } ${isSubmitted ? 'cursor-default' : ''}`}
+            >
+              <span className={`inline-block px-3 py-1 rounded-full text-xs font-black uppercase tracking-wide mb-3 ${color.label}`}>
+                {cat}
+              </span>
+              <div className="flex flex-wrap gap-2 min-h-[40px]">
+                {assignedWords.map((item: any) => {
+                  const correctness = getItemCorrectness(item.index);
+                  return (
+                    <span
+                      key={item.index}
+                      onClick={(e) => { e.stopPropagation(); handleUnassign(item.index); }}
+                      className={`px-3 py-1.5 rounded-lg text-sm font-bold border cursor-pointer transition-all ${
+                        correctness === 'correct' ? 'bg-green-100 border-green-300 text-green-800' :
+                        correctness === 'wrong' ? 'bg-red-100 border-red-300 text-red-800' :
+                        `${color.tag}`
+                      } ${isSubmitted ? 'cursor-default' : 'active:scale-95'}`}
+                    >
+                      {item.word}
+                    </span>
+                  );
+                })}
+              </div>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Show correct answers after submission */}
+      {isSubmitted && viewPassFail && canViewSolution && (
+        <div className="p-4 bg-green-50 border border-green-200 rounded-xl">
+          <span className="text-xs font-bold text-green-800 uppercase tracking-wider block mb-2">PHÂN LOẠI ĐÚNG:</span>
+          <div className="space-y-2">
+            {categories.map((cat, catIdx) => {
+              const color = CATEGORY_COLORS[catIdx % CATEGORY_COLORS.length];
+              const correctWords = items.filter((it: any) => it.category === cat);
+              return (
+                <div key={cat} className="flex items-center gap-2 flex-wrap">
+                  <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${color.label}`}>{cat}</span>
+                  {correctWords.map((it: any) => (
+                    <span key={it.index} className="px-2 py-1 bg-green-100 text-green-800 rounded-lg text-xs font-bold">{it.word}</span>
+                  ))}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Reset button */}
+      {!isSubmitted && (
+        <div className="flex items-center gap-4">
+          <button onClick={handleReset} className="flex items-center gap-2 px-4 py-2 bg-slate-100 text-slate-600 rounded-lg hover:bg-slate-200 font-semibold text-sm transition-colors">
+            <RotateCcw className="h-4 w-4" />
+            Làm lại
+          </button>
+        </div>
+      )}
+    </div>
+  );
+});
+
+const FillInPassageQuestion = React.memo(({ question, answer, isSubmitted, onSetAnswer, viewPassFail, canViewSolution }: any) => {
+  const blankCount = (question.content.match(/\[__\]/g) || []).length;
+  const currentAns: string[] = Array.isArray(answer) ? answer : Array(blankCount).fill('');
+
+  // Split content into parts around [__]
+  const parts = useMemo(() => {
+    return question.content.split('[__]');
+  }, [question.content]);
+
+  const handleChange = (index: number, value: string) => {
+    if (isSubmitted) return;
+    const newAns = [...currentAns];
+    newAns[index] = value;
+    onSetAnswer(newAns);
+  };
+
+  const handleReset = () => {
+    if (isSubmitted) return;
+    onSetAnswer(Array(blankCount).fill(''));
+  };
+
+  const getBlankCorrectness = (index: number) => {
+    if (!isSubmitted || !viewPassFail) return null;
+    const expected = String(question.options[index] || '').trim();
+    const actual = String(currentAns[index] || '').trim();
+    return actual === expected ? 'correct' : 'wrong';
+  };
+
+  return (
+    <div className="space-y-5 max-w-3xl">
+      <div className="flex items-center gap-2 text-indigo-700 bg-indigo-50 p-3 rounded-lg border border-indigo-100">
+        <Sparkles className="h-5 w-5" />
+        <span className="text-sm font-semibold">Gõ đáp án vào các ô trống trong đoạn văn bên dưới.</span>
+      </div>
+
+      {/* Passage with inline inputs */}
+      <div className={`p-6 rounded-2xl border-2 leading-[2.2] text-base transition-all ${
+        isSubmitted && viewPassFail
+          ? 'bg-white border-gray-200'
+          : 'bg-white border-gray-200'
+      }`}>
+        {parts.map((part: string, i: number) => (
+          <React.Fragment key={i}>
+            <span className="whitespace-pre-wrap">{part}</span>
+            {i < parts.length - 1 && (() => {
+              const correctness = getBlankCorrectness(i);
+              const expectedWidth = Math.max(3, (question.options[i] || '').length + 1);
+              return (
+                <span className="inline-block align-baseline mx-0.5">
+                  <input
+                    type="text"
+                    value={currentAns[i] || ''}
+                    onChange={(e) => handleChange(i, e.target.value)}
+                    disabled={isSubmitted}
+                    style={{ width: `${expectedWidth + 1}ch` }}
+                    className={`border-b-2 border-t-0 border-l-0 border-r-0 bg-transparent text-center font-bold outline-none py-0.5 px-1 text-base transition-colors ${
+                      correctness === 'correct' ? 'border-green-500 text-green-700' :
+                      correctness === 'wrong' ? 'border-red-500 text-red-700' :
+                      currentAns[i] ? 'border-indigo-400 text-indigo-800' :
+                      'border-gray-300 text-gray-600'
+                    } ${isSubmitted ? '' : 'focus:border-indigo-500'}`}
+                    placeholder="····"
+                  />
+                  {correctness === 'wrong' && canViewSolution && (
+                    <span className="text-xs text-green-700 font-bold ml-1">({question.options[i]})</span>
+                  )}
+                </span>
+              );
+            })()}
+          </React.Fragment>
+        ))}
+      </div>
+
+      {/* Reset button */}
+      {!isSubmitted && (
+        <div className="flex items-center gap-4">
+          <button onClick={handleReset} className="flex items-center gap-2 px-4 py-2 bg-slate-100 text-slate-600 rounded-lg hover:bg-slate-200 font-semibold text-sm transition-colors">
+            <RotateCcw className="h-4 w-4" />
+            Làm lại
           </button>
         </div>
       )}
@@ -2503,6 +2789,29 @@ export const ExamTake: React.FC = () => {
                       viewPassFail={viewPassFail}
                       canViewSolution={canViewSolution}
                       shuffledIndices={shuffledIndices}
+                    />
+                  )}
+
+                  {q.type === 'WORD_CLASSIFY' && (
+                    <WordClassifyQuestion
+                      question={q}
+                      answer={answers[q.id]}
+                      onSetAnswer={(val: any) => handleSetAnswer(q.id, val)}
+                      isSubmitted={isSubmitted}
+                      viewPassFail={viewPassFail}
+                      canViewSolution={canViewSolution}
+                      shuffledIndices={shuffledIndices}
+                    />
+                  )}
+
+                  {q.type === 'FILL_IN_PASSAGE' && (
+                    <FillInPassageQuestion
+                      question={q}
+                      answer={answers[q.id]}
+                      onSetAnswer={(val: any) => handleSetAnswer(q.id, val)}
+                      isSubmitted={isSubmitted}
+                      viewPassFail={viewPassFail}
+                      canViewSolution={canViewSolution}
                     />
                   )}
                 </div>
