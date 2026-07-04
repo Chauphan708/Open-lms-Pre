@@ -96,15 +96,20 @@ const MCQMultipleQuestion = React.memo(({ question, answer, isSubmitted, onSetAn
         if (isSubmitted) {
           if (viewPassFail) {
             if (isCorrectOption) {
-              if (canViewSolution || isSelected) {
+              if (isSelected) {
+                // Correctly selected
                 optionClass = "bg-green-50 border-green-500 text-green-700 font-medium";
+              } else if (canViewSolution) {
+                // Correct option but missed by student (dashed warning)
+                optionClass = "bg-green-50/10 border-dashed border-green-400 text-green-700 font-medium";
               } else {
                 optionClass = "opacity-50 bg-white";
               }
             } else if (isSelected) {
-              optionClass = "bg-red-50 border-red-500 text-red-700";
+              // Selected but incorrect (red)
+              optionClass = "bg-red-50 border-red-500 text-red-700 font-medium";
             } else {
-              optionClass = "opacity-50 bg-white";
+              optionClass = "opacity-30 bg-white";
             }
           } else if (isSelected) {
             optionClass = "bg-indigo-50 border-indigo-500 text-indigo-700 ring-1 ring-indigo-500";
@@ -126,11 +131,24 @@ const MCQMultipleQuestion = React.memo(({ question, answer, isSubmitted, onSetAn
             disabled={isSubmitted}
             className={`w-full text-left p-4 rounded-xl border-2 transition-all flex items-center gap-3 shadow-sm ${optionClass} ${!isSubmitted && 'hover:border-indigo-300 hover:shadow-md active:scale-[0.98]'}`}
           >
-            <div className={`w-8 h-8 rounded border-2 flex items-center justify-center text-sm font-bold flex-shrink-0 transition-colors ${isSelected ? 'border-indigo-600 bg-indigo-600 text-white' : 'border-gray-300 bg-white text-gray-500'
-              } ${isSubmitted && viewPassFail && isCorrectOption && (canViewSolution || isSelected) ? '!bg-green-500 !border-green-500 !text-white' : ''}
-              ${isSubmitted && !viewPassFail && isSelected ? '!bg-gray-600 !border-gray-600 !text-white' : ''}
-            `}>
-              {isSelected ? <CheckCircle className="h-4 w-4 text-white" /> : String.fromCharCode(65 + displayIndex)}
+            <div className={`w-8 h-8 rounded border-2 flex items-center justify-center text-sm font-bold flex-shrink-0 transition-colors ${
+              isSelected ? 'border-indigo-600 bg-indigo-600 text-white' : 'border-gray-300 bg-white text-gray-500'
+            } ${
+              isSubmitted && viewPassFail && isCorrectOption && isSelected ? '!bg-green-500 !border-green-500 !text-white' : ''
+            } ${
+              isSubmitted && viewPassFail && isCorrectOption && !isSelected && canViewSolution ? '!border-green-400 !text-green-500 bg-white' : ''
+            } ${
+              isSubmitted && viewPassFail && !isCorrectOption && isSelected ? '!bg-red-500 !border-red-500 !text-white' : ''
+            } ${
+              isSubmitted && !viewPassFail && isSelected ? '!bg-gray-600 !border-gray-600 !text-white' : ''
+            }`}>
+              {isSelected ? (
+                isSubmitted && viewPassFail && !isCorrectOption ? (
+                  <X className="h-4 w-4 text-white" />
+                ) : (
+                  <CheckCircle className="h-4 w-4 text-white" />
+                )
+              ) : String.fromCharCode(65 + displayIndex)}
             </div>
             <span className="text-gray-800 prose prose-p:my-0 flex-1">
               <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>
@@ -1256,14 +1274,7 @@ const FillInPassageQuestion = React.memo(({ question, answer, isSubmitted, onSet
       </div>
 
       {/* Reset button */}
-      {!isSubmitted && (
-        <div className="flex items-center gap-4">
-          <button onClick={handleReset} className="flex items-center gap-2 px-4 py-2 bg-slate-100 text-slate-600 rounded-lg hover:bg-slate-200 font-semibold text-sm transition-colors">
-            <RotateCcw className="h-4 w-4" />
-            Làm lại
-          </button>
-        </div>
-      )}
+
     </div>
   );
 });
@@ -1364,14 +1375,7 @@ const InlineDropdownQuestion = React.memo(({ question, answer, isSubmitted, onSe
         ))}
       </div>
 
-      {!isSubmitted && (
-        <div className="flex items-center gap-4">
-          <button onClick={handleReset} className="flex items-center gap-2 px-4 py-2 bg-slate-100 text-slate-600 rounded-lg hover:bg-slate-200 font-semibold text-sm transition-colors">
-            <RotateCcw className="h-4 w-4" />
-            Làm lại
-          </button>
-        </div>
-      )}
+      
     </div>
   );
 });
@@ -2491,7 +2495,7 @@ export const ExamTake: React.FC = () => {
     return val.toFixed(1).replace('.', ',');
   };
 
-  const unansweredCount = exam?.questions?.length || 0 - answersCount;
+  const unansweredCount = (exam?.questions?.length || 0) - answersCount;
 
   return (
     <div className="max-w-5xl mx-auto pb-20 relative select-none">
