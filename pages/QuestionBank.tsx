@@ -614,13 +614,13 @@ const QuestionBank: React.FC = () => {
                               <div className="space-y-1 mt-2">
                                 {q.options.map((opt, i) => {
                                   const isDragDrop = q.type === 'DRAG_DROP';
-                                  const numBlanks = isDragDrop ? (q.content.match(/\[__\]/g) || []).length : q.options.length;
-                                  const isDistractor = isDragDrop && i >= numBlanks;
+                                  const isWordClassify = q.type === 'WORD_CLASSIFY';
+                                  const isDistractor = (isDragDrop && i >= numBlanks) || (isWordClassify && (opt.toUpperCase().startsWith('NONE |||') || opt.toUpperCase().startsWith('_NONE_ |||')));
                                   
                                   return (
-                                    <div key={i} className={`flex items-center gap-2 text-[11px] p-2 rounded-lg ${isDragDrop ? (isDistractor ? 'bg-gray-50/50 dark:bg-slate-950/20 border border-dashed border-gray-300 dark:border-slate-700' : 'bg-emerald-50 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800') : 'bg-gray-50 dark:bg-slate-950/40 text-gray-700 dark:text-slate-300 border border-transparent'}`}>
-                                      <span className={`font-bold shrink-0 flex items-center justify-center px-1.5 py-0.5 rounded text-[10px] ${isDragDrop ? (isDistractor ? 'bg-gray-200 text-gray-500 dark:bg-slate-800 dark:text-slate-400' : 'bg-emerald-200 text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-300') : 'bg-gray-200 text-gray-700 dark:bg-slate-800 dark:text-slate-300'}`}>
-                                        {isDragDrop ? (isDistractor ? 'Từ nhiễu' : `Đáp án ô ${i + 1}`) : (i + 1)}
+                                    <div key={i} className={`flex items-center gap-2 text-[11px] p-2 rounded-lg ${(isDragDrop || isWordClassify) ? (isDistractor ? 'bg-gray-50/50 dark:bg-slate-950/20 border border-dashed border-gray-300 dark:border-slate-700' : 'bg-emerald-50 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800') : 'bg-gray-50 dark:bg-slate-950/40 text-gray-700 dark:text-slate-300 border border-transparent'}`}>
+                                      <span className={`font-bold shrink-0 flex items-center justify-center px-1.5 py-0.5 rounded text-[10px] ${(isDragDrop || isWordClassify) ? (isDistractor ? 'bg-gray-200 text-gray-500 dark:bg-slate-800 dark:text-slate-400' : 'bg-emerald-200 text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-300') : 'bg-gray-200 text-gray-700 dark:bg-slate-800 dark:text-slate-300'}`}>
+                                        {(isDragDrop || isWordClassify) ? (isDistractor ? 'Từ nhiễu' : `Đáp án ô ${i + 1}`) : (i + 1)}
                                       </span>
                                       <div className={`prose prose-xs dark:prose-invert max-w-none ${isDragDrop && isDistractor ? 'text-gray-500' : ''}`}>
                                         <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>

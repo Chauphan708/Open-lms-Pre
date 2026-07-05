@@ -16,18 +16,30 @@ import { AssignmentSettings } from '../types';
 // --- UTILS FOR QUESTION TYPES ---
 const getPassageParts = (content: string) => {
   const cleanContent = content.replace(/\s*Đáp án:\s*[^\n]*$/i, '').trim();
-  const colonIndex = cleanContent.indexOf(':');
-  if (colonIndex > 0 && colonIndex < 150) {
-    const prefix = cleanContent.substring(0, colonIndex);
-    if (/chọn|điền|hoàn thành|thích hợp|chỗ trống|xếp|phân loại|hoàn thiện|đoạn văn|thả|kéo/i.test(prefix)) {
-      return {
-        instruction: prefix + ':',
-        passage: cleanContent.substring(colonIndex + 1).trim()
-      };
-    }
+  
+  // Look for a separation between instruction and passage
+  // Instructions often contain these keywords and end with a colon or a period followed by a line break.
+  const match = cleanContent.match(/^(.*?(?:chọn|điền|hoàn thành|thích hợp|chỗ trống|xếp|phân loại|hoàn thiện|đoạn văn|thả|kéo|nối).*?(?:[:.]\s*\n|[:.]\s+|$))/i);
+  
+  if (match && match[0].length < cleanContent.length && match[0].length < 200) {
+    return {
+      instruction: match[0].trim(),
+      passage: cleanContent.substring(match[0].length).trim()
+    };
   }
+
+  // Fallback: if there is a clear first line that looks like an instruction
+  const lines = cleanContent.split('\n');
+  if (lines.length > 1 && lines[0].length < 150 && /chọn|điền|hoàn thành|thích|chỗ trống|xếp|phân loại|kéo|thả/i.test(lines[0])) {
+      return {
+          instruction: lines[0].trim(),
+          passage: lines.slice(1).join('\n').trim()
+      }
+  }
+
+  // If we can't separate, return empty instruction so it doesn't duplicate.
   return {
-    instruction: cleanContent,
+    instruction: '',
     passage: cleanContent
   };
 };
@@ -832,10 +844,7 @@ const DragDropQuestion = React.memo(({ question, answer, isSubmitted, onSetAnswe
 
   return (
     <div className="space-y-6 max-w-3xl">
-      <div className="flex items-center gap-2 text-indigo-700 bg-indigo-50 p-3 rounded-lg border border-indigo-100">
-        <Sparkles className="h-5 w-5" />
-        <span className="text-sm font-semibold">Kéo các từ gợi ý và thả vào các ô trống phù hợp, hoặc bấm vào từ rồi bấm vào ô trống để điền. Bấm vào ô đã điền để rút từ lại.</span>
-      </div>
+
 
       {/* Passage with inline drop zones */}
       <div className="p-6 rounded-2xl border-2 leading-[2.5] text-base transition-all bg-white border-gray-200">
@@ -1151,7 +1160,7 @@ const WordClassifyQuestion = React.memo(({ question, answer, isSubmitted, onSetA
     >
       <div className="flex items-center gap-2 text-indigo-700 bg-indigo-50 p-3 rounded-lg border border-indigo-100">
         <Sparkles className="h-5 w-5" />
-        <span className="text-sm font-semibold">Kéo từ và thả vào nhóm phù hợp để phân loại. Kéo từ ra ngoài không gian nhóm để đưa về vị trí ban đầu.</span>
+        <span className="text-sm font-semibold">Kéo từ và thả vào nhóm phù hợp để phân loại. Các từ nhiễu (nếu có) sẽ không thuộc nhóm nào.</span>
       </div>
 
       {/* Unassigned words pool */}
@@ -1267,11 +1276,6 @@ const FillInPassageQuestion = React.memo(({ question, answer, isSubmitted, onSet
 
   return (
     <div className="space-y-5 max-w-3xl">
-      <div className="flex items-center gap-2 text-indigo-700 bg-indigo-50 p-3 rounded-lg border border-indigo-100">
-        <Sparkles className="h-5 w-5" />
-        <span className="text-sm font-semibold">Gõ đáp án vào các ô trống trong đoạn văn bên dưới.</span>
-      </div>
-
       {/* Passage with inline inputs */}
       <div className={`p-6 rounded-2xl border-2 leading-[2.2] text-base transition-all ${
         isSubmitted && viewPassFail
@@ -1362,10 +1366,7 @@ const InlineDropdownQuestion = React.memo(({ question, answer, isSubmitted, onSe
 
   return (
     <div className="space-y-5 max-w-3xl">
-      <div className="flex items-center gap-2 text-indigo-700 bg-indigo-50 p-3 rounded-lg border border-indigo-100">
-        <Sparkles className="h-5 w-5" />
-        <span className="text-sm font-semibold">Chọn đáp án đúng từ trình đơn thả xuống cho mỗi ô trống.</span>
-      </div>
+
 
       <div className={`p-6 rounded-2xl border-2 leading-[2.2] text-base transition-all ${
         isSubmitted && viewPassFail
