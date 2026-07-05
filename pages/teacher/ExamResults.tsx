@@ -10,6 +10,23 @@ import { Attempt, Exam } from '../../types';
 import { supabase } from '../../services/supabaseClient';
 import { computeStudentAnalytics } from '../../utils/analyticsEngine';
 import { getRecommendations, getRecentExamIds } from '../../utils/recommendationEngine';
+const getPassageParts = (content: string) => {
+  const cleanContent = content.replace(/\s*Đáp án:\s*[^\n]*$/i, '').trim();
+  const colonIndex = cleanContent.indexOf(':');
+  if (colonIndex > 0 && colonIndex < 150) {
+    const prefix = cleanContent.substring(0, colonIndex);
+    if (/chọn|điền|hoàn thành|thích hợp|chỗ trống|xếp|phân loại|hoàn thiện|đoạn văn|thả|kéo/i.test(prefix)) {
+      return {
+        instruction: prefix + ':',
+        passage: cleanContent.substring(colonIndex + 1).trim()
+      };
+    }
+  }
+  return {
+    instruction: cleanContent,
+    passage: cleanContent
+  };
+};
 
 export const ExamResults: React.FC = () => {
     const { id } = useParams();
@@ -986,7 +1003,11 @@ export const ExamResults: React.FC = () => {
                                                 </span>
                                              ) : null}
                                           </div>
-                                          <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>{q.content}</ReactMarkdown>
+                                           <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>
+                                              {['DRAG_DROP', 'INLINE_DROPDOWN', 'FILL_IN_PASSAGE'].includes(q.type)
+                                                 ? getPassageParts(q.content).instruction
+                                                 : q.content}
+                                           </ReactMarkdown>
                                        </div>
 
                                        {q.imageUrl && (

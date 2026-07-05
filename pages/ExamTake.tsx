@@ -13,8 +13,24 @@ import MathText from '../components/MathText';
 import { supabase } from '../services/supabaseClient'; // BỔ SUNG ĐỂ GHI NHẬN HÀNH VI TỰ ĐỘNG
 import { FaceLandmarker, FilesetResolver } from '@mediapipe/tasks-vision';
 import { AssignmentSettings } from '../types';
-
-// --- MEMOIZED QUESTION COMPONENTS FOR PERFORMANCE ---
+// --- UTILS FOR QUESTION TYPES ---
+const getPassageParts = (content: string) => {
+  const cleanContent = content.replace(/\s*Đáp án:\s*[^\n]*$/i, '').trim();
+  const colonIndex = cleanContent.indexOf(':');
+  if (colonIndex > 0 && colonIndex < 150) {
+    const prefix = cleanContent.substring(0, colonIndex);
+    if (/chọn|điền|hoàn thành|thích hợp|chỗ trống|xếp|phân loại|hoàn thiện|đoạn văn|thả|kéo/i.test(prefix)) {
+      return {
+        instruction: prefix + ':',
+        passage: cleanContent.substring(colonIndex + 1).trim()
+      };
+    }
+  }
+  return {
+    instruction: cleanContent,
+    passage: cleanContent
+  };
+};
 
 const MCQQuestion = React.memo(({ question, answer, isSubmitted, onSetAnswer, viewPassFail, canViewSolution, shuffledIndices }: any) => {
   return (
@@ -755,7 +771,8 @@ const DragDropQuestion = React.memo(({ question, answer, isSubmitted, onSetAnswe
 
   // Split content into parts around the blanks
   const parts = useMemo(() => {
-    return question.content.replace(/\[\.\.\.\]|\[\s*\]|___/g, '[__]').split('[__]');
+    const passage = getPassageParts(question.content).passage;
+    return passage.replace(/\[\.\.\.\]|\[\s*\]|___/g, '[__]').split('[__]');
   }, [question.content]);
 
   const [selectedWord, setSelectedWord] = useState<string | null>(null);
@@ -1028,10 +1045,15 @@ const WordClassifyQuestion = React.memo(({ question, answer, isSubmitted, onSetA
     });
   }, [question.options]);
 
-  // Extract unique categories (exclude _NONE_)
+  // Extract unique categories (exclude _NONE_ / NONE)
   const categories = useMemo(() => {
     const cats = new Set<string>();
-    items.forEach((item: any) => { if (item.category !== '_NONE_') cats.add(item.category); });
+    items.forEach((item: any) => {
+      const catUpper = (item.category || '').toUpperCase().trim();
+      if (catUpper !== '_NONE_' && catUpper !== 'NONE') {
+        cats.add(item.category);
+      }
+    });
     return Array.from(cats);
   }, [items]);
 
@@ -1113,9 +1135,10 @@ const WordClassifyQuestion = React.memo(({ question, answer, isSubmitted, onSetA
   const getItemCorrectness = (itemIndex: number) => {
     if (!isSubmitted || !viewPassFail) return null;
     const correctCategory = items[itemIndex].category;
+    const correctCategoryUpper = (correctCategory || '').toUpperCase().trim();
     const studentCategory = currentAns[itemIndex] || '';
-    if (correctCategory === '_NONE_') {
-      return studentCategory === '' || studentCategory === '_NONE_' ? 'correct' : 'wrong';
+    if (correctCategoryUpper === '_NONE_' || correctCategoryUpper === 'NONE') {
+      return studentCategory === '' || studentCategory === '_NONE_' || studentCategory === 'NONE' ? 'correct' : 'wrong';
     }
     return studentCategory === correctCategory ? 'correct' : 'wrong';
   };
@@ -1219,7 +1242,8 @@ const FillInPassageQuestion = React.memo(({ question, answer, isSubmitted, onSet
 
   // Split content into parts around [__]
   const parts = useMemo(() => {
-    return question.content.split('[__]');
+    const passage = getPassageParts(question.content).passage;
+    return passage.split('[__]');
   }, [question.content]);
 
   const handleChange = (index: number, value: string) => {
@@ -1297,7 +1321,8 @@ const InlineDropdownQuestion = React.memo(({ question, answer, isSubmitted, onSe
   const currentAns: string[] = Array.isArray(answer) ? answer : Array(blankCount).fill('');
 
   const parts = useMemo(() => {
-    return question.content.split('[__]');
+    const passage = getPassageParts(question.content).passage;
+    return passage.split('[__]');
   }, [question.content]);
 
   const handleChange = (index: number, value: string) => {
@@ -2987,7 +3012,9 @@ export const ExamTake: React.FC = () => {
                   <div className="flex-1 mt-1">
                     <div className="text-gray-900 font-medium text-base md:text-lg leading-relaxed prose prose-p:my-0 max-w-none break-words">
                       <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>
-                        {q.content.replace(/\s*Đáp án:\s*[^\n]*$/i, '').trim()}
+                        {['DRAG_DROP', 'INLINE_DROPDOWN', 'FILL_IN_PASSAGE'].includes(q.type)
+                          ? getPassageParts(q.content).instruction
+                          : q.content.replace(/\s*Đáp án:\s*[^\n]*$/i, '').trim()}
                       </ReactMarkdown>
                     </div>
                     {q.imageUrl && (
