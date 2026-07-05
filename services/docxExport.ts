@@ -357,7 +357,14 @@ export const exportToDocx = async ({ questions, title, subject, grade, duration,
             } else if (q.type === 'SHORT_ANSWER') {
                 answerParts.push(...parseContentWithMath(q.options?.[0] || ''));
             } else if (q.type === 'DRAG_DROP') {
-                answerParts.push(...parseContentWithMath(q.options?.join(', ') || ''));
+                const numBlanks = (q.content.match(/\[__\]/g) || []).length;
+                const correctOpts = q.options?.slice(0, numBlanks) || [];
+                const distractorOpts = q.options?.slice(numBlanks) || [];
+                let text = correctOpts.join(', ');
+                if (distractorOpts.length > 0) {
+                    text += ` (Từ nhiễu: ${distractorOpts.join(', ')})`;
+                }
+                answerParts.push(...parseContentWithMath(text));
             }
 
             if (q.solution) {

@@ -154,7 +154,15 @@ function parseOneBlock(block: string, index: number): Question | null {
         // Check if this line contains the correct answer
         const answerMatch = trimmed.match(ANSWER_REGEX);
         if (answerMatch) {
-            const ansRaw = answerMatch[1].trim();
+            let ansRaw = answerMatch[1].trim();
+            
+            // Xử lý loại bỏ phần mô tả từ nhiễu tiếng Việt (ví dụ: A, B, C, còn lại D, E là từ nhiễu)
+            const distractorIndex = ansRaw.search(/còn lại|từ nhiễu|sai|không chọn/i);
+            if (distractorIndex !== -1) {
+                ansRaw = ansRaw.substring(0, distractorIndex).trim();
+                ansRaw = ansRaw.replace(/[,.]$/, '').trim(); // Remove trailing comma/dot
+            }
+
             const lettersOnlyMatch = ansRaw.replace(/và|and/gi, ',').match(/^([A-Za-z][\s,.-]*)+$/i) || ansRaw.match(/^(([A-Za-z])(?:[\s,.]+|$)){2,}/i);
             
             if (lettersOnlyMatch) {
@@ -278,7 +286,9 @@ function parseOneBlock(block: string, index: number): Question | null {
         if (type === 'WORD_CLASSIFY' || type === 'MATCHING') {
             options = options.map(opt => opt.includes('|') ? opt.replace(/\s*\|\s*/, ' ||| ') : opt);
         }
-        correctOptionIndex = undefined;
+        if (type !== 'MCQ' && type !== 'MCQ_MULTIPLE') {
+            correctOptionIndex = undefined;
+        }
     } else {
         // Priority 2: Structure-first detection
         const hasBlanksInContent = content.includes('[__]');
@@ -329,6 +339,13 @@ function parseOneBlock(block: string, index: number): Question | null {
 
     if (type === 'SHORT_ANSWER' && shortAnswerText) {
         options.push(shortAnswerText);
+    } else if (type === 'DRAG_DROP' && correctOptionIndices && correctOptionIndices.length > 0) {
+        // DRAG_DROP: Reorder options so correct ones match the blanks, and distractors are at the end.
+        const correctOptions = correctOptionIndices.map(idx => options[idx]).filter(Boolean);
+        const distractorOptions = options.filter((_, idx) => !correctOptionIndices!.includes(idx));
+        options = [...correctOptions, ...distractorOptions];
+        // After reordering, correct options are exactly the first N options
+        correctOptionIndices = correctOptions.map((_, i) => i);
     }
 
     return {

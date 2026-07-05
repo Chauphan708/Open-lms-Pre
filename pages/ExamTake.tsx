@@ -232,7 +232,20 @@ const evaluateAnswer = (q: any, userAns: any, caseSensitive: boolean = false): b
           : solString.toLowerCase()));
   }
   
-  if (['MATCHING', 'ORDERING', 'DRAG_DROP', 'SENTENCE_SCRAMBLE', 'WORD_CLASSIFY'].includes(q.type)) {
+  if (q.type === 'DRAG_DROP') {
+    const numBlanks = (q.content.match(/\[__\]/g) || []).length;
+    if (!Array.isArray(userAns) || userAns.length !== numBlanks) return false;
+    for (let i = 0; i < numBlanks; i++) {
+      const expected = q.options[i];
+      const actual = userAns[i];
+      const normExpected = String(expected || '').trim().toLowerCase();
+      const normActual = String(actual || '').trim().toLowerCase();
+      if (normActual !== normExpected) return false;
+    }
+    return true;
+  }
+
+  if (['MATCHING', 'ORDERING', 'SENTENCE_SCRAMBLE', 'WORD_CLASSIFY'].includes(q.type)) {
     if (!Array.isArray(userAns) || userAns.length !== q.options.length) return false;
     for (let i = 0; i < q.options.length; i++) {
       const expected = q.options[i];

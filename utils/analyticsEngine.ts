@@ -121,7 +121,17 @@ function isCorrect(q: Question, userAns: any): boolean {
     const sol = String(q.solution || '').trim();
     return sol !== '' && sol.split(/\s+/).length < 10 && sAns === sol.toLowerCase();
   }
-  if (['MATCHING', 'ORDERING', 'DRAG_DROP', 'SENTENCE_SCRAMBLE', 'WORD_CLASSIFY', 'FILL_IN_PASSAGE', 'INLINE_DROPDOWN'].includes(q.type)) {
+  if (q.type === 'DRAG_DROP') {
+    const numBlanks = (q.content.match(/\[__\]/g) || []).length;
+    if (!Array.isArray(userAns) || userAns.length !== numBlanks) return false;
+    for (let i = 0; i < numBlanks; i++) {
+      const ne = String(q.options[i] || '').trim().toLowerCase();
+      const na = String(userAns[i] || '').trim().toLowerCase();
+      if (ne !== na) return false;
+    }
+    return true;
+  }
+  if (['MATCHING', 'ORDERING', 'SENTENCE_SCRAMBLE', 'WORD_CLASSIFY', 'FILL_IN_PASSAGE', 'INLINE_DROPDOWN'].includes(q.type)) {
     if (!Array.isArray(userAns) || userAns.length !== q.options.length) return false;
     return q.options.every((expected, i) => {
       const ne = String(expected || '').trim().toLowerCase().replace(/\s*\|\|\|\s*/g, '|||');

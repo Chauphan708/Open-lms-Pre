@@ -173,18 +173,24 @@ export const ExamQuestionPreview: React.FC<ExamQuestionPreviewProps> = ({
 
                   {['ORDERING', 'DRAG_DROP', 'SENTENCE_SCRAMBLE', 'WORD_CLASSIFY', 'FILL_IN_PASSAGE', 'INLINE_DROPDOWN'].includes(q.type) && (
                     <div className="mt-3 space-y-2">
-                      {q.options.map((opt, i) => (
-                        <div key={i} className="p-2.5 rounded-lg border bg-gray-50 dark:bg-slate-950/40 border-gray-200 dark:border-slate-800 text-sm flex items-center gap-3">
-                          <span className="w-6 h-6 flex-shrink-0 flex items-center justify-center rounded bg-gray-200 dark:bg-slate-800 text-gray-700 dark:text-slate-300 text-xs font-bold">
-                            {i + 1}
-                          </span>
-                          <span className="prose prose-p:my-0 text-gray-800 dark:text-slate-300 dark:prose-invert">
-                            <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>
-                              {opt}
-                            </ReactMarkdown>
-                          </span>
-                        </div>
-                      ))}
+                      {q.options.map((opt, i) => {
+                        const isDragDrop = q.type === 'DRAG_DROP';
+                        const numBlanks = isDragDrop ? (q.content.match(/\[__\]/g) || []).length : q.options.length;
+                        const isDistractor = isDragDrop && i >= numBlanks;
+                        
+                        return (
+                          <div key={i} className={`p-2.5 rounded-lg border text-sm flex items-center gap-3 ${isDragDrop ? (isDistractor ? 'border-dashed border-gray-300 dark:border-slate-700 bg-gray-50/50 dark:bg-slate-950/20' : 'bg-green-50 dark:bg-green-950/20 border-green-200 dark:border-green-900/30') : 'bg-gray-50 dark:bg-slate-950/40 border-gray-200 dark:border-slate-800'}`}>
+                            <span className={`h-6 px-2 flex-shrink-0 flex items-center justify-center rounded text-xs font-bold ${isDragDrop ? (isDistractor ? 'bg-gray-200 dark:bg-slate-800 text-gray-500 dark:text-slate-400' : 'bg-green-200 dark:bg-green-900/50 text-green-800 dark:text-green-300') : 'bg-gray-200 dark:bg-slate-800 text-gray-700 dark:text-slate-300'}`}>
+                              {isDragDrop ? (isDistractor ? 'Từ nhiễu' : `Đáp án ô ${i + 1}`) : (i + 1)}
+                            </span>
+                            <span className={`prose prose-p:my-0 dark:prose-invert ${isDragDrop ? (isDistractor ? 'text-gray-500 dark:text-slate-500' : 'text-green-900 dark:text-green-300') : 'text-gray-800 dark:text-slate-300'}`}>
+                              <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>
+                                {opt}
+                              </ReactMarkdown>
+                            </span>
+                          </div>
+                        );
+                      })}
                     </div>
                   )}
 
