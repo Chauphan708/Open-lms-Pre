@@ -77,7 +77,7 @@ export const PrintableContent: React.FC<PrintableContentProps> = ({ type, questi
                             <div className="font-bold mb-1 flex gap-1">
                                 <span className="whitespace-nowrap">Câu {idx + 1}:</span>
                                 <span className="font-normal">
-                                    <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>{wrapMath(q.content)}</ReactMarkdown>
+                                    <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>{wrapMath(q.content).replace(/\[__\]/g, '[\\_\\_]')}</ReactMarkdown>
                                 </span>
                             </div>
 

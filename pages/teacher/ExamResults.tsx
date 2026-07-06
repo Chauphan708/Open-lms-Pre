@@ -1004,9 +1004,9 @@ export const ExamResults: React.FC = () => {
                                              ) : null}
                                           </div>
                                            <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>
-                                              {['DRAG_DROP', 'INLINE_DROPDOWN', 'FILL_IN_PASSAGE'].includes(q.type)
-                                                 ? getPassageParts(q.content).instruction
-                                                 : q.content}
+                                               {((['DRAG_DROP', 'INLINE_DROPDOWN', 'FILL_IN_PASSAGE'].includes(q.type)
+                                                  ? getPassageParts(q.content).instruction
+                                                  : q.content) || '').replace(/\[__\]/g, '[\\_\\_]')}
                                            </ReactMarkdown>
                                        </div>
 

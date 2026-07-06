@@ -563,7 +563,7 @@ const QuestionBank: React.FC = () => {
                                       remarkPlugins={[remarkMath]} 
                                       rehypePlugins={[rehypeKatex]}
                                   >
-                                      {q.content}
+                                      {q.content.replace(/\[__\]/g, '[\\_\\_]')}
                                   </ReactMarkdown>
                               </div>
                               {(q.type === 'MCQ' || q.type === 'MCQ_MULTIPLE') && (

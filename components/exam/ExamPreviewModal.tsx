@@ -57,7 +57,7 @@ export const ExamPreviewModal: React.FC<Props> = ({ exam, isOpen, onClose }) => 
                   
                   <div className="prose prose-indigo max-w-none text-gray-800 font-medium text-lg leading-relaxed">
                     <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>
-                      {q.content}
+                      {q.content.replace(/\[__\]/g, '[\\_\\_]')}
                     </ReactMarkdown>
                   </div>
 

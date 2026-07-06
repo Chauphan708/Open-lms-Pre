@@ -76,7 +76,7 @@ export const ExamQuestionPreview: React.FC<ExamQuestionPreviewProps> = ({
                     <div className="flex-1">
                       <div className="text-gray-900 dark:text-slate-100 font-medium text-base whitespace-pre-wrap prose prose-p:my-0 dark:prose-invert">
                         <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>
-                          {q.content}
+                          {q.content.replace(/\[__\]/g, '[\\_\\_]')}
                         </ReactMarkdown>
                       </div>
                       {q.imageUrl && (

@@ -3037,9 +3037,10 @@ export const ExamTake: React.FC = () => {
                   <div className="flex-1 mt-1">
                     <div className="text-gray-900 font-medium text-base md:text-lg leading-relaxed prose prose-p:my-0 max-w-none break-words">
                       <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>
-                        {['DRAG_DROP', 'INLINE_DROPDOWN', 'FILL_IN_PASSAGE'].includes(q.type)
+                        {(['DRAG_DROP', 'INLINE_DROPDOWN', 'FILL_IN_PASSAGE'].includes(q.type)
                           ? getPassageParts(q.content).instruction
-                          : q.content.replace(/\s*Đáp án:\s*[^\n]*$/i, '').trim()}
+                          : q.content.replace(/\s*Đáp án:\s*[^\n]*$/i, '').trim()
+                        ).replace(/\[__\]/g, '[\\_\\_]')}
                       </ReactMarkdown>
                     </div>
                     {q.imageUrl && (
