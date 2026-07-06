@@ -17,8 +17,25 @@ import { AssignmentSettings } from '../types';
 const getPassageParts = (content: string) => {
   const cleanContent = content.replace(/\s*Đáp án:\s*[^\n]*$/i, '').trim();
   
-  // Look for a separation between instruction and passage
-  // Instructions often contain these keywords and end with a colon or a period followed by a line break.
+  // 1. Check for instruction at the end
+  const endInstructionRegex = /([,.;]|\s+)\s*(?:hãy\s+)?(chọn\s+đáp\s+án\s+thích\s+hợp\s+điền\s+vào\s+chỗ\s+trống|điền\s+vào\s+chỗ\s+trống|chọn\s+đáp\s+án\s+đúng|chọn\s+đáp\s+án\s+thích\s+hợp|chọn\s+từ\s+thích\s+hợp|kéo\s+thả\s+vào\s+chỗ\s+trống|kéo\s+thả\s+đáp\s+án|nối\s+cột|phân\s+loại\s+từ)[^.]*\.?$/i;
+  const endMatch = cleanContent.match(endInstructionRegex);
+  if (endMatch) {
+    const instructionText = endMatch[0].replace(/^[,.;\s]+/, '').trim();
+    const capitalizedInstruction = instructionText.charAt(0).toUpperCase() + instructionText.slice(1);
+    let passageText = cleanContent.substring(0, endMatch.index).trim();
+    if (passageText.endsWith(',')) {
+      passageText = passageText.slice(0, -1) + '.';
+    } else if (!passageText.endsWith('.') && !passageText.endsWith('?') && !passageText.endsWith('!')) {
+      passageText = passageText + '.';
+    }
+    return {
+      instruction: capitalizedInstruction,
+      passage: passageText
+    };
+  }
+
+  // 2. Check for instruction at the beginning
   const match = cleanContent.match(/^(.*?(?:chọn|điền|hoàn thành|thích hợp|chỗ trống|xếp|phân loại|hoàn thiện|đoạn văn|thả|kéo|nối).*?(?:[:.]\s*\n|[:.]\s+|$))/i);
   
   if (match && match[0].length < cleanContent.length && match[0].length < 200) {
