@@ -1489,33 +1489,34 @@ const InlineDropdownQuestion = React.memo(({ question, answer, isSubmitted, onSe
                 const { correct, allOpts } = dropdownOptions[i] || { correct: '', allOpts: [] };
                 
                 return (
-                  <span className="inline-block align-baseline mx-0.5 relative">
-                    <select
-                      value={currentAns[i] || ''}
-                      onChange={(e) => handleChange(i, e.target.value)}
-                      disabled={isSubmitted}
-                      className={`appearance-none bg-transparent font-bold outline-none border-b-2 py-0.5 pr-6 pl-2 text-base transition-colors cursor-pointer ${
-                        correctness === 'correct' ? 'border-green-500 text-green-700' :
-                        correctness === 'wrong' ? 'border-red-500 text-red-700' :
-                        currentAns[i] ? 'border-indigo-400 text-indigo-800' :
-                        'border-gray-300 text-gray-600'
-                      } ${isSubmitted ? '' : 'focus:border-indigo-500 hover:bg-slate-50 rounded-t'}`}
-                    >
-                      <option value="" disabled>---</option>
-                      {allOpts.map((opt: string, optIdx: number) => (
-                        <option key={optIdx} value={opt}>{opt}</option>
-                      ))}
-                    </select>
-                    <ChevronDown className={`absolute right-1 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none ${
-                      correctness === 'correct' ? 'text-green-700' :
-                      correctness === 'wrong' ? 'text-red-700' :
-                      currentAns[i] ? 'text-indigo-800' : 'text-gray-400'
-                    }`} />
-                    
+                  <React.Fragment key={i}>
+                    <span className="inline-block align-baseline mx-0.5 relative">
+                      <select
+                        value={currentAns[i] || ''}
+                        onChange={(e) => handleChange(i, e.target.value)}
+                        disabled={isSubmitted}
+                        className={`appearance-none bg-transparent font-bold outline-none border-b-2 py-0.5 pr-6 pl-2 text-base transition-colors cursor-pointer ${
+                          correctness === 'correct' ? 'border-green-500 text-green-700' :
+                          correctness === 'wrong' ? 'border-red-500 text-red-700' :
+                          currentAns[i] ? 'border-indigo-400 text-indigo-800' :
+                          'border-gray-300 text-gray-600'
+                        } ${isSubmitted ? '' : 'focus:border-indigo-500 hover:bg-slate-50 rounded-t'}`}
+                      >
+                        <option value="" disabled>---</option>
+                        {allOpts.map((opt: string, optIdx: number) => (
+                          <option key={optIdx} value={opt}>{opt}</option>
+                        ))}
+                      </select>
+                      <ChevronDown className={`absolute right-1 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none ${
+                        correctness === 'correct' ? 'text-green-700' :
+                        correctness === 'wrong' ? 'text-red-700' :
+                        currentAns[i] ? 'text-indigo-800' : 'text-gray-400'
+                      }`} />
+                    </span>
                     {correctness === 'wrong' && canViewSolution && (
-                      <span className="text-xs text-green-700 font-bold ml-1">({correct})</span>
+                      <span className="text-xs text-green-700 font-bold ml-1 inline-block align-baseline">({correct})</span>
                     )}
-                  </span>
+                  </React.Fragment>
                 );
               })()}
             </React.Fragment>
