@@ -444,9 +444,27 @@ export const ExamResults: React.FC = () => {
 
                               let isCorrect = false;
                               if (userAns !== undefined && userAns !== null && userAns !== '') {
-                                 if (q.type === 'MCQ') {
-                                    isCorrect = userAns === q.correctOptionIndex;
-                                 } else if (q.type === 'SHORT_ANSWER') {
+                                  if (q.type === 'MCQ') {
+                                     if (typeof userAns === 'number') {
+                                        isCorrect = userAns === q.correctOptionIndex;
+                                     } else if (typeof userAns === 'string') {
+                                        const idx = q.options.findIndex((opt: any) => String(opt).trim().toLowerCase() === userAns.trim().toLowerCase());
+                                        isCorrect = idx !== -1 && idx === q.correctOptionIndex;
+                                     }
+                                  } else if (q.type === 'MCQ_MULTIPLE') {
+                                     const correctArray = q.correctOptionIndices || [];
+                                     const userArray = (Array.isArray(userAns) ? userAns : []).map(val => {
+                                        if (typeof val === 'number') return val;
+                                        if (typeof val === 'string') {
+                                           const idx = q.options.findIndex((opt: any) => String(opt).trim().toLowerCase() === val.trim().toLowerCase());
+                                           return idx !== -1 ? idx : val;
+                                        }
+                                        return val;
+                                     });
+                                     if (correctArray.length > 0 && correctArray.length === userArray.length) {
+                                        isCorrect = correctArray.every((val: any) => userArray.includes(val));
+                                     }
+                                  } else if (q.type === 'SHORT_ANSWER') {
                                     const sAns = String(userAns || '').trim().toLowerCase().replace(/\s+/g, '');
                                     const solString = String(q.solution || '').trim();
                                     const isSolutionShort = solString !== '' && solString.split(/\s+/).length < 10;
@@ -974,9 +992,27 @@ export const ExamResults: React.FC = () => {
 
                            let isCorrect = false;
                            if (userAns !== undefined && userAns !== null && userAns !== '') {
-                              if (!q.type || q.type === 'MCQ') {
-                                 isCorrect = userAns === q.correctOptionIndex;
-                              } else if (q.type === 'SHORT_ANSWER') {
+                               if (!q.type || q.type === 'MCQ') {
+                                  if (typeof userAns === 'number') {
+                                     isCorrect = userAns === q.correctOptionIndex;
+                                  } else if (typeof userAns === 'string') {
+                                     const idx = q.options.findIndex((opt: any) => String(opt).trim().toLowerCase() === userAns.trim().toLowerCase());
+                                     isCorrect = idx !== -1 && idx === q.correctOptionIndex;
+                                  }
+                               } else if (q.type === 'MCQ_MULTIPLE') {
+                                  const correctArray = q.correctOptionIndices || [];
+                                  const userArray = (Array.isArray(userAns) ? userAns : []).map(val => {
+                                     if (typeof val === 'number') return val;
+                                     if (typeof val === 'string') {
+                                        const idx = q.options.findIndex((opt: any) => String(opt).trim().toLowerCase() === val.trim().toLowerCase());
+                                        return idx !== -1 ? idx : val;
+                                     }
+                                     return val;
+                                  });
+                                  if (correctArray.length > 0 && correctArray.length === userArray.length) {
+                                     isCorrect = correctArray.every((val: any) => userArray.includes(val));
+                                  }
+                               } else if (q.type === 'SHORT_ANSWER') {
                                  const sAns = String(userAns || '').trim().toLowerCase();
                                  const solString = String(q.solution || '').trim();
                                  const isSolutionShort = solString !== '' && solString.split(/\s+/).length < 10;

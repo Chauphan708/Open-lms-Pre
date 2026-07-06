@@ -81,6 +81,12 @@ const renderPoetryOrText = (text: string) => {
 };
 
 const MCQQuestion = React.memo(({ question, answer, isSubmitted, onSetAnswer, viewPassFail, canViewSolution, shuffledIndices }: any) => {
+  const selectedIndex = typeof answer === 'number'
+    ? answer
+    : typeof answer === 'string'
+      ? question.options.findIndex((opt: any) => String(opt).trim().toLowerCase() === answer.trim().toLowerCase())
+      : -1;
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
       {shuffledIndices.map((originalIndex: number, displayIndex: number) => {
@@ -90,26 +96,26 @@ const MCQQuestion = React.memo(({ question, answer, isSubmitted, onSetAnswer, vi
         if (isSubmitted) {
           if (viewPassFail) {
             if (originalIndex === question.correctOptionIndex) {
-              if (canViewSolution || answer === originalIndex) {
+              if (canViewSolution || selectedIndex === originalIndex) {
                 optionClass = "bg-green-50 border-green-500 text-green-700 font-medium";
               } else {
                 optionClass = "opacity-50 bg-white";
               }
-            } else if (answer === originalIndex) {
+            } else if (selectedIndex === originalIndex) {
               optionClass = "bg-red-50 border-red-500 text-red-700";
             } else {
               optionClass = "opacity-50 bg-white";
             }
-          } else if (answer === originalIndex) {
+          } else if (selectedIndex === originalIndex) {
             optionClass = "bg-indigo-50 border-indigo-500 text-indigo-700 ring-1 ring-indigo-500";
           } else {
             optionClass = "opacity-50 bg-white";
           }
-        } else if (answer === originalIndex) {
+        } else if (selectedIndex === originalIndex) {
           optionClass = "bg-indigo-50 border-indigo-500 text-indigo-700 ring-1 ring-indigo-500";
         }
 
-        if (isSubmitted && !viewPassFail && answer === originalIndex) {
+        if (isSubmitted && !viewPassFail && selectedIndex === originalIndex) {
           optionClass = "bg-gray-100 border-gray-400 text-gray-800 font-bold";
         }
 
@@ -120,9 +126,9 @@ const MCQQuestion = React.memo(({ question, answer, isSubmitted, onSetAnswer, vi
             disabled={isSubmitted}
             className={`w-full text-left p-4 rounded-xl border-2 transition-all flex items-center gap-3 shadow-sm ${optionClass} ${!isSubmitted && 'hover:border-indigo-300 hover:shadow-md active:scale-[0.98]'}`}
           >
-            <div className={`w-8 h-8 rounded-full border-2 flex items-center justify-center text-sm font-bold flex-shrink-0 transition-colors ${answer === originalIndex ? 'border-indigo-600 bg-indigo-600 text-white' : 'border-gray-300 bg-white text-gray-500'
-              } ${isSubmitted && viewPassFail && originalIndex === question.correctOptionIndex && (canViewSolution || answer === originalIndex) ? '!bg-green-500 !border-green-500 !text-white' : ''}
-              ${isSubmitted && !viewPassFail && answer === originalIndex ? '!bg-gray-600 !border-gray-600 !text-white' : ''}
+            <div className={`w-8 h-8 rounded-full border-2 flex items-center justify-center text-sm font-bold flex-shrink-0 transition-colors ${selectedIndex === originalIndex ? 'border-indigo-600 bg-indigo-600 text-white' : 'border-gray-300 bg-white text-gray-500'
+              } ${isSubmitted && viewPassFail && originalIndex === question.correctOptionIndex && (canViewSolution || selectedIndex === originalIndex) ? '!bg-green-500 !border-green-500 !text-white' : ''}
+              ${isSubmitted && !viewPassFail && selectedIndex === originalIndex ? '!bg-gray-600 !border-gray-600 !text-white' : ''}
             `}>
               {String.fromCharCode(65 + displayIndex)}
             </div>
@@ -137,7 +143,14 @@ const MCQQuestion = React.memo(({ question, answer, isSubmitted, onSetAnswer, vi
 });
 
 const MCQMultipleQuestion = React.memo(({ question, answer, isSubmitted, onSetAnswer, viewPassFail, canViewSolution, shuffledIndices }: any) => {
-  const selectedAnswers = Array.isArray(answer) ? answer : [];
+  const selectedAnswers = (Array.isArray(answer) ? answer : []).map(val => {
+    if (typeof val === 'number') return val;
+    if (typeof val === 'string') {
+      const idx = question.options.findIndex((opt: any) => String(opt).trim().toLowerCase() === val.trim().toLowerCase());
+      return idx !== -1 ? idx : val;
+    }
+    return val;
+  });
   
   const handleToggle = (index: number) => {
     if (isSubmitted) return;
@@ -262,12 +275,26 @@ const evaluateAnswer = (q: any, userAns: any, caseSensitive: boolean = false): b
   if (userAns === undefined || userAns === null) return false;
 
   if (q.type === 'MCQ') {
-    return userAns === q.correctOptionIndex;
+    if (typeof userAns === 'number') {
+      return userAns === q.correctOptionIndex;
+    }
+    if (typeof userAns === 'string') {
+      const idx = q.options.findIndex((opt: any) => String(opt).trim().toLowerCase() === userAns.trim().toLowerCase());
+      return idx !== -1 && idx === q.correctOptionIndex;
+    }
+    return false;
   }
   
   if (q.type === 'MCQ_MULTIPLE') {
     const correctArray = q.correctOptionIndices || [];
-    const userArray = Array.isArray(userAns) ? userAns : [];
+    const userArray = (Array.isArray(userAns) ? userAns : []).map(val => {
+      if (typeof val === 'number') return val;
+      if (typeof val === 'string') {
+        const idx = q.options.findIndex((opt: any) => String(opt).trim().toLowerCase() === val.trim().toLowerCase());
+        return idx !== -1 ? idx : val;
+      }
+      return val;
+    });
     if (correctArray.length === 0 || correctArray.length !== userArray.length) return false;
     return correctArray.every((val: any) => userArray.includes(val));
   }
