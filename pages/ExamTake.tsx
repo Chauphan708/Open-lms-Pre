@@ -902,10 +902,18 @@ const DragDropQuestion = React.memo(({ question, answer, isSubmitted, onSetAnswe
 
       {/* Passage with inline drop zones */}
       <div className="p-6 rounded-2xl border-2 leading-[2.5] text-base transition-all bg-white border-gray-200">
-        {parts.map((part: string, i: number) => (
-          <React.Fragment key={i}>
-            <span className="whitespace-pre-wrap">{renderPoetryOrText(part)}</span>
-            {i < parts.length - 1 && (() => {
+        {parts.map((part: string, i: number) => {
+          const subParts = part.split(/\s+\/\s+/);
+          return (
+            <React.Fragment key={i}>
+              {subParts.map((sub, sIdx) => (
+                <React.Fragment key={sIdx}>
+                  {sIdx > 0 && <br />}
+                  {sIdx > 0 && <span className="inline-block w-8 md:w-12" />}
+                  <span className="whitespace-pre-wrap">{sub}</span>
+                </React.Fragment>
+              ))}
+              {i < parts.length - 1 && (() => {
               const correctness = getBlankCorrectness(i);
               const val = currentAns[i] || '';
               return (
@@ -928,7 +936,7 @@ const DragDropQuestion = React.memo(({ question, answer, isSubmitted, onSetAnswe
               );
             })()}
           </React.Fragment>
-        ))}
+        );})}
       </div>
 
       {/* Draggable options bank */}
@@ -1336,36 +1344,45 @@ const FillInPassageQuestion = React.memo(({ question, answer, isSubmitted, onSet
           ? 'bg-white border-gray-200'
           : 'bg-white border-gray-200'
       }`}>
-        {parts.map((part: string, i: number) => (
-          <React.Fragment key={i}>
-            <span className="whitespace-pre-wrap">{renderPoetryOrText(part)}</span>
-            {i < parts.length - 1 && (() => {
-              const correctness = getBlankCorrectness(i);
-              const expectedWidth = Math.max(3, (question.options[i] || '').length + 1);
-              return (
-                <span className="inline-block align-baseline mx-0.5">
-                  <input
-                    type="text"
-                    value={currentAns[i] || ''}
-                    onChange={(e) => handleChange(i, e.target.value)}
-                    disabled={isSubmitted}
-                    style={{ width: `${expectedWidth + 1}ch` }}
-                    className={`border-b-2 border-t-0 border-l-0 border-r-0 bg-transparent text-center font-bold outline-none py-0.5 px-1 text-base transition-colors ${
-                      correctness === 'correct' ? 'border-green-500 text-green-700' :
-                      correctness === 'wrong' ? 'border-red-500 text-red-700' :
-                      currentAns[i] ? 'border-indigo-400 text-indigo-800' :
-                      'border-gray-300 text-gray-600'
-                    } ${isSubmitted ? '' : 'focus:border-indigo-500'}`}
-                    placeholder="····"
-                  />
-                  {correctness === 'wrong' && canViewSolution && (
-                    <span className="text-xs text-green-700 font-bold ml-1">({question.options[i]})</span>
-                  )}
-                </span>
-              );
-            })()}
-          </React.Fragment>
-        ))}
+        {parts.map((part: string, i: number) => {
+          const subParts = part.split(/\s+\/\s+/);
+          return (
+            <React.Fragment key={i}>
+              {subParts.map((sub, sIdx) => (
+                <React.Fragment key={sIdx}>
+                  {sIdx > 0 && <br />}
+                  {sIdx > 0 && <span className="inline-block w-8 md:w-12" />}
+                  <span className="whitespace-pre-wrap">{sub}</span>
+                </React.Fragment>
+              ))}
+              {i < parts.length - 1 && (() => {
+                const correctness = getBlankCorrectness(i);
+                const expectedWidth = Math.max(3, (question.options[i] || '').length + 1);
+                return (
+                  <span className="inline-block align-baseline mx-0.5">
+                    <input
+                      type="text"
+                      value={currentAns[i] || ''}
+                      onChange={(e) => handleChange(i, e.target.value)}
+                      disabled={isSubmitted}
+                      style={{ width: `${expectedWidth + 1}ch` }}
+                      className={`border-b-2 border-t-0 border-l-0 border-r-0 bg-transparent text-center font-bold outline-none py-0.5 px-1 text-base transition-colors ${
+                        correctness === 'correct' ? 'border-green-500 text-green-700' :
+                        correctness === 'wrong' ? 'border-red-500 text-red-700' :
+                        currentAns[i] ? 'border-indigo-400 text-indigo-800' :
+                        'border-gray-300 text-gray-600'
+                      } ${isSubmitted ? '' : 'focus:border-indigo-500'}`}
+                      placeholder="····"
+                    />
+                    {correctness === 'wrong' && canViewSolution && (
+                      <span className="text-xs text-green-700 font-bold ml-1">({question.options[i]})</span>
+                    )}
+                  </span>
+                );
+              })()}
+            </React.Fragment>
+          );
+        })}
       </div>
 
       {/* Reset button */}
@@ -1427,45 +1444,54 @@ const InlineDropdownQuestion = React.memo(({ question, answer, isSubmitted, onSe
           ? 'bg-white border-gray-200'
           : 'bg-white border-gray-200'
       }`}>
-        {parts.map((part: string, i: number) => (
-          <React.Fragment key={i}>
-            <span className="whitespace-pre-wrap">{renderPoetryOrText(part)}</span>
-            {i < parts.length - 1 && (() => {
-              const correctness = getBlankCorrectness(i);
-              const { correct, allOpts } = dropdownOptions[i] || { correct: '', allOpts: [] };
-              
-              return (
-                <span className="inline-block align-baseline mx-0.5 relative">
-                  <select
-                    value={currentAns[i] || ''}
-                    onChange={(e) => handleChange(i, e.target.value)}
-                    disabled={isSubmitted}
-                    className={`appearance-none bg-transparent font-bold outline-none border-b-2 py-0.5 pr-6 pl-2 text-base transition-colors cursor-pointer ${
-                      correctness === 'correct' ? 'border-green-500 text-green-700' :
-                      correctness === 'wrong' ? 'border-red-500 text-red-700' :
-                      currentAns[i] ? 'border-indigo-400 text-indigo-800' :
-                      'border-gray-300 text-gray-600'
-                    } ${isSubmitted ? '' : 'focus:border-indigo-500 hover:bg-slate-50 rounded-t'}`}
-                  >
-                    <option value="" disabled>---</option>
-                    {allOpts.map((opt: string, optIdx: number) => (
-                      <option key={optIdx} value={opt}>{opt}</option>
-                    ))}
-                  </select>
-                  <ChevronDown className={`absolute right-1 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none ${
-                    correctness === 'correct' ? 'text-green-700' :
-                    correctness === 'wrong' ? 'text-red-700' :
-                    currentAns[i] ? 'text-indigo-800' : 'text-gray-400'
-                  }`} />
-                  
-                  {correctness === 'wrong' && canViewSolution && (
-                    <span className="text-xs text-green-700 font-bold ml-1">({correct})</span>
-                  )}
-                </span>
-              );
-            })()}
-          </React.Fragment>
-        ))}
+        {parts.map((part: string, i: number) => {
+          const subParts = part.split(/\s+\/\s+/);
+          return (
+            <React.Fragment key={i}>
+              {subParts.map((sub, sIdx) => (
+                <React.Fragment key={sIdx}>
+                  {sIdx > 0 && <br />}
+                  {sIdx > 0 && <span className="inline-block w-8 md:w-12" />}
+                  <span className="whitespace-pre-wrap">{sub}</span>
+                </React.Fragment>
+              ))}
+              {i < parts.length - 1 && (() => {
+                const correctness = getBlankCorrectness(i);
+                const { correct, allOpts } = dropdownOptions[i] || { correct: '', allOpts: [] };
+                
+                return (
+                  <span className="inline-block align-baseline mx-0.5 relative">
+                    <select
+                      value={currentAns[i] || ''}
+                      onChange={(e) => handleChange(i, e.target.value)}
+                      disabled={isSubmitted}
+                      className={`appearance-none bg-transparent font-bold outline-none border-b-2 py-0.5 pr-6 pl-2 text-base transition-colors cursor-pointer ${
+                        correctness === 'correct' ? 'border-green-500 text-green-700' :
+                        correctness === 'wrong' ? 'border-red-500 text-red-700' :
+                        currentAns[i] ? 'border-indigo-400 text-indigo-800' :
+                        'border-gray-300 text-gray-600'
+                      } ${isSubmitted ? '' : 'focus:border-indigo-500 hover:bg-slate-50 rounded-t'}`}
+                    >
+                      <option value="" disabled>---</option>
+                      {allOpts.map((opt: string, optIdx: number) => (
+                        <option key={optIdx} value={opt}>{opt}</option>
+                      ))}
+                    </select>
+                    <ChevronDown className={`absolute right-1 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none ${
+                      correctness === 'correct' ? 'text-green-700' :
+                      correctness === 'wrong' ? 'text-red-700' :
+                      currentAns[i] ? 'text-indigo-800' : 'text-gray-400'
+                    }`} />
+                    
+                    {correctness === 'wrong' && canViewSolution && (
+                      <span className="text-xs text-green-700 font-bold ml-1">({correct})</span>
+                    )}
+                  </span>
+                );
+              })()}
+            </React.Fragment>
+          );
+        })}
       </div>
 
       
