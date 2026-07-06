@@ -22,17 +22,19 @@ const getPassageParts = (content: string) => {
   const endMatch = cleanContent.match(endInstructionRegex);
   if (endMatch) {
     const instructionText = endMatch[0].replace(/^[,.;\s]+/, '').trim();
-    const capitalizedInstruction = instructionText.charAt(0).toUpperCase() + instructionText.slice(1);
-    let passageText = cleanContent.substring(0, endMatch.index).trim();
-    if (passageText.endsWith(',')) {
-      passageText = passageText.slice(0, -1) + '.';
-    } else if (!passageText.endsWith('.') && !passageText.endsWith('?') && !passageText.endsWith('!')) {
-      passageText = passageText + '.';
+    if (!instructionText.includes('[__]') && !instructionText.includes('[...]') && !instructionText.includes('___') && !instructionText.includes('[]')) {
+      const capitalizedInstruction = instructionText.charAt(0).toUpperCase() + instructionText.slice(1);
+      let passageText = cleanContent.substring(0, endMatch.index).trim();
+      if (passageText.endsWith(',')) {
+        passageText = passageText.slice(0, -1) + '.';
+      } else if (!passageText.endsWith('.') && !passageText.endsWith('?') && !passageText.endsWith('!')) {
+        passageText = passageText + '.';
+      }
+      return {
+        instruction: capitalizedInstruction,
+        passage: passageText
+      };
     }
-    return {
-      instruction: capitalizedInstruction,
-      passage: passageText
-    };
   }
 
   // 2. Check for instruction at the beginning
@@ -3140,7 +3142,7 @@ export const ExamTake: React.FC = () => {
                     <div className="text-gray-900 font-medium text-base md:text-lg leading-relaxed prose prose-p:my-0 max-w-none break-words">
                       <MathText>
                         {['DRAG_DROP', 'INLINE_DROPDOWN', 'FILL_IN_PASSAGE'].includes(q.type)
-                          ? getPassageParts(q.content).instruction
+                          ? getPassageParts(q.content).instruction || q.content.replace(/\s*Đáp án:\s*[^\n]*$/i, '').trim()
                           : q.content.replace(/\s*Đáp án:\s*[^\n]*$/i, '').trim()}
                       </MathText>
                     </div>

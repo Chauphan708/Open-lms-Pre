@@ -12,18 +12,49 @@ import { computeStudentAnalytics } from '../../utils/analyticsEngine';
 import { getRecommendations, getRecentExamIds } from '../../utils/recommendationEngine';
 const getPassageParts = (content: string) => {
   const cleanContent = content.replace(/\s*Đáp án:\s*[^\n]*$/i, '').trim();
-  const colonIndex = cleanContent.indexOf(':');
-  if (colonIndex > 0 && colonIndex < 150) {
-    const prefix = cleanContent.substring(0, colonIndex);
-    if (/chọn|điền|hoàn thành|thích hợp|chỗ trống|xếp|phân loại|hoàn thiện|đoạn văn|thả|kéo/i.test(prefix)) {
+  
+  // 1. Check for instruction at the end
+  const endInstructionRegex = /([,.;]|\s+)\s*(?:hãy\s+)?(chọn|điền|kéo|thả|nối|phân loại|xếp|sắp xếp)\s+.*?\s*(?:vào\s+chỗ\s+trống|chỗ\s+trống|vào\s+nhóm|nhóm\s+thích\s+hợp|cột|đáp\s+án\s+đúng|đáp\s+án\s+thích\s+hợp|đúng)[^.]*\.?$/i;
+  const endMatch = cleanContent.match(endInstructionRegex);
+  if (endMatch) {
+    const instructionText = endMatch[0].replace(/^[,.;\s]+/, '').trim();
+    if (!instructionText.includes('[__]') && !instructionText.includes('[...]') && !instructionText.includes('___') && !instructionText.includes('[]')) {
+      const capitalizedInstruction = instructionText.charAt(0).toUpperCase() + instructionText.slice(1);
+      let passageText = cleanContent.substring(0, endMatch.index).trim();
+      if (passageText.endsWith(',')) {
+        passageText = passageText.slice(0, -1) + '.';
+      } else if (!passageText.endsWith('.') && !passageText.endsWith('?') && !passageText.endsWith('!')) {
+        passageText = passageText + '.';
+      }
       return {
-        instruction: prefix + ':',
-        passage: cleanContent.substring(colonIndex + 1).trim()
+        instruction: capitalizedInstruction,
+        passage: passageText
       };
     }
   }
+
+  // 2. Check for instruction at the beginning
+  const match = cleanContent.match(/^(.*?(?:chọn|điền|hoàn thành|thích hợp|chỗ trống|xếp|phân loại|hoàn thiện|đoạn văn|thả|kéo|nối).*?(?:[:.]\s*\n|[:.]\s+|$))/i);
+  
+  if (match && match[0].length < cleanContent.length && match[0].length < 200) {
+    return {
+      instruction: match[0].trim(),
+      passage: cleanContent.substring(match[0].length).trim()
+    };
+  }
+
+  // Fallback: if there is a clear first line that looks like an instruction
+  const lines = cleanContent.split('\n');
+  if (lines.length > 1 && lines[0].length < 150 && /chọn|điền|hoàn thành|thích|chỗ trống|xếp|phân loại|kéo|thả/i.test(lines[0])) {
+      return {
+          instruction: lines[0].trim(),
+          passage: lines.slice(1).join('\n').trim()
+      }
+  }
+
+  // If we can't separate, return empty instruction so it doesn't duplicate.
   return {
-    instruction: cleanContent,
+    instruction: '',
     passage: cleanContent
   };
 };
@@ -1005,7 +1036,7 @@ export const ExamResults: React.FC = () => {
                                           </div>
                                            <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>
                                                {((['DRAG_DROP', 'INLINE_DROPDOWN', 'FILL_IN_PASSAGE'].includes(q.type)
-                                                  ? getPassageParts(q.content).instruction
+                                                  ? getPassageParts(q.content).instruction || q.content
                                                   : q.content) || '').replace(/\[__\]/g, '[\\_\\_]')}
                                            </ReactMarkdown>
                                        </div>
