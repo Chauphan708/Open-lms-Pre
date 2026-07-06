@@ -623,7 +623,7 @@ const MatchingQuestion = React.memo(({ question, answer, isSubmitted, onSetAnswe
                   `}
                 >
                   <span className="font-bold text-gray-700">
-                    <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>{left}</ReactMarkdown>
+                    <MathText inline>{left}</MathText>
                   </span>
                   {hasMatch && !isSubmitted && (
                     <button
@@ -661,7 +661,7 @@ const MatchingQuestion = React.memo(({ question, answer, isSubmitted, onSetAnswe
                   `}
                 >
                   <span className="font-medium text-gray-700 flex-1">
-                    <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>{right}</ReactMarkdown>
+                    <MathText inline>{right}</MathText>
                   </span>
                   {/* Connection Point */}
                   <div
@@ -3138,12 +3138,11 @@ export const ExamTake: React.FC = () => {
                   </div>
                   <div className="flex-1 mt-1">
                     <div className="text-gray-900 font-medium text-base md:text-lg leading-relaxed prose prose-p:my-0 max-w-none break-words">
-                      <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>
-                        {(['DRAG_DROP', 'INLINE_DROPDOWN', 'FILL_IN_PASSAGE'].includes(q.type)
+                      <MathText>
+                        {['DRAG_DROP', 'INLINE_DROPDOWN', 'FILL_IN_PASSAGE'].includes(q.type)
                           ? getPassageParts(q.content).instruction
-                          : q.content.replace(/\s*Đáp án:\s*[^\n]*$/i, '').trim()
-                        ).replace(/\[__\]/g, '[\\_\\_]')}
-                      </ReactMarkdown>
+                          : q.content.replace(/\s*Đáp án:\s*[^\n]*$/i, '').trim()}
+                      </MathText>
                     </div>
                     {q.imageUrl && (
                       <div className="mt-3 md:mt-4 overflow-hidden rounded-lg border border-gray-100 shadow-sm bg-gray-50 flex justify-center">
