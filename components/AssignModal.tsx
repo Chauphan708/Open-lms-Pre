@@ -39,6 +39,7 @@ export const AssignModal: React.FC<Props> = ({ exam, isOpen, onClose }) => {
       setMaxAttempts(10);
       setSelectedStudentIds([]); // Reset student selection
       setShuffleQuestions(true); // Reset shuffle questions
+      setShuffleQuestionsMode('by_level'); // Reset shuffle mode to by_level
     }
   }, [isOpen, exam]);
 
@@ -52,6 +53,7 @@ export const AssignModal: React.FC<Props> = ({ exam, isOpen, onClose }) => {
   const [maxAttempts, setMaxAttempts] = useState(10); // Default 10 attempts
   const [caseSensitiveShortAnswer, setCaseSensitiveShortAnswer] = useState(false);
   const [shuffleQuestions, setShuffleQuestions] = useState(true); // Shuffle questions toggle
+  const [shuffleQuestionsMode, setShuffleQuestionsMode] = useState<'random' | 'by_level'>('by_level'); // Shuffle mode state
 
   // Security Settings
   const [mode, setMode] = useState<'practice' | 'exam'>('practice');
@@ -101,6 +103,7 @@ export const AssignModal: React.FC<Props> = ({ exam, isOpen, onClose }) => {
         maxAttempts,
         caseSensitiveShortAnswer,
         shuffleQuestions,
+        shuffleQuestionsMode,
         // Enforce settings if it's exam mode, otherwise take custom state
         requireFullscreen: mode === 'exam' ? true : requireFullscreen,
         preventTabSwitch: mode === 'exam' ? true : preventTabSwitch,
@@ -336,7 +339,7 @@ export const AssignModal: React.FC<Props> = ({ exam, isOpen, onClose }) => {
               <h3 className="text-sm font-bold text-gray-900 dark:text-slate-100 mb-3 flex items-center gap-2">
                 <Shuffle className="h-4 w-4 text-indigo-600 dark:text-indigo-400" /> Cấu hình xáo trộn đề thi
               </h3>
-              <div className="space-y-3">
+              <div className="space-y-4">
                 <label className="flex items-start gap-3 cursor-pointer group">
                   <input 
                     type="checkbox" 
@@ -345,10 +348,44 @@ export const AssignModal: React.FC<Props> = ({ exam, isOpen, onClose }) => {
                     className="mt-0.5 w-4 h-4 rounded border-gray-300 dark:border-slate-700 text-indigo-600 focus:ring-indigo-500" 
                   />
                   <div>
-                    <span className="text-sm text-gray-700 dark:text-slate-300 group-hover:text-gray-900 dark:group-hover:text-slate-100 font-medium">Xáo trộn thứ tự câu hỏi</span>
+                    <span className="text-sm text-gray-700 dark:text-slate-300 group-hover:text-gray-900 dark:group-hover:text-slate-100 font-bold">Xáo trộn thứ tự câu hỏi</span>
                     <p className="text-xs text-gray-500 dark:text-slate-400 mt-0.5">Hiển thị các câu hỏi theo thứ tự ngẫu nhiên cho mỗi học sinh để hạn chế trao đổi bài.</p>
                   </div>
                 </label>
+
+                {shuffleQuestions && (
+                  <div className="pl-7 pt-2 border-t border-gray-100 dark:border-slate-800 space-y-3">
+                    <label className="flex items-start gap-2.5 cursor-pointer group">
+                      <input 
+                        type="radio" 
+                        name="shuffleQuestionsMode"
+                        value="by_level"
+                        checked={shuffleQuestionsMode === 'by_level'}
+                        onChange={() => setShuffleQuestionsMode('by_level')}
+                        className="mt-0.5 w-4 h-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 dark:border-slate-700"
+                      />
+                      <div>
+                        <span className="text-xs font-bold text-gray-800 dark:text-slate-200 group-hover:text-indigo-600 dark:group-hover:text-indigo-450">Trộn theo mức độ tăng dần (Khuyên dùng)</span>
+                        <p className="text-[11px] text-gray-500 dark:text-slate-400">Giữ nguyên thứ tự câu hỏi đi từ Dễ đến Khó (Nhận biết → Kết nối → Vận dụng), chỉ trộn các câu hỏi cùng mức độ.</p>
+                      </div>
+                    </label>
+
+                    <label className="flex items-start gap-2.5 cursor-pointer group">
+                      <input 
+                        type="radio" 
+                        name="shuffleQuestionsMode"
+                        value="random"
+                        checked={shuffleQuestionsMode === 'random'}
+                        onChange={() => setShuffleQuestionsMode('random')}
+                        className="mt-0.5 w-4 h-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 dark:border-slate-700"
+                      />
+                      <div>
+                        <span className="text-xs font-bold text-gray-800 dark:text-slate-200 group-hover:text-indigo-600 dark:group-hover:text-indigo-450">Trộn ngẫu nhiên hoàn toàn</span>
+                        <p className="text-[11px] text-gray-500 dark:text-slate-400">Không giữ cấu trúc độ khó, tất cả câu hỏi được xáo trộn ngẫu nhiên hoàn toàn.</p>
+                      </div>
+                    </label>
+                  </div>
+                )}
               </div>
             </div>
 

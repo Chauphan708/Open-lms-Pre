@@ -1743,6 +1743,26 @@ export const ExamTake: React.FC = () => {
     return newArr;
   };
 
+  // Helper to shuffle questions by level or randomly
+  const shuffleQuestionsByMode = useCallback((questions: Question[], mode?: 'random' | 'by_level') => {
+    const qIds = questions.map(q => q.id);
+    if (mode === 'by_level' || !mode) {
+      const nhanBiet = questions.filter(q => q.level === 'NHAN_BIET');
+      const ketNoi = questions.filter(q => q.level === 'KET_NOI');
+      const vanDung = questions.filter(q => q.level === 'VAN_DUNG');
+      const other = questions.filter(q => !q.level || !['NHAN_BIET', 'KET_NOI', 'VAN_DUNG'].includes(q.level));
+
+      const shuffledNhanBiet = shuffleArray(nhanBiet.map(q => q.id));
+      const shuffledKetNoi = shuffleArray(ketNoi.map(q => q.id));
+      const shuffledVanDung = shuffleArray(vanDung.map(q => q.id));
+      const shuffledOther = shuffleArray(other.map(q => q.id));
+
+      return [...shuffledNhanBiet, ...shuffledKetNoi, ...shuffledVanDung, ...shuffledOther];
+    } else {
+      return shuffleArray(qIds);
+    }
+  }, []);
+
   // Generate shuffles for all questions
   const generateShuffles = useCallback(() => {
     if (!exam) return {};
@@ -1822,9 +1842,9 @@ export const ExamTake: React.FC = () => {
 
             if (parsed.shuffledQuestionIds) setShuffledQuestionIds(parsed.shuffledQuestionIds);
             else {
-              const qIds = exam.questions.map(q => q.id);
               const shouldShuffle = assignment ? (assignment.settings?.shuffleQuestions !== false) : true;
-              setShuffledQuestionIds(shouldShuffle ? shuffleArray(qIds) : qIds);
+              const mode = assignment?.settings?.shuffleQuestionsMode;
+              setShuffledQuestionIds(shouldShuffle ? shuffleQuestionsByMode(exam.questions, mode) : exam.questions.map(q => q.id));
             }
 
             setAnswers(parsed.answers || {});
@@ -1858,9 +1878,9 @@ export const ExamTake: React.FC = () => {
       
       // Fallback: Fresh Start (if no draft or draft mismatch)
       setShuffledOptionsMap(generateShuffles());
-      const qIds = exam.questions.map(q => q.id);
       const shouldShuffle = assignment ? (assignment.settings?.shuffleQuestions !== false) : true;
-      setShuffledQuestionIds(shouldShuffle ? shuffleArray(qIds) : qIds);
+      const mode = assignment?.settings?.shuffleQuestionsMode;
+      setShuffledQuestionIds(shouldShuffle ? shuffleQuestionsByMode(exam.questions, mode) : exam.questions.map(q => q.id));
 
       const duration = (assignment?.durationMinutes || exam?.durationMinutes || 45);
       const initialSeconds = duration * 60;

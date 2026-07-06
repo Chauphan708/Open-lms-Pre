@@ -116,6 +116,7 @@ export interface AssignmentSettings {
   viewSolutionOnLastAttemptOnly?: boolean;
   caseSensitiveShortAnswer?: boolean;
   shuffleQuestions?: boolean;
+  shuffleQuestionsMode?: 'random' | 'by_level';
 }
 
 export interface Assignment {
