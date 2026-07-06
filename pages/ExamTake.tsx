@@ -61,6 +61,23 @@ const getPassageParts = (content: string) => {
   };
 };
 
+const renderPoetryOrText = (text: string) => {
+  if (text && text.includes(' / ')) {
+    const lines = text.split(/\s+\/\s+/);
+    return (
+      <span className="inline-block text-left italic font-medium">
+        {lines.map((line, idx) => (
+          <React.Fragment key={idx}>
+            {idx > 0 && <br />}
+            <span className="block md:pl-8 leading-relaxed">{line}</span>
+          </React.Fragment>
+        ))}
+      </span>
+    );
+  }
+  return text;
+};
+
 const MCQQuestion = React.memo(({ question, answer, isSubmitted, onSetAnswer, viewPassFail, canViewSolution, shuffledIndices }: any) => {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -108,9 +125,7 @@ const MCQQuestion = React.memo(({ question, answer, isSubmitted, onSetAnswer, vi
               {String.fromCharCode(65 + displayIndex)}
             </div>
             <span className="text-gray-800 prose prose-p:my-0 flex-1">
-              <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>
-                {optContent}
-              </ReactMarkdown>
+              <MathText inline>{optContent}</MathText>
             </span>
           </button>
         );
@@ -196,9 +211,7 @@ const MCQMultipleQuestion = React.memo(({ question, answer, isSubmitted, onSetAn
               ) : String.fromCharCode(65 + displayIndex)}
             </div>
             <span className="text-gray-800 prose prose-p:my-0 flex-1">
-              <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>
-                {optContent}
-              </ReactMarkdown>
+              <MathText inline>{optContent}</MathText>
             </span>
           </button>
         );
@@ -891,7 +904,7 @@ const DragDropQuestion = React.memo(({ question, answer, isSubmitted, onSetAnswe
       <div className="p-6 rounded-2xl border-2 leading-[2.5] text-base transition-all bg-white border-gray-200">
         {parts.map((part: string, i: number) => (
           <React.Fragment key={i}>
-            <span className="whitespace-pre-wrap">{part}</span>
+            <span className="whitespace-pre-wrap">{renderPoetryOrText(part)}</span>
             {i < parts.length - 1 && (() => {
               const correctness = getBlankCorrectness(i);
               const val = currentAns[i] || '';
@@ -1325,7 +1338,7 @@ const FillInPassageQuestion = React.memo(({ question, answer, isSubmitted, onSet
       }`}>
         {parts.map((part: string, i: number) => (
           <React.Fragment key={i}>
-            <span className="whitespace-pre-wrap">{part}</span>
+            <span className="whitespace-pre-wrap">{renderPoetryOrText(part)}</span>
             {i < parts.length - 1 && (() => {
               const correctness = getBlankCorrectness(i);
               const expectedWidth = Math.max(3, (question.options[i] || '').length + 1);
@@ -1416,7 +1429,7 @@ const InlineDropdownQuestion = React.memo(({ question, answer, isSubmitted, onSe
       }`}>
         {parts.map((part: string, i: number) => (
           <React.Fragment key={i}>
-            <span className="whitespace-pre-wrap">{part}</span>
+            <span className="whitespace-pre-wrap">{renderPoetryOrText(part)}</span>
             {i < parts.length - 1 && (() => {
               const correctness = getBlankCorrectness(i);
               const { correct, allOpts } = dropdownOptions[i] || { correct: '', allOpts: [] };
