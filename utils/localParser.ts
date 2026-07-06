@@ -57,20 +57,59 @@ export const parseQuestionsLocal = (rawText: string): Question[] => {
  */
 function splitIntoQuestionBlocks(text: string): string[] {
     // Try standard format first: "Câu 1:", "Bài 1:", etc.
-    let matches: { index: number; length: number }[] = [];
+    let matches: { index: number; length: number; num: number; raw: string }[] = [];
 
     // Reset regex
     QUESTION_START_REGEX.lastIndex = 0;
     let match;
     while ((match = QUESTION_START_REGEX.exec(text)) !== null) {
-        matches.push({ index: match.index, length: match[0].length });
+        matches.push({ 
+            index: match.index, 
+            length: match[0].length,
+            num: parseInt(match[1], 10),
+            raw: match[0]
+        });
+    }
+
+    // Heuristic: Filter out sub-questions
+    if (matches.length > 1) {
+        const hasCau = matches.some(m => /^\s*Câu\s+\d+/i.test(m.raw));
+        const hasCauHoi = matches.some(m => /^\s*Câu\s+hỏi\s+\d+/i.test(m.raw));
+        if (hasCau && hasCauHoi) {
+            matches = matches.filter(m => !/^\s*Câu\s+hỏi\s+\d+/i.test(m.raw));
+        }
+
+        // Also check for sequential drops: e.g. [13, 14, 1, 2]
+        let filteredMatches: typeof matches = [];
+        let currentMax = 0;
+        for (let i = 0; i < matches.length; i++) {
+            const m = matches[i];
+            if (i === 0) {
+                filteredMatches.push(m);
+                currentMax = m.num;
+            } else {
+                if (m.num < currentMax && m.num <= 5 && currentMax >= 5) {
+                    continue; // Skip sub-question
+                }
+                filteredMatches.push(m);
+                if (m.num > currentMax) {
+                    currentMax = m.num;
+                }
+            }
+        }
+        matches = filteredMatches;
     }
 
     // If no standard matches, try "1." or "1)" format
     if (matches.length === 0) {
         QUESTION_START_ALT_REGEX.lastIndex = 0;
         while ((match = QUESTION_START_ALT_REGEX.exec(text)) !== null) {
-            matches.push({ index: match.index, length: match[0].length });
+            matches.push({ 
+                index: match.index, 
+                length: match[0].length,
+                num: parseInt(match[1], 10),
+                raw: match[0]
+            });
         }
     }
 
