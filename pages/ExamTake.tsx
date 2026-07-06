@@ -3,7 +3,7 @@ import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useStore } from '../store';
 import { useClassFunStore } from '../services/classFunStore';
 import { Clock, CheckCircle, AlertTriangle, Lock, Ban, ChevronLeft, Radio, Sparkles, MessageSquareQuote, RotateCcw, Lightbulb, BrainCircuit, Book, Send, ShieldAlert, Menu, X, ListOrdered, Loader2, ChevronDown, ChevronUp } from 'lucide-react';
-import { Attempt, Exam } from '../types';
+import { Attempt, Exam, Question } from '../types';
 import { analyzeStudentAttempt } from '../services/geminiService';
 import { DictionaryWidget } from '../components/DictionaryWidget'; // IMPORT WIDGET
 import ReactMarkdown from 'react-markdown';
@@ -1587,6 +1587,19 @@ export const ExamTake: React.FC = () => {
 
   // Shuffle State: Map of QuestionId -> Array of Original Indices [2, 0, 3, 1]
   const [shuffledOptionsMap, setShuffledOptionsMap] = useState<Record<string, number[]>>({});
+  // NEW: Shuffled order of question IDs
+  const [shuffledQuestionIds, setShuffledQuestionIds] = useState<string[]>([]);
+
+  const orderedQuestions = useMemo((): Question[] => {
+    if (!exam) return [];
+    if (isSubmitted) return exam.questions; // Always standard order for review mode
+    if (shuffledQuestionIds && shuffledQuestionIds.length > 0) {
+      return shuffledQuestionIds
+        .map(id => exam.questions.find(q => String(q.id) === String(id)))
+        .filter(Boolean) as Question[];
+    }
+    return exam.questions;
+  }, [exam, isSubmitted, shuffledQuestionIds]);
 
   // NEW STATES FOR ANTI-CHEAT & MOBILE UX
   const [hasStarted, setHasStarted] = useState(false);
@@ -1721,7 +1734,7 @@ export const ExamTake: React.FC = () => {
   }, [hasFeedback, latestAttempt, assignmentSettings, myAttempts.length]);
 
   // Helper to shuffle array (Fisher-Yates)
-  const shuffleArray = (array: number[]) => {
+  const shuffleArray = <T,>(array: T[]): T[] => {
     const newArr = [...array];
     for (let i = newArr.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
@@ -1790,6 +1803,7 @@ export const ExamTake: React.FC = () => {
         standardMap[q.id] = q.options.map((_, i) => i);
       });
       setShuffledOptionsMap(standardMap);
+      setShuffledQuestionIds(exam.questions.map(q => q.id));
 
     } else if (!isSubmitted && !hasStarted) {
       // New attempt -> check local storage first
@@ -1805,6 +1819,13 @@ export const ExamTake: React.FC = () => {
           if (draftAssignId === currentAssignId) {
             if (parsed.shuffledOptionsMap) setShuffledOptionsMap(parsed.shuffledOptionsMap);
             else setShuffledOptionsMap(generateShuffles());
+
+            if (parsed.shuffledQuestionIds) setShuffledQuestionIds(parsed.shuffledQuestionIds);
+            else {
+              const qIds = exam.questions.map(q => q.id);
+              const shouldShuffle = assignment ? (assignment.settings?.shuffleQuestions !== false) : true;
+              setShuffledQuestionIds(shouldShuffle ? shuffleArray(qIds) : qIds);
+            }
 
             setAnswers(parsed.answers || {});
             if (parsed.cheatWarnings) setCheatWarnings(parsed.cheatWarnings);
@@ -1837,6 +1858,10 @@ export const ExamTake: React.FC = () => {
       
       // Fallback: Fresh Start (if no draft or draft mismatch)
       setShuffledOptionsMap(generateShuffles());
+      const qIds = exam.questions.map(q => q.id);
+      const shouldShuffle = assignment ? (assignment.settings?.shuffleQuestions !== false) : true;
+      setShuffledQuestionIds(shouldShuffle ? shuffleArray(qIds) : qIds);
+
       const duration = (assignment?.durationMinutes || exam?.durationMinutes || 45);
       const initialSeconds = duration * 60;
       setTimeLeft(initialSeconds);
@@ -1857,6 +1882,7 @@ export const ExamTake: React.FC = () => {
       answers,
       examExpiresAt,
       shuffledOptionsMap,
+      shuffledQuestionIds,
       cheatWarnings,
       timeSpentPerQuestion,
       examStartTime
@@ -1864,7 +1890,7 @@ export const ExamTake: React.FC = () => {
 
     const timer = setTimeout(() => setIsSaving(false), 800);
     return () => clearTimeout(timer);
-  }, [answers, shuffledOptionsMap, cheatWarnings, timeSpentPerQuestion, examStartTime, examExpiresAt, exam, isSubmitted, hasStarted, assignmentId]);
+  }, [answers, shuffledOptionsMap, shuffledQuestionIds, cheatWarnings, timeSpentPerQuestion, examStartTime, examExpiresAt, exam, isSubmitted, hasStarted, assignmentId]);
 
   // --- TIME TRACKING HOOK ---
   useEffect(() => {
@@ -1872,8 +1898,8 @@ export const ExamTake: React.FC = () => {
 
     // Function to increment time for current question
     const incrementTime = () => {
-      if (exam.questions[currentQuestionIndex]) {
-        const qId = exam.questions[currentQuestionIndex].id;
+      if (orderedQuestions[currentQuestionIndex]) {
+        const qId = orderedQuestions[currentQuestionIndex].id;
         setTimeSpentPerQuestion(prev => ({
           ...prev,
           [qId]: (prev[qId] || 0) + 1
@@ -1922,7 +1948,7 @@ export const ExamTake: React.FC = () => {
     observerRef.current = new IntersectionObserver(handleIntersect, options);
 
     // Attach observer to all question containers
-    exam?.questions.forEach((q, idx) => {
+    orderedQuestions.forEach((q, idx) => {
       const el = document.getElementById(`question-container-${idx}`);
       if (el) observerRef.current?.observe(el);
     });
@@ -2642,7 +2668,7 @@ export const ExamTake: React.FC = () => {
             </div>
             
             <div className="grid grid-cols-5 gap-3 max-h-[50vh] overflow-y-auto pr-2 custom-scrollbar">
-              {exam.questions.map((q, idx) => {
+              {orderedQuestions.map((q, idx) => {
                 const ans = answers[q.id];
                 let isAnswered = false;
                 if (ans !== undefined && ans !== null && ans !== '') {
@@ -2783,7 +2809,7 @@ export const ExamTake: React.FC = () => {
                 {answersCount}/{exam?.questions?.length || 0}
               </div>
               <div className="flex flex-wrap gap-1.5 flex-1">
-                {exam.questions.map((q, idx) => {
+                {orderedQuestions.map((q, idx) => {
                   const ans = answers[q.id];
                   let isAnswered = false;
                   if (ans !== undefined && ans !== null && ans !== '') {
@@ -2913,7 +2939,7 @@ export const ExamTake: React.FC = () => {
               </div>
               <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar mb-4">
                 <div className="grid grid-cols-4 gap-2">
-                  {exam.questions.map((q, idx) => {
+                  {orderedQuestions.map((q, idx) => {
                     const ans = answers[q.id];
                     let isAnswered = false;
 
@@ -3019,7 +3045,7 @@ export const ExamTake: React.FC = () => {
             </div>
           )}
 
-          {exam.questions.filter((_, i) => viewMode === 'scroll' || isSubmitted || i === currentQuestionIndex).map((q, index) => {
+          {orderedQuestions.filter((_, i) => viewMode === 'scroll' || isSubmitted || i === currentQuestionIndex).map((q, index) => {
             const actualIndex = viewMode === 'scroll' || isSubmitted ? index : currentQuestionIndex;
             // Get the shuffled indices for this question
             const shuffledIndices = shuffledOptionsMap[q.id] || q.options.map((_, i) => i);

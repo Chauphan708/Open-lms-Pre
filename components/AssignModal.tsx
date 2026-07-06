@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Calendar, Clock, Eye, Repeat, Lightbulb, CheckCircle, Copy, ShieldAlert, Monitor, CopyX, Expand, Laptop, HelpCircle, CheckSquare } from 'lucide-react';
+import { X, Calendar, Clock, Eye, Repeat, Lightbulb, CheckCircle, Copy, ShieldAlert, Monitor, CopyX, Expand, Laptop, HelpCircle, CheckSquare, Shuffle } from 'lucide-react';
 import { useStore } from '../store';
 import { Exam, Assignment } from '../types';
 
@@ -38,6 +38,7 @@ export const AssignModal: React.FC<Props> = ({ exam, isOpen, onClose }) => {
       setViewHint(true);
       setMaxAttempts(10);
       setSelectedStudentIds([]); // Reset student selection
+      setShuffleQuestions(true); // Reset shuffle questions
     }
   }, [isOpen, exam]);
 
@@ -50,6 +51,7 @@ export const AssignModal: React.FC<Props> = ({ exam, isOpen, onClose }) => {
   const [viewHint, setViewHint] = useState(true); // New Hint Setting
   const [maxAttempts, setMaxAttempts] = useState(10); // Default 10 attempts
   const [caseSensitiveShortAnswer, setCaseSensitiveShortAnswer] = useState(false);
+  const [shuffleQuestions, setShuffleQuestions] = useState(true); // Shuffle questions toggle
 
   // Security Settings
   const [mode, setMode] = useState<'practice' | 'exam'>('practice');
@@ -98,6 +100,7 @@ export const AssignModal: React.FC<Props> = ({ exam, isOpen, onClose }) => {
         viewHint,
         maxAttempts,
         caseSensitiveShortAnswer,
+        shuffleQuestions,
         // Enforce settings if it's exam mode, otherwise take custom state
         requireFullscreen: mode === 'exam' ? true : requireFullscreen,
         preventTabSwitch: mode === 'exam' ? true : preventTabSwitch,
@@ -325,6 +328,27 @@ export const AssignModal: React.FC<Props> = ({ exam, isOpen, onClose }) => {
                     if (val >= 0) setMaxAttempts(val);
                   }}
                 />
+              </div>
+            </div>
+
+            {/* Cấu hình xáo trộn đề thi */}
+            <div className="border border-gray-200 dark:border-slate-800 rounded-xl p-4 bg-white dark:bg-slate-950">
+              <h3 className="text-sm font-bold text-gray-900 dark:text-slate-100 mb-3 flex items-center gap-2">
+                <Shuffle className="h-4 w-4 text-indigo-600 dark:text-indigo-400" /> Cấu hình xáo trộn đề thi
+              </h3>
+              <div className="space-y-3">
+                <label className="flex items-start gap-3 cursor-pointer group">
+                  <input 
+                    type="checkbox" 
+                    checked={shuffleQuestions} 
+                    onChange={e => setShuffleQuestions(e.target.checked)} 
+                    className="mt-0.5 w-4 h-4 rounded border-gray-300 dark:border-slate-700 text-indigo-600 focus:ring-indigo-500" 
+                  />
+                  <div>
+                    <span className="text-sm text-gray-700 dark:text-slate-300 group-hover:text-gray-900 dark:group-hover:text-slate-100 font-medium">Xáo trộn thứ tự câu hỏi</span>
+                    <p className="text-xs text-gray-500 dark:text-slate-400 mt-0.5">Hiển thị các câu hỏi theo thứ tự ngẫu nhiên cho mỗi học sinh để hạn chế trao đổi bài.</p>
+                  </div>
+                </label>
               </div>
             </div>
 

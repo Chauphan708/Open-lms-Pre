@@ -115,6 +115,7 @@ export interface AssignmentSettings {
   preventCopy?: boolean;
   viewSolutionOnLastAttemptOnly?: boolean;
   caseSensitiveShortAnswer?: boolean;
+  shuffleQuestions?: boolean;
 }
 
 export interface Assignment {
