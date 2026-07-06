@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useStore } from '../store';
 import { useClassFunStore } from '../services/classFunStore';
-import { Clock, CheckCircle, AlertTriangle, Lock, Ban, ChevronLeft, Radio, Sparkles, MessageSquareQuote, RotateCcw, Lightbulb, BrainCircuit, Book, Send, ShieldAlert, Menu, X, ListOrdered, Loader2, ChevronDown, ChevronUp } from 'lucide-react';
+import { Clock, CheckCircle, AlertTriangle, Lock, Ban, ChevronLeft, Radio, Sparkles, MessageSquareQuote, RotateCcw, Lightbulb, BrainCircuit, Book, Send, ShieldAlert, Menu, X, ListOrdered, Loader2, ChevronDown, ChevronUp, GripVertical } from 'lucide-react';
 import { Attempt, Exam, Question } from '../types';
 import { analyzeStudentAttempt } from '../services/geminiService';
 import { DictionaryWidget } from '../components/DictionaryWidget'; // IMPORT WIDGET
@@ -18,7 +18,7 @@ const getPassageParts = (content: string) => {
   const cleanContent = content.replace(/\s*Đáp án:\s*[^\n]*$/i, '').trim();
   
   // 1. Check for instruction at the end
-  const endInstructionRegex = /([,.;]|\s+)\s*(?:hãy\s+)?(chọn\s+đáp\s+án\s+thích\s+hợp\s+điền\s+vào\s+chỗ\s+trống|điền\s+vào\s+chỗ\s+trống|chọn\s+đáp\s+án\s+đúng|chọn\s+đáp\s+án\s+thích\s+hợp|chọn\s+từ\s+thích\s+hợp|kéo\s+thả\s+vào\s+chỗ\s+trống|kéo\s+thả\s+đáp\s+án|nối\s+cột|phân\s+loại\s+từ|xếp\s+các\s+từ\s+vào\s+nhóm\s+thích\s+hợp|xếp\s+từ\s+vào\s+nhóm\s+thích\s+hợp|xếp\s+các\s+từ\s+vào\s+nhóm|xếp\s+từ\s+vào\s+nhóm|phân\s+loại\s+từ\s+vào\s+nhóm|phân\s+loại\s+các\s+từ)[^.]*\.?$/i;
+  const endInstructionRegex = /([,.;]|\s+)\s*(?:hãy\s+)?(chọn|điền|kéo|thả|nối|phân loại|xếp|sắp xếp)\s+.*?\s*(?:vào\s+chỗ\s+trống|chỗ\s+trống|vào\s+nhóm|nhóm\s+thích\s+hợp|cột|đáp\s+án\s+đúng|đáp\s+án\s+thích\s+hợp|đúng)[^.]*\.?$/i;
   const endMatch = cleanContent.match(endInstructionRegex);
   if (endMatch) {
     const instructionText = endMatch[0].replace(/^[,.;\s]+/, '').trim();
@@ -779,8 +779,8 @@ const OrderingQuestion = React.memo(({ question, answer, isSubmitted, onSetAnswe
                 'bg-white border-slate-200 hover:border-indigo-300 cursor-grab active:cursor-grabbing'
               } ${isSubmitted ? 'cursor-default' : ''}`}
             >
-              <div className="w-10 h-10 flex-shrink-0 bg-slate-900 text-white rounded-xl flex items-center justify-center font-bold text-sm">
-                #{idx + 1}
+              <div className="w-10 h-10 flex-shrink-0 bg-indigo-50 dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 rounded-xl flex items-center justify-center">
+                <GripVertical className="h-5 w-5" />
               </div>
               <div className="flex-1 font-bold text-slate-700">
                 {item}
