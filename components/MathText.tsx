@@ -22,6 +22,9 @@ const MathText: React.FC<MathTextProps> = ({ children, className, inline = false
     let text = val;
     // Strip "Mức độ: ..." lines/metadata from rendering
     text = text.replace(/(?:Mức\s*độ|Độ\s*khó)\s*[:.-]?\s*(?:Nhận\s*biết|Kết\s*nối|Thông\s*hiểu|Vận\s*dụng(?: cao)?|NB|KN|TH|VD(?:C)?)/gi, '');
+    // Auto bold-italic for quoted text: "abc" -> ***"abc"*** and “abc” -> ***“abc”***
+    text = text.replace(/"([^"\\\n\r]{2,})"/g, '***"$1"***');
+    text = text.replace(/“([^”\\\n\r]{2,})”/g, '***“$1”***');
     // Replace \[ and \] with $$
     text = text.replace(/\\\[/g, '$$$$').replace(/\\\]/g, '$$$$');
     // Replace \( and \) with $
