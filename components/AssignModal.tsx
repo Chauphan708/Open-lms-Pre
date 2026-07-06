@@ -12,11 +12,28 @@ interface Props {
 export const AssignModal: React.FC<Props> = ({ exam, isOpen, onClose }) => {
   const { classes, users, user, addAssignment } = useStore();
 
+  const getLocalDateString = (d: Date) => {
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
+  const getTodayAndTomorrow = () => {
+    const today = new Date();
+    const tomorrow = new Date();
+    tomorrow.setDate(today.getDate() + 1);
+    return {
+      today: getLocalDateString(today),
+      tomorrow: getLocalDateString(tomorrow)
+    };
+  };
+
   // Form State
   const [selectedClassId, setSelectedClassId] = useState('');
-  const [startTimeDate, setStartTimeDate] = useState('');
+  const [startTimeDate, setStartTimeDate] = useState(() => getTodayAndTomorrow().today);
   const [startTimeHour, setStartTimeHour] = useState('00:00');
-  const [endTimeDate, setEndTimeDate] = useState('');
+  const [endTimeDate, setEndTimeDate] = useState(() => getTodayAndTomorrow().tomorrow);
   const [endTimeHour, setEndTimeHour] = useState('00:00');
   const [duration, setDuration] = useState(exam.durationMinutes || 0);
   const [successLink, setSuccessLink] = useState('');
@@ -24,19 +41,20 @@ export const AssignModal: React.FC<Props> = ({ exam, isOpen, onClose }) => {
 
   useEffect(() => {
     if (isOpen) {
+      const dates = getTodayAndTomorrow();
       setSuccessLink('');
       setCopied(false);
       setSelectedClassId('');
-      setStartTimeDate('');
+      setStartTimeDate(dates.today);
       setStartTimeHour('00:00');
-      setEndTimeDate('');
+      setEndTimeDate(dates.tomorrow);
       setEndTimeHour('00:00');
       setDuration(exam.durationMinutes || 0);
       setViewScore(true);
       setViewPassFail(true);
       setViewSolution(true);
       setViewHint(true);
-      setMaxAttempts(10);
+      setMaxAttempts(5);
       setSelectedStudentIds([]); // Reset student selection
       setShuffleQuestions(true); // Reset shuffle questions
       setShuffleQuestionsMode('by_level'); // Reset shuffle mode to by_level
@@ -50,7 +68,7 @@ export const AssignModal: React.FC<Props> = ({ exam, isOpen, onClose }) => {
   const [viewSolution, setViewSolution] = useState(true);
   const [viewSolutionOnLastAttemptOnly, setViewSolutionOnLastAttemptOnly] = useState(false);
   const [viewHint, setViewHint] = useState(true); // New Hint Setting
-  const [maxAttempts, setMaxAttempts] = useState(10); // Default 10 attempts
+  const [maxAttempts, setMaxAttempts] = useState(5); // Default 5 attempts
   const [caseSensitiveShortAnswer, setCaseSensitiveShortAnswer] = useState(false);
   const [shuffleQuestions, setShuffleQuestions] = useState(true); // Shuffle questions toggle
   const [shuffleQuestionsMode, setShuffleQuestionsMode] = useState<'random' | 'by_level'>('by_level'); // Shuffle mode state
