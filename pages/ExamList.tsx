@@ -390,9 +390,12 @@ export const ExamList: React.FC = () => {
                 >
                   <option value="">Tất cả</option>
                   <option value="MCQ">Trắc nghiệm (4 LC)</option>
+                  <option value="MCQ_MULTIPLE">Trắc nghiệm nhiều đáp án</option>
                   <option value="MATCHING">Nối cột</option>
                   <option value="ORDERING">Sắp xếp</option>
+                  <option value="DRAG_DROP">Kéo thả</option>
                   <option value="SHORT_ANSWER">Tự luận</option>
+                  <option value="SENTENCE_SCRAMBLE">Xếp từ thành câu</option>
                   <option value="WORD_CLASSIFY">Phân loại từ</option>
                   <option value="FILL_IN_PASSAGE">Điền vào đoạn văn</option>
                   <option value="INLINE_DROPDOWN">Trắc nghiệm thả xuống (Inline Dropdown)</option>
