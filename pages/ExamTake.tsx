@@ -18,7 +18,7 @@ const getPassageParts = (content: string) => {
   const cleanContent = content.replace(/\s*Đáp án:\s*[^\n]*$/i, '').trim();
   
   // 1. Check for instruction at the end
-  const endInstructionRegex = /([,.;]|\s+)\s*(?:hãy\s+)?(chọn\s+đáp\s+án\s+thích\s+hợp\s+điền\s+vào\s+chỗ\s+trống|điền\s+vào\s+chỗ\s+trống|chọn\s+đáp\s+án\s+đúng|chọn\s+đáp\s+án\s+thích\s+hợp|chọn\s+từ\s+thích\s+hợp|kéo\s+thả\s+vào\s+chỗ\s+trống|kéo\s+thả\s+đáp\s+án|nối\s+cột|phân\s+loại\s+từ)[^.]*\.?$/i;
+  const endInstructionRegex = /([,.;]|\s+)\s*(?:hãy\s+)?(chọn\s+đáp\s+án\s+thích\s+hợp\s+điền\s+vào\s+chỗ\s+trống|điền\s+vào\s+chỗ\s+trống|chọn\s+đáp\s+án\s+đúng|chọn\s+đáp\s+án\s+thích\s+hợp|chọn\s+từ\s+thích\s+hợp|kéo\s+thả\s+vào\s+chỗ\s+trống|kéo\s+thả\s+đáp\s+án|nối\s+cột|phân\s+loại\s+từ|xếp\s+các\s+từ\s+vào\s+nhóm\s+thích\s+hợp|xếp\s+từ\s+vào\s+nhóm\s+thích\s+hợp|xếp\s+các\s+từ\s+vào\s+nhóm|xếp\s+từ\s+vào\s+nhóm|phân\s+loại\s+từ\s+vào\s+nhóm|phân\s+loại\s+các\s+từ)[^.]*\.?$/i;
   const endMatch = cleanContent.match(endInstructionRegex);
   if (endMatch) {
     const instructionText = endMatch[0].replace(/^[,.;\s]+/, '').trim();
