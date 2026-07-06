@@ -483,6 +483,30 @@ const MatchingQuestion = React.memo(({ question, answer, isSubmitted, onSetAnswe
   const containerRef = React.useRef<HTMLDivElement>(null);
   const [lines, setLines] = useState<any[]>([]);
 
+  // Map each left item to the specific index in shuffledRightItems
+  const leftToRightIndices = useMemo(() => {
+    const mapping = Array(question.options.length).fill(null);
+    const usedRightIndices = new Set<number>();
+
+    currentAns.forEach((ans: string, leftIdx: number) => {
+      if (!ans) return;
+      const rightVal = ans.split('|||')[1]?.trim();
+      if (!rightVal) return;
+
+      // Find the first matching right item in shuffledRightItems that hasn't been mapped yet
+      const rightIdx = shuffledRightItems.findIndex((val: string, idx: number) => 
+        val === rightVal && !usedRightIndices.has(idx)
+      );
+
+      if (rightIdx !== -1) {
+        mapping[leftIdx] = rightIdx;
+        usedRightIndices.add(rightIdx);
+      }
+    });
+
+    return mapping;
+  }, [currentAns, shuffledRightItems, question.options.length]);
+
   // Update SVG lines positions based on DOM elements
   const updateLines = useCallback(() => {
     if (!containerRef.current) return;
@@ -490,11 +514,10 @@ const MatchingQuestion = React.memo(({ question, answer, isSubmitted, onSetAnswe
 
     currentAns.forEach((ans: string, leftIdx: number) => {
       if (!ans) return;
-      const rightVal = ans.split('|||')[1]?.trim();
-      if (!rightVal) return;
+      const rightIdx = leftToRightIndices[leftIdx];
+      if (rightIdx === null || rightIdx === undefined) return;
 
       const leftDot = containerRef.current?.querySelector(`[data-dot-left="${leftIdx}"]`);
-      const rightIdx = shuffledRightItems.indexOf(rightVal);
       const rightDot = containerRef.current?.querySelector(`[data-dot-right="${rightIdx}"]`);
 
       if (leftDot && rightDot) {
@@ -514,7 +537,7 @@ const MatchingQuestion = React.memo(({ question, answer, isSubmitted, onSetAnswe
     });
 
     setLines(newLines);
-  }, [currentAns, shuffledRightItems, isSubmitted, viewPassFail, question.options]);
+  }, [currentAns, leftToRightIndices, isSubmitted, viewPassFail, question.options]);
 
   useEffect(() => {
     updateLines();
@@ -527,16 +550,17 @@ const MatchingQuestion = React.memo(({ question, answer, isSubmitted, onSetAnswe
     setSelectedLeft(idx === selectedLeft ? null : idx);
   };
 
-  const handleRightClick = (val: string) => {
+  const handleRightClick = (rightShuffledIdx: number) => {
     if (isSubmitted || selectedLeft === null) return;
 
+    const val = shuffledRightItems[rightShuffledIdx];
     const newArr = [...currentAns];
-    // Check if this right item is already used elsewhere and clear it
-    newArr.forEach((ans, i) => {
-      if (ans && ans.split('|||')[1]?.trim() === val) {
-        newArr[i] = "";
-      }
-    });
+
+    // If this specific right card was connected to another left item, clear it
+    const previousLeftIdx = leftToRightIndices.indexOf(rightShuffledIdx);
+    if (previousLeftIdx !== -1) {
+      newArr[previousLeftIdx] = "";
+    }
 
     newArr[selectedLeft] = `${leftItems[selectedLeft]} ||| ${val}`;
     onSetAnswer(newArr);
@@ -596,11 +620,11 @@ const MatchingQuestion = React.memo(({ question, answer, isSubmitted, onSetAnswe
         <div className="space-y-4">
           <h4 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-6 px-2 md:text-right">Cột vế phải</h4>
           {shuffledRightItems.map((right: string, idx: number) => {
-            const isMatched = currentAns.some((ans: string) => ans && ans.split('|||')[1]?.trim() === right);
+            const isMatched = leftToRightIndices.includes(idx);
             return (
               <div key={idx} className="relative group">
                 <div
-                  onClick={() => handleRightClick(right)}
+                  onClick={() => handleRightClick(idx)}
                   className={`p-4 rounded-xl border-2 transition-all cursor-pointer flex items-center shadow-sm relative pl-10
                     ${isMatched ? 'border-indigo-200 bg-indigo-50/30' : 'border-gray-100 bg-white hover:border-gray-300'}
                     ${isSubmitted ? 'cursor-default' : ''}

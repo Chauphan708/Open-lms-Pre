@@ -176,6 +176,7 @@ export const ExamQuestionPreview: React.FC<ExamQuestionPreviewProps> = ({
                       {q.options.map((opt, i) => {
                         const isDragDrop = q.type === 'DRAG_DROP';
                         const isWordClassify = q.type === 'WORD_CLASSIFY';
+                        const numBlanks = isDragDrop ? (q.content.match(/\[__\]/g) || []).length : q.options.length;
                         const isDistractor = (isDragDrop && i >= numBlanks) || (isWordClassify && (opt.toUpperCase().startsWith('NONE |||') || opt.toUpperCase().startsWith('_NONE_ |||')));
                         
                         return (
