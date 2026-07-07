@@ -202,27 +202,22 @@ function parseOneBlock(block: string, index: number): Question | null {
                 ansRaw = ansRaw.replace(/[,.]$/, '').trim(); // Remove trailing comma/dot
             }
 
-            const lettersOnlyMatch = ansRaw.replace(/và|and/gi, ',').match(/^([A-Za-z][\s,.-]*)+$/i) || ansRaw.match(/^(([A-Za-z])(?:[\s,.]+|$)){2,}/i);
+            shortAnswerText = ansRaw;
+
+            const tokens = ansRaw.replace(/và|and/gi, ',').split(/[\s,.-]+/).filter(t => t.length > 0);
+            const isOptionsReference = tokens.length > 0 && tokens.every(t => t.length === 1 && /^[A-Z]$/i.test(t));
             
-            if (lettersOnlyMatch) {
-                const letters = ansRaw.match(/([A-Za-z])/gi);
-                if (letters) {
-                    const uniqueIndices = letters.map(l => l.toUpperCase().charCodeAt(0) - 65)
-                        .filter(idx => idx >= 0 && idx < options.length);
-                    
-                    if (uniqueIndices.length > 1) {
-                        correctOptionIndices = uniqueIndices;
-                    } else if (uniqueIndices.length === 1) {
-                        correctOptionIndex = uniqueIndices[0];
-                    }
+            if (isOptionsReference) {
+                const uniqueIndices = Array.from(new Set(tokens.map(t => t.toUpperCase().charCodeAt(0) - 65)));
+                if (uniqueIndices.length > 1) {
+                    correctOptionIndices = uniqueIndices;
+                } else if (uniqueIndices.length === 1) {
+                    correctOptionIndex = uniqueIndices[0];
                 }
             } else {
-                const letterMatch = ansRaw.match(/^([A-Za-z])(?:[.):]|\s|$)/i);
-                if (letterMatch) {
-                    const answerLetter = letterMatch[1].toUpperCase();
-                    correctOptionIndex = answerLetter.charCodeAt(0) - 65; // A=0, B=1, etc.
-                } else {
-                    shortAnswerText = ansRaw;
+                const letterMatch = ansRaw.match(/^([A-Z])(?:[.):]|\s|$)/i);
+                if (letterMatch && options.length > 0) {
+                    correctOptionIndex = letterMatch[1].toUpperCase().charCodeAt(0) - 65; // A=0, B=1, etc.
                 }
             }
             parsingState = 'answer';
@@ -279,22 +274,29 @@ function parseOneBlock(block: string, index: number): Question | null {
                 // After options, any remaining text could be answer/solution
                 const lateAnswer = trimmed.match(ANSWER_REGEX);
                 if (lateAnswer) {
-                    const ansRaw = lateAnswer[1].trim();
-                    const lettersOnlyMatch = ansRaw.replace(/và|and/gi, ',').match(/^([A-Da-d][\s,.-]*)+$/i) || ansRaw.match(/^(([A-Da-d])(?:[\s,.]+|$)){2,}/i);
-                    if (lettersOnlyMatch) {
-                        const letters = ansRaw.match(/([A-Da-d])/gi);
-                        if (letters && letters.length > 1) {
-                            correctOptionIndices = letters.map(l => l.toUpperCase().charCodeAt(0) - 65);
-                        } else if (letters && letters.length === 1) {
-                            correctOptionIndex = letters[0].toUpperCase().charCodeAt(0) - 65;
+                    let ansRaw = lateAnswer[1].trim();
+                    const distractorIndex = ansRaw.search(/còn lại|từ nhiễu|sai|không chọn/i);
+                    if (distractorIndex !== -1) {
+                        ansRaw = ansRaw.substring(0, distractorIndex).trim();
+                        ansRaw = ansRaw.replace(/[,.]$/, '').trim(); // Remove trailing comma/dot
+                    }
+
+                    shortAnswerText = ansRaw;
+
+                    const tokens = ansRaw.replace(/và|and/gi, ',').split(/[\s,.-]+/).filter(t => t.length > 0);
+                    const isOptionsReference = tokens.length > 0 && tokens.every(t => t.length === 1 && /^[A-Z]$/i.test(t));
+                    
+                    if (isOptionsReference) {
+                        const uniqueIndices = Array.from(new Set(tokens.map(t => t.toUpperCase().charCodeAt(0) - 65)));
+                        if (uniqueIndices.length > 1) {
+                            correctOptionIndices = uniqueIndices;
+                        } else if (uniqueIndices.length === 1) {
+                            correctOptionIndex = uniqueIndices[0];
                         }
                     } else {
-                        const letterMatch = ansRaw.match(/^([A-Da-d])(?:[.):]|\s|$)/i);
-                        if (letterMatch) {
-                            const ansLetter = letterMatch[1].toUpperCase();
-                            correctOptionIndex = ansLetter.charCodeAt(0) - 65;
-                        } else {
-                            shortAnswerText = ansRaw;
+                        const letterMatch = ansRaw.match(/^([A-Z])(?:[.):]|\s|$)/i);
+                        if (letterMatch && options.length > 0) {
+                            correctOptionIndex = letterMatch[1].toUpperCase().charCodeAt(0) - 65;
                         }
                     }
                 } else {
@@ -377,7 +379,8 @@ function parseOneBlock(block: string, index: number): Question | null {
     }
 
     if (type === 'SHORT_ANSWER' && shortAnswerText) {
-        options.push(shortAnswerText);
+        // Hỗ trợ nhiều đáp án được phân cách bởi dấu |
+        options = shortAnswerText.split('|').map(s => s.trim()).filter(Boolean);
     } else if (type === 'DRAG_DROP' && correctOptionIndices && correctOptionIndices.length > 0) {
         // DRAG_DROP: Reorder options so correct ones match the blanks, and distractors are at the end.
         const correctOptions = correctOptionIndices.map(idx => options[idx]).filter(Boolean);
