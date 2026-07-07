@@ -10,7 +10,7 @@
 import { Question, QuestionType } from '../types';
 
 // Regex to split text into question blocks
-const TYPE_IDENTIFIER_REGEX = /(?:Loại\s*câu\s*hỏi|Question\s*type)\s*[:.-]\s*(.+)/i;
+const TYPE_IDENTIFIER_REGEX = /(?:(?:Loại\s*câu\s*hỏi|Question\s*type)\s*[:.-]\s*|#(?:loại\s*câu\s*hỏi|type)#\s*[:.-]?\s*)(.+)/i;
 const QUESTION_START_REGEX = /(?:^|\n)\s*(?:Câu\s*(?:hỏi\s*)?|Bài\s*|Question\s*)(\d+)\s*[:.)\]]\s*/gi;
 const QUESTION_START_ALT_REGEX = /(?:^|\n)\s*(\d+)\s*[.)]\s+/g;
 
@@ -18,16 +18,16 @@ const QUESTION_START_ALT_REGEX = /(?:^|\n)\s*(\d+)\s*[.)]\s+/g;
 const OPTION_REGEX = /^\s*([A-Za-z])[\u0300-\u036f\u0323\u0327\u031b]*\s*[.):\]]\s*(.+)/;
 
 // Regex for correct answer (captures the whole remaining line so we can check if it's A/B/C/D or text)
-const ANSWER_REGEX = /^\s*(?:Đáp\s*án\s*(?:đúng)?\s*[:.-]\s*)(.+)/i;
+const ANSWER_REGEX = /^\s*(?:(?:Đáp\s*án\s*(?:đúng)?\s*[:.-]\s*)|#(?:đáp\s*án|answer)#\s*[:.-]?\s*)(.+)/i;
 
 // Regex for solution/explanation — must handle "Lời giải chi tiết:", "Hướng dẫn giải:", "Giải thích:", etc.
-const SOLUTION_REGEX = /^\s*(?:Lời\s*giải(?:\s*chi\s*tiết)?|Giải\s*thích|Hướng\s*dẫn\s*giải|Giải\s*chi\s*tiết|Solution|Explanation)\s*[:.-]\s*([\s\S]*?)$/i;
+const SOLUTION_REGEX = /^\s*(?:(?:Lời\s*giải(?:\s*chi\s*tiết)?|Giải\s*thích|Hướng\s*dẫn\s*giải|Giải\s*chi\s*tiết|Solution|Explanation)\s*[:.-]\s*|#(?:lời\s*giải|solution)#\s*[:.-]?\s*)([\s\S]*?)$/i;
 
 // Regex for hint — must handle "Gợi ý:", "Gợi ý (Cách làm):", "Hướng dẫn:", "Hint:", etc.
-const HINT_REGEX = /^\s*(?:Gợi\s*ý|Gợi\s*ý(?:\s*\([^)]*\))?|Hướng\s*dẫn|Hint)\s*[:.-]\s*([\s\S]*?)$/i;
+const HINT_REGEX = /^\s*(?:(?:Gợi\s*ý|Gợi\s*ý(?:\s*\([^)]*\))?|Hướng\s*dẫn|Hint)\s*[:.-]\s*|#(?:gợi\s*ý|hint)#\s*[:.-]?\s*)([\s\S]*?)$/i;
 
 // Regex for difficulty level
-const LEVEL_REGEX = /^\s*(?:Mức\s*độ|Độ\s*khó)\s*[:.-]\s*(Nhận\s*biết|Kết\s*nối|Thông\s*hiểu|Vận\s*dụng(?: cao)?|NB|KN|TH|VD(?:C)?)/i;
+const LEVEL_REGEX = /^\s*(?:(?:Mức\s*độ|Độ\s*khó)\s*[:.-]\s*|#(?:mức\s*độ|level)#\s*[:.-]?\s*)(Nhận\s*biết|Kết\s*nối|Thông\s*hiểu|Vận\s*dụng(?: cao)?|NB|KN|TH|VD(?:C)?)/i;
 
 /**
  * Parse questions from raw text using regex (no AI needed).
@@ -134,15 +134,21 @@ function parseOneBlock(block: string, index: number): Question | null {
     // Tiền xử lý: Tách các từ khóa ra dòng mới nếu chúng bị dính trên cùng một dòng
     let normalizedBlock = block
         // Tách Đáp án
-        .replace(/(\s+)(Đáp\s*án\s*(?:đúng)?\s*[:.])/gi, '\n$2')
+        .replace(/(\s+)(Đáp\s*án\s*(?:đúng)?\s*[:.-]|#(?:đáp\s*án|answer)#\s*[:.-]?)/gi, '\n$2')
         // Tách Gợi ý
         .replace(/(\s+)(Gợi\s*ý|Gợi\s*ý(?:\s*\([^)]*\))?|Hint)\s*[:.-]/gi, '\n$2:')
+        .replace(/(\s+)(#(?:gợi\s*ý|hint)#)\s*[:.-]?/gi, '\n$2')
         // Tách Hướng dẫn
         .replace(/(\s+)(Hướng\s*dẫn)\s*[:.-]/gi, '\n$2:')
         // Tách Lời giải 
         .replace(/(\s+)(Lời\s*giải(?:\s*chi\s*tiết)?|Giải\s*thích|Hướng\s*dẫn\s*giải|Giải\s*chi\s*tiết|Solution|Explanation)\s*[:.-]/gi, '\n$2:')
+        .replace(/(\s+)(#(?:lời\s*giải|solution)#)\s*[:.-]?/gi, '\n$2')
         // Tách Mức độ
-        .replace(/(\s+)(Mức\s*độ|Độ\s*khó)\s*[:.-]/gi, '\n$2:');
+        .replace(/(\s+)(Mức\s*độ|Độ\s*khó)\s*[:.-]/gi, '\n$2:')
+        .replace(/(\s+)(#(?:mức\s*độ|level)#)\s*[:.-]?/gi, '\n$2')
+        // Tách Loại câu hỏi
+        .replace(/(\s+)(Loại\s*câu\s*hỏi|Question\s*type)\s*[:.-]/gi, '\n$2:')
+        .replace(/(\s+)(#(?:loại\s*câu\s*hỏi|type)#)\s*[:.-]?/gi, '\n$2');
 
     const lines = normalizedBlock.split('\n').map(l => l.trimEnd());
 

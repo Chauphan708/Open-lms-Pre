@@ -83,17 +83,17 @@ export const ExamContentInput: React.FC<ExamContentInputProps> = ({
           <div className="bg-blue-50 dark:bg-blue-950/25 border border-blue-100 dark:border-blue-900/35 rounded-lg p-3 mb-2 text-xs text-blue-700 dark:text-blue-300 space-y-1">
             <p className="font-bold text-blue-800 dark:text-blue-200">📋 Hướng dẫn format nhập liệu:</p>
             <p>• Mỗi câu bắt đầu bằng: <code className="bg-blue-100 dark:bg-blue-900/50 px-1 rounded text-blue-800 dark:text-blue-200">Câu 1:</code> hoặc <code className="bg-blue-100 dark:bg-blue-900/50 px-1 rounded text-blue-800 dark:text-blue-200">Bài 1:</code></p>
-            <p>• Mức độ (tùy chọn): <code className="bg-blue-100 dark:bg-blue-900/50 px-1 rounded text-blue-800 dark:text-blue-200">Mức độ: Nhận biết</code>, <code className="bg-blue-100 dark:bg-blue-900/50 px-1 rounded text-blue-800 dark:text-blue-200">Kết nối</code>, <code className="bg-blue-100 dark:bg-blue-900/50 px-1 rounded text-blue-800 dark:text-blue-200">Vận dụng</code></p>
-            <p>• Đáp án: <code className="bg-blue-100 dark:bg-blue-900/50 px-1 rounded text-blue-800 dark:text-blue-200">A.</code> <code className="bg-blue-100 dark:bg-blue-900/50 px-1 rounded text-blue-800 dark:text-blue-200">B.</code> <code className="bg-blue-100 dark:bg-blue-900/50 px-1 rounded text-blue-800 dark:text-blue-200">C.</code> <code className="bg-blue-100 dark:bg-blue-900/50 px-1 rounded text-blue-800 dark:text-blue-200">D.</code> (mỗi đáp án 1 dòng)</p>
-            <p>• Đáp án đúng: <code className="bg-blue-100 dark:bg-blue-900/50 px-1 rounded text-blue-800 dark:text-blue-200">Đáp án: B</code></p>
-            <p>• Lời giải: <code className="bg-blue-100 dark:bg-blue-900/50 px-1 rounded text-blue-800 dark:text-blue-200">Giải thích:</code> hoặc <code className="bg-blue-100 dark:bg-blue-900/50 px-1 rounded text-blue-800 dark:text-blue-200">Hướng dẫn:</code></p>
-            <p className="text-blue-500 dark:text-blue-400 italic">💡 AI sẽ tự động nhận dạng cả khi format không chuẩn.</p>
+            <p>• Mức độ: <code className="bg-blue-100 dark:bg-blue-900/50 px-1 rounded text-blue-800 dark:text-blue-200">Mức độ: Nhận biết</code> hoặc dùng <code className="bg-blue-100 dark:bg-blue-900/50 px-1 rounded text-blue-800 dark:text-blue-200">#mức độ# Nhận biết</code></p>
+            <p>• Đáp án: <code className="bg-blue-100 dark:bg-blue-900/50 px-1 rounded text-blue-800 dark:text-blue-200">A.</code> <code className="bg-blue-100 dark:bg-blue-900/50 px-1 rounded text-blue-800 dark:text-blue-200">B.</code> ... (mỗi lựa chọn 1 dòng)</p>
+            <p>• Đáp án đúng: <code className="bg-blue-100 dark:bg-blue-900/50 px-1 rounded text-blue-800 dark:text-blue-200">Đáp án: B</code> hoặc dùng <code className="bg-blue-100 dark:bg-blue-900/50 px-1 rounded text-blue-800 dark:text-blue-200">#đáp án# B</code></p>
+            <p>• Lời giải/Gợi ý: <code className="bg-blue-100 dark:bg-blue-900/50 px-1 rounded text-blue-800 dark:text-blue-200">Lời giải: ...</code> hoặc dùng <code className="bg-blue-100 dark:bg-blue-900/50 px-1 rounded text-blue-800 dark:text-blue-200">#lời giải# ...</code> / <code className="bg-blue-100 dark:bg-blue-900/50 px-1 rounded text-blue-800 dark:text-blue-200">#gợi ý# ...</code></p>
+            <p className="text-indigo-600 dark:text-indigo-400 font-bold italic pt-0.5">💡 Mẹo chống trùng: Dùng dấu thăng dạng #đáp án#, #lời giải# để tránh nhận diện nhầm khi câu hỏi có các từ trùng lặp.</p>
           </div>
 
           <textarea
             value={rawText}
             onChange={e => setRawText(e.target.value)}
-            placeholder={`Dán nội dung từ Word/PDF vào đây...\n\nVí dụ:\nCâu 1: 1+1=?\nMức độ: Nhận biết\nA. 1\nB. 2\nC. 3\nD. 4\nĐáp án: B`}
+            placeholder={`Dán nội dung từ Word/PDF vào đây...\n\nVí dụ (Cách 1 - Cơ bản):\nCâu 1: 1+1=?\nMức độ: Nhận biết\nA. 1\nB. 2\nĐáp án: B\n\nVí dụ (Cách 2 - Chống trùng lặp từ khóa):\nCâu 2: Hãy xếp các từ thích hợp để giải thích mối quan hệ...\n#loại câu hỏi# Kéo thả\n#mức độ# Thông hiểu\nA. hình dáng\nB. phình to\n#đáp án# A, B\n#lời giải# Giải thích mối quan hệ...`}
             className="flex-1 w-full border border-gray-300 dark:border-slate-800 rounded-lg p-3 font-mono text-sm focus:ring-2 focus:ring-indigo-500 outline-none resize-none bg-white dark:bg-slate-950 text-gray-900 dark:text-slate-100"
             style={{ minHeight: '500px' }}
           />
