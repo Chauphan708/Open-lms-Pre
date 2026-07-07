@@ -1639,7 +1639,8 @@ export const ExamTake: React.FC = () => {
               updatedAt: eData.updatedAt || eData.updated_at || eData.updatedat,
               questionCount: eData.questionCount || eData.question_count || eData.questioncount,
               category: eData.category || (String(eData.id).startsWith('exam_matrix_') ? 'EXAM' : 'TASK'),
-              classId: String(eData.classId || eData.class_id || eData.classid || '')
+              classId: String(eData.classId || eData.class_id || eData.classid || ''),
+              deletedAt: eData.deletedAt || eData.deleted_at || eData.deletedat
             };
             setFetchedExam(mapped as Exam);
           }
@@ -2602,6 +2603,48 @@ export const ExamTake: React.FC = () => {
   );
 
   if (!exam) return <div className="p-8 text-center text-red-500">Không tìm thấy bài tập.</div>;
+
+  // Check if the exam itself has been soft deleted by the teacher
+  if (exam.deletedAt || (exam as any).deleted_at) {
+    return (
+      <div className="min-h-[60vh] flex flex-col items-center justify-center p-4">
+        <div className="bg-white p-8 rounded-2xl shadow-lg border border-gray-100 text-center max-w-md w-full animate-in fade-in zoom-in">
+          <div className="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-6 border-4 border-red-100">
+            <Ban className="h-10 w-10 text-red-600" />
+          </div>
+          <h2 className="text-2xl font-black text-gray-900 mb-3 tracking-tight">Không thể truy cập</h2>
+          <p className="text-gray-600 mb-8 font-medium">Bài tập này đã bị giáo viên xóa khỏi hệ thống.</p>
+          <button
+            onClick={() => navigate('/exams')}
+            className="flex items-center justify-center gap-2 w-full bg-gray-900 text-white py-3.5 rounded-xl font-bold hover:bg-gray-800 transition-colors shadow-md hover:shadow-lg active:scale-95"
+          >
+            <ChevronLeft className="h-5 w-5" /> Quay về danh sách bài tập
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Check if assignmentId is present in URL but the assignment is not found in the DB (i.e. was physically deleted)
+  if (assignmentId && !assignment) {
+    return (
+      <div className="min-h-[60vh] flex flex-col items-center justify-center p-4">
+        <div className="bg-white p-8 rounded-2xl shadow-lg border border-gray-100 text-center max-w-md w-full animate-in fade-in zoom-in">
+          <div className="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-6 border-4 border-red-100">
+            <Ban className="h-10 w-10 text-red-600" />
+          </div>
+          <h2 className="text-2xl font-black text-gray-900 mb-3 tracking-tight">Không thể truy cập</h2>
+          <p className="text-gray-600 mb-8 font-medium">Nhiệm vụ/Phiên thi này không tồn tại hoặc đã bị giáo viên xóa/thu hồi.</p>
+          <button
+            onClick={() => navigate('/exams')}
+            className="flex items-center justify-center gap-2 w-full bg-gray-900 text-white py-3.5 rounded-xl font-bold hover:bg-gray-800 transition-colors shadow-md hover:shadow-lg active:scale-95"
+          >
+            <ChevronLeft className="h-5 w-5" /> Quay về danh sách bài tập
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   // Permissions Check for Individual Assignment
   if (user?.role === 'STUDENT' && assignment && assignment.studentIds && assignment.studentIds.length > 0) {
