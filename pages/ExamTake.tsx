@@ -791,12 +791,6 @@ const OrderingQuestion = React.memo(({ question, answer, isSubmitted, onSetAnswe
     return shuffledIndices.map((i: number) => question.options[i]);
   }, [answer, question.options, shuffledIndices]);
 
-  useEffect(() => {
-    if (!answer && currentAns.length > 0) {
-      onSetAnswer(currentAns);
-    }
-  }, [answer, currentAns, onSetAnswer]);
-
   const [draggedIdx, setDraggedIdx] = useState<number | null>(null);
 
   const handleDragStart = (e: React.DragEvent, index: number) => {
