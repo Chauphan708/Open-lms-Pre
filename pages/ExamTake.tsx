@@ -13,6 +13,7 @@ import MathText from '../components/MathText';
 import { supabase } from '../services/supabaseClient'; // BỔ SUNG ĐỂ GHI NHẬN HÀNH VI TỰ ĐỘNG
 import { FaceLandmarker, FilesetResolver } from '@mediapipe/tasks-vision';
 import { AssignmentSettings } from '../types';
+import { ReadOnlyQuestionView } from '../components/exam/ReadOnlyQuestionView';
 // --- UTILS FOR QUESTION TYPES ---
 const getPassageParts = (content: string) => {
   const cleanContent = content.replace(/\s*Đáp án:\s*[^\n]*$/i, '').trim();
@@ -3242,7 +3243,16 @@ export const ExamTake: React.FC = () => {
                 </div>
 
                 <div className="mt-4">
-                  {q.type === 'MCQ' && (
+                  {isSubmitted ? (
+                    <ReadOnlyQuestionView
+                      question={q}
+                      userAns={answers[q.id]}
+                      isCorrect={isQuestionCorrect}
+                      canViewSolution={canViewSolution}
+                    />
+                  ) : (
+                    <>
+                      {q.type === 'MCQ' && (
                     <MCQQuestion
                       question={q}
                       answer={answers[q.id]}
@@ -3357,6 +3367,8 @@ export const ExamTake: React.FC = () => {
                       viewPassFail={viewPassFail}
                       canViewSolution={canViewSolution}
                     />
+                  )}
+                    </>
                   )}
                 </div>
 

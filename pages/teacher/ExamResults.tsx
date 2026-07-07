@@ -10,6 +10,7 @@ import { Attempt, Exam } from '../../types';
 import { supabase } from '../../services/supabaseClient';
 import { computeStudentAnalytics } from '../../utils/analyticsEngine';
 import { getRecommendations, getRecentExamIds } from '../../utils/recommendationEngine';
+import { ReadOnlyQuestionView } from '../../components/exam/ReadOnlyQuestionView';
 const getPassageParts = (content: string) => {
   const cleanContent = content.replace(/\s*Đáp án:\s*[^\n]*$/i, '').trim();
   
@@ -1115,59 +1116,15 @@ export const ExamResults: React.FC = () => {
                                           <img src={q.imageUrl} alt="Question" className="my-2 rounded-lg border max-h-40 object-contain" />
                                        )}
 
-                                       {(!q.type || q.type === 'MCQ') ? (
-                                          <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
-                                             {q.options.map((opt, i) => {
-                                                let optionClass = "p-2 rounded border ";
-                                                if (i === q.correctOptionIndex) optionClass += "bg-green-50 border-green-500 text-green-800 font-bold";
-                                                else if (i === userAns && !isCorrect) optionClass += "bg-red-50 border-red-500 text-red-800 font-bold";
-                                                else optionClass += "bg-white border-gray-200 text-gray-500 opacity-70";
-
-                                                return (
-                                                   <div key={i} className={optionClass}>
-                                                      <span className="mr-2">{String.fromCharCode(65 + i)}.</span>
-                                                      <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]} className="inline">{opt}</ReactMarkdown>
-                                                   </div>
-                                                );
-                                             })}
-                                          </div>
-                                       ) : q.type === 'SHORT_ANSWER' ? (
-                                          <div className="space-y-2 mt-3 text-sm">
-                                             <div className={`p-3 rounded border ${isCorrect ? 'bg-green-50 border-green-500 text-green-800' : 'bg-red-50 border-red-500 text-red-800'} font-medium`}>
-                                                <span className="text-gray-500 mr-2 text-xs uppercase tracking-wider">Học sinh trả lời:</span>
-                                                <div className="mt-1 font-bold text-base">{userAns !== undefined && userAns !== null && userAns !== '' ? String(userAns) : <span className="text-gray-400 italic font-normal">Chưa trả lời</span>}</div>
-                                             </div>
-                                             <div className="p-3 rounded border bg-blue-50 border-blue-500 text-blue-800 font-medium">
-                                                <span className="text-gray-500 mr-2 text-xs uppercase tracking-wider">Đáp án đúng:</span>
-                                                <div className="mt-1 font-bold text-base">{q.options && q.options.length > 0 ? q.options.join(' hoặc ') : q.solution || String(q.correctOptionIndex ?? '')}</div>
-                                             </div>
-                                          </div>
-                                       ) : (
-                                          <div className="space-y-2 mt-3 text-sm">
-                                             <div className={`p-3 rounded border ${isCorrect ? 'bg-green-50 border-green-500 text-green-800' : 'bg-red-50 border-red-500 text-red-800'} font-medium`}>
-                                                <span className="text-gray-500 mr-2 text-xs uppercase tracking-wider">Học sinh trả lời:</span>
-                                                <div className="mt-1 font-bold text-base">
-                                                   {(userAns === undefined || userAns === null || userAns === '') ? 
-                                                      <span className="text-gray-400 italic font-normal">Chưa trả lời</span> : 
-                                                      <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>
-                                                         {Array.isArray(userAns) ? userAns.join(' | ') : String(userAns)}
-                                                      </ReactMarkdown>
-                                                   }
-                                                </div>
-                                             </div>
-                                             <div className="p-3 rounded border bg-blue-50 border-blue-500 text-blue-800 font-medium">
-                                                <span className="text-gray-500 mr-2 text-xs uppercase tracking-wider">Đáp án đúng:</span>
-                                                <div className="mt-1 font-bold text-base">
-                                                   <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>
-                                                      {q.options ? (['INLINE_DROPDOWN', 'WORD_CLASSIFY'].includes(q.type) ? q.options.map((opt: any) => String(opt).split('|||')[0].trim()).join(' | ') : q.options.join(' | ')) : ''}
-                                                   </ReactMarkdown>
-                                                </div>
-                                             </div>
-                                          </div>
-                                       )}
-                                    </div>
-                                 </div>
-                              </div>
+                                       <ReadOnlyQuestionView
+                                           question={q}
+                                           userAns={userAns}
+                                           isCorrect={isCorrect}
+                                           canViewSolution={true}
+                                        />
+                                     </div>
+                                  </div>
+                               </div>
                            );
                         })}
                      </div>
