@@ -2828,7 +2828,7 @@ export const ExamTake: React.FC = () => {
       <DictionaryWidget isOpen={showDictionary} onClose={() => setShowDictionary(false)} />
 
       {/* Floating Question Navigation Button (Mobile only) */}
-      {!isSubmitted && hasStarted && (
+      {(hasStarted || isSubmitted) && (
         <button
           onClick={() => setShowMobileNav(!showMobileNav)}
           className={`lg:hidden fixed bottom-4 left-4 bg-white p-3 rounded-full shadow-lg border border-indigo-100 z-50 hover:bg-indigo-50 transition-all group ${showMobileNav ? 'ring-4 ring-indigo-500/20' : ''}`}
@@ -2842,7 +2842,7 @@ export const ExamTake: React.FC = () => {
       )}
 
       {/* Floating Question Nav Panel (Mobile Overlay) - Always accessible */}
-      {!isSubmitted && hasStarted && showMobileNav && (
+      {(hasStarted || isSubmitted) && showMobileNav && (
         <div className="lg:hidden fixed inset-0 z-[110] animate-in fade-in">
           <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setShowMobileNav(false)} />
           <div className="absolute bottom-20 left-4 right-4 bg-white rounded-3xl shadow-2xl border border-indigo-50 p-6 animate-in slide-in-from-bottom-5 duration-300">
@@ -2894,9 +2894,20 @@ export const ExamTake: React.FC = () => {
                     className={`
                       h-12 w-full flex items-center justify-center rounded-xl font-black text-sm transition-all shadow-sm
                       active:scale-95
-                      ${isAnswered
-                        ? 'bg-indigo-600 text-white shadow-indigo-100'
-                        : 'bg-gray-50 text-gray-400 border border-gray-100 shadow-sm'}
+                      ${(() => {
+                        if (isSubmitted) {
+                          if (viewPassFail) {
+                            const isCorrect = evaluateAnswer(q, ans, assignmentSettings?.caseSensitiveShortAnswer);
+                            return isCorrect 
+                              ? 'bg-green-500 text-white shadow-md shadow-green-100' 
+                              : 'bg-red-500 text-white shadow-md shadow-red-100';
+                          }
+                          return isAnswered ? 'bg-indigo-600 text-white shadow-indigo-100' : 'bg-gray-50 text-gray-400 border border-gray-100';
+                        }
+                        return isAnswered
+                          ? 'bg-indigo-600 text-white shadow-indigo-100'
+                          : 'bg-gray-50 text-gray-400 border border-gray-100 shadow-sm';
+                      })()}
                       ${isActive ? 'ring-2 ring-indigo-400 ring-offset-2' : ''}
                     `}
                   >
@@ -3119,7 +3130,7 @@ export const ExamTake: React.FC = () => {
       <div className="flex flex-col lg:flex-row gap-6">
 
         {/* Navigation Sidebar (Desktop Left) */}
-        {!isSubmitted && hasStarted && (
+        {(hasStarted || isSubmitted) && (
           <div className="hidden lg:block w-56 flex-shrink-0 relative">
             <div className="sticky top-[100px] bg-white p-5 rounded-2xl shadow-xl border border-indigo-100 flex flex-col max-h-[calc(100vh-140px)] transition-all">
               <div className="text-sm font-bold text-gray-700 mb-3 flex items-center justify-between">
@@ -3164,9 +3175,20 @@ export const ExamTake: React.FC = () => {
                         className={`
                           h-10 w-10 flex items-center justify-center rounded-lg font-bold text-sm transition-all
                           hover:scale-105 active:scale-95
-                          ${isAnswered
-                            ? 'bg-indigo-600 text-white shadow-md shadow-indigo-200 border-transparent'
-                            : 'bg-gray-100 text-gray-500 border border-gray-200 hover:border-indigo-300 hover:bg-indigo-50 hover:text-indigo-600'}
+                          ${(() => {
+                            if (isSubmitted) {
+                              if (viewPassFail) {
+                                const isCorrect = evaluateAnswer(q, ans, assignmentSettings?.caseSensitiveShortAnswer);
+                                return isCorrect 
+                                  ? 'bg-green-500 text-white shadow-md shadow-green-200 border-transparent' 
+                                  : 'bg-red-500 text-white shadow-md shadow-red-200 border-transparent';
+                              }
+                              return isAnswered ? 'bg-indigo-600 text-white border-transparent' : 'bg-gray-100 text-gray-500 border border-gray-200';
+                            }
+                            return isAnswered
+                              ? 'bg-indigo-600 text-white shadow-md shadow-indigo-200 border-transparent'
+                              : 'bg-gray-100 text-gray-500 border border-gray-200 hover:border-indigo-300 hover:bg-indigo-50 hover:text-indigo-600';
+                          })()}
                           ${isActive ? 'ring-2 ring-indigo-400 ring-offset-2' : ''}
                         `}
                       >
