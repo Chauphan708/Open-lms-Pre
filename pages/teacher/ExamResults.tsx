@@ -496,7 +496,24 @@ export const ExamResults: React.FC = () => {
                                           const actual = userAns[i];
                                           const normExpected = String(expected || '').trim().toLowerCase().replace(/\s*\|\|\|\s*/g, '|||');
                                           const normActual = String(actual || '').trim().toLowerCase().replace(/\s*\|\|\|\s*/g, '|||');
-                                          if (normActual !== normExpected) {
+                                          
+                                          if (q.type === 'WORD_CLASSIFY') {
+                                             const expectedParts = String(expected || '').split('|||');
+                                             const correctCategoryUpper = (expectedParts[0] || '').trim().toUpperCase();
+                                             const studentCategoryUpper = String(actual || '').trim().toUpperCase();
+                                             if (correctCategoryUpper === '_NONE_' || correctCategoryUpper === 'NONE') {
+                                                if (studentCategoryUpper !== '' && studentCategoryUpper !== '_NONE_' && studentCategoryUpper !== 'NONE') {
+                                                   isAllCorrect = false; break;
+                                                }
+                                             } else if (studentCategoryUpper !== correctCategoryUpper) {
+                                                isAllCorrect = false; break;
+                                             }
+                                          } else if (q.type === 'INLINE_DROPDOWN') {
+                                             const expectedDropdown = String(expected || '').split('|||')[0].trim();
+                                             if (String(actual || '').trim() !== expectedDropdown) {
+                                                isAllCorrect = false; break;
+                                             }
+                                          } else if (normActual !== normExpected) {
                                              isAllCorrect = false;
                                              break;
                                           }
@@ -1044,7 +1061,24 @@ export const ExamResults: React.FC = () => {
                                        const actual = userAns[i];
                                        const normExpected = String(expected || '').trim().toLowerCase().replace(/\s*\|\|\|\s*/g, '|||');
                                        const normActual = String(actual || '').trim().toLowerCase().replace(/\s*\|\|\|\s*/g, '|||');
-                                       if (normActual !== normExpected) {
+                                       
+                                       if (q.type === 'WORD_CLASSIFY') {
+                                          const expectedParts = String(expected || '').split('|||');
+                                          const correctCategoryUpper = (expectedParts[0] || '').trim().toUpperCase();
+                                          const studentCategoryUpper = String(actual || '').trim().toUpperCase();
+                                          if (correctCategoryUpper === '_NONE_' || correctCategoryUpper === 'NONE') {
+                                             if (studentCategoryUpper !== '' && studentCategoryUpper !== '_NONE_' && studentCategoryUpper !== 'NONE') {
+                                                isAllCorrect = false; break;
+                                             }
+                                          } else if (studentCategoryUpper !== correctCategoryUpper) {
+                                             isAllCorrect = false; break;
+                                          }
+                                       } else if (q.type === 'INLINE_DROPDOWN') {
+                                          const expectedDropdown = String(expected || '').split('|||')[0].trim();
+                                          if (String(actual || '').trim() !== expectedDropdown) {
+                                             isAllCorrect = false; break;
+                                          }
+                                       } else if (normActual !== normExpected) {
                                           isAllCorrect = false;
                                           break;
                                        }
@@ -1125,7 +1159,7 @@ export const ExamResults: React.FC = () => {
                                                 <span className="text-gray-500 mr-2 text-xs uppercase tracking-wider">Đáp án đúng:</span>
                                                 <div className="mt-1 font-bold text-base">
                                                    <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>
-                                                      {q.options ? q.options.join(' | ') : ''}
+                                                      {q.options ? (['INLINE_DROPDOWN', 'WORD_CLASSIFY'].includes(q.type) ? q.options.map((opt: any) => String(opt).split('|||')[0].trim()).join(' | ') : q.options.join(' | ')) : ''}
                                                    </ReactMarkdown>
                                                 </div>
                                              </div>
