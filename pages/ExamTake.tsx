@@ -1928,7 +1928,7 @@ export const ExamTake: React.FC = () => {
     
     // Nếu có attemptIdFromUrl nhưng chưa tìm thấy viewedAttempt trong mảng (đang load), 
     // ta vẫn nên giữ trạng thái chờ chứ không vội hiện màn hình bắt đầu.
-    const shouldShowResult = !!attemptIdFromUrl || (isExhausted && latestAttempt);
+    const shouldShowResult = !!attemptIdFromUrl || !!latestAttempt;
 
     if (isAttemptsLoading && !!attemptIdFromUrl) return; // Wait for the specific attempt
 
