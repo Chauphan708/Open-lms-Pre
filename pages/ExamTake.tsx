@@ -539,6 +539,7 @@ const MatchingQuestion = React.memo(({ question, answer, isSubmitted, onSetAnswe
   const currentAns = Array.isArray(answer) ? answer : Array(question.options.length).fill("");
 
   const [selectedLeft, setSelectedLeft] = useState<number | null>(null);
+  const [selectedRight, setSelectedRight] = useState<number | null>(null);
   const containerRef = React.useRef<HTMLDivElement>(null);
   const [lines, setLines] = useState<any[]>([]);
 
@@ -604,26 +605,50 @@ const MatchingQuestion = React.memo(({ question, answer, isSubmitted, onSetAnswe
     return () => window.removeEventListener('resize', updateLines);
   }, [updateLines]);
 
-  const handleLeftClick = (idx: number) => {
+  const handleLeftClick = (leftIdx: number) => {
     if (isSubmitted) return;
-    setSelectedLeft(idx === selectedLeft ? null : idx);
+
+    if (selectedRight !== null) {
+      const val = shuffledRightItems[selectedRight];
+      const newArr = [...currentAns];
+
+      // Clear any previous connections for this right card
+      const previousLeftIdx = leftToRightIndices.indexOf(selectedRight);
+      if (previousLeftIdx !== -1) {
+        newArr[previousLeftIdx] = "";
+      }
+
+      newArr[leftIdx] = `${leftItems[leftIdx]} ||| ${val}`;
+      onSetAnswer(newArr);
+      setSelectedRight(null);
+      setSelectedLeft(null);
+    } else {
+      setSelectedRight(null);
+      setSelectedLeft(leftIdx === selectedLeft ? null : leftIdx);
+    }
   };
 
   const handleRightClick = (rightShuffledIdx: number) => {
-    if (isSubmitted || selectedLeft === null) return;
+    if (isSubmitted) return;
 
-    const val = shuffledRightItems[rightShuffledIdx];
-    const newArr = [...currentAns];
+    if (selectedLeft !== null) {
+      const val = shuffledRightItems[rightShuffledIdx];
+      const newArr = [...currentAns];
 
-    // If this specific right card was connected to another left item, clear it
-    const previousLeftIdx = leftToRightIndices.indexOf(rightShuffledIdx);
-    if (previousLeftIdx !== -1) {
-      newArr[previousLeftIdx] = "";
+      // Clear any previous connections for this right card
+      const previousLeftIdx = leftToRightIndices.indexOf(rightShuffledIdx);
+      if (previousLeftIdx !== -1) {
+        newArr[previousLeftIdx] = "";
+      }
+
+      newArr[selectedLeft] = `${leftItems[selectedLeft]} ||| ${val}`;
+      onSetAnswer(newArr);
+      setSelectedLeft(null);
+      setSelectedRight(null);
+    } else {
+      setSelectedLeft(null);
+      setSelectedRight(rightShuffledIdx === selectedRight ? null : rightShuffledIdx);
     }
-
-    newArr[selectedLeft] = `${leftItems[selectedLeft]} ||| ${val}`;
-    onSetAnswer(newArr);
-    setSelectedLeft(null);
   };
 
   const resetMatch = (idx: number) => {
@@ -631,6 +656,8 @@ const MatchingQuestion = React.memo(({ question, answer, isSubmitted, onSetAnswe
     const newArr = [...currentAns];
     newArr[idx] = "";
     onSetAnswer(newArr);
+    setSelectedLeft(null);
+    setSelectedRight(null);
   };
 
   return (
@@ -685,7 +712,8 @@ const MatchingQuestion = React.memo(({ question, answer, isSubmitted, onSetAnswe
                 <div
                   onClick={() => handleRightClick(idx)}
                   className={`p-4 rounded-xl border-2 transition-all cursor-pointer flex items-center shadow-sm relative pl-10
-                    ${isMatched ? 'border-indigo-200 bg-indigo-50/30' : 'border-gray-100 bg-white hover:border-gray-300'}
+                    ${selectedRight === idx ? 'border-indigo-500 bg-indigo-50 shadow-indigo-100 ring-2 ring-indigo-200' :
+                      isMatched ? 'border-indigo-200 bg-indigo-50/30' : 'border-gray-100 bg-white hover:border-gray-300'}
                     ${isSubmitted ? 'cursor-default' : ''}
                   `}
                 >
@@ -696,7 +724,7 @@ const MatchingQuestion = React.memo(({ question, answer, isSubmitted, onSetAnswe
                   <div
                     data-dot-right={idx}
                     className={`absolute -left-2 top-1/2 -translate-y-1/2 w-4 h-4 rounded-full border-2 z-20 transition-all
-                      ${isMatched ? 'bg-indigo-600 border-indigo-200 scale-110' : 'bg-white border-gray-200 group-hover:border-indigo-300'}
+                      ${selectedRight === idx || isMatched ? 'bg-indigo-600 border-indigo-200 scale-110' : 'bg-white border-gray-200 group-hover:border-indigo-300'}
                     `}
                   />
                 </div>
