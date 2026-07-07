@@ -17,7 +17,11 @@ type PrintType = 'MATRIX' | 'EXAM' | 'ALL';
 export const ExamCreate: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { addExam, updateExam, exams } = useStore();
+  const { addExam, updateExam, exams, fetchExams } = useStore();
+
+  React.useEffect(() => {
+    fetchExams();
+  }, [fetchExams]);
 
   const searchParams = new URLSearchParams(location.search);
   const editExamId = searchParams.get('edit');
