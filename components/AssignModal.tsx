@@ -32,9 +32,9 @@ export const AssignModal: React.FC<Props> = ({ exam, isOpen, onClose }) => {
   // Form State
   const [selectedClassId, setSelectedClassId] = useState('');
   const [startTimeDate, setStartTimeDate] = useState(() => getTodayAndTomorrow().today);
-  const [startTimeHour, setStartTimeHour] = useState('00:00');
+  const [startTimeHour, setStartTimeHour] = useState('01:00');
   const [endTimeDate, setEndTimeDate] = useState(() => getTodayAndTomorrow().tomorrow);
-  const [endTimeHour, setEndTimeHour] = useState('00:00');
+  const [endTimeHour, setEndTimeHour] = useState('01:00');
   const [duration, setDuration] = useState(exam.durationMinutes || 0);
   const [successLink, setSuccessLink] = useState('');
   const [copied, setCopied] = useState(false);
@@ -46,9 +46,9 @@ export const AssignModal: React.FC<Props> = ({ exam, isOpen, onClose }) => {
       setCopied(false);
       setSelectedClassId('');
       setStartTimeDate(dates.today);
-      setStartTimeHour('00:00');
+      setStartTimeHour('01:00');
       setEndTimeDate(dates.tomorrow);
-      setEndTimeHour('00:00');
+      setEndTimeHour('01:00');
       setDuration(exam.durationMinutes || 0);
       setViewScore(true);
       setViewPassFail(true);
