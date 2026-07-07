@@ -332,7 +332,7 @@ const evaluateAnswer = (q: any, userAns: any, caseSensitive: boolean = false): b
     return true;
   }
 
-  if (['MATCHING', 'ORDERING', 'SENTENCE_SCRAMBLE', 'WORD_CLASSIFY'].includes(q.type)) {
+  if (['MATCHING', 'ORDERING', 'SENTENCE_SCRAMBLE'].includes(q.type)) {
     if (!Array.isArray(userAns) || userAns.length !== q.options.length) return false;
     for (let i = 0; i < q.options.length; i++) {
       const expected = q.options[i];
@@ -340,6 +340,23 @@ const evaluateAnswer = (q: any, userAns: any, caseSensitive: boolean = false): b
       const normExpected = String(expected || '').trim().toLowerCase().replace(/\s*\|\|\|\s*/g, '|||');
       const normActual = String(actual || '').trim().toLowerCase().replace(/\s*\|\|\|\s*/g, '|||');
       if (normActual !== normExpected) return false;
+    }
+    return true;
+  }
+
+  if (q.type === 'WORD_CLASSIFY') {
+    if (!Array.isArray(userAns) || userAns.length !== q.options.length) return false;
+    for (let i = 0; i < q.options.length; i++) {
+      const expectedParts = String(q.options[i] || '').split('|||');
+      const correctCategory = (expectedParts[0] || '').trim();
+      const correctCategoryUpper = correctCategory.toUpperCase();
+      const studentCategory = String(userAns[i] || '').trim();
+
+      if (correctCategoryUpper === '_NONE_' || correctCategoryUpper === 'NONE') {
+        if (studentCategory !== '' && studentCategory.toUpperCase() !== '_NONE_' && studentCategory.toUpperCase() !== 'NONE') return false;
+      } else {
+        if (studentCategory.toLowerCase() !== correctCategory.toLowerCase()) return false;
+      }
     }
     return true;
   }

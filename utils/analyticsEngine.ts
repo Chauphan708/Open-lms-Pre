@@ -131,11 +131,41 @@ function isCorrect(q: Question, userAns: any): boolean {
     }
     return true;
   }
-  if (['MATCHING', 'ORDERING', 'SENTENCE_SCRAMBLE', 'WORD_CLASSIFY', 'FILL_IN_PASSAGE', 'INLINE_DROPDOWN'].includes(q.type)) {
+  if (['MATCHING', 'ORDERING', 'SENTENCE_SCRAMBLE'].includes(q.type)) {
     if (!Array.isArray(userAns) || userAns.length !== q.options.length) return false;
     return q.options.every((expected, i) => {
       const ne = String(expected || '').trim().toLowerCase().replace(/\s*\|\|\|\s*/g, '|||');
       const na = String(userAns[i] || '').trim().toLowerCase().replace(/\s*\|\|\|\s*/g, '|||');
+      return ne === na;
+    });
+  }
+  if (q.type === 'WORD_CLASSIFY') {
+    if (!Array.isArray(userAns) || userAns.length !== q.options.length) return false;
+    return q.options.every((expected, i) => {
+      const expectedParts = String(expected || '').split('|||');
+      const correctCategory = (expectedParts[0] || '').trim();
+      const correctCategoryUpper = correctCategory.toUpperCase();
+      const studentCategory = String(userAns[i] || '').trim();
+      
+      if (correctCategoryUpper === '_NONE_' || correctCategoryUpper === 'NONE') {
+        return studentCategory === '' || studentCategory.toUpperCase() === '_NONE_' || studentCategory.toUpperCase() === 'NONE';
+      }
+      return studentCategory.toLowerCase() === correctCategory.toLowerCase();
+    });
+  }
+  if (q.type === 'FILL_IN_PASSAGE') {
+    if (!Array.isArray(userAns) || userAns.length !== q.options.length) return false;
+    return q.options.every((expected, i) => {
+      const ne = String(expected || '').trim();
+      const na = String(userAns[i] || '').trim();
+      return ne === na;
+    });
+  }
+  if (q.type === 'INLINE_DROPDOWN') {
+    if (!Array.isArray(userAns) || userAns.length !== q.options.length) return false;
+    return q.options.every((expected, i) => {
+      const ne = String(expected || '').split('|||')[0].trim();
+      const na = String(userAns[i] || '').trim();
       return ne === na;
     });
   }
