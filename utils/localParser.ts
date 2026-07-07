@@ -18,16 +18,16 @@ const QUESTION_START_ALT_REGEX = /(?:^|\n)\s*(\d+)\s*[.)]\s+/g;
 const OPTION_REGEX = /^\s*([A-Za-z])[\u0300-\u036f\u0323\u0327\u031b]*\s*[.):\]]\s*(.+)/;
 
 // Regex for correct answer (captures the whole remaining line so we can check if it's A/B/C/D or text)
-const ANSWER_REGEX = /(?:Đáp\s*án\s*(?:đúng)?\s*[:.]\s*)(.+)/i;
+const ANSWER_REGEX = /^\s*(?:Đáp\s*án\s*(?:đúng)?\s*[:.-]\s*)(.+)/i;
 
 // Regex for solution/explanation — must handle "Lời giải chi tiết:", "Hướng dẫn giải:", "Giải thích:", etc.
-const SOLUTION_REGEX = /(?:Lời\s*giải(?:\s*chi\s*tiết)?|Giải\s*thích|Hướng\s*dẫn\s*giải|Giải\s*chi\s*tiết|Solution|Explanation)\s*[:.]?\s*([\s\S]*?)$/i;
+const SOLUTION_REGEX = /^\s*(?:Lời\s*giải(?:\s*chi\s*tiết)?|Giải\s*thích|Hướng\s*dẫn\s*giải|Giải\s*chi\s*tiết|Solution|Explanation)\s*[:.-]\s*([\s\S]*?)$/i;
 
 // Regex for hint — must handle "Gợi ý:", "Gợi ý (Cách làm):", "Hướng dẫn:", "Hint:", etc.
-const HINT_REGEX = /(?:Gợi\s*ý|Gợi\s*ý(?:\s*\([^)]*\))?|Hướng\s*dẫn|Hint)\s*[:.]?\s*([\s\S]*?)$/i;
+const HINT_REGEX = /^\s*(?:Gợi\s*ý|Gợi\s*ý(?:\s*\([^)]*\))?|Hướng\s*dẫn|Hint)\s*[:.-]\s*([\s\S]*?)$/i;
 
 // Regex for difficulty level
-const LEVEL_REGEX = /(?:Mức\s*độ|Độ\s*khó)\s*[:.]?\s*(Nhận\s*biết|Kết\s*nối|Thông\s*hiểu|Vận\s*dụng(?: cao)?|NB|KN|TH|VD(?:C)?)/i;
+const LEVEL_REGEX = /^\s*(?:Mức\s*độ|Độ\s*khó)\s*[:.-]\s*(Nhận\s*biết|Kết\s*nối|Thông\s*hiểu|Vận\s*dụng(?: cao)?|NB|KN|TH|VD(?:C)?)/i;
 
 /**
  * Parse questions from raw text using regex (no AI needed).
@@ -136,13 +136,13 @@ function parseOneBlock(block: string, index: number): Question | null {
         // Tách Đáp án
         .replace(/(\s+)(Đáp\s*án\s*(?:đúng)?\s*[:.])/gi, '\n$2')
         // Tách Gợi ý
-        .replace(/(\s+)(Gợi\s*ý|Gợi\s*ý(?:\s*\([^)]*\))?|Hint)\s*[:.]?/gi, '\n$2:')
+        .replace(/(\s+)(Gợi\s*ý|Gợi\s*ý(?:\s*\([^)]*\))?|Hint)\s*[:.-]/gi, '\n$2:')
         // Tách Hướng dẫn
-        .replace(/(\s+)(Hướng\s*dẫn)\s*[:.]?/gi, '\n$2:')
+        .replace(/(\s+)(Hướng\s*dẫn)\s*[:.-]/gi, '\n$2:')
         // Tách Lời giải 
-        .replace(/(\s+)(Lời\s*giải(?:\s*chi\s*tiết)?|Giải\s*thích|Hướng\s*dẫn\s*giải|Giải\s*chi\s*tiết|Solution|Explanation)\s*[:.]?/gi, '\n$2:')
+        .replace(/(\s+)(Lời\s*giải(?:\s*chi\s*tiết)?|Giải\s*thích|Hướng\s*dẫn\s*giải|Giải\s*chi\s*tiết|Solution|Explanation)\s*[:.-]/gi, '\n$2:')
         // Tách Mức độ
-        .replace(/(\s+)(Mức\s*độ|Độ\s*khó)\s*[:.]?/gi, '\n$2:');
+        .replace(/(\s+)(Mức\s*độ|Độ\s*khó)\s*[:.-]/gi, '\n$2:');
 
     const lines = normalizedBlock.split('\n').map(l => l.trimEnd());
 
