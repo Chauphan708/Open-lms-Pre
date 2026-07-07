@@ -15,7 +15,7 @@ const QUESTION_START_REGEX = /(?:^|\n)\s*(?:Câu\s*(?:hỏi\s*)?|Bài\s*|Questio
 const QUESTION_START_ALT_REGEX = /(?:^|\n)\s*(\d+)\s*[.)]\s+/g;
 
 // Regex for options
-const OPTION_REGEX = /^\s*([A-Za-z])\s*[.):\]]\s*(.+)/;
+const OPTION_REGEX = /^\s*([A-Za-z])[\u0300-\u036f\u0323\u0327\u031b]*\s*[.):\]]\s*(.+)/;
 
 // Regex for correct answer (captures the whole remaining line so we can check if it's A/B/C/D or text)
 const ANSWER_REGEX = /(?:Đáp\s*án\s*(?:đúng)?\s*[:.]\s*)(.+)/i;
@@ -202,6 +202,9 @@ function parseOneBlock(block: string, index: number): Question | null {
                 ansRaw = ansRaw.replace(/[,.]$/, '').trim(); // Remove trailing comma/dot
             }
 
+            // Clean any accidental diacritics attached to the option reference letters (e.g. Ḅ -> B, Ç -> C)
+            ansRaw = ansRaw.replace(/([A-Za-z])[\u0300-\u036f\u0323\u0327\u031b]+/gi, '$1');
+
             shortAnswerText = ansRaw;
 
             const tokens = ansRaw.replace(/và|and/gi, ',').split(/[\s,.-]+/).filter(t => t.length > 0);
@@ -280,6 +283,9 @@ function parseOneBlock(block: string, index: number): Question | null {
                         ansRaw = ansRaw.substring(0, distractorIndex).trim();
                         ansRaw = ansRaw.replace(/[,.]$/, '').trim(); // Remove trailing comma/dot
                     }
+
+                    // Clean any accidental diacritics attached to the option reference letters (e.g. Ḅ -> B, Ç -> C)
+                    ansRaw = ansRaw.replace(/([A-Za-z])[\u0300-\u036f\u0323\u0327\u031b]+/gi, '$1');
 
                     shortAnswerText = ansRaw;
 
