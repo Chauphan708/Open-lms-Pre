@@ -9,16 +9,16 @@ Cả người và bụng trống đều có đặc điểm [__] ở giữa.
 Tuy nhiên, bụng người dùng để tiêu hóa thức ăn, còn bụng trống thì [__] bên trong để tạo âm vang.
 
 #loại câu hỏi# Kéo thả - DRAG_DROP
-#mức độ# Thông hiểu
+#Mức độ# Thông hiểu
 A. hình dáng
 B\u0323. phình to
 C\u0327. rỗng tuếch
 D. chức năng
 E. màu sắc
 F\u0323. độ nhọn
-#đáp án# A, B\u0323, C\u0327, còn lại D, E, F\u0323 là từ nhiễu.
-#gợi ý# Hãy đối chiếu sự giống nhau về hình thức phình to của cái bụng trống với bụng của người.
-#lời giải# Bụng trống được chuyển nghĩa dựa trên tương đồng hình dáng (A). Cả hai đều có đặc điểm phình to ở giữa (B). Điểm khác biệt là bụng người chứa cơ quan tiêu hóa còn bụng trống thì rỗng tuếch (C) để tạo độ vang âm thanh.`,
+#Đáp án#: A, B\u0323, C\u0327, còn lại D, E, F\u0323 là từ nhiễu.
+Hướng dẫn: #Gợi ý# Hãy đối chiếu sự giống nhau về hình thức phình to của cái bụng trống với bụng của người.
+#Lời giải chi tiết# Bụng trống được chuyển nghĩa dựa trên tương đồng hình dáng (A). Cả hai đều có đặc điểm phình to ở giữa (B). Điểm khác biệt là bụng người chứa cơ quan tiêu hóa còn bụng trống thì rỗng tuếch (C) để tạo độ vang âm thanh.`,
     expectedType: 'DRAG_DROP',
     expectedOptionsCount: 6,
     expectedCorrectIndices: [0, 1, 2],
