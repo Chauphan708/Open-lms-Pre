@@ -1932,7 +1932,66 @@ export const ExamTake: React.FC = () => {
 
     if (isAttemptsLoading && !!attemptIdFromUrl) return; // Wait for the specific attempt
 
-    if (shouldShowResult && latestAttempt) {
+    // 1. Kiểm tra nháp hoạt động (draft) của bài tập này để khôi phục trước tiên
+    const savedDraft = localStorage.getItem(`exam_draft_${exam.id}`);
+    let draftMatches = false;
+    if (savedDraft) {
+      try {
+        const parsed = JSON.parse(savedDraft);
+        const draftAssignId = parsed.assignmentId ? String(parsed.assignmentId) : '';
+        const currentAssignId = assignmentId ? String(assignmentId) : '';
+        if (draftAssignId === currentAssignId) {
+          draftMatches = true;
+        }
+      } catch (e) {}
+    }
+
+    if (draftMatches) {
+      if (!isSubmitted && !hasStarted) {
+        try {
+          const parsed = JSON.parse(savedDraft!);
+          if (parsed.shuffledOptionsMap) setShuffledOptionsMap(parsed.shuffledOptionsMap);
+          else setShuffledOptionsMap(generateShuffles());
+
+          if (parsed.shuffledQuestionIds) setShuffledQuestionIds(parsed.shuffledQuestionIds);
+          else {
+            const shouldShuffle = assignment ? (assignment.settings?.shuffleQuestions !== false) : true;
+            const mode = assignment?.settings?.shuffleQuestionsMode;
+            setShuffledQuestionIds(shouldShuffle ? shuffleQuestionsByMode(exam.questions, mode) : exam.questions.map(q => q.id));
+          }
+
+          setAnswers(parsed.answers || {});
+          if (parsed.cheatWarnings) setCheatWarnings(parsed.cheatWarnings);
+
+          if (typeof parsed.timeLeft === 'number' && isFinite(parsed.timeLeft)) {
+            setTimeLeft(parsed.timeLeft);
+          } else {
+            const dur = assignment?.durationMinutes || exam?.durationMinutes || 45;
+            setTimeLeft(dur * 60);
+          }
+
+          if (parsed.timeSpentPerQuestion) setTimeSpentPerQuestion(parsed.timeSpentPerQuestion);
+          if (parsed.examStartTime) setExamStartTime(parsed.examStartTime);
+          else setExamStartTime(Date.now());
+
+          const now = Date.now();
+          const dur = assignment?.durationMinutes || exam?.durationMinutes || 45;
+          const expiresAt = parsed.examExpiresAt || ((parsed.examStartTime || now) + (parsed.timeLeft || dur * 60) * 1000);
+          setExamExpiresAt(expiresAt);
+          const remaining = Math.max(0, Math.floor((expiresAt - now) / 1000));
+          setTimeLeft(remaining);
+          
+          setHasStarted(true);
+          return;
+        } catch (e) {
+          console.error("Error parsing draft:", e);
+        }
+      }
+    }
+
+    // 2. Nếu không có nháp, kiểm tra xem có cần chuyển chế độ kết quả không.
+    // Bỏ qua việc ép xem kết quả cũ nếu người dùng vừa mới yêu cầu làm bài lại (isRetakeInitiated)
+    if (shouldShowResult && latestAttempt && !isRetakeInitiated) {
       // View existing attempt result
       setIsSubmitted(true);
       setScore(latestAttempt.score || 0);
@@ -1953,57 +2012,7 @@ export const ExamTake: React.FC = () => {
       setShuffledQuestionIds(exam.questions.map(q => q.id));
 
     } else if (!isSubmitted && !hasStarted) {
-      // New attempt -> check local storage first
-      const saved = localStorage.getItem(`exam_draft_${exam.id}`);
-      if (saved) {
-        try {
-          const parsed = JSON.parse(saved);
-          
-          // Only resume if it matches the current assignmentId to avoid cross-sharing drafts
-          const draftAssignId = parsed.assignmentId ? String(parsed.assignmentId) : '';
-          const currentAssignId = assignmentId ? String(assignmentId) : '';
-          
-          if (draftAssignId === currentAssignId) {
-            if (parsed.shuffledOptionsMap) setShuffledOptionsMap(parsed.shuffledOptionsMap);
-            else setShuffledOptionsMap(generateShuffles());
-
-            if (parsed.shuffledQuestionIds) setShuffledQuestionIds(parsed.shuffledQuestionIds);
-            else {
-              const shouldShuffle = assignment ? (assignment.settings?.shuffleQuestions !== false) : true;
-              const mode = assignment?.settings?.shuffleQuestionsMode;
-              setShuffledQuestionIds(shouldShuffle ? shuffleQuestionsByMode(exam.questions, mode) : exam.questions.map(q => q.id));
-            }
-
-            setAnswers(parsed.answers || {});
-            if (parsed.cheatWarnings) setCheatWarnings(parsed.cheatWarnings);
-
-            if (typeof parsed.timeLeft === 'number' && isFinite(parsed.timeLeft)) {
-              setTimeLeft(parsed.timeLeft);
-            } else {
-              const dur = assignment?.durationMinutes || exam?.durationMinutes || 45;
-              setTimeLeft(dur * 60);
-            }
-
-            if (parsed.timeSpentPerQuestion) setTimeSpentPerQuestion(parsed.timeSpentPerQuestion);
-            if (parsed.examStartTime) setExamStartTime(parsed.examStartTime);
-            else setExamStartTime(Date.now());
-
-            const now = Date.now();
-            const dur = assignment?.durationMinutes || exam?.durationMinutes || 45;
-            const expiresAt = parsed.examExpiresAt || ((parsed.examStartTime || now) + (parsed.timeLeft || dur * 60) * 1000);
-            setExamExpiresAt(expiresAt);
-            const remaining = Math.max(0, Math.floor((expiresAt - now) / 1000));
-            setTimeLeft(remaining);
-            
-            setHasStarted(true); // Restore started state on successful resume
-            return; // Resumed successfully
-          }
-        } catch (e) {
-            console.error("Error parsing draft:", e);
-        }
-      } 
-      
-      // Fallback: Fresh Start (if no draft or draft mismatch)
+      // Fresh Start (if no draft or draft mismatch, or user initiated a retake)
       setShuffledOptionsMap(generateShuffles());
       const shouldShuffle = assignment ? (assignment.settings?.shuffleQuestions !== false) : true;
       const mode = assignment?.settings?.shuffleQuestionsMode;
@@ -2015,7 +2024,7 @@ export const ExamTake: React.FC = () => {
       setExamExpiresAt(Date.now() + initialSeconds * 1000);
       setExamStartTime(Date.now());
     }
-  }, [exam?.id, latestAttempt?.id, assignment?.id, generateShuffles, attemptIdFromUrl, assignmentSettings.maxAttempts, myAttempts.length, assignment, isSubmitted, hasStarted, isAttemptsLoading]);
+  }, [exam?.id, latestAttempt?.id, assignment?.id, generateShuffles, attemptIdFromUrl, assignmentSettings.maxAttempts, myAttempts.length, assignment, isSubmitted, hasStarted, isAttemptsLoading, isRetakeInitiated]);
 
   useEffect(() => {
     if (!exam || isSubmitted || !hasStarted || !examExpiresAt) {
@@ -2442,6 +2451,7 @@ export const ExamTake: React.FC = () => {
     const finalScore = scoredQuestionCount > 0 ? (correctCount / scoredQuestionCount) * 10 : 0;
     setScore(finalScore);
     setIsSubmitted(true);
+    setIsRetakeInitiated(false);
 
     // Final Update for Live Session
     if (liveSessionId && user) {
@@ -2479,6 +2489,7 @@ export const ExamTake: React.FC = () => {
     console.log("DEBUG: Final Attempt Payload to send:", attempt);
     
     setIsSubmitted(true); // Show local result first
+    setIsRetakeInitiated(false);
     
     // Áp dụng ngay Standard Map (cố định thứ tự) khi xem đáp án
     const standardMap: Record<string, number[]> = {};
