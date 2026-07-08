@@ -2507,6 +2507,7 @@ export const ExamTake: React.FC = () => {
        console.error("DEBUG: addAttempt returned false.");
     } else {
        console.log("DEBUG: addAttempt SUCCESS.");
+       setFetchedAttempts(prev => [...prev, attempt]);
     }
 
      // BỔ SUNG LOGIC: Tự động ghi nhận điểm hành vi theo mốc linh hoạt & cộng dồn
