@@ -2630,6 +2630,22 @@ export const ExamTake: React.FC = () => {
     }
   }, []);
 
+  // Hide footer when student is actively taking the exam
+  useEffect(() => {
+    const footerElement = document.querySelector('footer');
+    if (footerElement) {
+      const originalDisplay = footerElement.style.display;
+      if (hasStarted && !isSubmitted) {
+        footerElement.style.display = 'none';
+      } else {
+        footerElement.style.display = '';
+      }
+      return () => {
+        footerElement.style.display = originalDisplay;
+      };
+    }
+  }, [hasStarted, isSubmitted]);
+
   if (isLoadingDirect || isAttemptsLoading) return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
       <div className="text-center">
@@ -3016,9 +3032,9 @@ export const ExamTake: React.FC = () => {
       )}
 
       {/* Sticky Header & Navigation Wrapper - Word Wrap & Auto Scaling */}
-      <div className="sticky top-[57px] md:top-0 z-[100] bg-white/95 backdrop-blur-md shadow-sm -mx-4 px-4 md:-mx-8 md:px-8 transition-all border-b border-indigo-50">
+      <div className="sticky lg:relative top-[57px] md:top-0 lg:top-auto z-[100] lg:z-10 bg-white/95 backdrop-blur-md shadow-sm -mx-4 px-4 md:-mx-8 md:px-8 transition-all border-b border-indigo-50">
         {/* Main Header - Auto wrap title on mobile */}
-        <div className="py-2 md:py-3 flex justify-between items-start gap-2">
+        <div className="py-1.5 md:py-2 flex justify-between items-start gap-2">
           <div className="flex-1 min-w-0">
             <h1 className="font-bold text-gray-900 text-sm md:text-base lg:text-lg break-words leading-tight">
               {exam.title}
@@ -3028,7 +3044,7 @@ export const ExamTake: React.FC = () => {
               {isSaving && <span className="flex items-center gap-1 text-indigo-500 italic animate-pulse"><RotateCcw className="h-2.5 w-2.5 animate-spin" /> <span>Đang lưu...</span></span>}
             </div>
           </div>
-          <div className="flex flex-col items-end gap-1 flex-shrink-0">
+          <div className="flex flex-col items-end gap-1 flex-shrink-0 lg:hidden">
             <div className={`flex items-center gap-1.5 font-mono text-base md:text-lg font-bold ${(timeLeft || 0) < 300 ? 'text-red-600' : 'text-indigo-600'}`}>
               <Clock className="h-4 w-4 md:h-5 md:w-5" />
               {formatTime(timeLeft)}

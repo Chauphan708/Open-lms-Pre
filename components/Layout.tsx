@@ -563,7 +563,7 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 p-4 md:p-8 overflow-x-hidden relative flex flex-col pb-48 md:pb-40" >
+      <main className="flex-1 p-4 md:p-8 overflow-x-hidden relative flex flex-col pb-8" >
         {/* Top Bar for Desktop */}
         <div className="hidden md:flex justify-end items-center mb-6 gap-4" >
           {/* Theme Toggle */}
