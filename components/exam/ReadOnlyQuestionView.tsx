@@ -214,7 +214,7 @@ export const ReadOnlyQuestionView: React.FC<ReadOnlyQuestionViewProps> = ({
               </span>
             ) : (
               <span className={`text-lg font-bold ${isCorrect ? 'text-green-700' : 'text-red-700'}`}>
-                {renderFractionOrText(String(userAns))}
+                <MathText inline>{String(userAns)}</MathText>
               </span>
             )}
           </div>
@@ -233,7 +233,7 @@ export const ReadOnlyQuestionView: React.FC<ReadOnlyQuestionViewProps> = ({
                 <React.Fragment key={idx}>
                   {idx > 0 && <span className="text-gray-400 font-normal">hoặc</span>}
                   <span className="bg-green-100 text-green-800 border border-green-200 px-2.5 py-0.5 rounded-lg flex items-center">
-                    {renderFractionOrText(ansText)}
+                    <MathText inline>{ansText}</MathText>
                   </span>
                 </React.Fragment>
               ))}
@@ -261,7 +261,7 @@ export const ReadOnlyQuestionView: React.FC<ReadOnlyQuestionViewProps> = ({
                 <React.Fragment key={sIdx}>
                   {sIdx > 0 && <br />}
                   {sIdx > 0 && <span className="inline-block w-8 md:w-12" />}
-                  <span className="whitespace-pre-wrap">{sub}</span>
+                  <MathText inline className="whitespace-pre-wrap">{sub}</MathText>
                 </React.Fragment>
               ))}
               {i < parts.length - 1 && (() => {
@@ -286,7 +286,7 @@ export const ReadOnlyQuestionView: React.FC<ReadOnlyQuestionViewProps> = ({
                       </span>
                       {canViewSolution && (
                         <span className="bg-green-50 text-green-700 border border-green-200 rounded px-2.5 py-0.5 text-sm font-bold">
-                          đáp án: {correctVal}
+                          đáp án: <MathText inline>{correctVal}</MathText>
                         </span>
                       )}
                     </span>
@@ -296,7 +296,7 @@ export const ReadOnlyQuestionView: React.FC<ReadOnlyQuestionViewProps> = ({
                 if (isBlankCorrect) {
                   return (
                     <span className="inline-flex items-center mx-1 bg-green-500 text-white rounded-lg px-2.5 py-0.5 text-sm font-bold align-baseline shadow-sm border border-green-600 animate-in fade-in duration-250">
-                      {studentVal} <CheckCircle className="h-3.5 w-3.5 ml-1 text-white inline" />
+                      <MathText inline>{studentVal}</MathText> <CheckCircle className="h-3.5 w-3.5 ml-1 text-white inline" />
                     </span>
                   );
                 }
@@ -304,11 +304,11 @@ export const ReadOnlyQuestionView: React.FC<ReadOnlyQuestionViewProps> = ({
                 return (
                   <span className="inline-flex items-center gap-1 mx-1.5 align-baseline">
                     <span className="bg-red-500 text-white rounded-lg px-2.5 py-0.5 text-sm font-bold shadow-sm border border-red-600 animate-in fade-in duration-250">
-                      {studentVal} <XCircle className="h-3.5 w-3.5 ml-1 text-white inline" />
+                      <MathText inline>{studentVal}</MathText> <XCircle className="h-3.5 w-3.5 ml-1 text-white inline" />
                     </span>
                     {canViewSolution && (
                       <span className="bg-green-50 text-green-700 border border-green-200 rounded-lg px-2.5 py-0.5 text-sm font-bold">
-                        đáp án: {correctVal}
+                        đáp án: <MathText inline>{correctVal}</MathText>
                       </span>
                     )}
                   </span>
@@ -379,19 +379,19 @@ export const ReadOnlyQuestionView: React.FC<ReadOnlyQuestionViewProps> = ({
                 <div className="flex flex-wrap gap-2 min-h-[50px] content-start">
                   {correctWords.map((w, wIdx) => (
                     <span key={wIdx} className="px-3 py-1.5 rounded-lg text-sm font-bold bg-green-500 text-white border border-green-600 shadow-sm flex items-center gap-1 animate-in fade-in duration-200">
-                      {w} <CheckCircle className="h-3.5 w-3.5" />
+                      <MathText inline>{w}</MathText> <CheckCircle className="h-3.5 w-3.5" />
                     </span>
                   ))}
 
                   {incorrectWords.map((w, wIdx) => (
                     <span key={wIdx} className="px-3 py-1.5 rounded-lg text-sm font-bold bg-red-500 text-white border border-red-600 shadow-sm flex items-center gap-1 animate-in fade-in duration-200">
-                      {w} <XCircle className="h-3.5 w-3.5" />
+                      <MathText inline>{w}</MathText> <XCircle className="h-3.5 w-3.5" />
                     </span>
                   ))}
 
                   {canViewSolution && missedWords.map((w, wIdx) => (
                     <span key={wIdx} className="px-3 py-1.5 rounded-lg text-sm font-bold bg-white text-gray-400 border border-dashed border-gray-300 flex items-center gap-1 select-none font-medium" title="Lẽ ra phải xếp vào đây">
-                      {w} <span className="text-[10px] text-gray-400 bg-gray-50 border border-gray-150 px-1 py-0.5 rounded font-normal">(bỏ sót)</span>
+                      <MathText inline>{w}</MathText> <span className="text-[10px] text-gray-400 bg-gray-50 border border-gray-150 px-1 py-0.5 rounded font-normal">(bỏ sót)</span>
                     </span>
                   ))}
 
@@ -465,7 +465,7 @@ export const ReadOnlyQuestionView: React.FC<ReadOnlyQuestionViewProps> = ({
                       )}
                       {(!isItemCorrect || isUnanswered) && canViewSolution && (
                         <div className="mt-1.5 text-xs text-green-700 font-semibold bg-green-50 border border-green-100 rounded px-2 py-0.5 w-fit">
-                          đáp án: {correctRightVal}
+                          đáp án: <MathText inline>{correctRightVal}</MathText>
                         </div>
                       )}
                     </td>
@@ -568,7 +568,7 @@ export const ReadOnlyQuestionView: React.FC<ReadOnlyQuestionViewProps> = ({
               </span>
             ) : (
               <span className={`text-base font-bold ${isCorrect ? 'text-green-700' : 'text-red-700'}`}>
-                {studentSentence}
+                <MathText inline>{studentSentence}</MathText>
               </span>
             )}
           </div>
@@ -583,7 +583,7 @@ export const ReadOnlyQuestionView: React.FC<ReadOnlyQuestionViewProps> = ({
           <div className="p-4 rounded-xl border border-dashed border-green-300 bg-green-50/30 text-green-900 text-sm">
             <span className="text-green-700 text-xs font-bold uppercase tracking-wider block mb-1">Câu mẫu đúng:</span>
             <div className="font-bold text-base text-green-800 bg-green-100 border border-green-200 px-3 py-1.5 rounded-lg">
-              {correctSentence}
+              <MathText inline>{correctSentence}</MathText>
             </div>
           </div>
         )}

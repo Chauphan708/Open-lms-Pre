@@ -3553,7 +3553,7 @@ export const ExamTake: React.FC = () => {
                             <div className="mt-2 text-xs text-gray-700 bg-gray-55/80 p-2.5 rounded-lg border border-gray-200">
                               <strong className="text-gray-600 mr-1.5">Đáp án đúng:</strong>
                               <span className="font-bold text-gray-800">
-                                {q.options[q.correctOptionIndex]}
+                                <MathText inline>{q.options[q.correctOptionIndex]}</MathText>
                               </span>
                             </div>
                           )}
@@ -3563,7 +3563,7 @@ export const ExamTake: React.FC = () => {
                               <strong className="text-gray-600 mr-1.5">Các đáp án đúng:</strong>
                               <span className="font-bold text-gray-800 block mt-1 space-y-1">
                                 {q.correctOptionIndices.map((ci: number) => (
-                                  <span key={ci} className="block">• {q.options[ci]}</span>
+                                  <span key={ci} className="block">• <MathText inline>{q.options[ci]}</MathText></span>
                                 ))}
                               </span>
                             </div>
