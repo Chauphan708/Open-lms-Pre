@@ -3150,7 +3150,7 @@ export const ExamTake: React.FC = () => {
         {/* Navigation Sidebar (Desktop Left) */}
         {(hasStarted || isSubmitted) && (
           <div className="hidden lg:block w-56 flex-shrink-0 relative">
-            <div className="sticky top-[100px] bg-white p-5 rounded-2xl shadow-xl border border-indigo-100 flex flex-col max-h-[calc(100vh-140px)] transition-all">
+            <div className="sticky top-[max(80px,calc(50vh-270px))] bg-white p-5 rounded-2xl shadow-xl border border-indigo-100 flex flex-col max-h-[calc(100vh-120px)] transition-all">
               <div className="text-sm font-bold text-gray-700 mb-3 flex items-center justify-between">
                 <span>Danh sách câu hỏi</span>
                 <span className="text-[10px] bg-indigo-50 text-indigo-600 px-1.5 py-0.5 rounded font-black">{answersCount} / {exam?.questions?.length || 0}</span>
@@ -3237,13 +3237,21 @@ export const ExamTake: React.FC = () => {
                   <div className="w-3 h-3 rounded bg-gray-100 border border-gray-200"></div> <span>Chưa làm</span>
                 </div>
 
-                <div className="mt-2 pt-3 border-t">
+                <div className="mt-2 pt-3 border-t flex flex-col gap-2">
                   <button
                     onClick={() => setViewMode(prev => prev === 'scroll' ? 'single' : 'scroll')}
                     className={`w-full py-2.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all flex items-center justify-center gap-2 shadow-sm ${viewMode === 'single' ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
                   >
                     <Sparkles className="h-3 w-3" /> {viewMode === 'scroll' ? 'Chế độ từng câu' : 'Chế độ danh sách'}
                   </button>
+                  {!isSubmitted && (
+                    <button
+                      onClick={handleSubmit}
+                      className="w-full py-2.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all flex items-center justify-center gap-2 bg-rose-600 hover:bg-rose-700 text-white shadow-md shadow-rose-200 hover:scale-[1.02] active:scale-[0.98]"
+                    >
+                      <Send className="h-3 w-3" /> Nộp bài
+                    </button>
+                  )}
                 </div>
               </div>
             </div>
