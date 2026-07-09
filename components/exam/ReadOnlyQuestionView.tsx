@@ -55,6 +55,89 @@ const getPassageParts = (content: string) => {
   };
 };
 
+export interface ClozeSegment {
+  type: 'text' | 'blank' | 'fraction_with_blank';
+  val?: string;
+  blankIdx?: number;
+  numerator?: string;
+  denominator?: string;
+  numIsBlank?: boolean;
+  denIsBlank?: boolean;
+}
+
+const parseClozePassage = (content: string): ClozeSegment[] => {
+  const cleanContent = content.replace(/\s*Đáp án:\s*[^\n]*$/i, '').trim();
+  const segments: ClozeSegment[] = [];
+  
+  const cleanUnbalancedDollar = (str: string) => {
+    const count = (str.match(/\$/g) || []).length;
+    if (count % 2 !== 0) {
+      return str.replaceAll('$', '');
+    }
+    return str;
+  };
+  
+  const fracWithBlankRegex = /\$?\\\s*frac\s*\{\s*([^{}]+?)\s*\}\s*\{\s*([^{}]+?)\s*\}\$?/g;
+  
+  let lastIdx = 0;
+  let match;
+  let blankCounter = 0;
+  
+  while ((match = fracWithBlankRegex.exec(cleanContent)) !== null) {
+    const matchIdx = match.index;
+    const num = match[1].trim();
+    const den = match[2].trim();
+    
+    const numHasBlank = num.includes('[__]');
+    const denHasBlank = den.includes('[__]');
+    
+    if (numHasBlank || denHasBlank) {
+      // Process text before this match
+      const textBefore = cleanContent.substring(lastIdx, matchIdx);
+      if (textBefore) {
+        const subParts = textBefore.split('[__]');
+        subParts.forEach((part, subIdx) => {
+          if (part) {
+            segments.push({ type: 'text', val: cleanUnbalancedDollar(part) });
+          }
+          if (subIdx < subParts.length - 1) {
+            segments.push({ type: 'blank', blankIdx: blankCounter++ });
+          }
+        });
+      }
+      
+      // Process the fraction containing [__]
+      const blankIdx = blankCounter++;
+      segments.push({
+        type: 'fraction_with_blank',
+        blankIdx,
+        numerator: cleanUnbalancedDollar(num),
+        denominator: cleanUnbalancedDollar(den),
+        numIsBlank: numHasBlank,
+        denIsBlank: denHasBlank
+      });
+      
+      lastIdx = fracWithBlankRegex.lastIndex;
+    }
+  }
+  
+  // Process remaining text
+  const textAfter = cleanContent.substring(lastIdx);
+  if (textAfter) {
+    const subParts = textAfter.split('[__]');
+    subParts.forEach((part, subIdx) => {
+      if (part) {
+        segments.push({ type: 'text', val: cleanUnbalancedDollar(part) });
+      }
+      if (subIdx < subParts.length - 1) {
+        segments.push({ type: 'blank', blankIdx: blankCounter++ });
+      }
+    });
+  }
+  
+  return segments;
+};
+
 export const ReadOnlyQuestionView: React.FC<ReadOnlyQuestionViewProps> = ({
   question,
   userAns,
@@ -244,78 +327,102 @@ export const ReadOnlyQuestionView: React.FC<ReadOnlyQuestionViewProps> = ({
     );
   }
 
-  // 4, 5, 6. DRAG_DROP, FILL_IN_PASSAGE, INLINE_DROPDOWN (Cloze style text inline)
   if (['DRAG_DROP', 'FILL_IN_PASSAGE', 'INLINE_DROPDOWN'].includes(question.type)) {
     const blankCount = (question.content.match(/\[__\]/g) || []).length;
     const currentAns = Array.isArray(userAns) ? userAns : Array(blankCount).fill('');
-    const passage = getPassageParts(question.content).passage;
-    const parts = passage.split('[__]');
+    const segments = parseClozePassage(question.content);
+
+    const renderBlank = (i: number, isFraction = false) => {
+      const studentVal = String(currentAns[i] || '').trim();
+      const isBlankUnanswered = studentVal === '';
+      
+      let correctVal = '';
+      if (question.type === 'INLINE_DROPDOWN') {
+        const rawOpt = question.options[i] || '';
+        correctVal = rawOpt.split('|||').map((s: string) => s.trim())[0];
+      } else {
+        correctVal = String(question.options[i] || '').trim();
+      }
+
+      const isBlankCorrect = !isBlankUnanswered && studentVal.toLowerCase() === correctVal.toLowerCase();
+
+      if (isBlankUnanswered) {
+        return (
+          <span className="inline-flex items-center gap-1 mx-1.5 align-baseline">
+            <span className={`bg-gray-100 text-gray-400 border border-gray-300 border-dashed rounded px-2.5 py-0.5 font-bold select-none ${isFraction ? 'text-xs px-1 py-0' : 'text-sm'}`}>
+              (Trống) ❌
+            </span>
+            {canViewSolution && (
+              <span className={`bg-green-50 text-green-700 border border-green-200 rounded px-2.5 py-0.5 font-bold ${isFraction ? 'text-xs px-1 py-0' : 'text-sm'}`}>
+                đáp án: <MathText inline>{correctVal}</MathText>
+              </span>
+            )}
+          </span>
+        );
+      }
+
+      if (isBlankCorrect) {
+        return (
+          <span className={`inline-flex items-center mx-1 bg-green-500 text-white rounded px-2.5 py-0.5 font-bold align-baseline shadow-sm border border-green-600 animate-in fade-in duration-250 ${isFraction ? 'text-xs px-1.5 py-0' : 'text-sm'}`}>
+            <MathText inline>{studentVal}</MathText> <CheckCircle className="h-3.5 w-3.5 ml-1 text-white inline" />
+          </span>
+        );
+      }
+
+      return (
+        <span className="inline-flex items-center gap-1 mx-1.5 align-baseline animate-in fade-in duration-250">
+          <span className={`bg-red-500 text-white rounded px-2.5 py-0.5 font-bold shadow-sm border border-red-600 ${isFraction ? 'text-xs px-1.5 py-0' : 'text-sm'}`}>
+            <MathText inline>{studentVal}</MathText> <XCircle className="h-3.5 w-3.5 ml-1 text-white inline" />
+          </span>
+          {canViewSolution && (
+            <span className={`bg-green-50 text-green-700 border border-green-200 rounded px-2.5 py-0.5 font-bold ${isFraction ? 'text-xs px-1 py-0' : 'text-sm'}`}>
+              đáp án: <MathText inline>{correctVal}</MathText>
+            </span>
+          )}
+        </span>
+      );
+    };
 
     return (
       <div className="mt-3 p-5 rounded-2xl border border-gray-200 bg-white leading-[2.3] text-gray-800 text-base shadow-sm">
-        {parts.map((part: string, i: number) => {
-          const subParts = part.split(/\s+\/\s+/);
-          return (
-            <React.Fragment key={i}>
-              {subParts.map((sub, sIdx) => (
-                <React.Fragment key={sIdx}>
-                  {sIdx > 0 && <br />}
-                  {sIdx > 0 && <span className="inline-block w-8 md:w-12" />}
-                  <MathText inline className="whitespace-pre-wrap">{sub}</MathText>
-                </React.Fragment>
-              ))}
-              {i < parts.length - 1 && (() => {
-                const studentVal = String(currentAns[i] || '').trim();
-                const isBlankUnanswered = studentVal === '';
-                
-                let correctVal = '';
-                if (question.type === 'INLINE_DROPDOWN') {
-                  const rawOpt = question.options[i] || '';
-                  correctVal = rawOpt.split('|||').map((s: string) => s.trim())[0];
-                } else {
-                  correctVal = String(question.options[i] || '').trim();
-                }
-
-                const isBlankCorrect = !isBlankUnanswered && studentVal.toLowerCase() === correctVal.toLowerCase();
-
-                if (isBlankUnanswered) {
-                  return (
-                    <span className="inline-flex items-center gap-1 mx-1.5 align-baseline">
-                      <span className="bg-gray-100 text-gray-405 border border-gray-300 border-dashed rounded px-2.5 py-0.5 text-sm font-bold select-none">
-                        (Trống) ❌
-                      </span>
-                      {canViewSolution && (
-                        <span className="bg-green-50 text-green-700 border border-green-200 rounded px-2.5 py-0.5 text-sm font-bold">
-                          đáp án: <MathText inline>{correctVal}</MathText>
-                        </span>
-                      )}
-                    </span>
-                  );
-                }
-
-                if (isBlankCorrect) {
-                  return (
-                    <span className="inline-flex items-center mx-1 bg-green-500 text-white rounded-lg px-2.5 py-0.5 text-sm font-bold align-baseline shadow-sm border border-green-600 animate-in fade-in duration-250">
-                      <MathText inline>{studentVal}</MathText> <CheckCircle className="h-3.5 w-3.5 ml-1 text-white inline" />
-                    </span>
-                  );
-                }
-
-                return (
-                  <span className="inline-flex items-center gap-1 mx-1.5 align-baseline">
-                    <span className="bg-red-500 text-white rounded-lg px-2.5 py-0.5 text-sm font-bold shadow-sm border border-red-600 animate-in fade-in duration-250">
-                      <MathText inline>{studentVal}</MathText> <XCircle className="h-3.5 w-3.5 ml-1 text-white inline" />
-                    </span>
-                    {canViewSolution && (
-                      <span className="bg-green-50 text-green-700 border border-green-200 rounded-lg px-2.5 py-0.5 text-sm font-bold">
-                        đáp án: <MathText inline>{correctVal}</MathText>
-                      </span>
-                    )}
-                  </span>
-                );
-              })()}
-            </React.Fragment>
-          );
+        {segments.map((seg, idx) => {
+          if (seg.type === 'text') {
+            const subParts = seg.val!.split(/\s+\/\s+/);
+            return (
+              <React.Fragment key={idx}>
+                {subParts.map((sub, sIdx) => (
+                  <React.Fragment key={sIdx}>
+                    {sIdx > 0 && <br />}
+                    {sIdx > 0 && <span className="inline-block w-8 md:w-12" />}
+                    <MathText inline className="whitespace-pre-wrap">{sub}</MathText>
+                  </React.Fragment>
+                ))}
+              </React.Fragment>
+            );
+          }
+          
+          if (seg.type === 'blank') {
+            return (
+              <React.Fragment key={idx}>
+                {renderBlank(seg.blankIdx!)}
+              </React.Fragment>
+            );
+          }
+          
+          if (seg.type === 'fraction_with_blank') {
+            return (
+              <span key={idx} className="inline-flex flex-col items-center justify-center align-middle mx-1.5 leading-none">
+                <span className="border-b border-gray-400 pb-1 text-center font-bold min-h-[32px] flex items-center justify-center">
+                  {seg.numIsBlank ? renderBlank(seg.blankIdx!, true) : <MathText inline>{seg.numerator!}</MathText>}
+                </span>
+                <span className="pt-1 text-center font-bold min-h-[32px] flex items-center justify-center">
+                  {seg.denIsBlank ? renderBlank(seg.blankIdx!, true) : <MathText inline>{seg.denominator!}</MathText>}
+                </span>
+              </span>
+            );
+          }
+          
+          return null;
         })}
       </div>
     );

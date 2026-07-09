@@ -31,10 +31,22 @@ const renderMath = (latex: string) => {
 
 const wrapMath = (text: string) => {
     if (!text) return '';
-    if ((text.includes('\\frac') || text.includes('\\sqrt') || text.includes('^') || text.includes('\\times')) && !text.includes('$')) {
-        return text.replace(/(\\frac\{[^{}]*\}\{[^{}]*\}|\\sqrt\{[^{}]*\}|cm\^[23]|m\^[23]|\\times|\\div)/g, '$$$1$$');
+    
+    let processed = text;
+    // 1. Clean unbalanced dollar signs first
+    const dollarCount = (processed.match(/\$/g) || []).length;
+    if (dollarCount % 2 !== 0) {
+        processed = processed.replaceAll('$', '');
     }
-    return text;
+    
+    // 2. Wrap \frac, \sqrt, \times, \div, exponents etc. in $ if they aren't wrapped
+    // First wrap all occurrences
+    processed = processed.replace(/(\\frac\s*\{[^{}]*?\}\{[^{}]*?\}|\\sqrt\s*\{[^{}]*?\}|cm\^[23]|m\^[23]|\\times|\\div)/g, '$$$1$$');
+    // Normalize nested or consecutive dollar signs
+    processed = processed.replace(/\$\$(\\frac\s*\{[^{}]*?\}\{[^{}]*?\}|\\sqrt\s*\{[^{}]*?\}|cm\^[23]|m\^[23]|\\times|\\div)\$\$/g, '$$$1$$');
+    processed = processed.replace(/\$\$\$/g, '$$');
+    
+    return processed;
 };
 
 /**

@@ -64,6 +64,91 @@ const getPassageParts = (content: string) => {
   };
 };
 
+export interface ClozeSegment {
+  type: 'text' | 'blank' | 'fraction_with_blank';
+  val?: string;
+  blankIdx?: number;
+  numerator?: string;
+  denominator?: string;
+  numIsBlank?: boolean;
+  denIsBlank?: boolean;
+}
+
+const parseClozePassage = (content: string): ClozeSegment[] => {
+  const cleanContent = content.replace(/\s*Đáp án:\s*[^\n]*$/i, '').trim();
+  const segments: ClozeSegment[] = [];
+  
+  // Clean unbalanced dollar signs first
+  const cleanUnbalancedDollar = (str: string) => {
+    const count = (str.match(/\$/g) || []).length;
+    if (count % 2 !== 0) {
+      return str.replaceAll('$', '');
+    }
+    return str;
+  };
+  
+  // Regex to match fraction containing [__] with optional dollar signs
+  const fracWithBlankRegex = /\$?\\s*frac\s*\{\s*([^{}]+?)\s*\}\s*\{\s*([^{}]+?)\s*\}\$?/g;
+  
+  let lastIdx = 0;
+  let match;
+  let blankCounter = 0;
+  
+  while ((match = fracWithBlankRegex.exec(cleanContent)) !== null) {
+    const matchIdx = match.index;
+    const num = match[1].trim();
+    const den = match[2].trim();
+    
+    const numHasBlank = num.includes('[__]');
+    const denHasBlank = den.includes('[__]');
+    
+    if (numHasBlank || denHasBlank) {
+      // Process text before this match
+      const textBefore = cleanContent.substring(lastIdx, matchIdx);
+      if (textBefore) {
+        const subParts = textBefore.split('[__]');
+        subParts.forEach((part, subIdx) => {
+          if (part) {
+            segments.push({ type: 'text', val: cleanUnbalancedDollar(part) });
+          }
+          if (subIdx < subParts.length - 1) {
+            segments.push({ type: 'blank', blankIdx: blankCounter++ });
+          }
+        });
+      }
+      
+      // Process the fraction containing [__]
+      const blankIdx = blankCounter++;
+      segments.push({
+        type: 'fraction_with_blank',
+        blankIdx,
+        numerator: cleanUnbalancedDollar(num),
+        denominator: cleanUnbalancedDollar(den),
+        numIsBlank: numHasBlank,
+        denIsBlank: denHasBlank
+      });
+      
+      lastIdx = fracWithBlankRegex.lastIndex;
+    }
+  }
+  
+  // Process remaining text
+  const textAfter = cleanContent.substring(lastIdx);
+  if (textAfter) {
+    const subParts = textAfter.split('[__]');
+    subParts.forEach((part, subIdx) => {
+      if (part) {
+        segments.push({ type: 'text', val: cleanUnbalancedDollar(part) });
+      }
+      if (subIdx < subParts.length - 1) {
+        segments.push({ type: 'blank', blankIdx: blankCounter++ });
+      }
+    });
+  }
+  
+  return segments;
+};
+
 const renderPoetryOrText = (text: string) => {
   if (text && text.includes(' / ')) {
     const lines = text.split(/\s+\/\s+/);
@@ -901,13 +986,11 @@ const OrderingQuestion = React.memo(({ question, answer, isSubmitted, onSetAnswe
 });
 
 const DragDropQuestion = React.memo(({ question, answer, isSubmitted, onSetAnswer, viewPassFail, canViewSolution, shuffledIndices }: any) => {
-  const currentAns: string[] = Array.isArray(answer) ? answer : Array((question.content.match(/\[\.\.\.\]|\[\s*\]|___|\[__\]/g) || []).length).fill('');
+  const currentAns: string[] = Array.isArray(answer) ? answer : Array((question.options.length) || 0).fill('');
   const availableOptions = shuffledIndices.map((i: number) => question.options[i]);
 
-  // Split content into parts around the blanks
-  const parts = useMemo(() => {
-    const passage = getPassageParts(question.content).passage;
-    return passage.replace(/\[\.\.\.\]|\[\s*\]|___/g, '[__]').split('[__]');
+  const segments = useMemo(() => {
+    return parseClozePassage(question.content);
   }, [question.content]);
 
   const [selectedWord, setSelectedWord] = useState<string | null>(null);
@@ -920,13 +1003,11 @@ const DragDropQuestion = React.memo(({ question, answer, isSubmitted, onSetAnswe
   const handleBlankClick = (blankIdx: number) => {
     if (isSubmitted) return;
     if (selectedWord) {
-      // Assign selected word
       const newAns = [...currentAns];
       newAns[blankIdx] = selectedWord;
       onSetAnswer(newAns);
       setSelectedWord(null);
     } else {
-      // Remove word from blank
       const newAns = [...currentAns];
       newAns[blankIdx] = '';
       onSetAnswer(newAns);
@@ -954,7 +1035,7 @@ const DragDropQuestion = React.memo(({ question, answer, isSubmitted, onSetAnswe
 
   const handleReset = () => {
     if (isSubmitted) return;
-    onSetAnswer(Array(parts.length - 1).fill(''));
+    onSetAnswer(Array(currentAns.length).fill(''));
     setSelectedWord(null);
   };
 
@@ -965,56 +1046,82 @@ const DragDropQuestion = React.memo(({ question, answer, isSubmitted, onSetAnswe
     return actual === expected ? 'correct' : 'wrong';
   };
 
+  const renderBlank = (i: number, isFraction = false) => {
+    const correctness = getBlankCorrectness(i);
+    const val = currentAns[i] || '';
+    return (
+      <span
+        onDragOver={(e) => !isSubmitted && e.preventDefault()}
+        onDrop={(e) => handleDropOnBlank(e, i)}
+        onClick={() => handleBlankClick(i)}
+        className={`inline-flex items-center justify-center align-middle mx-1 font-bold transition-all text-base cursor-pointer select-none ${
+          isFraction 
+            ? 'px-2 py-0 min-w-[70px] min-h-[28px] rounded border border-dashed text-sm'
+            : 'px-3 py-0.5 min-w-[120px] min-h-[36px] rounded-lg border-2 border-dashed'
+        } ${
+          correctness === 'correct' ? 'bg-green-50 border-green-500 text-green-700' :
+          correctness === 'wrong' ? 'bg-red-50 border-red-500 text-red-700' :
+          val ? 'bg-indigo-50 border-indigo-500 text-indigo-800 shadow-sm border-solid' :
+          'bg-slate-50 border-slate-300 text-slate-400 hover:border-indigo-400 hover:bg-indigo-50/20'
+        }`}
+      >
+        <MathText inline>{val || '...'}</MathText>
+        {correctness === 'wrong' && canViewSolution && (
+          <span className="text-xs text-green-700 font-bold ml-1.5">(<MathText inline>{question.options[i]}</MathText>)</span>
+        )}
+      </span>
+    );
+  };
+
   return (
     <div className="space-y-6 max-w-3xl">
-
-
-      {/* Passage with inline drop zones */}
       <div className="p-6 rounded-2xl border-2 leading-[2.5] text-base transition-all bg-white border-gray-200">
-        {parts.map((part: string, i: number) => {
-          const subParts = part.split(/\s+\/\s+/);
-          return (
-            <React.Fragment key={i}>
-              {subParts.map((sub, sIdx) => (
-                <React.Fragment key={sIdx}>
-                  {sIdx > 0 && <br />}
-                  {sIdx > 0 && <span className="inline-block w-8 md:w-12" />}
-                  <MathText inline className="whitespace-pre-wrap">{sub}</MathText>
-                </React.Fragment>
-              ))}
-              {i < parts.length - 1 && (() => {
-              const correctness = getBlankCorrectness(i);
-              const val = currentAns[i] || '';
-              return (
-                <span
-                  onDragOver={(e) => !isSubmitted && e.preventDefault()}
-                  onDrop={(e) => handleDropOnBlank(e, i)}
-                  onClick={() => handleBlankClick(i)}
-                  className={`inline-flex items-center justify-center align-middle mx-1 px-3 py-0.5 min-w-[120px] min-h-[36px] rounded-lg border-2 border-dashed font-bold transition-all text-base cursor-pointer select-none ${
-                    correctness === 'correct' ? 'bg-green-50 border-green-500 text-green-700' :
-                    correctness === 'wrong' ? 'bg-red-50 border-red-500 text-red-700' :
-                    val ? 'bg-indigo-50 border-indigo-500 text-indigo-800 shadow-sm border-solid' :
-                    'bg-slate-50 border-slate-300 text-slate-400 hover:border-indigo-400 hover:bg-indigo-50/20'
-                  }`}
-                >
-                  <MathText inline>{val || '...'}</MathText>
-                  {correctness === 'wrong' && canViewSolution && (
-                    <span className="text-xs text-green-700 font-bold ml-1.5">(<MathText inline>{question.options[i]}</MathText>)</span>
-                  )}
+        {segments.map((seg, idx) => {
+          if (seg.type === 'text') {
+            const subParts = seg.val!.split(/\s+\/\s+/);
+            return (
+              <React.Fragment key={idx}>
+                {subParts.map((sub, sIdx) => (
+                  <React.Fragment key={sIdx}>
+                    {sIdx > 0 && <br />}
+                    {sIdx > 0 && <span className="inline-block w-8 md:w-12" />}
+                    <MathText inline className="whitespace-pre-wrap">{sub}</MathText>
+                  </React.Fragment>
+                ))}
+              </React.Fragment>
+            );
+          }
+          
+          if (seg.type === 'blank') {
+            return (
+              <React.Fragment key={idx}>
+                {renderBlank(seg.blankIdx!)}
+              </React.Fragment>
+            );
+          }
+          
+          if (seg.type === 'fraction_with_blank') {
+            return (
+              <span key={idx} className="inline-flex flex-col items-center justify-center align-middle mx-1.5 leading-none">
+                <span className="border-b border-gray-400 pb-1 text-center font-bold min-h-[32px] flex items-center justify-center">
+                  {seg.numIsBlank ? renderBlank(seg.blankIdx!, true) : <MathText inline>{seg.numerator!}</MathText>}
                 </span>
-              );
-            })()}
-          </React.Fragment>
-        );})}
+                <span className="pt-1 text-center font-bold min-h-[32px] flex items-center justify-center">
+                  {seg.denIsBlank ? renderBlank(seg.blankIdx!, true) : <MathText inline>{seg.denominator!}</MathText>}
+                </span>
+              </span>
+            );
+          }
+          
+          return null;
+        })}
       </div>
 
-      {/* Draggable options bank */}
       {!isSubmitted && (
         <div className="p-5 rounded-2xl border border-slate-200 bg-slate-50/50">
           <label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3 block">CÁC TỪ GỢI Ý:</label>
           <div className="flex flex-wrap gap-2.5">
             {availableOptions.map((opt: string, idx: number) => {
-              // Check if option is already used
               const isUsed = currentAns.includes(opt);
               return (
                 <button
@@ -1036,8 +1143,6 @@ const DragDropQuestion = React.memo(({ question, answer, isSubmitted, onSetAnswe
           </div>
         </div>
       )}
-
-
     </div>
   );
 });
@@ -1377,13 +1482,11 @@ const WordClassifyQuestion = React.memo(({ question, answer, isSubmitted, onSetA
 });
 
 const FillInPassageQuestion = React.memo(({ question, answer, isSubmitted, onSetAnswer, viewPassFail, canViewSolution }: any) => {
-  const blankCount = (question.content.match(/\[__\]/g) || []).length;
+  const blankCount = (question.content.match(/[__]/g) || []).length;
   const currentAns: string[] = Array.isArray(answer) ? answer : Array(blankCount).fill('');
 
-  // Split content into parts around [__]
-  const parts = useMemo(() => {
-    const passage = getPassageParts(question.content).passage;
-    return passage.split('[__]');
+  const segments = useMemo(() => {
+    return parseClozePassage(question.content);
   }, [question.content]);
 
   const handleChange = (index: number, value: string) => {
@@ -1405,80 +1508,96 @@ const FillInPassageQuestion = React.memo(({ question, answer, isSubmitted, onSet
     return actual === expected ? 'correct' : 'wrong';
   };
 
+  const renderBlank = (i: number, isFraction = false) => {
+    const correctness = getBlankCorrectness(i);
+    const expectedWidth = Math.max(3, (question.options[i] || '').length + 1);
+    return (
+      <span className="inline-block align-baseline mx-0.5">
+        <input
+          type="text"
+          value={currentAns[i] || ''}
+          onChange={(e) => handleChange(i, e.target.value)}
+          disabled={isSubmitted}
+          style={{ width: `${expectedWidth + 1}ch` }}
+          className={`border-b-2 border-t-0 border-l-0 border-r-0 bg-transparent text-center font-bold outline-none py-0.5 px-1 text-base transition-colors ${
+            isFraction ? 'min-w-[40px] text-sm py-0 border-b' : ''
+          } ${
+            correctness === 'correct' ? 'border-green-500 text-green-700' :
+            correctness === 'wrong' ? 'border-red-500 text-red-700' :
+            currentAns[i] ? 'border-indigo-400 text-indigo-800' :
+            'border-gray-300 text-gray-600'
+          } ${isSubmitted ? '' : 'focus:border-indigo-500'}`}
+          placeholder="····"
+        />
+        {correctness === 'wrong' && canViewSolution && (
+          <span className="text-xs text-green-700 font-bold ml-1">(<MathText inline>{question.options[i]}</MathText>)</span>
+        )}
+      </span>
+    );
+  };
+
   return (
     <div className="space-y-5 max-w-3xl">
-      {/* Passage with inline inputs */}
-      <div className={`p-6 rounded-2xl border-2 leading-[2.2] text-base transition-all ${
-        isSubmitted && viewPassFail
-          ? 'bg-white border-gray-200'
-          : 'bg-white border-gray-200'
-      }`}>
-        {parts.map((part: string, i: number) => {
-          const subParts = part.split(/\s+\/\s+/);
-          return (
-            <React.Fragment key={i}>
-              {subParts.map((sub, sIdx) => (
-                <React.Fragment key={sIdx}>
-                  {sIdx > 0 && <br />}
-                  {sIdx > 0 && <span className="inline-block w-8 md:w-12" />}
-                  <MathText inline className="whitespace-pre-wrap">{sub}</MathText>
-                </React.Fragment>
-              ))}
-              {i < parts.length - 1 && (() => {
-                const correctness = getBlankCorrectness(i);
-                const expectedWidth = Math.max(3, (question.options[i] || '').length + 1);
-                return (
-                  <span className="inline-block align-baseline mx-0.5">
-                    <input
-                      type="text"
-                      value={currentAns[i] || ''}
-                      onChange={(e) => handleChange(i, e.target.value)}
-                      disabled={isSubmitted}
-                      style={{ width: `${expectedWidth + 1}ch` }}
-                      className={`border-b-2 border-t-0 border-l-0 border-r-0 bg-transparent text-center font-bold outline-none py-0.5 px-1 text-base transition-colors ${
-                        correctness === 'correct' ? 'border-green-500 text-green-700' :
-                        correctness === 'wrong' ? 'border-red-500 text-red-700' :
-                        currentAns[i] ? 'border-indigo-400 text-indigo-800' :
-                        'border-gray-300 text-gray-600'
-                      } ${isSubmitted ? '' : 'focus:border-indigo-500'}`}
-                      placeholder="····"
-                    />
-                    {correctness === 'wrong' && canViewSolution && (
-                      <span className="text-xs text-green-700 font-bold ml-1">(<MathText inline>{question.options[i]}</MathText>)</span>
-                    )}
-                  </span>
-                );
-              })()}
-            </React.Fragment>
-          );
+      <div className={`p-6 rounded-2xl border-2 leading-[2.2] text-base transition-all bg-white border-gray-200`}>
+        {segments.map((seg, idx) => {
+          if (seg.type === 'text') {
+            const subParts = seg.val!.split(/\s+\/\s+/);
+            return (
+              <React.Fragment key={idx}>
+                {subParts.map((sub, sIdx) => (
+                  <React.Fragment key={sIdx}>
+                    {sIdx > 0 && <br />}
+                    {sIdx > 0 && <span className="inline-block w-8 md:w-12" />}
+                    <MathText inline className="whitespace-pre-wrap">{sub}</MathText>
+                  </React.Fragment>
+                ))}
+              </React.Fragment>
+            );
+          }
+          
+          if (seg.type === 'blank') {
+            return (
+              <React.Fragment key={idx}>
+                {renderBlank(seg.blankIdx!)}
+              </React.Fragment>
+            );
+          }
+          
+          if (seg.type === 'fraction_with_blank') {
+            return (
+              <span key={idx} className="inline-flex flex-col items-center justify-center align-middle mx-1.5 leading-none">
+                <span className="border-b border-gray-400 pb-1 text-center font-bold min-h-[32px] flex items-center justify-center">
+                  {seg.numIsBlank ? renderBlank(seg.blankIdx!, true) : <MathText inline>{seg.numerator!}</MathText>}
+                </span>
+                <span className="pt-1 text-center font-bold min-h-[32px] flex items-center justify-center">
+                  {seg.denIsBlank ? renderBlank(seg.blankIdx!, true) : <MathText inline>{seg.denominator!}</MathText>}
+                </span>
+              </span>
+            );
+          }
+          
+          return null;
         })}
       </div>
-
-      {/* Reset button */}
-
     </div>
   );
 });
 
 const InlineDropdownQuestion = React.memo(({ question, answer, isSubmitted, onSetAnswer, viewPassFail, canViewSolution }: any) => {
-  const blankCount = (question.content.match(/\[__\]/g) || []).length;
+  const blankCount = (question.content.match(/[__]/g) || []).length;
   const currentAns: string[] = Array.isArray(answer) ? answer : Array(blankCount).fill('');
 
   const formatPlainTextMath = (text: string): string => {
     if (!text) return '';
     let formatted = text;
-    // Convert \frac{a}{b} to a/b
     formatted = formatted.replace(/\\frac\s*\{([^}]+)\}\s*\{([^}]+)\}/g, '$1/$2');
-    // Convert \times to x or *
     formatted = formatted.replace(/\\times/g, '×');
-    // Remove $ symbols
     formatted = formatted.replaceAll('$', '');
     return formatted;
   };
 
-  const parts = useMemo(() => {
-    const passage = getPassageParts(question.content).passage;
-    return passage.split('[__]');
+  const segments = useMemo(() => {
+    return parseClozePassage(question.content);
   }, [question.content]);
 
   const handleChange = (index: number, value: string) => {
@@ -1493,14 +1612,12 @@ const InlineDropdownQuestion = React.memo(({ question, answer, isSubmitted, onSe
     onSetAnswer(Array(blankCount).fill(''));
   };
 
-  // Parse and shuffle options for each dropdown
   const dropdownOptions = useMemo(() => {
     return Array(blankCount).fill(0).map((_, i) => {
       const rawOpt = question.options[i] || '';
       const [correct, distractorsStr] = rawOpt.split('|||').map((s: string) => s.trim());
       const distractors = distractorsStr ? distractorsStr.split('|').map((s: string) => s.trim()) : [];
       let allOpts = [correct, ...distractors].filter(Boolean);
-      // Shuffle them randomly
       for (let j = allOpts.length - 1; j > 0; j--) {
         const k = Math.floor(Math.random() * (j + 1));
         [allOpts[j], allOpts[k]] = [allOpts[k], allOpts[j]];
@@ -1516,67 +1633,85 @@ const InlineDropdownQuestion = React.memo(({ question, answer, isSubmitted, onSe
     return actual === expected ? 'correct' : 'wrong';
   };
 
+  const renderBlank = (i: number, isFraction = false) => {
+    const correctness = getBlankCorrectness(i);
+    const { correct, allOpts } = dropdownOptions[i] || { correct: '', allOpts: [] };
+    
+    return (
+      <span className="inline-block align-baseline mx-0.5 relative">
+        <select
+          value={currentAns[i] || ''}
+          onChange={(e) => handleChange(i, e.target.value)}
+          disabled={isSubmitted}
+          className={`appearance-none bg-transparent font-bold outline-none border-b-2 py-0.5 pr-6 pl-2 text-base transition-colors cursor-pointer ${
+            isFraction ? 'text-sm pr-4 pl-1 border-b py-0' : ''
+          } ${
+            correctness === 'correct' ? 'border-green-500 text-green-700' :
+            correctness === 'wrong' ? 'border-red-500 text-red-700' :
+            currentAns[i] ? 'border-indigo-400 text-indigo-800' :
+            'border-gray-300 text-gray-600'
+          } ${isSubmitted ? '' : 'focus:border-indigo-500 hover:bg-slate-50 rounded-t'}`}
+        >
+          <option value="" disabled>---</option>
+          {allOpts.map((opt: string, optIdx: number) => (
+            <option key={optIdx} value={opt}>{formatPlainTextMath(opt)}</option>
+          ))}
+        </select>
+        <ChevronDown className={`absolute right-1 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none ${
+          correctness === 'correct' ? 'text-green-700' :
+          correctness === 'wrong' ? 'text-red-700' :
+          currentAns[i] ? 'text-indigo-800' : 'text-gray-400'
+        }`} />
+        {correctness === 'wrong' && canViewSolution && (
+          <span className="text-xs text-green-700 font-bold ml-1 inline-block align-baseline">(<MathText inline>{correct}</MathText>)</span>
+        )}
+      </span>
+    );
+  };
+
   return (
     <div className="space-y-5 max-w-3xl">
-
-
-      <div className={`p-6 rounded-2xl border-2 leading-[2.2] text-base transition-all ${
-        isSubmitted && viewPassFail
-          ? 'bg-white border-gray-200'
-          : 'bg-white border-gray-200'
-      }`}>
-        {parts.map((part: string, i: number) => {
-          const subParts = part.split(/\s+\/\s+/);
-          return (
-            <React.Fragment key={i}>
-              {subParts.map((sub, sIdx) => (
-                <React.Fragment key={sIdx}>
-                  {sIdx > 0 && <br />}
-                  {sIdx > 0 && <span className="inline-block w-8 md:w-12" />}
-                  <MathText inline className="whitespace-pre-wrap">{sub}</MathText>
-                </React.Fragment>
-              ))}
-              {i < parts.length - 1 && (() => {
-                const correctness = getBlankCorrectness(i);
-                const { correct, allOpts } = dropdownOptions[i] || { correct: '', allOpts: [] };
-                
-                return (
-                  <React.Fragment key={i}>
-                    <span className="inline-block align-baseline mx-0.5 relative">
-                      <select
-                        value={currentAns[i] || ''}
-                        onChange={(e) => handleChange(i, e.target.value)}
-                        disabled={isSubmitted}
-                        className={`appearance-none bg-transparent font-bold outline-none border-b-2 py-0.5 pr-6 pl-2 text-base transition-colors cursor-pointer ${
-                          correctness === 'correct' ? 'border-green-500 text-green-700' :
-                          correctness === 'wrong' ? 'border-red-500 text-red-700' :
-                          currentAns[i] ? 'border-indigo-400 text-indigo-800' :
-                          'border-gray-300 text-gray-600'
-                        } ${isSubmitted ? '' : 'focus:border-indigo-500 hover:bg-slate-50 rounded-t'}`}
-                      >
-                        <option value="" disabled>---</option>
-                        {allOpts.map((opt: string, optIdx: number) => (
-                          <option key={optIdx} value={opt}>{formatPlainTextMath(opt)}</option>
-                        ))}
-                      </select>
-                      <ChevronDown className={`absolute right-1 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none ${
-                        correctness === 'correct' ? 'text-green-700' :
-                        correctness === 'wrong' ? 'text-red-700' :
-                        currentAns[i] ? 'text-indigo-800' : 'text-gray-400'
-                      }`} />
-                    </span>
-                    {correctness === 'wrong' && canViewSolution && (
-                      <span className="text-xs text-green-700 font-bold ml-1 inline-block align-baseline">(<MathText inline>{correct}</MathText>)</span>
-                    )}
+      <div className={`p-6 rounded-2xl border-2 leading-[2.2] text-base transition-all bg-white border-gray-200`}>
+        {segments.map((seg, idx) => {
+          if (seg.type === 'text') {
+            const subParts = seg.val!.split(/\s+\/\s+/);
+            return (
+              <React.Fragment key={idx}>
+                {subParts.map((sub, sIdx) => (
+                  <React.Fragment key={sIdx}>
+                    {sIdx > 0 && <br />}
+                    {sIdx > 0 && <span className="inline-block w-8 md:w-12" />}
+                    <MathText inline className="whitespace-pre-wrap">{sub}</MathText>
                   </React.Fragment>
-                );
-              })()}
-            </React.Fragment>
-          );
+                ))}
+              </React.Fragment>
+            );
+          }
+          
+          if (seg.type === 'blank') {
+            return (
+              <React.Fragment key={idx}>
+                {renderBlank(seg.blankIdx!)}
+              </React.Fragment>
+            );
+          }
+          
+          if (seg.type === 'fraction_with_blank') {
+            return (
+              <span key={idx} className="inline-flex flex-col items-center justify-center align-middle mx-1.5 leading-none">
+                <span className="border-b border-gray-400 pb-1 text-center font-bold min-h-[32px] flex items-center justify-center">
+                  {seg.numIsBlank ? renderBlank(seg.blankIdx!, true) : <MathText inline>{seg.numerator!}</MathText>}
+                </span>
+                <span className="pt-1 text-center font-bold min-h-[32px] flex items-center justify-center">
+                  {seg.denIsBlank ? renderBlank(seg.blankIdx!, true) : <MathText inline>{seg.denominator!}</MathText>}
+                </span>
+              </span>
+            );
+          }
+          
+          return null;
         })}
       </div>
-
-      
     </div>
   );
 });
