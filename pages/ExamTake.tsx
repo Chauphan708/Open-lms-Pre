@@ -1749,6 +1749,7 @@ export const ExamTake: React.FC = () => {
   const [examStartTime, setExamStartTime] = useState<number | null>(null);
   const activeQuestionTimerRef = React.useRef<NodeJS.Timeout | null>(null);
   const observerRef = React.useRef<IntersectionObserver | null>(null);
+  const performSubmitRef = React.useRef<() => Promise<void>>(null as any);
 
   // VISIBILITY SETTINGS LOGIC
   const defaultSettings: AssignmentSettings = {
@@ -2359,7 +2360,8 @@ export const ExamTake: React.FC = () => {
       return () => clearInterval(timer);
     } else if (timeLeft === 0 && exam) {
       console.log("DEBUG: Timer reached 0. Auto-submitting...");
-      handleSubmit();
+      alert("Hết giờ làm bài! Hệ thống tự động nộp bài làm của bạn.");
+      performSubmitRef.current();
     }
   }, [timeLeft, isSubmitted, hasStarted, exam, accessDenied]);
 
@@ -2598,6 +2600,10 @@ export const ExamTake: React.FC = () => {
       }
     }
   };
+
+  useEffect(() => {
+    performSubmitRef.current = performSubmit;
+  }, [performSubmit]);
 
   if (isLoadingDirect || isAttemptsLoading) return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
