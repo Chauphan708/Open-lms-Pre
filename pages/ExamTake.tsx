@@ -3174,14 +3174,14 @@ export const ExamTake: React.FC = () => {
 
         {/* Navigation Sidebar (Desktop Left) */}
         {(hasStarted || isSubmitted) && (
-          <div className="hidden lg:block w-56 flex-shrink-0 relative">
+          <div className="hidden lg:block w-64 flex-shrink-0 relative">
             <div ref={cardRef} style={{ top: `max(80px, calc(50vh - ${cardHeight / 2}px))` }} className="sticky bg-white p-5 rounded-2xl shadow-xl border border-indigo-100 flex flex-col max-h-[calc(100vh-120px)] transition-all">
               <div className="text-sm font-bold text-gray-700 mb-3 flex items-center justify-between">
                 <span>Danh sách câu hỏi</span>
                 <span className="text-[10px] bg-indigo-50 text-indigo-600 px-1.5 py-0.5 rounded font-black">{answersCount} / {exam?.questions?.length || 0}</span>
               </div>
               <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar mb-4">
-                <div className="grid grid-cols-4 gap-2">
+                <div className="grid grid-cols-5 gap-1.5">
                   {orderedQuestions.map((q, idx) => {
                     const ans = answers[q.id];
                     let isAnswered = false;
@@ -3216,7 +3216,7 @@ export const ExamTake: React.FC = () => {
                           }
                         }}
                         className={`
-                          h-10 w-10 flex items-center justify-center rounded-lg font-bold text-sm transition-all
+                          h-8 w-8 flex items-center justify-center rounded-lg font-bold text-xs transition-all
                           hover:scale-105 active:scale-95
                           ${(() => {
                             if (isSubmitted) {
