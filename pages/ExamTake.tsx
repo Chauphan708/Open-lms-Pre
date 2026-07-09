@@ -865,7 +865,7 @@ const OrderingQuestion = React.memo(({ question, answer, isSubmitted, onSetAnswe
                 <GripVertical className="h-5 w-5" />
               </div>
               <div className="flex-1 font-bold text-slate-700">
-                {item}
+                <MathText inline>{item}</MathText>
               </div>
               
               {!isSubmitted && (
@@ -889,7 +889,7 @@ const OrderingQuestion = React.memo(({ question, answer, isSubmitted, onSetAnswe
 
               {isSubmitted && viewPassFail && canViewSolution && isWrong && (
                 <div className="bg-green-500 text-white text-[10px] font-bold py-1 px-3 rounded-lg shadow-sm">
-                  ĐÚNG LÀ: {question.options[idx]}
+                  ĐÚNG LÀ: <MathText inline>{question.options[idx]}</MathText>
                 </div>
               )}
             </div>
@@ -979,7 +979,7 @@ const DragDropQuestion = React.memo(({ question, answer, isSubmitted, onSetAnswe
                 <React.Fragment key={sIdx}>
                   {sIdx > 0 && <br />}
                   {sIdx > 0 && <span className="inline-block w-8 md:w-12" />}
-                  <span className="whitespace-pre-wrap">{sub}</span>
+                  <MathText inline className="whitespace-pre-wrap">{sub}</MathText>
                 </React.Fragment>
               ))}
               {i < parts.length - 1 && (() => {
@@ -997,9 +997,9 @@ const DragDropQuestion = React.memo(({ question, answer, isSubmitted, onSetAnswe
                     'bg-slate-50 border-slate-300 text-slate-400 hover:border-indigo-400 hover:bg-indigo-50/20'
                   }`}
                 >
-                  {val || '...'}
+                  <MathText inline>{val || '...'}</MathText>
                   {correctness === 'wrong' && canViewSolution && (
-                    <span className="text-xs text-green-700 font-bold ml-1.5">({question.options[i]})</span>
+                    <span className="text-xs text-green-700 font-bold ml-1.5">(<MathText inline>{question.options[i]}</MathText>)</span>
                   )}
                 </span>
               );
@@ -1029,7 +1029,7 @@ const DragDropQuestion = React.memo(({ question, answer, isSubmitted, onSetAnswe
                     'bg-white text-slate-700 border-slate-200 hover:border-indigo-300 hover:shadow-sm cursor-grab active:cursor-grabbing'
                   }`}
                 >
-                  {opt}
+                  <MathText inline>{opt}</MathText>
                 </button>
               );
             })}
@@ -1114,7 +1114,7 @@ const SentenceScrambleQuestion = React.memo(({ question, answer, isSubmitted, on
               disabled={isSubmitted}
               className={`px-4 py-2 rounded-xl text-lg font-bold shadow-sm transition-transform active:scale-95 ${isSubmitted ? 'bg-indigo-100 text-indigo-800 cursor-default' : 'bg-indigo-100 text-indigo-800 hover:bg-indigo-200 cursor-pointer'}`}
             >
-              {word}
+              <MathText inline>{word}</MathText>
             </button>
           ))}
           {currentAns.length === 0 && <span className="text-gray-400 italic mt-2 text-sm">Chưa có từ nào được chọn...</span>}
@@ -1125,7 +1125,7 @@ const SentenceScrambleQuestion = React.memo(({ question, answer, isSubmitted, on
              <span className="text-xs font-bold text-green-800 uppercase tracking-wider block mb-2">CÂU ĐÚNG PHẢI LÀ:</span>
              <div className="flex flex-wrap gap-2">
                {question.options.map((w: string, i: number) => (
-                 <span key={i} className="px-4 py-2 bg-green-500 text-white font-bold rounded-xl shadow-sm">{w}</span>
+                 <span key={i} className="px-4 py-2 bg-green-500 text-white font-bold rounded-xl shadow-sm"><MathText inline>{w}</MathText></span>
                ))}
              </div>
            </div>
@@ -1144,7 +1144,7 @@ const SentenceScrambleQuestion = React.memo(({ question, answer, isSubmitted, on
                   onClick={() => handleWordClick(word)}
                   className="px-5 py-2.5 bg-white border border-slate-200 text-slate-700 rounded-xl text-lg font-bold shadow-sm hover:shadow-md hover:border-indigo-300 transition-all active:scale-95 cursor-pointer"
                 >
-                  {word}
+                  <MathText inline>{word}</MathText>
                 </button>
               );
             })}
@@ -1304,7 +1304,7 @@ const WordClassifyQuestion = React.memo(({ question, answer, isSubmitted, onSetA
               onDragStart={(e) => handleDragStart(e, item.index)}
               className={`px-4 py-2 rounded-xl text-base font-bold border-2 transition-all active:scale-95 bg-white text-slate-700 border-slate-200 hover:border-indigo-300 hover:shadow-sm ${isSubmitted ? 'cursor-default' : 'cursor-grab active:cursor-grabbing'}`}
             >
-              {item.word}
+              <MathText inline>{item.word}</MathText>
             </div>
           ))}
           {shuffledUnassigned.length === 0 && !isSubmitted && (
@@ -1342,7 +1342,7 @@ const WordClassifyQuestion = React.memo(({ question, answer, isSubmitted, onSetA
                         `${color.tag}`
                       } ${isSubmitted ? 'cursor-default' : 'cursor-grab active:cursor-grabbing hover:shadow-md'}`}
                     >
-                      {item.word}
+                      <MathText inline>{item.word}</MathText>
                     </div>
                   );
                 })}
@@ -1364,7 +1364,7 @@ const WordClassifyQuestion = React.memo(({ question, answer, isSubmitted, onSetA
                 <div key={cat} className="flex items-center gap-2 flex-wrap">
                   <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${color.label}`}>{cat}</span>
                   {correctWords.map((it: any) => (
-                    <span key={it.index} className="px-2 py-1 bg-green-100 text-green-800 rounded-lg text-xs font-bold">{it.word}</span>
+                    <span key={it.index} className="px-2 py-1 bg-green-100 text-green-800 rounded-lg text-xs font-bold"><MathText inline>{it.word}</MathText></span>
                   ))}
                 </div>
               );
@@ -1421,7 +1421,7 @@ const FillInPassageQuestion = React.memo(({ question, answer, isSubmitted, onSet
                 <React.Fragment key={sIdx}>
                   {sIdx > 0 && <br />}
                   {sIdx > 0 && <span className="inline-block w-8 md:w-12" />}
-                  <span className="whitespace-pre-wrap">{sub}</span>
+                  <MathText inline className="whitespace-pre-wrap">{sub}</MathText>
                 </React.Fragment>
               ))}
               {i < parts.length - 1 && (() => {
@@ -1444,7 +1444,7 @@ const FillInPassageQuestion = React.memo(({ question, answer, isSubmitted, onSet
                       placeholder="····"
                     />
                     {correctness === 'wrong' && canViewSolution && (
-                      <span className="text-xs text-green-700 font-bold ml-1">({question.options[i]})</span>
+                      <span className="text-xs text-green-700 font-bold ml-1">(<MathText inline>{question.options[i]}</MathText>)</span>
                     )}
                   </span>
                 );
@@ -1463,6 +1463,18 @@ const FillInPassageQuestion = React.memo(({ question, answer, isSubmitted, onSet
 const InlineDropdownQuestion = React.memo(({ question, answer, isSubmitted, onSetAnswer, viewPassFail, canViewSolution }: any) => {
   const blankCount = (question.content.match(/\[__\]/g) || []).length;
   const currentAns: string[] = Array.isArray(answer) ? answer : Array(blankCount).fill('');
+
+  const formatPlainTextMath = (text: string): string => {
+    if (!text) return '';
+    let formatted = text;
+    // Convert \frac{a}{b} to a/b
+    formatted = formatted.replace(/\\frac\s*\{([^}]+)\}\s*\{([^}]+)\}/g, '$1/$2');
+    // Convert \times to x or *
+    formatted = formatted.replace(/\\times/g, '×');
+    // Remove $ symbols
+    formatted = formatted.replaceAll('$', '');
+    return formatted;
+  };
 
   const parts = useMemo(() => {
     const passage = getPassageParts(question.content).passage;
@@ -1521,7 +1533,7 @@ const InlineDropdownQuestion = React.memo(({ question, answer, isSubmitted, onSe
                 <React.Fragment key={sIdx}>
                   {sIdx > 0 && <br />}
                   {sIdx > 0 && <span className="inline-block w-8 md:w-12" />}
-                  <span className="whitespace-pre-wrap">{sub}</span>
+                  <MathText inline className="whitespace-pre-wrap">{sub}</MathText>
                 </React.Fragment>
               ))}
               {i < parts.length - 1 && (() => {
@@ -1544,7 +1556,7 @@ const InlineDropdownQuestion = React.memo(({ question, answer, isSubmitted, onSe
                       >
                         <option value="" disabled>---</option>
                         {allOpts.map((opt: string, optIdx: number) => (
-                          <option key={optIdx} value={opt}>{opt}</option>
+                          <option key={optIdx} value={opt}>{formatPlainTextMath(opt)}</option>
                         ))}
                       </select>
                       <ChevronDown className={`absolute right-1 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none ${
@@ -1554,7 +1566,7 @@ const InlineDropdownQuestion = React.memo(({ question, answer, isSubmitted, onSe
                       }`} />
                     </span>
                     {correctness === 'wrong' && canViewSolution && (
-                      <span className="text-xs text-green-700 font-bold ml-1 inline-block align-baseline">({correct})</span>
+                      <span className="text-xs text-green-700 font-bold ml-1 inline-block align-baseline">(<MathText inline>{correct}</MathText>)</span>
                     )}
                   </React.Fragment>
                 );
