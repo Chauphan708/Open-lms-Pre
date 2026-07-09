@@ -1750,6 +1750,8 @@ export const ExamTake: React.FC = () => {
   const activeQuestionTimerRef = React.useRef<NodeJS.Timeout | null>(null);
   const observerRef = React.useRef<IntersectionObserver | null>(null);
   const performSubmitRef = React.useRef<() => Promise<void>>(null as any);
+  const [cardHeight, setCardHeight] = useState(500);
+  const cardRef = React.useRef<HTMLDivElement>(null);
 
   // VISIBILITY SETTINGS LOGIC
   const defaultSettings: AssignmentSettings = {
@@ -2605,6 +2607,17 @@ export const ExamTake: React.FC = () => {
     performSubmitRef.current = performSubmit;
   }, [performSubmit]);
 
+  useEffect(() => {
+    if (!cardRef.current) return;
+    const observer = new ResizeObserver(entries => {
+      for (const entry of entries) {
+        setCardHeight(entry.contentRect.height);
+      }
+    });
+    observer.observe(cardRef.current);
+    return () => observer.disconnect();
+  }, [hasStarted, isSubmitted]);
+
   if (isLoadingDirect || isAttemptsLoading) return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
       <div className="text-center">
@@ -3150,7 +3163,7 @@ export const ExamTake: React.FC = () => {
         {/* Navigation Sidebar (Desktop Left) */}
         {(hasStarted || isSubmitted) && (
           <div className="hidden lg:block w-56 flex-shrink-0 relative">
-            <div className="sticky top-[max(80px,calc(50vh-270px))] bg-white p-5 rounded-2xl shadow-xl border border-indigo-100 flex flex-col max-h-[calc(100vh-120px)] transition-all">
+            <div ref={cardRef} style={{ top: `max(80px, calc(50vh - ${cardHeight / 2}px))` }} className="sticky bg-white p-5 rounded-2xl shadow-xl border border-indigo-100 flex flex-col max-h-[calc(100vh-120px)] transition-all">
               <div className="text-sm font-bold text-gray-700 mb-3 flex items-center justify-between">
                 <span>Danh sách câu hỏi</span>
                 <span className="text-[10px] bg-indigo-50 text-indigo-600 px-1.5 py-0.5 rounded font-black">{answersCount} / {exam?.questions?.length || 0}</span>
