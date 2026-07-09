@@ -2618,6 +2618,18 @@ export const ExamTake: React.FC = () => {
     return () => observer.disconnect();
   }, [hasStarted, isSubmitted]);
 
+  // Fix parent overflow to enable position: sticky
+  useEffect(() => {
+    const mainElement = document.querySelector('main');
+    if (mainElement) {
+      const originalOverflowX = mainElement.style.overflowX;
+      mainElement.style.overflowX = 'visible';
+      return () => {
+        mainElement.style.overflowX = originalOverflowX;
+      };
+    }
+  }, []);
+
   if (isLoadingDirect || isAttemptsLoading) return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
       <div className="text-center">
