@@ -2835,7 +2835,7 @@ export const ExamTake: React.FC = () => {
   const unansweredCount = (exam?.questions?.length || 0) - answersCount;
 
   return (
-    <div className="max-w-5xl mx-auto pb-20 relative select-none">
+    <div className="max-w-7xl mx-auto pb-20 relative select-none">
       {/* Submission Confirmation Modal */}
       {showSubmitConfirm && (
         <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4">
