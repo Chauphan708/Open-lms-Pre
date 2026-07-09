@@ -710,9 +710,9 @@ export const analyzeStudentAttempt = async (
       contents: prompt,
     });
     return response.text || "Không thể tạo nhận xét lúc này.";
-  } catch (error) {
+  } catch (error: any) {
     console.error("Gemini Analysis Error:", error);
-    return "Lỗi khi phân tích kết quả.";
+    return `Lỗi khi phân tích kết quả: ${error?.message || String(error)}`;
   }
 };
 
@@ -772,9 +772,9 @@ export const analyzeClassPerformance = async (
       contents: prompt,
     });
     return response.text || "Không thể tạo báo cáo lớp học.";
-  } catch (error) {
+  } catch (error: any) {
     console.error("Gemini Class Analysis Error:", error);
-    return "Lỗi khi phân tích dữ liệu lớp học.";
+    return `Lỗi khi phân tích dữ liệu lớp học: ${error?.message || String(error)}`;
   }
 };
 
@@ -813,9 +813,9 @@ ${logSummary}
       contents: prompt,
     });
     return response.text || "Không thể tạo tư vấn từ AI vào lúc này.";
-  } catch (error) {
+  } catch (error: any) {
     console.error("Gemini Behavior Advice Error:", error);
-    return "Lỗi khi kết nối với AI Tư vấn.";
+    return `Lỗi khi kết nối với AI Tư vấn: ${error?.message || String(error)}`;
   }
 };
 
