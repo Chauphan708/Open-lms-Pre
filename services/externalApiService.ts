@@ -26,14 +26,49 @@ export const lookupWord = async (word: string): Promise<DictionaryEntry | null> 
   }
 };
 
-/**
- * Example Generic Fetch for other APIs (e.g. Weather, Wikipedia)
- * Use this pattern if you have an API Key
- */
-/*
-export const fetchCustomApi = async (endpoint: string) => {
-    const API_KEY = process.env.YOUR_OTHER_API_KEY; 
-    const response = await fetch(`https://api.example.com/${endpoint}?key=${API_KEY}`);
-    return response.json();
+export interface MinhqndDefinition {
+  definition: string;
+  definition_lang: string;
+  example: string | null;
+  pos: string;
+  sub_pos: string | null;
+  source: string;
+  links: string[];
 }
-*/
+
+export interface MinhqndResult {
+  lang_code: string;
+  lang_name: string;
+  audio: string | null;
+  meanings: MinhqndDefinition[];
+  pronunciations: {
+    ipa: string;
+    region: string | null;
+  }[];
+  translations: {
+    lang_code: string;
+    translation: string;
+    lang_name: string;
+  }[];
+}
+
+export interface MinhqndLookupResponse {
+  exists: boolean;
+  word: string;
+  results: MinhqndResult[];
+}
+
+export const lookupMultilingualWord = async (word: string): Promise<MinhqndLookupResponse | null> => {
+  try {
+    const response = await fetch(`https://dict.minhqnd.com/api/v1/lookup?word=${encodeURIComponent(word)}`);
+    if (!response.ok) {
+      if (response.status === 404) return null;
+      throw new Error("Network response was not ok");
+    }
+    const data = await response.json();
+    return data as MinhqndLookupResponse;
+  } catch (error) {
+    console.error("Multilingual Dictionary API Error:", error);
+    return null;
+  }
+};
