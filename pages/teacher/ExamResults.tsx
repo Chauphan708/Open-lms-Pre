@@ -125,6 +125,13 @@ export const ExamResults: React.FC = () => {
 
    // Student Detail Modal State
    const [selectedAttemptId, setSelectedAttemptId] = useState<string | null>(null);
+
+   const attemptIdFromUrlQuery = searchParams.get('attempt');
+   useEffect(() => {
+      if (attemptIdFromUrlQuery) {
+         setSelectedAttemptId(attemptIdFromUrlQuery);
+      }
+   }, [attemptIdFromUrlQuery]);
    const [studentAiFeedback, setStudentAiFeedback] = useState<string>(''); // Edited Feedback Content
    const [isStudentAnalyzing, setIsStudentAnalyzing] = useState(false);
    const [isEditingFeedback, setIsEditingFeedback] = useState(true);

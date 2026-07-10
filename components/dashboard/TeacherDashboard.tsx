@@ -151,6 +151,8 @@ export const TeacherDashboard: React.FC = () => {
       title: string;
       time: Date;
       user: string | null;
+      examId?: string;
+      attemptId?: string;
     };
 
     const activities: Activity[] = [];
@@ -161,7 +163,8 @@ export const TeacherDashboard: React.FC = () => {
         type: 'NEW_EXAM',
         title: `Bài tập mới: "${exam.title}"`,
         time: new Date(exam.createdAt),
-        user: null
+        user: null,
+        examId: exam.id
       });
     });
 
@@ -173,7 +176,9 @@ export const TeacherDashboard: React.FC = () => {
         type: 'SUBMISSION',
         title: `${studentName} đã nộp bài "${examTitle}"`,
         time: new Date(att.submittedAt),
-        user: att.studentId
+        user: att.studentId,
+        examId: att.examId,
+        attemptId: att.id
       });
     });
 
@@ -469,7 +474,16 @@ export const TeacherDashboard: React.FC = () => {
                     <span className="flex items-center gap-1">
                       <Clock className="h-3 w-3" /> {getTimeAgo(act.time)}
                     </span>
-                    <span className="text-indigo-500 dark:text-indigo-400 font-bold hover:underline cursor-pointer">Chi tiết</span>
+                    <Link 
+                      to={
+                        act.type === 'NEW_EXAM' 
+                          ? `/exam/${act.examId}/results` 
+                          : `/exam/${act.examId}/results?attempt=${act.attemptId}`
+                      }
+                      className="text-indigo-500 dark:text-indigo-400 font-bold hover:underline cursor-pointer"
+                    >
+                      Chi tiết
+                    </Link>
                   </div>
                 </div>
               );
