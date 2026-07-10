@@ -349,12 +349,21 @@ export const ExamResults: React.FC = () => {
        </div>
     );
 
-   if (!exam) return <div className="p-8 text-center">Không tìm thấy bài tập.</div>;
+if (!exam) return <div className="p-8 text-center">Không tìm thấy bài tập.</div>;
 
    return (
       <div className="max-w-6xl mx-auto pb-10">
          <div className="mb-6">
-            <button onClick={() => navigate('/exams')} className="text-gray-500 hover:text-gray-900 flex items-center gap-2 mb-2 transition-colors">
+            <button 
+               onClick={() => {
+                  if (assignmentIdFromUrl) {
+                     navigate('/teacher/assignments');
+                  } else {
+                     navigate('/exams');
+                  }
+               }} 
+               className="text-gray-500 hover:text-gray-900 flex items-center gap-2 mb-2 transition-colors"
+            >
                <ArrowLeft className="h-4 w-4" /> Quay lại danh sách
             </button>
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
