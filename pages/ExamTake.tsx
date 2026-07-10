@@ -407,7 +407,7 @@ const evaluateAnswer = (q: any, userAns: any, caseSensitive: boolean = false): b
   
   if (q.type === 'DRAG_DROP') {
     const numBlanks = (q.content.match(/\[__\]/g) || []).length;
-    if (!Array.isArray(userAns) || userAns.length !== numBlanks) return false;
+    if (!Array.isArray(userAns)) return false;
     for (let i = 0; i < numBlanks; i++) {
       const expected = q.options[i];
       const actual = userAns[i];
@@ -431,38 +431,39 @@ const evaluateAnswer = (q: any, userAns: any, caseSensitive: boolean = false): b
   }
 
   if (q.type === 'WORD_CLASSIFY') {
-    if (!Array.isArray(userAns) || userAns.length !== q.options.length) return false;
+    if (!Array.isArray(userAns) || userAns.length < q.options.length) return false;
     for (let i = 0; i < q.options.length; i++) {
       const expectedParts = String(q.options[i] || '').split('|||');
-      const correctCategory = (expectedParts[0] || '').trim();
-      const correctCategoryUpper = correctCategory.toUpperCase();
-      const studentCategory = String(userAns[i] || '').trim();
+      const correctCategory = (expectedParts[0] || '').trim().toLowerCase();
+      const studentCategory = String(userAns[i] || '').trim().toLowerCase();
 
-      if (correctCategoryUpper === '_NONE_' || correctCategoryUpper === 'NONE') {
-        if (studentCategory !== '' && studentCategory.toUpperCase() !== '_NONE_' && studentCategory.toUpperCase() !== 'NONE') return false;
+      if (correctCategory === '_none_' || correctCategory === 'none' || correctCategory === '') {
+        if (studentCategory !== '' && studentCategory !== '_none_' && studentCategory !== 'none') return false;
       } else {
-        if (studentCategory.toLowerCase() !== correctCategory.toLowerCase()) return false;
+        if (studentCategory !== correctCategory) return false;
       }
     }
     return true;
   }
 
   if (q.type === 'FILL_IN_PASSAGE') {
-    if (!Array.isArray(userAns) || userAns.length !== q.options.length) return false;
-    for (let i = 0; i < q.options.length; i++) {
-      const expected = String(q.options[i] || '').trim();
-      const actual = String(userAns[i] || '').trim();
+    const numBlanks = (q.content.match(/\[__\]/g) || []).length;
+    if (!Array.isArray(userAns)) return false;
+    for (let i = 0; i < numBlanks; i++) {
+      const expected = String(q.options[i] || '').trim().toLowerCase();
+      const actual = String(userAns[i] || '').trim().toLowerCase();
       if (actual !== expected) return false;
     }
     return true;
   }
 
   if (q.type === 'INLINE_DROPDOWN') {
-    if (!Array.isArray(userAns) || userAns.length !== q.options.length) return false;
-    for (let i = 0; i < q.options.length; i++) {
+    const numBlanks = (q.content.match(/\[__\]/g) || []).length;
+    if (!Array.isArray(userAns)) return false;
+    for (let i = 0; i < numBlanks; i++) {
       const rawOpt = String(q.options[i] || '');
-      const expected = rawOpt.split('|||')[0].trim();
-      const actual = String(userAns[i] || '').trim();
+      const expected = rawOpt.split('|||')[0].trim().toLowerCase();
+      const actual = String(userAns[i] || '').trim().toLowerCase();
       if (actual !== expected) return false;
     }
     return true;
@@ -1041,8 +1042,8 @@ const DragDropQuestion = React.memo(({ question, answer, isSubmitted, onSetAnswe
 
   const getBlankCorrectness = (blankIdx: number) => {
     if (!isSubmitted || !viewPassFail) return null;
-    const expected = String(question.options[blankIdx] || '').trim();
-    const actual = String(currentAns[blankIdx] || '').trim();
+    const expected = String(question.options[blankIdx] || '').trim().toLowerCase();
+    const actual = String(currentAns[blankIdx] || '').trim().toLowerCase();
     return actual === expected ? 'correct' : 'wrong';
   };
 
@@ -1379,11 +1380,10 @@ const WordClassifyQuestion = React.memo(({ question, answer, isSubmitted, onSetA
   // Check correctness per item
   const getItemCorrectness = (itemIndex: number) => {
     if (!isSubmitted || !viewPassFail) return null;
-    const correctCategory = items[itemIndex].category;
-    const correctCategoryUpper = (correctCategory || '').toUpperCase().trim();
-    const studentCategory = currentAns[itemIndex] || '';
-    if (correctCategoryUpper === '_NONE_' || correctCategoryUpper === 'NONE') {
-      return studentCategory === '' || studentCategory === '_NONE_' || studentCategory === 'NONE' ? 'correct' : 'wrong';
+    const correctCategory = (items[itemIndex].category || '').trim().toLowerCase();
+    const studentCategory = (currentAns[itemIndex] || '').trim().toLowerCase();
+    if (correctCategory === '_none_' || correctCategory === 'none' || correctCategory === '') {
+      return studentCategory === '' || studentCategory === '_none_' || studentCategory === 'none' ? 'correct' : 'wrong';
     }
     return studentCategory === correctCategory ? 'correct' : 'wrong';
   };
@@ -1503,8 +1503,8 @@ const FillInPassageQuestion = React.memo(({ question, answer, isSubmitted, onSet
 
   const getBlankCorrectness = (index: number) => {
     if (!isSubmitted || !viewPassFail) return null;
-    const expected = String(question.options[index] || '').trim();
-    const actual = String(currentAns[index] || '').trim();
+    const expected = String(question.options[index] || '').trim().toLowerCase();
+    const actual = String(currentAns[index] || '').trim().toLowerCase();
     return actual === expected ? 'correct' : 'wrong';
   };
 
@@ -1628,8 +1628,8 @@ const InlineDropdownQuestion = React.memo(({ question, answer, isSubmitted, onSe
 
   const getBlankCorrectness = (index: number) => {
     if (!isSubmitted || !viewPassFail) return null;
-    const expected = dropdownOptions[index]?.correct || '';
-    const actual = String(currentAns[index] || '').trim();
+    const expected = (dropdownOptions[index]?.correct || '').trim().toLowerCase();
+    const actual = String(currentAns[index] || '').trim().toLowerCase();
     return actual === expected ? 'correct' : 'wrong';
   };
 
