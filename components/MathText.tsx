@@ -5,6 +5,48 @@ import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
 import 'katex/dist/katex.min.css';
 
+const wrapMathSafe = (text: string): string => {
+  if (!text) return '';
+  
+  const placeholders: { ph: string; original: string }[] = [];
+  let temp = text;
+  
+  // 1. Extract $$ ... $$ blocks
+  temp = temp.replace(/\$\$(.*?)\$\$/g, (match) => {
+    const ph = `__BLOCK_MATH_PH_${placeholders.length}__`;
+    placeholders.push({ ph, original: match });
+    return ph;
+  });
+  
+  // 2. Extract $ ... $ blocks
+  temp = temp.replace(/\$(.*?)\$/g, (match) => {
+    const ph = `__INLINE_MATH_PH_${placeholders.length}__`;
+    placeholders.push({ ph, original: match });
+    return ph;
+  });
+  
+  // 3. Now wrap raw LaTeX commands that are not wrapped in $ in the remaining text
+  const rawMathRegex = /(?:[\d\s\+\-\*\/\=\<\>\(\)\[\]\.\,\{\}\_\^]|\\([a-zA-Z]+)\s*\{?)*(?:\\([a-zA-Z]+))(?:[\d\s\+\-\*\/\=\<\>\(\)\[\]\.\,\{\}\_\^]|\\([a-zA-Z]+)\s*\{?)*/g;
+
+  temp = temp.replace(rawMathRegex, (match) => {
+    const trimmed = match.trim();
+    if (!trimmed) return match;
+    if (!/\\[a-zA-Z]+/.test(trimmed)) {
+      return match;
+    }
+    const leadSpace = match.match(/^\s*/)?.[0] || '';
+    const trailSpace = match.match(/\s*$/)?.[0] || '';
+    return `${leadSpace}$${trimmed}$${trailSpace}`;
+  });
+  
+  // 4. Restore placeholders in reverse order
+  for (let i = placeholders.length - 1; i >= 0; i--) {
+    temp = temp.replaceAll(placeholders[i].ph, placeholders[i].original);
+  }
+  
+  return temp;
+};
+
 interface MathTextProps {
   children: string;
   className?: string;
@@ -19,7 +61,7 @@ const MathText: React.FC<MathTextProps> = ({ children, className, inline = false
   // Preprocess text to convert \( ... \) to $ ... $ and \[ ... \] to $$ ... $$
   const preprocessText = React.useCallback((val: string) => {
     if (!val) return '';
-    let text = val;
+    let text = wrapMathSafe(val);
     // Strip "Mức độ: ..." lines/metadata from rendering
     text = text.replace(/(?:Mức\s*độ|Độ\s*khó)\s*[:.-]?\s*(?:Nhận\s*biết|Kết\s*nối|Thông\s*hiểu|Vận\s*dụng(?: cao)?|NB|KN|TH|VD(?:C)?)/gi, '');
     // Auto bold-italic for quoted text: "abc" -> ***"abc"*** and “abc” -> ***“abc”***
