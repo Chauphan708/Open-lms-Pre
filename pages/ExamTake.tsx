@@ -357,7 +357,7 @@ const normalizeMath = (s: string) => {
   return processed.toLowerCase();
 };
 
-const evaluateAnswer = (q: any, userAns: any, caseSensitive: boolean = false): boolean => {
+export const evaluateAnswer = (q: any, userAns: any, caseSensitive: boolean = false): boolean => {
   if (userAns === undefined || userAns === null) return false;
 
   if (q.type === 'MCQ') {
@@ -450,8 +450,12 @@ const evaluateAnswer = (q: any, userAns: any, caseSensitive: boolean = false): b
     const numBlanks = (q.content.match(/\[__\]/g) || []).length;
     if (!Array.isArray(userAns)) return false;
     for (let i = 0; i < numBlanks; i++) {
-      const expected = String(q.options[i] || '').trim().toLowerCase();
-      const actual = String(userAns[i] || '').trim().toLowerCase();
+      const expected = caseSensitive
+        ? String(q.options[i] || '').trim()
+        : String(q.options[i] || '').trim().toLowerCase();
+      const actual = caseSensitive
+        ? String(userAns[i] || '').trim()
+        : String(userAns[i] || '').trim().toLowerCase();
       if (actual !== expected) return false;
     }
     return true;
@@ -1481,7 +1485,7 @@ const WordClassifyQuestion = React.memo(({ question, answer, isSubmitted, onSetA
   );
 });
 
-const FillInPassageQuestion = React.memo(({ question, answer, isSubmitted, onSetAnswer, viewPassFail, canViewSolution }: any) => {
+const FillInPassageQuestion = React.memo(({ question, answer, isSubmitted, onSetAnswer, viewPassFail, canViewSolution, caseSensitive = false }: any) => {
   const blankCount = (question.content.match(/[__]/g) || []).length;
   const currentAns: string[] = Array.isArray(answer) ? answer : Array(blankCount).fill('');
 
@@ -1503,8 +1507,12 @@ const FillInPassageQuestion = React.memo(({ question, answer, isSubmitted, onSet
 
   const getBlankCorrectness = (index: number) => {
     if (!isSubmitted || !viewPassFail) return null;
-    const expected = String(question.options[index] || '').trim().toLowerCase();
-    const actual = String(currentAns[index] || '').trim().toLowerCase();
+    const expected = caseSensitive
+      ? String(question.options[index] || '').trim()
+      : String(question.options[index] || '').trim().toLowerCase();
+    const actual = caseSensitive
+      ? String(currentAns[index] || '').trim()
+      : String(currentAns[index] || '').trim().toLowerCase();
     return actual === expected ? 'correct' : 'wrong';
   };
 
@@ -2144,7 +2152,41 @@ export const ExamTake: React.FC = () => {
     if (shouldShowResult && latestAttempt && !isRetakeInitiated) {
       // View existing attempt result
       setIsSubmitted(true);
-      setScore(latestAttempt.score || 0);
+      
+      let correct = 0;
+      let scoredCount = 0;
+      if (exam?.questions) {
+        exam.questions.forEach(q => {
+          if (!q.isNotScored) {
+            scoredCount++;
+            const isCaseSensitive = !!assignmentSettings.caseSensitiveShortAnswer;
+            const isAnsCorrect = evaluateAnswer(q, latestAttempt.answers[q.id], isCaseSensitive);
+            if (isAnsCorrect) {
+              correct++;
+            }
+          }
+        });
+      }
+      const calculatedScore = scoredCount > 0 ? (correct / scoredCount) * 10 : 0;
+      setScore(calculatedScore);
+
+      // If stored score differs from recalculated score, silently sync it to Supabase
+      const oldScore = Number(latestAttempt.score || 0);
+      if (Math.abs(calculatedScore - oldScore) > 0.01) {
+        console.log(`[Auto-healing] Score mismatch: DB=${oldScore}, Recalculated=${calculatedScore}. Syncing to Supabase...`);
+        supabase
+          .from('attempts')
+          .update({ score: calculatedScore })
+          .eq('id', latestAttempt.id)
+          .then(({ error }) => {
+            if (!error) {
+              console.log(`[Auto-healing] Sync successful.`);
+              useStore.setState((state) => ({
+                attempts: state.attempts.map(a => a.id === latestAttempt.id ? { ...a, score: calculatedScore } : a)
+              }));
+            }
+          });
+      }
 
       // Restore answers
       const parsedAnswers: Record<string, any> = {};
@@ -3522,6 +3564,8 @@ export const ExamTake: React.FC = () => {
                       userAns={answers[q.id]}
                       isCorrect={isQuestionCorrect}
                       canViewSolution={canViewSolution}
+                      shuffledIndices={shuffledOptionsMap[q.id]}
+                      caseSensitive={assignmentSettings?.caseSensitiveShortAnswer}
                     />
                   ) : (
                     <>
@@ -3628,6 +3672,7 @@ export const ExamTake: React.FC = () => {
                       isSubmitted={isSubmitted}
                       viewPassFail={viewPassFail}
                       canViewSolution={canViewSolution}
+                      caseSensitive={assignmentSettings?.caseSensitiveShortAnswer}
                     />
                   )}
 

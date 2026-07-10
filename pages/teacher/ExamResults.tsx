@@ -11,6 +11,7 @@ import { supabase } from '../../services/supabaseClient';
 import { computeStudentAnalytics } from '../../utils/analyticsEngine';
 import { getRecommendations, getRecentExamIds } from '../../utils/recommendationEngine';
 import { ReadOnlyQuestionView } from '../../components/exam/ReadOnlyQuestionView';
+import { evaluateAnswer } from '../ExamTake';
 const getPassageParts = (content: string) => {
   const cleanContent = content.replace(/\s*Đáp án:\s*[^\n]*$/i, '').trim();
   
@@ -248,6 +249,45 @@ export const ExamResults: React.FC = () => {
 
    const selectedAttempt = attempts.find(a => a.id === selectedAttemptId);
    const selectedStudent = users.find(u => u.id === selectedAttempt?.studentId);
+
+   // Auto-heal attempt score if mismatch detected
+   useEffect(() => {
+     if (selectedAttempt && exam?.questions) {
+       let correct = 0;
+       let scoredCount = 0;
+       const assignment = assignments.find(a => String(a.id) === String(selectedAttempt.assignmentId));
+       const isCaseSensitive = !!assignment?.settings?.caseSensitiveShortAnswer;
+       
+       exam.questions.forEach(q => {
+         if (!q.isNotScored) {
+           scoredCount++;
+           const isAnsCorrect = evaluateAnswer(q, selectedAttempt.answers[q.id], isCaseSensitive);
+           if (isAnsCorrect) {
+             correct++;
+           }
+         }
+       });
+       
+       const calculatedScore = scoredCount > 0 ? (correct / scoredCount) * 10 : 0;
+       const oldScore = Number(selectedAttempt.score || 0);
+       
+       if (Math.abs(calculatedScore - oldScore) > 0.01) {
+         console.log(`[Auto-healing Teacher] Score mismatch: DB=${oldScore}, Recalculated=${calculatedScore}. Syncing to Supabase...\n`);
+         supabase
+           .from('attempts')
+           .update({ score: calculatedScore })
+           .eq('id', selectedAttempt.id)
+           .then(({ error }) => {
+             if (!error) {
+               console.log(`[Auto-healing Teacher] Sync successful.\n`);
+               useStore.setState((state) => ({
+                 attempts: state.attempts.map(a => a.id === selectedAttempt.id ? { ...a, score: calculatedScore } : a)
+               }));
+             }
+           });
+       }
+     }
+   }, [selectedAttempt?.id, exam?.questions, assignments]);
 
    // Tính gợi ý bài tập cho HS đang chọn trong modal
    const studentRecommendations = useMemo(() => {
@@ -1005,91 +1045,15 @@ export const ExamResults: React.FC = () => {
                      </div>
 
                      <div className="space-y-4">
-                        {exam.questions.map((q, idx) => {
+                        {(() => {
+                           const assignment = assignments.find(a => String(a.id) === String(selectedAttempt?.assignmentId));
+                           const isCaseSensitive = !!assignment?.settings?.caseSensitiveShortAnswer;
+                           return exam.questions.map((q, idx) => {
                            const userAns = selectedAttempt.answers[q.id];
 
-                           let isCorrect = false;
-                           if (userAns !== undefined && userAns !== null && userAns !== '') {
-                               if (!q.type || q.type === 'MCQ') {
-                                  if (typeof userAns === 'number') {
-                                     isCorrect = userAns === q.correctOptionIndex;
-                                  } else if (typeof userAns === 'string') {
-                                     const idx = q.options.findIndex((opt: any) => String(opt).trim().toLowerCase() === userAns.trim().toLowerCase());
-                                     isCorrect = idx !== -1 && idx === q.correctOptionIndex;
-                                  }
-                               } else if (q.type === 'MCQ_MULTIPLE') {
-                                  const correctArray = q.correctOptionIndices || [];
-                                  const userArray = (Array.isArray(userAns) ? userAns : []).map(val => {
-                                     if (typeof val === 'number') return val;
-                                     if (typeof val === 'string') {
-                                        const idx = q.options.findIndex((opt: any) => String(opt).trim().toLowerCase() === val.trim().toLowerCase());
-                                        return idx !== -1 ? idx : val;
-                                     }
-                                     return val;
-                                  });
-                                  if (correctArray.length > 0 && correctArray.length === userArray.length) {
-                                     isCorrect = correctArray.every((val: any) => userArray.includes(val));
-                                  }
-                               } else if (q.type === 'SHORT_ANSWER') {
-                                 const sAns = String(userAns || '').trim().toLowerCase();
-                                 const solString = String(q.solution || '').trim();
-                                 const isSolutionShort = solString !== '' && solString.split(/\s+/).length < 10;
+                           const isCorrect = evaluateAnswer(q, userAns, isCaseSensitive);
 
-                                 isCorrect = (q.options && q.options.length > 0)
-                                    ? q.options.some(opt => String(opt).trim().toLowerCase() === sAns)
-                                    : (isSolutionShort && sAns === solString.toLowerCase());
-                              } else if (q.type === 'DRAG_DROP') {
-                                 const numBlanks = (q.content.match(/\[__\]/g) || []).length;
-                                 if (Array.isArray(userAns) && userAns.length === numBlanks) {
-                                    let isAllCorrect = true;
-                                    for (let i = 0; i < numBlanks; i++) {
-                                       const expected = q.options[i];
-                                       const actual = userAns[i];
-                                       const normExpected = String(expected || '').trim().toLowerCase();
-                                       const normActual = String(actual || '').trim().toLowerCase();
-                                       if (normActual !== normExpected) {
-                                          isAllCorrect = false;
-                                          break;
-                                       }
-                                    }
-                                    isCorrect = isAllCorrect;
-                                 }
-                              } else if (['MATCHING', 'ORDERING', 'SENTENCE_SCRAMBLE', 'WORD_CLASSIFY', 'FILL_IN_PASSAGE', 'INLINE_DROPDOWN'].includes(q.type)) {
-                                 if (Array.isArray(userAns) && userAns.length === q.options.length) {
-                                    let isAllCorrect = true;
-                                    for (let i = 0; i < q.options.length; i++) {
-                                       const expected = q.options[i];
-                                       const actual = userAns[i];
-                                       const normExpected = String(expected || '').trim().toLowerCase().replace(/\s*\|\|\|\s*/g, '|||');
-                                       const normActual = String(actual || '').trim().toLowerCase().replace(/\s*\|\|\|\s*/g, '|||');
-                                       
-                                       if (q.type === 'WORD_CLASSIFY') {
-                                          const expectedParts = String(expected || '').split('|||');
-                                          const correctCategoryUpper = (expectedParts[0] || '').trim().toUpperCase();
-                                          const studentCategoryUpper = String(actual || '').trim().toUpperCase();
-                                          if (correctCategoryUpper === '_NONE_' || correctCategoryUpper === 'NONE') {
-                                             if (studentCategoryUpper !== '' && studentCategoryUpper !== '_NONE_' && studentCategoryUpper !== 'NONE') {
-                                                isAllCorrect = false; break;
-                                             }
-                                          } else if (studentCategoryUpper !== correctCategoryUpper) {
-                                             isAllCorrect = false; break;
-                                          }
-                                       } else if (q.type === 'INLINE_DROPDOWN') {
-                                          const expectedDropdown = String(expected || '').split('|||')[0].trim();
-                                          if (String(actual || '').trim() !== expectedDropdown) {
-                                             isAllCorrect = false; break;
-                                          }
-                                       } else if (normActual !== normExpected) {
-                                          isAllCorrect = false;
-                                          break;
-                                       }
-                                    }
-                                    isCorrect = isAllCorrect;
-                                 }
-                              }
-                           }
-
-                           return (
+                            return (
                               <div key={q.id} className={`bg-white p-4 rounded-xl border ${isCorrect ? 'border-green-200' : 'border-red-200'} shadow-sm`}>
                                  <div className="flex gap-3">
                                     <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-white flex-shrink-0 ${isCorrect ? 'bg-green-500' : 'bg-red-500'}`}>
@@ -1117,16 +1081,18 @@ export const ExamResults: React.FC = () => {
                                        )}
 
                                        <ReadOnlyQuestionView
-                                           question={q}
-                                           userAns={userAns}
-                                           isCorrect={isCorrect}
-                                           canViewSolution={true}
-                                        />
+                                            question={q}
+                                            userAns={userAns}
+                                            isCorrect={isCorrect}
+                                            canViewSolution={true}
+                                            caseSensitive={isCaseSensitive}
+                                         />
                                      </div>
                                   </div>
                                </div>
                            );
-                        })}
+                         })
+                      })()}
                      </div>
                      </>
                      ) : (

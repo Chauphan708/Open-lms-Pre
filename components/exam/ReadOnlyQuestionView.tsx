@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, useEffect, useCallback } from 'react';
 import { CheckCircle, XCircle, AlertCircle } from 'lucide-react';
 import MathText from '../MathText';
 import { Question } from '../../types';
@@ -9,6 +9,7 @@ interface ReadOnlyQuestionViewProps {
   isCorrect: boolean;
   canViewSolution: boolean;
   shuffledIndices?: number[];
+  caseSensitive?: boolean;
 }
 
 const getPassageParts = (content: string) => {
@@ -138,12 +139,228 @@ const parseClozePassage = (content: string): ClozeSegment[] => {
   return segments;
 };
 
+function getStableShuffledIndices(id: string, length: number): number[] {
+  const indices = Array.from({ length }, (_, i) => i);
+  let seed = 0;
+  for (let i = 0; i < id.length; i++) {
+    seed += id.charCodeAt(i);
+  }
+  for (let i = length - 1; i > 0; i--) {
+    seed = (seed * 9301 + 49297) % 233280;
+    const j = Math.floor((seed / 233280) * (i + 1));
+    const temp = indices[i];
+    indices[i] = indices[j];
+    indices[j] = temp;
+  }
+  return indices;
+}
+
+const ReadOnlyMatchingView: React.FC<{
+  question: Question;
+  userAns: any;
+  canViewSolution: boolean;
+  shuffledIndices?: number[];
+}> = ({ question, userAns, canViewSolution, shuffledIndices }) => {
+  const containerRef = React.useRef<HTMLDivElement>(null);
+  const [lines, setLines] = useState<any[]>([]);
+
+  const leftItems = question.options.map((o: any) => String(o).split('|||')[0]?.trim() || '');
+  const rightItems = question.options.map((o: any) => String(o).split('|||')[1]?.trim() || '');
+
+  const finalShuffledIndices = useMemo(() => {
+    if (shuffledIndices && shuffledIndices.length === question.options.length) {
+      return shuffledIndices;
+    }
+    return getStableShuffledIndices(question.id, question.options.length);
+  }, [shuffledIndices, question.id, question.options.length]);
+
+  const shuffledRightItems = finalShuffledIndices.map((i: number) => rightItems[i]);
+  const currentAns = Array.isArray(userAns) ? userAns : Array(question.options.length).fill('');
+
+  const updateLines = useCallback(() => {
+    if (!containerRef.current) return;
+    const newLines: any[] = [];
+
+    leftItems.forEach((_, leftIdx) => {
+      const studentPair = String(currentAns[leftIdx] || '');
+      const studentRightVal = studentPair.includes('|||')
+        ? studentPair.split('|||')[1]?.trim()
+        : studentPair.trim();
+
+      const studentRightShuffledIdx = shuffledRightItems.indexOf(studentRightVal);
+      const leftDot = containerRef.current?.querySelector(`[data-dot-left="${leftIdx}"]`);
+      
+      if (leftDot) {
+        const containerRect = containerRef.current!.getBoundingClientRect();
+        const lRect = leftDot.getBoundingClientRect();
+
+        if (studentRightVal && studentRightShuffledIdx !== -1) {
+          const rightDot = containerRef.current?.querySelector(`[data-dot-right="${studentRightShuffledIdx}"]`);
+          if (rightDot) {
+            const rRect = rightDot.getBoundingClientRect();
+            const isCorrect = studentRightVal.toLowerCase() === rightItems[leftIdx].toLowerCase();
+            newLines.push({
+              x1: lRect.left - containerRect.left + lRect.width / 2,
+              y1: lRect.top - containerRect.top + lRect.height / 2,
+              x2: rRect.left - containerRect.left + rRect.width / 2,
+              y2: rRect.top - containerRect.top + rRect.height / 2,
+              color: isCorrect ? '#22c55e' : '#ef4444',
+              isDashed: false,
+              thickness: 3
+            });
+          }
+        }
+
+        const isCorrect = studentRightVal.toLowerCase() === rightItems[leftIdx].toLowerCase();
+        if ((!isCorrect || !studentRightVal) && canViewSolution) {
+          const correctRightShuffledIdx = finalShuffledIndices.indexOf(leftIdx);
+          if (correctRightShuffledIdx !== -1) {
+            const rightDot = containerRef.current?.querySelector(`[data-dot-right="${correctRightShuffledIdx}"]`);
+            if (rightDot) {
+              const rRect = rightDot.getBoundingClientRect();
+              newLines.push({
+                x1: lRect.left - containerRect.left + lRect.width / 2,
+                y1: lRect.top - containerRect.top + lRect.height / 2,
+                x2: rRect.left - containerRect.left + rRect.width / 2,
+                y2: rRect.top - containerRect.top + rRect.height / 2,
+                color: '#22c55e',
+                isDashed: true,
+                thickness: 1.5
+              });
+            }
+          }
+        }
+      }
+    });
+
+    setLines(newLines);
+  }, [leftItems, rightItems, shuffledRightItems, finalShuffledIndices, currentAns, canViewSolution]);
+
+  useEffect(() => {
+    updateLines();
+    const timer1 = setTimeout(updateLines, 100);
+    const timer2 = setTimeout(updateLines, 500);
+    window.addEventListener('resize', updateLines);
+    return () => {
+      clearTimeout(timer1);
+      clearTimeout(timer2);
+      window.removeEventListener('resize', updateLines);
+    };
+  }, [updateLines]);
+
+  return (
+    <div className="relative select-none max-w-4xl mx-auto p-4 mt-3" ref={containerRef}>
+      <div className="grid grid-cols-2 gap-16 md:gap-32 relative z-10">
+        <div className="space-y-4">
+          <h4 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-4">Cột vế trái</h4>
+          {leftItems.map((left: string, idx: number) => {
+            const studentPair = String(currentAns[idx] || '');
+            const studentRightVal = studentPair.includes('|||') ? studentPair.split('|||')[1]?.trim() : studentPair.trim();
+            const isCorrect = studentRightVal.toLowerCase() === rightItems[idx].toLowerCase();
+            const hasMatch = !!studentRightVal;
+
+            return (
+              <div key={idx} className="relative">
+                <div
+                  className={`p-4 rounded-xl border-2 transition-all flex items-center justify-between shadow-sm relative pr-10 bg-white
+                    ${!hasMatch ? 'border-gray-100' : isCorrect ? 'border-green-200 bg-green-50/10' : 'border-red-200 bg-red-50/10'}
+                  `}
+                >
+                  <span className="font-semibold text-gray-800">
+                    <MathText inline>{left}</MathText>
+                  </span>
+                  <div
+                    data-dot-left={idx}
+                    className={`absolute -right-2 top-1/2 -translate-y-1/2 w-4 h-4 rounded-full border-2 z-20 transition-all
+                      ${!hasMatch ? 'bg-white border-gray-300' : isCorrect ? 'bg-green-500 border-green-200' : 'bg-red-500 border-red-200'}
+                    `}
+                  />
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        <div className="space-y-4">
+          <h4 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-4">Cột vế phải</h4>
+          {shuffledRightItems.map((right: string, idx: number) => {
+            const leftIdxOfConnection = leftItems.findIndex((_, lIdx) => {
+              const pair = String(currentAns[lIdx] || '');
+              const rightVal = pair.includes('|||') ? pair.split('|||')[1]?.trim() : pair.trim();
+              return rightVal.toLowerCase() === right.toLowerCase();
+            });
+
+            const hasMatch = leftIdxOfConnection !== -1;
+            const isCorrect = hasMatch && right.toLowerCase() === rightItems[leftIdxOfConnection].toLowerCase();
+
+            return (
+              <div key={idx} className="relative">
+                <div
+                  className={`p-4 rounded-xl border-2 transition-all flex items-center shadow-sm relative pl-10 bg-white
+                    ${!hasMatch ? 'border-gray-100' : isCorrect ? 'border-green-200 bg-green-50/10' : 'border-red-200 bg-red-50/10'}
+                  `}
+                >
+                  <span className="font-semibold text-gray-800 flex-1">
+                    <MathText inline>{right}</MathText>
+                  </span>
+                  <div
+                    data-dot-right={idx}
+                    className={`absolute -left-2 top-1/2 -translate-y-1/2 w-4 h-4 rounded-full border-2 z-20 transition-all
+                      ${!hasMatch ? 'bg-white border-gray-300' : isCorrect ? 'bg-green-500 border-green-200' : 'bg-red-500 border-red-200'}
+                    `}
+                  />
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      <svg className="absolute inset-0 w-full h-full pointer-events-none z-0" style={{ minHeight: '100%' }}>
+        {lines.map((line, i) => (
+          <g key={i}>
+            <path
+              d={`M ${line.x1} ${line.y1} C ${(line.x1 + line.x2) / 2} ${line.y1}, ${(line.x1 + line.x2) / 2} ${line.y2}, ${line.x2} ${line.y2}`}
+              stroke={line.color}
+              strokeWidth={line.thickness}
+              fill="none"
+              strokeLinecap="round"
+              strokeDasharray={line.isDashed ? '5,5' : 'none'}
+              style={{
+                filter: `drop-shadow(0 0 3px ${line.color}33)`
+              }}
+            />
+          </g>
+        ))}
+      </svg>
+
+      {canViewSolution && (
+        <div className="mt-6 flex flex-wrap gap-4 justify-center text-xs text-gray-500 bg-gray-50 p-3 rounded-lg border border-gray-100 max-w-md mx-auto">
+          <div className="flex items-center gap-1.5">
+            <span className="w-6 h-0.5 bg-green-500 inline-block" />
+            <span>Nối đúng</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="w-6 h-0.5 bg-red-500 inline-block" />
+            <span>Nối sai</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="w-6 h-0.5 border-t border-dashed border-green-500 inline-block" />
+            <span>Đáp án đúng</span>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
 export const ReadOnlyQuestionView: React.FC<ReadOnlyQuestionViewProps> = ({
   question,
   userAns,
   isCorrect,
   canViewSolution,
-  shuffledIndices
+  shuffledIndices,
+  caseSensitive = false
 }) => {
   
   const renderFractionOrText = (text: string) => {
@@ -344,7 +561,11 @@ export const ReadOnlyQuestionView: React.FC<ReadOnlyQuestionViewProps> = ({
         correctVal = String(question.options[i] || '').trim();
       }
 
-      const isBlankCorrect = !isBlankUnanswered && studentVal.toLowerCase() === correctVal.toLowerCase();
+      const isBlankCorrect = !isBlankUnanswered && (
+        (question.type === 'FILL_IN_PASSAGE' && caseSensitive)
+          ? studentVal === correctVal
+          : studentVal.toLowerCase() === correctVal.toLowerCase()
+      );
 
       if (isBlankUnanswered) {
         return (
@@ -516,73 +737,13 @@ export const ReadOnlyQuestionView: React.FC<ReadOnlyQuestionViewProps> = ({
 
   // 8. MATCHING: Nối cột
   if (question.type === 'MATCHING') {
-    const leftItems = question.options.map((o: any) => String(o).split('|||')[0]?.trim() || '');
-    const rightItems = question.options.map((o: any) => String(o).split('|||')[1]?.trim() || '');
-    const currentAns = Array.isArray(userAns) ? userAns : Array(question.options.length).fill('');
-
     return (
-      <div className="space-y-2 mt-3 max-w-2xl">
-        <div className="border border-gray-200 rounded-xl overflow-hidden shadow-sm bg-white">
-          <table className="w-full text-left border-collapse text-sm">
-            <thead>
-              <tr className="bg-gray-50 text-gray-500 font-bold uppercase tracking-wider text-xs border-b border-gray-200">
-                <th className="px-5 py-3 w-2/5">Vế trái</th>
-                <th className="px-5 py-3 text-center w-1/5">Kết quả</th>
-                <th className="px-5 py-3 w-2/5">Bài làm học sinh</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100">
-              {leftItems.map((leftText: string, idx: number) => {
-                const studentPair = String(currentAns[idx] || '');
-                const studentRightVal = studentPair.includes('|||') 
-                  ? studentPair.split('|||')[1]?.trim() 
-                  : studentPair.trim();
-                  
-                const correctRightVal = rightItems[idx];
-                const isUnanswered = studentRightVal === '';
-                const isItemCorrect = !isUnanswered && studentRightVal.toLowerCase() === correctRightVal.toLowerCase();
-
-                return (
-                  <tr key={idx} className="hover:bg-gray-50/50 transition-colors">
-                    <td className="px-5 py-4 font-semibold text-gray-900 w-2/5">
-                      <MathText inline>{leftText}</MathText>
-                    </td>
-                    <td className="px-5 py-4 text-center w-1/5">
-                      {isUnanswered ? (
-                        <span className="text-red-500 text-xs font-bold flex items-center justify-center gap-0.5">
-                          ❌ Chưa nối
-                        </span>
-                      ) : isItemCorrect ? (
-                        <span className="text-green-600 text-xs font-bold flex items-center justify-center gap-0.5">
-                          ✔️ Đúng
-                        </span>
-                      ) : (
-                        <span className="text-red-500 text-xs font-bold flex items-center justify-center gap-0.5">
-                          ❌ Sai
-                        </span>
-                      )}
-                    </td>
-                    <td className="px-5 py-4 w-2/5">
-                      {isUnanswered ? (
-                        <span className="text-red-500 font-bold italic text-sm">(Bỏ trống)</span>
-                      ) : (
-                        <div className={`font-bold text-sm ${isItemCorrect ? 'text-green-700' : 'text-red-700'}`}>
-                          <MathText inline>{studentRightVal}</MathText>
-                        </div>
-                      )}
-                      {(!isItemCorrect || isUnanswered) && canViewSolution && (
-                        <div className="mt-1.5 text-xs text-green-700 font-semibold bg-green-50 border border-green-100 rounded px-2 py-0.5 w-fit">
-                          đáp án: <MathText inline>{correctRightVal}</MathText>
-                        </div>
-                      )}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-      </div>
+      <ReadOnlyMatchingView
+        question={question}
+        userAns={userAns}
+        canViewSolution={canViewSolution}
+        shuffledIndices={shuffledIndices}
+      />
     );
   }
 
