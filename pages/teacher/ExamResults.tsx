@@ -501,7 +501,8 @@ if (!exam) return <div className="p-8 text-center">Không tìm thấy bài tập
 
                               let isCorrect = false;
                               if (userAns !== undefined && userAns !== null && userAns !== '') {
-                                 const isCaseSensitive = !!assignment?.settings?.caseSensitiveShortAnswer;
+                                 const assignmentForAtt = assignments.find(a => String(a.id) === String(att.assignmentId));
+                                 const isCaseSensitive = !!assignmentForAtt?.settings?.caseSensitiveShortAnswer;
                                  isCorrect = evaluateAnswer(q, userAns, isCaseSensitive);
                               }
 
