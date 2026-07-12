@@ -545,9 +545,10 @@ export const ReadOnlyQuestionView: React.FC<ReadOnlyQuestionViewProps> = ({
   }
 
   if (['DRAG_DROP', 'FILL_IN_PASSAGE', 'INLINE_DROPDOWN'].includes(question.type)) {
-    const blankCount = (question.content.match(/\[__\]/g) || []).length;
+    const { passage } = getPassageParts(question.content);
+    const blankCount = (passage.match(/\[__\]/g) || []).length;
     const currentAns = Array.isArray(userAns) ? userAns : Array(blankCount).fill('');
-    const segments = parseClozePassage(question.content);
+    const segments = parseClozePassage(passage);
 
     const renderBlank = (i: number, isFraction = false) => {
       const studentVal = String(currentAns[i] || '').trim();

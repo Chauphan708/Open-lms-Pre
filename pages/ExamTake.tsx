@@ -995,23 +995,27 @@ const DragDropQuestion = React.memo(({ question, answer, isSubmitted, onSetAnswe
   const availableOptions = shuffledIndices.map((i: number) => question.options[i]);
 
   const segments = useMemo(() => {
-    return parseClozePassage(question.content);
+    const { passage } = getPassageParts(question.content);
+    return parseClozePassage(passage);
   }, [question.content]);
 
-  const [selectedWord, setSelectedWord] = useState<string | null>(null);
+  const [selectedWordIdx, setSelectedWordIdx] = useState<number | null>(null);
 
-  const handleSelectWord = (word: string) => {
+  const handleSelectWordIdx = (idx: number) => {
     if (isSubmitted) return;
-    setSelectedWord(selectedWord === word ? null : word);
+    setSelectedWordIdx(selectedWordIdx === idx ? null : idx);
   };
 
   const handleBlankClick = (blankIdx: number) => {
     if (isSubmitted) return;
-    if (selectedWord) {
-      const newAns = [...currentAns];
-      newAns[blankIdx] = selectedWord;
-      onSetAnswer(newAns);
-      setSelectedWord(null);
+    if (selectedWordIdx !== null) {
+      const word = availableOptions[selectedWordIdx];
+      if (word !== undefined) {
+        const newAns = [...currentAns];
+        newAns[blankIdx] = word;
+        onSetAnswer(newAns);
+      }
+      setSelectedWordIdx(null);
     } else {
       const newAns = [...currentAns];
       newAns[blankIdx] = '';
@@ -1041,7 +1045,7 @@ const DragDropQuestion = React.memo(({ question, answer, isSubmitted, onSetAnswe
   const handleReset = () => {
     if (isSubmitted) return;
     onSetAnswer(Array(currentAns.length).fill(''));
-    setSelectedWord(null);
+    setSelectedWordIdx(null);
   };
 
   const getBlankCorrectness = (blankIdx: number) => {
@@ -1077,6 +1081,19 @@ const DragDropQuestion = React.memo(({ question, answer, isSubmitted, onSetAnswe
       </span>
     );
   };
+
+  // Occurrence counting for duplicate options
+  const usedCounts = useMemo(() => {
+    const counts: Record<string, number> = {};
+    currentAns.forEach((val) => {
+      if (val) {
+        counts[val] = (counts[val] || 0) + 1;
+      }
+    });
+    return counts;
+  }, [currentAns]);
+
+  const renderedUsedCounts: Record<string, number> = {};
 
   return (
     <div className="space-y-6 max-w-3xl">
@@ -1127,17 +1144,24 @@ const DragDropQuestion = React.memo(({ question, answer, isSubmitted, onSetAnswe
           <label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3 block">CÁC TỪ GỢI Ý:</label>
           <div className="flex flex-wrap gap-2.5">
             {availableOptions.map((opt: string, idx: number) => {
-              const isUsed = currentAns.includes(opt);
+              const totalUsed = usedCounts[opt] || 0;
+              const alreadyMarkedUsed = renderedUsedCounts[opt] || 0;
+              const isUsed = alreadyMarkedUsed < totalUsed;
+
+              if (isUsed) {
+                renderedUsedCounts[opt] = alreadyMarkedUsed + 1;
+              }
+
               return (
                 <button
                   key={idx}
                   disabled={isUsed}
                   draggable={!isUsed}
                   onDragStart={(e) => handleDragStart(e, opt)}
-                  onClick={() => handleSelectWord(opt)}
+                  onClick={() => handleSelectWordIdx(idx)}
                   className={`px-4 py-2 rounded-xl text-base font-bold border-2 transition-all active:scale-95 ${
                     isUsed ? 'bg-gray-100 text-gray-300 border-gray-100 cursor-not-allowed' :
-                    selectedWord === opt ? 'bg-indigo-500 text-white border-indigo-500 shadow-md scale-105' :
+                    selectedWordIdx === idx ? 'bg-indigo-500 text-white border-indigo-500 shadow-md scale-105' :
                     'bg-white text-slate-700 border-slate-200 hover:border-indigo-300 hover:shadow-sm cursor-grab active:cursor-grabbing'
                   }`}
                 >
@@ -1486,12 +1510,13 @@ const WordClassifyQuestion = React.memo(({ question, answer, isSubmitted, onSetA
 });
 
 const FillInPassageQuestion = React.memo(({ question, answer, isSubmitted, onSetAnswer, viewPassFail, canViewSolution, caseSensitive = false }: any) => {
-  const blankCount = (question.content.match(/[__]/g) || []).length;
+  const { passage } = getPassageParts(question.content);
+  const blankCount = (passage.match(/\[__\]/g) || []).length;
   const currentAns: string[] = Array.isArray(answer) ? answer : Array(blankCount).fill('');
 
   const segments = useMemo(() => {
-    return parseClozePassage(question.content);
-  }, [question.content]);
+    return parseClozePassage(passage);
+  }, [passage]);
 
   const handleChange = (index: number, value: string) => {
     if (isSubmitted) return;
@@ -1592,7 +1617,8 @@ const FillInPassageQuestion = React.memo(({ question, answer, isSubmitted, onSet
 });
 
 const InlineDropdownQuestion = React.memo(({ question, answer, isSubmitted, onSetAnswer, viewPassFail, canViewSolution }: any) => {
-  const blankCount = (question.content.match(/[__]/g) || []).length;
+  const { passage } = getPassageParts(question.content);
+  const blankCount = (passage.match(/\[__\]/g) || []).length;
   const currentAns: string[] = Array.isArray(answer) ? answer : Array(blankCount).fill('');
 
   const formatPlainTextMath = (text: string): string => {
@@ -1605,8 +1631,8 @@ const InlineDropdownQuestion = React.memo(({ question, answer, isSubmitted, onSe
   };
 
   const segments = useMemo(() => {
-    return parseClozePassage(question.content);
-  }, [question.content]);
+    return parseClozePassage(passage);
+  }, [passage]);
 
   const handleChange = (index: number, value: string) => {
     if (isSubmitted) return;
