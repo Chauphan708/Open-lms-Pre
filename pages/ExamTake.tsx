@@ -64,6 +64,110 @@ const getPassageParts = (content: string) => {
   };
 };
 
+const isValueMatchingOption = (actual: string, expectedOption: string, caseSensitive = false) => {
+  const normActual = caseSensitive ? actual.trim() : actual.trim().toLowerCase();
+  const alternatives = expectedOption.split('|||').map(alt => caseSensitive ? alt.trim() : alt.trim().toLowerCase());
+  return alternatives.includes(normActual);
+};
+
+const getCommutativeGroups = (content: string, optionsLength: number) => {
+  const cleanContent = content.replace(/\s*Đáp án:\s*[^\n]*$/i, '').trim();
+  const parts = cleanContent.split(/\[__\]/);
+  const numBlanks = parts.length - 1;
+  const transitions: string[] = [];
+  for (let i = 0; i < numBlanks - 1; i++) {
+    transitions.push(parts[i + 1] || '');
+  }
+  
+  const getOpType = (text: string) => {
+    const clean = text.replace(/[\s$.:;?!)()]/g, '').toLowerCase();
+    if (['nhân', '×', 'x', '*', '\\times', '\\cdot'].includes(clean)) {
+      return 'M';
+    }
+    if (['cộng', '+'].includes(clean)) {
+      return 'A';
+    }
+    return null;
+  };
+  
+  const multLinks = new Set<number>();
+  const addLinks = new Set<number>();
+  
+  for (let i = 0; i < transitions.length; i++) {
+    const op = getOpType(transitions[i]);
+    if (op === 'M') {
+      multLinks.add(i);
+    } else if (op === 'A') {
+      addLinks.add(i);
+    }
+  }
+  
+  const parent = Array.from({ length: numBlanks }, (_, i) => i);
+  const find = (i: number): number => {
+    if (parent[i] === i) return i;
+    return parent[i] = find(parent[i]);
+  };
+  const union = (i: number, j: number) => {
+    const rootI = find(i);
+    const rootJ = find(j);
+    if (rootI !== rootJ) {
+      parent[rootI] = rootJ;
+    }
+  };
+  
+  multLinks.forEach(i => union(i, i + 1));
+  
+  const inMultGroup = new Set<number>();
+  multLinks.forEach(i => {
+    inMultGroup.add(i);
+    inMultGroup.add(i + 1);
+  });
+  
+  addLinks.forEach(i => {
+    if (!inMultGroup.has(i) && !inMultGroup.has(i + 1)) {
+      union(i, i + 1);
+    }
+  });
+  
+  const groupsMap = new Map<number, number[]>();
+  for (let i = 0; i < numBlanks; i++) {
+    const root = find(i);
+    if (!groupsMap.has(root)) {
+      groupsMap.set(root, []);
+    }
+    groupsMap.get(root)!.push(i);
+  }
+  
+  const groups: number[][] = [];
+  groupsMap.forEach(indices => {
+    if (indices.length > 1) {
+      groups.push(indices);
+    }
+  });
+  return groups;
+};
+
+const checkPermutationMatch = (actuals: string[], expecteds: string[], caseSensitive = false) => {
+  if (actuals.length !== expecteds.length) return false;
+  const n = actuals.length;
+  const visited = Array(n).fill(false);
+  
+  const match = (idx: number): boolean => {
+    if (idx === n) return true;
+    for (let j = 0; j < n; j++) {
+      if (!visited[j]) {
+        if (isValueMatchingOption(actuals[idx], expecteds[j], caseSensitive)) {
+          visited[j] = true;
+          if (match(idx + 1)) return true;
+          visited[j] = false;
+        }
+      }
+    }
+    return false;
+  };
+  return match(0);
+};
+
 export interface ClozeSegment {
   type: 'text' | 'blank' | 'fraction_with_blank';
   val?: string;
@@ -408,12 +512,22 @@ export const evaluateAnswer = (q: any, userAns: any, caseSensitive: boolean = fa
   if (q.type === 'DRAG_DROP') {
     const numBlanks = (q.content.match(/\[__\]/g) || []).length;
     if (!Array.isArray(userAns)) return false;
+    
+    const groups = getCommutativeGroups(q.content, q.options.length);
+    const checked = new Set<number>();
+    
+    for (const group of groups) {
+      const expectedVals = group.map(idx => String(q.options[idx] || ''));
+      const actualVals = group.map(idx => String(userAns[idx] || ''));
+      if (!checkPermutationMatch(actualVals, expectedVals, false)) return false;
+      group.forEach(idx => checked.add(idx));
+    }
+    
     for (let i = 0; i < numBlanks; i++) {
+      if (checked.has(i)) continue;
       const expected = q.options[i];
       const actual = userAns[i];
-      const normExpected = String(expected || '').trim().toLowerCase();
-      const normActual = String(actual || '').trim().toLowerCase();
-      if (normActual !== normExpected) return false;
+      if (!isValueMatchingOption(String(actual || ''), String(expected || ''), false)) return false;
     }
     return true;
   }
@@ -449,14 +563,22 @@ export const evaluateAnswer = (q: any, userAns: any, caseSensitive: boolean = fa
   if (q.type === 'FILL_IN_PASSAGE') {
     const numBlanks = (q.content.match(/\[__\]/g) || []).length;
     if (!Array.isArray(userAns)) return false;
+    
+    const groups = getCommutativeGroups(q.content, q.options.length);
+    const checked = new Set<number>();
+    
+    for (const group of groups) {
+      const expectedVals = group.map(idx => String(q.options[idx] || ''));
+      const actualVals = group.map(idx => String(userAns[idx] || ''));
+      if (!checkPermutationMatch(actualVals, expectedVals, caseSensitive)) return false;
+      group.forEach(idx => checked.add(idx));
+    }
+    
     for (let i = 0; i < numBlanks; i++) {
-      const expected = caseSensitive
-        ? String(q.options[i] || '').trim()
-        : String(q.options[i] || '').trim().toLowerCase();
-      const actual = caseSensitive
-        ? String(userAns[i] || '').trim()
-        : String(userAns[i] || '').trim().toLowerCase();
-      if (actual !== expected) return false;
+      if (checked.has(i)) continue;
+      const expected = q.options[i];
+      const actual = userAns[i];
+      if (!isValueMatchingOption(String(actual || ''), String(expected || ''), caseSensitive)) return false;
     }
     return true;
   }
@@ -1050,9 +1172,18 @@ const DragDropQuestion = React.memo(({ question, answer, isSubmitted, onSetAnswe
 
   const getBlankCorrectness = (blankIdx: number) => {
     if (!isSubmitted || !viewPassFail) return null;
-    const expected = String(question.options[blankIdx] || '').trim().toLowerCase();
-    const actual = String(currentAns[blankIdx] || '').trim().toLowerCase();
-    return actual === expected ? 'correct' : 'wrong';
+    
+    const groups = getCommutativeGroups(question.content, question.options.length);
+    const inGroup = groups.find(g => g.includes(blankIdx));
+    if (inGroup) {
+      const expectedVals = inGroup.map(idx => String(question.options[idx] || ''));
+      const actualVals = inGroup.map(idx => String(currentAns[idx] || ''));
+      return checkPermutationMatch(actualVals, expectedVals, false) ? 'correct' : 'wrong';
+    }
+    
+    const expected = String(question.options[blankIdx] || '');
+    const actual = String(currentAns[blankIdx] || '');
+    return isValueMatchingOption(actual, expected, false) ? 'correct' : 'wrong';
   };
 
   const renderBlank = (i: number, isFraction = false) => {
@@ -1532,13 +1663,18 @@ const FillInPassageQuestion = React.memo(({ question, answer, isSubmitted, onSet
 
   const getBlankCorrectness = (index: number) => {
     if (!isSubmitted || !viewPassFail) return null;
-    const expected = caseSensitive
-      ? String(question.options[index] || '').trim()
-      : String(question.options[index] || '').trim().toLowerCase();
-    const actual = caseSensitive
-      ? String(currentAns[index] || '').trim()
-      : String(currentAns[index] || '').trim().toLowerCase();
-    return actual === expected ? 'correct' : 'wrong';
+    
+    const groups = getCommutativeGroups(question.content, question.options.length);
+    const inGroup = groups.find(g => g.includes(index));
+    if (inGroup) {
+      const expectedVals = inGroup.map(idx => String(question.options[idx] || ''));
+      const actualVals = inGroup.map(idx => String(currentAns[idx] || ''));
+      return checkPermutationMatch(actualVals, expectedVals, caseSensitive) ? 'correct' : 'wrong';
+    }
+    
+    const expected = String(question.options[index] || '');
+    const actual = String(currentAns[index] || '');
+    return isValueMatchingOption(actual, expected, caseSensitive) ? 'correct' : 'wrong';
   };
 
   const renderBlank = (i: number, isFraction = false) => {

@@ -501,83 +501,8 @@ if (!exam) return <div className="p-8 text-center">Không tìm thấy bài tập
 
                               let isCorrect = false;
                               if (userAns !== undefined && userAns !== null && userAns !== '') {
-                                  if (q.type === 'MCQ') {
-                                     if (typeof userAns === 'number') {
-                                        isCorrect = userAns === q.correctOptionIndex;
-                                     } else if (typeof userAns === 'string') {
-                                        const idx = q.options.findIndex((opt: any) => String(opt).trim().toLowerCase() === userAns.trim().toLowerCase());
-                                        isCorrect = idx !== -1 && idx === q.correctOptionIndex;
-                                     }
-                                  } else if (q.type === 'MCQ_MULTIPLE') {
-                                     const correctArray = q.correctOptionIndices || [];
-                                     const userArray = (Array.isArray(userAns) ? userAns : []).map(val => {
-                                        if (typeof val === 'number') return val;
-                                        if (typeof val === 'string') {
-                                           const idx = q.options.findIndex((opt: any) => String(opt).trim().toLowerCase() === val.trim().toLowerCase());
-                                           return idx !== -1 ? idx : val;
-                                        }
-                                        return val;
-                                     });
-                                     if (correctArray.length > 0 && correctArray.length === userArray.length) {
-                                        isCorrect = correctArray.every((val: any) => userArray.includes(val));
-                                     }
-                                  } else if (q.type === 'SHORT_ANSWER') {
-                                    const sAns = String(userAns || '').trim().toLowerCase().replace(/\s+/g, '');
-                                    const solString = String(q.solution || '').trim();
-                                    const isSolutionShort = solString !== '' && solString.split(/\s+/).length < 10;
-
-                                    isCorrect = (q.options && q.options.length > 0)
-                                       ? q.options.some(opt => String(opt).trim().toLowerCase().replace(/\s+/g, '') === sAns)
-                                       : (isSolutionShort && sAns === solString.toLowerCase().replace(/\s+/g, ''));
-                                 } else if (q.type === 'DRAG_DROP') {
-                                    const numBlanks = (q.content.match(/\[__\]/g) || []).length;
-                                    if (Array.isArray(userAns) && userAns.length === numBlanks) {
-                                       let isAllCorrect = true;
-                                       for (let i = 0; i < numBlanks; i++) {
-                                          const expected = q.options[i];
-                                          const actual = userAns[i];
-                                          const normExpected = String(expected || '').trim().toLowerCase();
-                                          const normActual = String(actual || '').trim().toLowerCase();
-                                          if (normActual !== normExpected) {
-                                             isAllCorrect = false;
-                                             break;
-                                          }
-                                       }
-                                       isCorrect = isAllCorrect;
-                                    }
-                                 } else if (['MATCHING', 'ORDERING', 'SENTENCE_SCRAMBLE', 'WORD_CLASSIFY', 'FILL_IN_PASSAGE', 'INLINE_DROPDOWN'].includes(q.type)) {
-                                    if (Array.isArray(userAns) && userAns.length === q.options.length) {
-                                       let isAllCorrect = true;
-                                       for (let i = 0; i < q.options.length; i++) {
-                                          const expected = q.options[i];
-                                          const actual = userAns[i];
-                                          const normExpected = String(expected || '').trim().toLowerCase().replace(/\s*\|\|\|\s*/g, '|||');
-                                          const normActual = String(actual || '').trim().toLowerCase().replace(/\s*\|\|\|\s*/g, '|||');
-                                          
-                                          if (q.type === 'WORD_CLASSIFY') {
-                                             const expectedParts = String(expected || '').split('|||');
-                                             const correctCategoryUpper = (expectedParts[0] || '').trim().toUpperCase();
-                                             const studentCategoryUpper = String(actual || '').trim().toUpperCase();
-                                             if (correctCategoryUpper === '_NONE_' || correctCategoryUpper === 'NONE') {
-                                                if (studentCategoryUpper !== '' && studentCategoryUpper !== '_NONE_' && studentCategoryUpper !== 'NONE') {
-                                                   isAllCorrect = false; break;
-                                                }
-                                             } else if (studentCategoryUpper !== correctCategoryUpper) {
-                                                isAllCorrect = false; break;
-                                             }
-                                          } else if (q.type === 'INLINE_DROPDOWN') {
-                                             const expectedDropdown = String(expected || '').split('|||')[0].trim();
-                                             if (String(actual || '').trim() !== expectedDropdown) {
-                                                isAllCorrect = false; break;
-                                             }
-                                          } else if (normActual !== normExpected) {
-                                             isAllCorrect = false;
-                                             break;
-                                          }
-                                       }
-                                       isCorrect = isAllCorrect;
-                                    }
-                                 }
+                                 const isCaseSensitive = !!assignment?.settings?.caseSensitiveShortAnswer;
+                                 isCorrect = evaluateAnswer(q, userAns, isCaseSensitive);
                               }
 
                               if (isCorrect) {
