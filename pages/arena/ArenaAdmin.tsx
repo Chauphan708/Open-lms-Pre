@@ -454,11 +454,20 @@ export const ArenaAdmin: React.FC = () => {
             if (isFirstLoad.current) {
                 isFirstLoad.current = false;
             }
+
+            let queryTopic: string | undefined = undefined;
+            if (filterTopic) {
+                const parts = filterTopic.split('::');
+                const source = parts[0];
+                const name = parts[1] || filterTopic;
+                queryTopic = source === 'exam' ? '__non_existent_exam_topic__' : name;
+            }
+
             fetchArenaQuestions({
                 subject: filterSubject || undefined,
                 difficulty: filterDifficulty || undefined,
                 grade: filterGrade || undefined,
-                topic: filterTopic || undefined,
+                topic: queryTopic,
                 type: filterType || undefined,
                 search: searchQuery || undefined
             }, shouldIncludeStats).then(() => setLoading(false));
@@ -1981,11 +1990,20 @@ export const ArenaAdmin: React.FC = () => {
                     <button
                         onClick={async () => {
                             setLoadingMore(true);
+
+                            let queryTopic: string | undefined = undefined;
+                            if (filterTopic) {
+                                const parts = filterTopic.split('::');
+                                const source = parts[0];
+                                const name = parts[1] || filterTopic;
+                                queryTopic = source === 'exam' ? '__non_existent_exam_topic__' : name;
+                            }
+
                             await loadMoreArenaQuestions({
                                 subject: filterSubject || undefined,
                                 difficulty: filterDifficulty || undefined,
                                 grade: filterGrade || undefined,
-                                topic: filterTopic || undefined,
+                                topic: queryTopic,
                                 type: filterType || undefined,
                                 search: searchQuery || undefined
                             });
