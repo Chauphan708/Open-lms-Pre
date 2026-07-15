@@ -24,6 +24,7 @@ import {
   Brain,
   Bot,
   ChevronDown,
+  ChevronUp,
   ChevronRight,
   ExternalLink,
   Wrench,
@@ -38,7 +39,8 @@ import {
   HelpCircle,
   StickyNote,
   Sun,
-  Moon
+  Moon,
+  BookOpenCheck
 } from 'lucide-react';
 import { useStore } from '../store';
 import { UserRole, CustomToolMenu } from '../types';
@@ -55,6 +57,10 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isGuideOpen, setIsGuideOpen] = useState(false);
   const [activeShare, setActiveShare] = useState<{ notifId: string, examId: string } | null>(null);
+
+  // Scroll to top/bottom states
+  const [showScrollTop, setShowScrollTop] = useState(false);
+  const [showScrollBottom, setShowScrollBottom] = useState(false);
 
   // Dark mode state
   const [theme, setTheme] = useState<'light' | 'dark'>(() => {
@@ -79,6 +85,26 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
   const toggleTheme = () => {
     setTheme(prev => prev === 'dark' ? 'light' : 'dark');
   };
+
+  // Track window scrolling for top/bottom navigation buttons
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollTop = window.scrollY || document.documentElement.scrollTop;
+      const scrollHeight = document.documentElement.scrollHeight;
+      const clientHeight = document.documentElement.clientHeight;
+      
+      // Show scroll-to-top button if scrolled down by 300px
+      setShowScrollTop(scrollTop > 300);
+      // Show scroll-to-bottom button if there's still more than 300px to scroll down
+      setShowScrollBottom(scrollTop + clientHeight < scrollHeight - 300);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    // Initial check
+    handleScroll();
+    
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   // State to track expanded custom tools
   const [expandedTools, setExpandedTools] = useState<Record<string, boolean>>({});
@@ -201,6 +227,7 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
         { label: 'Phòng Thảo luận', path: '/discussion/join', icon: MessageSquare, roles: ['STUDENT'] },
         { label: 'QL Đấu trí', path: '/arena/admin', icon: Brain, roles: ['ADMIN', 'TEACHER'] },
         { label: 'Tổ chức Giải đấu', path: '/arena/tournament/host', icon: Trophy, roles: ['ADMIN', 'TEACHER'] },
+        { label: 'Khóa học Online', path: '/elearning', icon: BookOpenCheck, roles: ['ADMIN', 'TEACHER', 'STUDENT'] },
         { label: 'Đấu trí', path: '/arena', icon: Brain, roles: ['STUDENT', 'TEACHER', 'ADMIN'] },
       ]
     },
@@ -674,6 +701,32 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
           />
         )}
       </main>
+
+      {/* Scroll to Top / Bottom Buttons */}
+      <div className="fixed bottom-6 right-6 z-40 flex flex-col gap-2 pointer-events-none">
+        <button
+          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+          aria-label="Cuộn lên đầu trang"
+          className={`p-3 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 text-gray-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 rounded-full shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 transition-all duration-300 motion-reduce:transition-none motion-reduce:transform-none hover:border-indigo-100 dark:hover:border-slate-700 flex items-center justify-center cursor-pointer group relative ${showScrollTop ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 translate-y-4 scale-75 pointer-events-none'}`}
+          title="Cuộn lên đầu trang"
+        >
+          <ChevronUp className="h-5 w-5" />
+          <span className="absolute right-full mr-2 px-2 py-1 bg-gray-900/90 text-white text-[10px] rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap pointer-events-none">
+            Cuộn lên đầu
+          </span>
+        </button>
+        <button
+          onClick={() => window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'smooth' })}
+          aria-label="Cuộn xuống cuối trang"
+          className={`p-3 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 text-gray-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 rounded-full shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 transition-all duration-300 motion-reduce:transition-none motion-reduce:transform-none hover:border-indigo-100 dark:hover:border-slate-700 flex items-center justify-center cursor-pointer group relative ${showScrollBottom ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 -translate-y-4 scale-75 pointer-events-none'}`}
+          title="Cuộn xuống cuối trang"
+        >
+          <ChevronDown className="h-5 w-5" />
+          <span className="absolute right-full mr-2 px-2 py-1 bg-gray-900/90 text-white text-[10px] rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap pointer-events-none">
+            Cuộn xuống cuối
+          </span>
+        </button>
+      </div>
 
       {/* Mobile Overlay */}
       {
