@@ -707,7 +707,7 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
         <button
           onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
           aria-label="Cuộn lên đầu trang"
-          className={`p-3 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 text-gray-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 rounded-full shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 transition-all duration-300 motion-reduce:transition-none motion-reduce:transform-none hover:border-indigo-100 dark:hover:border-slate-700 flex items-center justify-center cursor-pointer group relative ${showScrollTop ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 translate-y-4 scale-75 pointer-events-none'}`}
+          className={`p-3 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 text-gray-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 rounded-full shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 transition-all duration-300 motion-reduce:transition-none motion-reduce:transform-none hover:border-indigo-100 dark:hover:border-slate-700 flex items-center justify-center cursor-pointer group relative ${showScrollTop ? 'opacity-100 translate-y-0 scale-100 pointer-events-auto' : 'opacity-0 translate-y-4 scale-75 pointer-events-none'}`}
           title="Cuộn lên đầu trang"
         >
           <ChevronUp className="h-5 w-5" />
@@ -718,7 +718,7 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
         <button
           onClick={() => window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'smooth' })}
           aria-label="Cuộn xuống cuối trang"
-          className={`p-3 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 text-gray-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 rounded-full shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 transition-all duration-300 motion-reduce:transition-none motion-reduce:transform-none hover:border-indigo-100 dark:hover:border-slate-700 flex items-center justify-center cursor-pointer group relative ${showScrollBottom ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 -translate-y-4 scale-75 pointer-events-none'}`}
+          className={`p-3 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 text-gray-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 rounded-full shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 transition-all duration-300 motion-reduce:transition-none motion-reduce:transform-none hover:border-indigo-100 dark:hover:border-slate-700 flex items-center justify-center cursor-pointer group relative ${showScrollBottom ? 'opacity-100 translate-y-0 scale-100 pointer-events-auto' : 'opacity-0 -translate-y-4 scale-75 pointer-events-none'}`}
           title="Cuộn xuống cuối trang"
         >
           <ChevronDown className="h-5 w-5" />
