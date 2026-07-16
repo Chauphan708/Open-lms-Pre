@@ -91,14 +91,36 @@ export const createArenaSlice: StateCreator<AppState, [], [], ArenaSliceState> =
       });
 
       if (!error) {
-        set({
-          arenaProfile: {
-            ...current,
-            total_xp: current.total_xp + Math.max(0, xpGained),
-            elo_rating: Math.max(0, current.elo_rating + eloChange),
-            tower_floor: newFloor !== null ? newFloor : current.tower_floor
+        const updatedLocalProfile = {
+          ...current,
+          total_xp: current.total_xp + Math.max(0, xpGained),
+          elo_rating: Math.max(0, current.elo_rating + eloChange),
+          tower_floor: newFloor !== null ? newFloor : current.tower_floor
+        };
+
+        // Kiểm tra xem có các trường khác (wins, losses, topic_mastery, v.v.) đi kèm hay không
+        const otherKeys = Object.keys(profile).filter(k => k !== 'id' && k !== 'elo_rating' && k !== 'total_xp' && k !== 'tower_floor');
+        if (otherKeys.length > 0) {
+          const updateData: any = {};
+          otherKeys.forEach(k => {
+            updateData[k] = (profile as any)[k];
+          });
+          const { error: updateError } = await supabase.from('arena_profiles').update(updateData).eq('id', profile.id);
+          if (!updateError) {
+            set({
+              arenaProfile: {
+                ...updatedLocalProfile,
+                ...updateData
+              }
+            });
+          } else {
+            console.error("Lỗi cập nhật các trường khác của Profile:", updateError.message);
           }
-        });
+        } else {
+          set({
+            arenaProfile: updatedLocalProfile
+          });
+        }
         return;
       } else {
         console.error("Lỗi cập nhật Profile qua RPC an toàn:", error.message);
