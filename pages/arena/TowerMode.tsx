@@ -1815,7 +1815,7 @@ export const TowerMode: React.FC = () => {
                           <div className="h-2 flex-1 bg-white/5 rounded-full overflow-hidden">
                             <div className="h-full bg-gradient-to-r from-amber-500 to-orange-500" style={{ width: `${mastery}%` }}></div>
                           </div>
-                          <span className="text-[10px] lg:text-xs font-black text-gray-400">${mastery}% Mastery</span>
+                          <span className="text-[10px] lg:text-xs font-black text-gray-400">{mastery}% Mastery</span>
                         </div>
                       </div>
                       {mastery >= 100 && (
@@ -1826,7 +1826,7 @@ export const TowerMode: React.FC = () => {
                 })}
                 {availableTopics.filter(t => t.subject === selectedSubject).length === 0 && (
                   <div className="text-center py-10 text-gray-500 text-sm italic dark:text-slate-500">
-                    Chưa có chuyên đề nào được mở cho môn học này ở Khối ${selectedGrade}.
+                    Chưa có chuyên đề nào được mở cho môn học này ở Khối {selectedGrade}.
                   </div>
                 )}
               </div>
