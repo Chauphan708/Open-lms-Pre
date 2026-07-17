@@ -73,6 +73,11 @@ const MathText: React.FC<MathTextProps> = ({ children, className, inline = false
     text = text.replace(/\\\(/g, '$$').replace(/\\\)/g, '$$');
     // Escape markdown blockquote syntax if a line starts with >
     text = text.replace(/^(>)/gm, '\\>');
+    // Escape markdown list/header syntax at the start of any line to prevent rendering issues with standalone characters (like '-', '*', '+', '1.')
+    text = text.replace(/^(\s*)-/gm, '$1\\-');
+    text = text.replace(/^(\s*)\*/gm, '$1\\*');
+    text = text.replace(/^(\s*)\+/gm, '$1\\+');
+    text = text.replace(/^(\s*)(\d+)\./gm, '$1$2\\.');
     // Escape markdown bold interpretation for [__]
     text = text.replace(/\[__\]/g, '[\\_\\_]');
     return text;
