@@ -999,10 +999,12 @@ export const TowerMode: React.FC = () => {
       const cleanUser = isCase
         ? normalizeMath(ansStr.trim().replace(/\s+/g, ''))
         : normalizeMath(ansStr.trim().toLowerCase().replace(/\s+/g, ''));
-      const cleanCorrect = isCase
-        ? normalizeMath((currentQ.correct_answer_string || '').trim().replace(/\s+/g, ''))
-        : normalizeMath((currentQ.correct_answer_string || '').trim().toLowerCase().replace(/\s+/g, ''));
-      correct = cleanUser === cleanCorrect;
+      
+      const correctAnswers = (currentQ.correct_answer_string || '')
+        .split('|')
+        .map(ans => isCase ? normalizeMath(ans.trim().replace(/\s+/g, '')) : normalizeMath(ans.trim().toLowerCase().replace(/\s+/g, '')));
+        
+      correct = correctAnswers.includes(cleanUser);
     } else if (currentQ.type === 'MCQ_MULTIPLE') {
       const userSelected = Array.isArray(payload) ? payload : [];
       const correctIndices = currentQ.correct_indices || [];

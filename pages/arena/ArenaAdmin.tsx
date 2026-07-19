@@ -2071,7 +2071,7 @@ export const ArenaAdmin: React.FC = () => {
                                             type="text"
                                             value={formCorrectAnswerString}
                                             onChange={e => setFormCorrectAnswerString(e.target.value)}
-                                            placeholder="Nhập chuỗi/từ đáp án đúng chính xác..."
+                                            placeholder="Nhập (các) đáp án đúng, cách nhau bởi dấu | (Ví dụ: 456 789|456789)..."
                                             className="w-full border rounded-xl px-3.5 py-2.5 text-sm outline-none focus:ring-2 focus:ring-emerald-500 bg-white font-bold text-emerald-950 dark:bg-slate-900 dark:border-slate-800"
                                         />
                                     </div>
@@ -2088,6 +2088,9 @@ export const ArenaAdmin: React.FC = () => {
                                         {formCaseSensitive 
                                             ? "* Lưu ý: Học sinh phải viết hoa/thường khớp 100% với đáp án (rất cần thiết cho các câu hỏi chính tả)."
                                             : "* Lưu ý: Hệ thống sẽ tự động chuyển về dạng chữ thường và bỏ dấu cách thừa khi đối chiếu kết quả của học sinh."}
+                                    </p>
+                                    <p className="text-[10px] text-emerald-700/80 mt-1.5 italic font-medium">
+                                        💡 Mẹo: Nhập nhiều phương án đáp án tương đương bằng cách sử dụng ký tự gạch đứng <code className="bg-emerald-100/60 dark:bg-slate-800 px-1 py-0.5 rounded font-black text-emerald-800 dark:text-emerald-300">|</code> để phân cách (Ví dụ: <code className="bg-emerald-100/60 dark:bg-slate-800 px-1 py-0.5 rounded font-bold text-emerald-800 dark:text-emerald-300">456 789|456789</code>).
                                     </p>
                                 </div>
                             ) : (
@@ -2716,6 +2719,7 @@ export const ArenaAdmin: React.FC = () => {
                                             type="text"
                                             value={formCorrectAnswerString}
                                             onChange={e => setFormCorrectAnswerString(e.target.value)}
+                                            placeholder="Nhập (các) đáp án đúng, cách nhau bởi dấu | (Ví dụ: 456 789|456789)..."
                                             className="w-full border rounded-xl px-3.5 py-2.5 text-sm outline-none focus:ring-2 focus:ring-emerald-500 bg-white font-bold text-emerald-950 dark:bg-slate-900 dark:border-slate-800"
                                         />
                                     </div>
@@ -2728,6 +2732,9 @@ export const ArenaAdmin: React.FC = () => {
                                         />
                                         <span className="text-xs font-bold text-emerald-900">Phân biệt chữ hoa / chữ thường (Case Sensitive)</span>
                                     </label>
+                                    <p className="text-[10px] text-emerald-700/80 mt-1 italic font-medium">
+                                        💡 Mẹo: Nhập nhiều phương án đáp án tương đương bằng cách sử dụng ký tự gạch đứng <code className="bg-emerald-100/60 dark:bg-slate-800 px-1 py-0.5 rounded font-black text-emerald-800 dark:text-emerald-300">|</code> để phân cách (Ví dụ: <code className="bg-emerald-100/60 dark:bg-slate-800 px-1 py-0.5 rounded font-bold text-emerald-800 dark:text-emerald-300">456 789|456789</code>).
+                                    </p>
                                 </div>
                             ) : (
                                 <>

@@ -442,10 +442,12 @@ export const PvPBattle: React.FC = () => {
             const cleanUser = isCase
                 ? normalizeMath(ansStr.trim().replace(/\s+/g, ''))
                 : normalizeMath(ansStr.trim().toLowerCase().replace(/\s+/g, ''));
-            const cleanCorrect = isCase
-                ? normalizeMath((q.correct_answer_string || '').trim().replace(/\s+/g, ''))
-                : normalizeMath((q.correct_answer_string || '').trim().toLowerCase().replace(/\s+/g, ''));
-            correct = cleanUser === cleanCorrect;
+            
+            const correctAnswers = (q.correct_answer_string || '')
+                .split('|')
+                .map(ans => isCase ? normalizeMath(ans.trim().replace(/\s+/g, '')) : normalizeMath(ans.trim().toLowerCase().replace(/\s+/g, '')));
+                
+            correct = correctAnswers.includes(cleanUser);
             finalAnswerIndex = correct ? 0 : -1;
         }
 
