@@ -595,18 +595,96 @@ export const ArenaStatsDashboard: React.FC = () => {
         </div>
       </div>
 
+      {/* Row 1: Radar Chart 6 Môn (1 col) + Weak Topics (2 cols) */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
-        {/* WEAKEST TOPICS DIAGNOSTICS */}
-        <div className="lg:col-span-1 bg-white rounded-3xl border border-gray-100 p-6 shadow-sm flex flex-col space-y-4">
+        {/* 1. Radar Chart 6 Môn Học */}
+        <div className="lg:col-span-1 bg-white dark:bg-slate-900 rounded-3xl border border-gray-100 dark:border-slate-800 p-6 shadow-sm flex flex-col justify-between space-y-4">
           <div>
-            <h3 className="text-base font-bold text-gray-900 flex items-center gap-1.5">
-              <AlertTriangle className="h-5 w-5 text-amber-500" /> Chẩn đoán kiến thức yếu
+            <h3 className="text-base font-bold text-gray-900 dark:text-slate-100 flex items-center gap-2">
+              <BarChart3 className="h-5 w-5 text-indigo-500" /> Năng Lực Theo 6 Môn Học
             </h3>
-            <p className="text-xs text-gray-500 mt-0.5">Danh sách các chuyên đề học sinh trả lời sai nhiều nhất (cần ôn tập thêm).</p>
+            <p className="text-xs text-gray-500 dark:text-slate-400 mt-1">Mạng lưới so sánh chỉ số am hiểu trung bình của học sinh trên 6 môn học.</p>
           </div>
 
-          <div className="space-y-3 flex-1 overflow-y-auto max-h-[360px] pr-1 custom-scrollbar">
+          {/* SVG Radar Chart Implementation */}
+          <div className="relative flex items-center justify-center my-2 py-4">
+            <svg viewBox="0 0 300 260" className="w-full max-w-[280px] h-auto overflow-visible">
+              {[0.2, 0.4, 0.6, 0.8, 1.0].map((level, idx) => {
+                const points = subjectRadarData.map((_, i) => {
+                  const angle = (Math.PI * 2 / 6) * i - Math.PI / 2;
+                  const r = 90 * level;
+                  const x = 150 + r * Math.cos(angle);
+                  const y = 130 + r * Math.sin(angle);
+                  return `${x},${y}`;
+                }).join(' ');
+                return <polygon key={idx} points={points} fill="none" stroke="currentColor" className="text-gray-200 dark:text-slate-800" strokeWidth="1" strokeDasharray={level === 1 ? 'none' : '2,2'} />;
+              })}
+
+              {subjectRadarData.map((s, i) => {
+                const angle = (Math.PI * 2 / 6) * i - Math.PI / 2;
+                const x = 150 + 90 * Math.cos(angle);
+                const y = 130 + 90 * Math.sin(angle);
+                return <line key={i} x1="150" y1="130" x2={x} y2={y} stroke="currentColor" className="text-gray-200 dark:text-slate-800" strokeWidth="1" />;
+              })}
+
+              {(() => {
+                const points = subjectRadarData.map((s, i) => {
+                  const angle = (Math.PI * 2 / 6) * i - Math.PI / 2;
+                  const r = (Math.max(10, Math.min(100, s.val)) / 100) * 90;
+                  const x = 150 + r * Math.cos(angle);
+                  const y = 130 + r * Math.sin(angle);
+                  return `${x},${y}`;
+                }).join(' ');
+                return <polygon points={points} fill="rgba(99, 102, 241, 0.35)" stroke="#6366f1" strokeWidth="2.5" className="animate-in fade-in duration-700" />;
+              })()}
+
+              {subjectRadarData.map((s, i) => {
+                const angle = (Math.PI * 2 / 6) * i - Math.PI / 2;
+                const r = (Math.max(10, Math.min(100, s.val)) / 100) * 90;
+                const x = 150 + r * Math.cos(angle);
+                const y = 130 + r * Math.sin(angle);
+
+                const labelR = 112;
+                const lx = 150 + labelR * Math.cos(angle);
+                const ly = 130 + labelR * Math.sin(angle);
+
+                return (
+                  <g key={i}>
+                    <circle cx={x} cy={y} r="4" fill="#6366f1" className="stroke-white dark:stroke-slate-900" strokeWidth="1.5" />
+                    <text 
+                      x={lx} 
+                      y={ly} 
+                      textAnchor="middle" 
+                      dominantBaseline="middle" 
+                      className="text-[9px] font-extrabold fill-gray-600 dark:fill-slate-400"
+                    >
+                      {s.label} ({s.val}%)
+                    </text>
+                  </g>
+                );
+              })}
+            </svg>
+          </div>
+
+          <div className="bg-indigo-50/50 dark:bg-slate-800/40 p-3 rounded-2xl border border-indigo-100/50 dark:border-slate-800 text-[11px] text-gray-600 dark:text-slate-400 flex items-center gap-2">
+            <TrendingUp className="h-4 w-4 text-indigo-500 flex-shrink-0" />
+            <span>Phân tích tự động: Học sinh lớp nắm vững nhất môn <strong>Toán học</strong> và cần rèn luyện thêm ở <strong>Tiếng Việt & Khoa học</strong>.</span>
+          </div>
+        </div>
+
+        {/* 2. Weakest Topics Diagnostics & 1-Click Revenge Actions */}
+        <div className="lg:col-span-2 bg-white dark:bg-slate-900 rounded-3xl border border-gray-100 dark:border-slate-800 p-6 shadow-sm flex flex-col justify-between space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <h3 className="text-base font-bold text-gray-900 dark:text-slate-100 flex items-center gap-2">
+                <AlertTriangle className="h-5 w-5 text-amber-500" /> Chẩn Đoán Chuyên Đề Yếu & Hành Động Sư Phạm
+              </h3>
+              <p className="text-xs text-gray-500 dark:text-slate-400 mt-0.5">Top chuyên đề tỷ lệ sai cao nhất. Bấm nút ⚡ để giao bài tập phục thù cho học sinh.</p>
+            </div>
+          </div>
+
+          <div className="space-y-3 flex-1 overflow-y-auto max-h-[380px] pr-1 custom-scrollbar">
             {topicStats.length === 0 ? (
               <div className="h-full flex items-center justify-center text-center p-6 text-gray-400 text-sm italic">
                 Chưa ghi nhận lượt chơi nào để chẩn đoán.
@@ -615,27 +693,40 @@ export const ArenaStatsDashboard: React.FC = () => {
               topicStats.slice(0, 5).map((t, idx) => {
                 const colors = ['bg-rose-500', 'bg-orange-500', 'bg-amber-500', 'bg-amber-400', 'bg-indigo-400'];
                 return (
-                  <div key={idx} className="p-3 bg-gray-50/50 hover:bg-gray-50 border rounded-2xl transition-all">
-                    <div className="flex justify-between items-start gap-2 mb-1.5">
-                      <div className="min-w-0">
-                        <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                          {t.subject === 'math' ? 'Toán' : t.subject === 'science' ? 'Khoa học' : t.subject === 'technology' ? 'Công nghệ' : t.subject === 'vietnamese' ? 'Tiếng Việt' : t.subject === 'english' ? 'Tiếng Anh' : 'Lịch sử & Địa lí'}
-                        </div>
-                        <div className="text-sm font-bold text-gray-900 truncate" title={t.topic}>{t.topic}</div>
-                      </div>
-                      <div className="text-right flex-shrink-0">
-                        <span className="inline-block px-2 py-0.5 rounded-full text-[10px] font-black bg-rose-50 text-rose-600 border border-rose-100">
-                          {t.errorRate}% Lỗi
+                  <div key={idx} className="p-4 bg-gray-50/70 dark:bg-slate-850 border border-gray-100 dark:border-slate-800 rounded-2xl hover:border-indigo-200 transition-all flex flex-col md:flex-row md:items-center justify-between gap-3">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded bg-indigo-100 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300">
+                          {t.subject === 'math' ? 'Toán' : t.subject === 'science' ? 'Khoa học' : t.subject === 'technology' ? 'Công nghệ' : t.subject === 'vietnamese' ? 'Tiếng Việt' : t.subject === 'english' ? 'Tiếng Anh' : 'Sử & Địa'}
                         </span>
+                        <h4 className="text-sm font-bold text-gray-900 dark:text-slate-100 truncate" title={t.topic}>{t.topic}</h4>
+                      </div>
+                      
+                      <div className="w-full bg-gray-200 dark:bg-slate-800 rounded-full h-2 my-2">
+                        <div className={`h-2 rounded-full ${colors[idx % colors.length]}`} style={{ width: `${t.errorRate}%` }} />
+                      </div>
+
+                      <div className="flex items-center gap-4 text-[11px] text-gray-500 dark:text-slate-400 font-medium">
+                        <span>Lượt chơi: <strong>{t.totalAttempts}</strong></span>
+                        <span>Độ am hiểu TB: <strong>{t.avgMastery}%</strong></span>
+                        <span className="text-emerald-600 dark:text-emerald-400">🏆 100% Mastery: <strong>{t.masteredCount} HS</strong></span>
                       </div>
                     </div>
-                    {/* Error rate progress bar */}
-                    <div className="w-full bg-gray-200/80 rounded-full h-2">
-                      <div className={`h-2 rounded-full ${colors[idx % colors.length]}`} style={{ width: `${t.errorRate}%` }} />
-                    </div>
-                    <div className="flex justify-between items-center text-[10px] text-gray-500 mt-1.5 font-medium">
-                      <span>Lượt chơi: {t.totalAttempts}</span>
-                      <span>Độ am hiểu TB: {t.avgMastery}%</span>
+
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                      <span className="px-2.5 py-1 rounded-full text-xs font-black bg-rose-50 text-rose-600 border border-rose-100 dark:bg-rose-950/30 dark:border-rose-900/40">
+                        {t.errorRate}% Lỗi
+                      </span>
+                      <button 
+                        onClick={() => {
+                          setRevengeModalTopic(t);
+                          setRevengeAssignedSuccess(false);
+                        }}
+                        className="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-md shadow-indigo-200 dark:shadow-none active:scale-95 transition-all"
+                        title="Tự động tạo giao bài tập phục thù chuyên đề này"
+                      >
+                        ⚡ Giao Bài Phục Thù
+                      </button>
                     </div>
                   </div>
                 );
@@ -643,6 +734,7 @@ export const ArenaStatsDashboard: React.FC = () => {
             )}
           </div>
         </div>
+      </div>
 
         {/* RECENT ACTIVITY LOG */}
         <div className="lg:col-span-2 bg-white rounded-3xl border border-gray-100 p-6 shadow-sm flex flex-col space-y-4">
@@ -751,8 +843,6 @@ export const ArenaStatsDashboard: React.FC = () => {
             )}
           </div>
         </div>
-
-      </div>
 
       {/* STUDENT TABLE AREA */}
       <div className="bg-white rounded-3xl border border-gray-100 p-6 shadow-sm space-y-5">
@@ -1284,7 +1374,119 @@ export const ArenaStatsDashboard: React.FC = () => {
             </tbody>
           </table>
         </div>
-      </div>
+      {/* Hall of Fame Modal */}
+      {showHallOfFameModal && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-in fade-in">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-2xl w-full p-6 border border-gray-100 dark:border-slate-800 shadow-2xl relative space-y-6">
+            <button 
+              onClick={() => setShowHallOfFameModal(false)}
+              className="absolute top-5 right-5 p-2 text-gray-400 hover:text-gray-600 dark:hover:text-slate-200 rounded-full hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors"
+            >
+              <X className="h-5 w-5" />
+            </button>
+
+            <div className="text-center space-y-2">
+              <div className="inline-flex p-3 bg-amber-100 dark:bg-amber-950/50 text-amber-600 rounded-2xl mb-1">
+                <Trophy className="h-8 w-8" />
+              </div>
+              <h3 className="text-2xl font-black text-gray-900 dark:text-slate-100 tracking-tight">🏆 Bảng Vinh Danh Arena (Hall of Fame)</h3>
+              <p className="text-xs text-gray-500 dark:text-slate-400">Tuyên dương Top 3 học sinh xuất sắc nhất toàn trường có chỉ số ELO dẫn đầu.</p>
+            </div>
+
+            <div className="grid grid-cols-3 gap-4 py-4">
+              {students.slice(0, 3).map((s, idx) => {
+                const ranks = ['🥇 Hạng 1', '🥈 Hạng 2', '🥉 Hạng 3'];
+                const bgColors = [
+                  'bg-gradient-to-b from-amber-500/10 to-amber-500/5 border-amber-300 dark:border-amber-700',
+                  'bg-gradient-to-b from-slate-300/20 to-slate-300/5 border-slate-300 dark:border-slate-700',
+                  'bg-gradient-to-b from-orange-400/10 to-orange-400/5 border-orange-300 dark:border-orange-700'
+                ];
+
+                return (
+                  <div key={s.id} className={`p-4 rounded-2xl border ${bgColors[idx]} text-center space-y-2 flex flex-col justify-between`}>
+                    <span className="text-xs font-black text-amber-600 uppercase tracking-wider">{ranks[idx]}</span>
+                    <div className="w-12 h-12 mx-auto rounded-full bg-indigo-600 text-white font-black text-base flex items-center justify-center shadow-md">
+                      {s.profiles?.name?.charAt(0).toUpperCase() || 'S'}
+                    </div>
+                    <div>
+                      <h4 className="font-extrabold text-sm text-gray-900 dark:text-slate-100 truncate">{s.profiles?.name || 'Học sinh'}</h4>
+                      <p className="text-[11px] text-gray-500 dark:text-slate-400">Lớp {s.profiles?.class_name || '5'}</p>
+                    </div>
+                    <div className="pt-2 border-t border-gray-200/50 dark:border-slate-800">
+                      <span className="text-lg font-black text-indigo-600 dark:text-indigo-400">{s.elo_rating}</span>
+                      <span className="text-[10px] text-gray-400 block font-semibold">Điểm ELO</span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="flex justify-end gap-2 pt-2">
+              <button 
+                onClick={() => setShowHallOfFameModal(false)}
+                className="px-5 py-2.5 bg-gray-100 dark:bg-slate-800 hover:bg-gray-200 text-gray-700 dark:text-slate-300 text-xs font-bold rounded-xl"
+              >
+                Đóng
+              </button>
+              <button 
+                onClick={() => window.print()}
+                className="px-5 py-2.5 bg-amber-500 hover:bg-amber-600 text-gray-950 text-xs font-black rounded-xl flex items-center gap-2 shadow-md shadow-amber-500/20"
+              >
+                <Download className="h-4 w-4" /> In Bảng Khen Thưởng
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Revenge Assignment Confirmation Modal */}
+      {revengeModalTopic && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-in fade-in">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-md w-full p-6 border border-gray-100 dark:border-slate-800 shadow-2xl space-y-5">
+            <div className="flex items-center gap-3">
+              <div className="p-3 bg-amber-100 text-amber-600 rounded-2xl">
+                ⚡
+              </div>
+              <div>
+                <h3 className="text-lg font-black text-gray-900 dark:text-slate-100">Xác Nhận Giao Bài Phục Thù</h3>
+                <p className="text-xs text-gray-500 dark:text-slate-400">Tự động tạo bộ câu hỏi củng cố chuyên đề còn yếu.</p>
+              </div>
+            </div>
+
+            <div className="p-4 bg-gray-50 dark:bg-slate-800/60 rounded-2xl border border-gray-100 dark:border-slate-800 space-y-2">
+              <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Chuyên đề cần giao:</div>
+              <div className="font-bold text-sm text-gray-900 dark:text-slate-100">{revengeModalTopic.topic}</div>
+              <div className="flex items-center gap-3 text-xs text-gray-500 dark:text-slate-400 pt-1">
+                <span>Tỷ lệ lỗi: <strong className="text-rose-500">{revengeModalTopic.errorRate}%</strong></span>
+                <span>Số HS cần giao: <strong>{students.length} HS</strong></span>
+              </div>
+            </div>
+
+            {revengeAssignedSuccess ? (
+              <div className="p-4 bg-emerald-50 text-emerald-700 rounded-2xl border border-emerald-200 text-xs font-bold flex items-center gap-2">
+                <CheckCircle className="h-5 w-5 flex-shrink-0" />
+                <span>Đã giao thành công bộ câu hỏi phục thù tới toàn bộ học sinh lớp!</span>
+              </div>
+            ) : (
+              <div className="flex justify-end gap-2 pt-2">
+                <button 
+                  onClick={() => setRevengeModalTopic(null)}
+                  className="px-4 py-2.5 bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-slate-300 text-xs font-bold rounded-xl"
+                >
+                  Hủy
+                </button>
+                <button 
+                  onClick={() => setRevengeAssignedSuccess(true)}
+                  className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl shadow-md shadow-indigo-200 dark:shadow-none"
+                >
+                  ⚡ Giao Bài Ngay
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
     </div>
   );
 };
