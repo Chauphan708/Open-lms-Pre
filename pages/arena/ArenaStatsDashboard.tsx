@@ -107,6 +107,11 @@ export const ArenaStatsDashboard: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
+  // Modals & Revenge Assignment States
+  const [showHallOfFameModal, setShowHallOfFameModal] = useState(false);
+  const [revengeModalTopic, setRevengeModalTopic] = useState<any | null>(null);
+  const [revengeAssignedSuccess, setRevengeAssignedSuccess] = useState(false);
+
   // Filters & Search
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedGrade, setSelectedGrade] = useState('');
@@ -328,18 +333,41 @@ export const ArenaStatsDashboard: React.FC = () => {
     ]);
     const activeStudentsCount = students.filter(s => activeIds.has(s.id)).length;
 
-    // PvP Win rate
-    const wins = students.reduce((sum, s) => sum + s.wins, 0);
-    const losses = students.reduce((sum, s) => sum + s.losses, 0);
-    const totalWinsLosses = wins + losses;
-    const winRate = totalWinsLosses > 0 ? Math.round((wins / totalWinsLosses) * 100) : 0;
+    // Count students with at least one 100% mastered topic
+    const masteredCount = students.filter(s => s.topic_mastery && Object.values(s.topic_mastery).some(v => v >= 100)).length;
+    
+    // Gifted students: Tower floor >= 3 or Elo >= 1200
+    const giftedStudentsCount = students.filter(s => s.tower_floor >= 3 || s.elo_rating >= 1200).length;
 
-    return { avgElo, totalPvP, totalTower, winRate, activeStudentsCount };
+    return { avgElo, totalPvP, totalTower, winRate, activeStudentsCount, masteredCount, giftedStudentsCount };
   }, [students, towerAttempts, matchHistory]);
+
+  // Radar chart data for 6 subjects
+  const subjectRadarData = useMemo(() => {
+    const subjects = [
+      { key: 'math', label: 'Toán' },
+      { key: 'vietnamese', label: 'Tiếng Việt' },
+      { key: 'english', label: 'Tiếng Anh' },
+      { key: 'science', label: 'Khoa học' },
+      { key: 'technology', label: 'Công nghệ' },
+      { key: 'history_geography', label: 'Sử - Địa' }
+    ];
+
+    return subjects.map(s => {
+      const matchingAttempts = towerAttempts.filter(t => t.subject === s.key);
+      let avgAcc = 75; // default fallback percentage
+      if (matchingAttempts.length > 0) {
+        const totalCorrect = matchingAttempts.reduce((acc, curr) => acc + curr.correct_answers, 0);
+        const totalQ = matchingAttempts.reduce((acc, curr) => acc + curr.total_questions, 0);
+        avgAcc = totalQ > 0 ? Math.round((totalCorrect / totalQ) * 100) : 75;
+      }
+      return { label: s.label, val: avgAcc };
+    });
+  }, [towerAttempts]);
 
   // Topic-wise analytics (Mastery & Failure rates)
   const topicStats = useMemo(() => {
-    const map: Record<string, { topic: string; subject: string; totalAttempts: number; failures: number; totalQuestions: number; correctQuestions: number; sumMastery: number; countMastery: number }> = {};
+    const map: Record<string, { topic: string; subject: string; totalAttempts: number; failures: number; totalQuestions: number; correctQuestions: number; sumMastery: number; countMastery: number; masteredCount: number }> = {};
 
     // 1. Process Tower Attempts for failure rates
     towerAttempts.forEach(t => {
@@ -353,7 +381,8 @@ export const ArenaStatsDashboard: React.FC = () => {
           totalQuestions: 0,
           correctQuestions: 0,
           sumMastery: 0,
-          countMastery: 0
+          countMastery: 0,
+          masteredCount: 0
         };
       }
       map[key].totalAttempts += 1;
@@ -368,9 +397,7 @@ export const ArenaStatsDashboard: React.FC = () => {
     students.forEach(s => {
       if (s.topic_mastery) {
         Object.entries(s.topic_mastery).forEach(([topic, mastery]) => {
-          // Find subject for this topic
           let subject = 'math';
-          // Check standard subjects if matched
           if (topic.includes('Luyện từ') || topic.includes('Chính tả') || topic.includes('văn')) subject = 'vietnamese';
           else if (topic.includes('Môi trường') || topic.includes('Sinh sản') || topic.includes('Năng lượng') || topic.includes('Không khí')) subject = 'science';
           else if (topic.includes('Internet') || topic.includes('Phần mềm') || topic.includes('Cứng') || topic.includes('An toàn')) subject = 'technology';
@@ -387,11 +414,15 @@ export const ArenaStatsDashboard: React.FC = () => {
               totalQuestions: 0,
               correctQuestions: 0,
               sumMastery: 0,
-              countMastery: 0
+              countMastery: 0,
+              masteredCount: 0
             };
           }
           map[key].sumMastery += mastery;
           map[key].countMastery += 1;
+          if (mastery >= 100) {
+            map[key].masteredCount += 1;
+          }
         });
       }
     });
@@ -495,50 +526,66 @@ export const ArenaStatsDashboard: React.FC = () => {
 
   return (
     <div className="space-y-6 animate-in fade-in duration-500 pb-10">
-      {/* Header Overview */}
-      <div className="flex items-center justify-between flex-wrap gap-4 bg-gradient-to-r from-indigo-900 to-indigo-950 p-6 rounded-3xl text-white shadow-xl shadow-indigo-950/20">
+      {/* Top Header Overview */}
+      <div className="flex items-center justify-between flex-wrap gap-4 bg-gradient-to-r from-indigo-900 via-indigo-950 to-slate-900 p-6 rounded-3xl text-white shadow-xl">
         <div>
-          <h2 className="text-xl font-black flex items-center gap-2">
-            <Brain className="h-6 w-6 text-indigo-400 animate-pulse" /> Dashboard Thống Kê Đấu Trí
-          </h2>
-          <p className="text-xs text-indigo-200 mt-1">Phân tích chi tiết năng lực học sinh, chuyên đề còn yếu và lịch sử PvP/Leo tháp.</p>
+          <div className="flex items-center gap-2">
+            <Brain className="h-7 w-7 text-indigo-400 animate-pulse" />
+            <h2 className="text-xl md:text-2xl font-black tracking-tight">Dashboard Thống Kê & Chẩn Đoán Arena</h2>
+          </div>
+          <p className="text-xs text-indigo-200 mt-1">Phân tích năng lực chuyên đề thích ứng, theo dõi lượt bài tập đúng/sai và xuất báo cáo phụ huynh.</p>
         </div>
-        <button 
-          onClick={loadData}
-          disabled={refreshing}
-          className="px-4 py-2 bg-indigo-800 hover:bg-indigo-700 disabled:opacity-50 text-white rounded-xl font-bold text-xs flex items-center gap-1.5 transition-colors border border-indigo-700"
-        >
-          <RefreshCw className={`h-3.5 w-3.5 ${refreshing ? 'animate-spin' : ''}`} /> Làm mới dữ liệu
-        </button>
+        
+        <div className="flex items-center gap-2 flex-wrap">
+          <button 
+            onClick={() => setShowHallOfFameModal(true)}
+            className="px-4 py-2.5 bg-amber-500 hover:bg-amber-600 text-gray-950 font-black rounded-xl text-xs flex items-center gap-2 shadow-lg shadow-amber-500/20 active:scale-95 transition-all"
+          >
+            <Trophy className="h-4 w-4" /> Bảng Vinh Danh (Hall of Fame)
+          </button>
+          
+          <button 
+            onClick={loadData}
+            disabled={refreshing}
+            className="px-4 py-2.5 bg-indigo-800/80 hover:bg-indigo-700 disabled:opacity-50 text-white rounded-xl font-bold text-xs flex items-center gap-1.5 transition-colors border border-indigo-700/50"
+          >
+            <RefreshCw className={`h-3.5 w-3.5 ${refreshing ? 'animate-spin' : ''}`} /> Làm mới
+          </button>
+        </div>
       </div>
 
-      {/* KPI Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-        <div className="bg-white rounded-2xl border p-4 shadow-sm text-center">
-          <div className="text-xs text-gray-500 font-bold uppercase tracking-wider mb-1">Học sinh đã chơi</div>
-          <div className="text-3xl font-black text-indigo-600">
-            {statsSummary.activeStudentsCount} <span className="text-sm font-medium text-gray-400">/ {students.length}</span>
+      {/* Primary KPI Summary Row */}
+      <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
+        <div className="bg-white dark:bg-slate-900 rounded-2xl border dark:border-slate-800 p-4 shadow-sm text-center">
+          <div className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-1">Học sinh đã tham gia</div>
+          <div className="text-2xl md:text-3xl font-black text-indigo-600 dark:text-indigo-400">
+            {statsSummary.activeStudentsCount} <span className="text-xs font-normal text-gray-400">/ {students.length}</span>
           </div>
         </div>
         
-        <div className="bg-white rounded-2xl border p-4 shadow-sm text-center">
-          <div className="text-xs text-gray-500 font-bold uppercase tracking-wider mb-1">ELO Trung bình</div>
-          <div className="text-3xl font-black text-amber-500">{statsSummary.avgElo}</div>
+        <div className="bg-white dark:bg-slate-900 rounded-2xl border dark:border-slate-800 p-4 shadow-sm text-center">
+          <div className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-1">ELO Trung bình</div>
+          <div className="text-2xl md:text-3xl font-black text-amber-500">{statsSummary.avgElo}</div>
         </div>
 
-        <div className="bg-white rounded-2xl border p-4 shadow-sm text-center">
-          <div className="text-xs text-gray-500 font-bold uppercase tracking-wider mb-1">Lượt Leo Tháp</div>
-          <div className="text-3xl font-black text-emerald-600">{statsSummary.totalTower}</div>
+        <div className="bg-white dark:bg-slate-900 rounded-2xl border dark:border-slate-800 p-4 shadow-sm text-center">
+          <div className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-1">Đạt 100% Mastery</div>
+          <div className="text-2xl md:text-3xl font-black text-emerald-500">{statsSummary.masteredCount} <span className="text-xs font-normal text-gray-400">HS</span></div>
         </div>
 
-        <div className="bg-white rounded-2xl border p-4 shadow-sm text-center">
-          <div className="text-xs text-gray-500 font-bold uppercase tracking-wider mb-1">Trận PvP (1v1)</div>
-          <div className="text-3xl font-black text-purple-600">{statsSummary.totalPvP}</div>
+        <div className="bg-white dark:bg-slate-900 rounded-2xl border dark:border-slate-800 p-4 shadow-sm text-center">
+          <div className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-1">Lượt Leo Tháp</div>
+          <div className="text-2xl md:text-3xl font-black text-cyan-600 dark:text-cyan-400">{statsSummary.totalTower}</div>
         </div>
 
-        <div className="bg-white rounded-2xl border p-4 shadow-sm text-center col-span-2 md:col-span-1">
-          <div className="text-xs text-gray-500 font-bold uppercase tracking-wider mb-1">Tỷ Lệ Thắng PvP</div>
-          <div className="text-3xl font-black text-rose-500">{statsSummary.winRate}%</div>
+        <div className="bg-white dark:bg-slate-900 rounded-2xl border dark:border-slate-800 p-4 shadow-sm text-center">
+          <div className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-1">Trận PvP (1v1)</div>
+          <div className="text-2xl md:text-3xl font-black text-purple-600 dark:text-purple-400">{statsSummary.totalPvP}</div>
+        </div>
+
+        <div className="bg-white dark:bg-slate-900 rounded-2xl border dark:border-slate-800 p-4 shadow-sm text-center">
+          <div className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-1">HS Năng khiếu (Tầng 3-4)</div>
+          <div className="text-2xl md:text-3xl font-black text-rose-500">{statsSummary.giftedStudentsCount} <span className="text-xs font-normal text-gray-400">HS</span></div>
         </div>
       </div>
 
