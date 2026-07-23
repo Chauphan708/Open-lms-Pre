@@ -695,9 +695,7 @@ export const ArenaStatsDashboard: React.FC = () => {
           </div>
         </div>
 
-      </div>
-
-        {/* RECENT ACTIVITY LOG */}
+      {/* RECENT ACTIVITY LOG */}
         <div className="lg:col-span-2 bg-white rounded-3xl border border-gray-100 p-6 shadow-sm flex flex-col space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
