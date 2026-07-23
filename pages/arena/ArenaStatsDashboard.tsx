@@ -494,160 +494,66 @@ export const ArenaStatsDashboard: React.FC = () => {
   }
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-500 pb-12">
-      {/* Top Header Overview */}
-      <div className="flex items-center justify-between flex-wrap gap-4 bg-gradient-to-r from-indigo-900 via-indigo-950 to-slate-900 p-6 rounded-3xl text-white shadow-xl">
+    <div className="space-y-6 animate-in fade-in duration-500 pb-10">
+      {/* Header Overview */}
+      <div className="flex items-center justify-between flex-wrap gap-4 bg-gradient-to-r from-indigo-900 to-indigo-950 p-6 rounded-3xl text-white shadow-xl shadow-indigo-950/20">
         <div>
-          <div className="flex items-center gap-2">
-            <Brain className="h-7 w-7 text-indigo-400 animate-pulse" />
-            <h2 className="text-xl md:text-2xl font-black tracking-tight">Dashboard Thống Kê & Chẩn Đoán Arena</h2>
-          </div>
-          <p className="text-xs text-indigo-200 mt-1">Phân tích năng lực chuyên đề thích ứng, theo dõi lượt bài tập đúng/sai và xuất báo cáo phụ huynh.</p>
+          <h2 className="text-xl font-black flex items-center gap-2">
+            <Brain className="h-6 w-6 text-indigo-400 animate-pulse" /> Dashboard Thống Kê Đấu Trí
+          </h2>
+          <p className="text-xs text-indigo-200 mt-1">Phân tích chi tiết năng lực học sinh, chuyên đề còn yếu và lịch sử PvP/Leo tháp.</p>
         </div>
-        
-        <div className="flex items-center gap-2 flex-wrap">
-          <button 
-            onClick={() => setShowHallOfFameModal(true)}
-            className="px-4 py-2.5 bg-amber-500 hover:bg-amber-600 text-gray-950 font-black rounded-xl text-xs flex items-center gap-2 shadow-lg shadow-amber-500/20 active:scale-95 transition-all"
-          >
-            <Trophy className="h-4 w-4" /> Bảng Vinh Danh (Hall of Fame)
-          </button>
-          
-          <button 
-            onClick={loadData}
-            disabled={refreshing}
-            className="px-4 py-2.5 bg-indigo-800/80 hover:bg-indigo-700 disabled:opacity-50 text-white rounded-xl font-bold text-xs flex items-center gap-1.5 transition-colors border border-indigo-700/50"
-          >
-            <RefreshCw className={`h-3.5 w-3.5 ${refreshing ? 'animate-spin' : ''}`} /> Làm mới
-          </button>
-        </div>
+        <button 
+          onClick={loadData}
+          disabled={refreshing}
+          className="px-4 py-2 bg-indigo-800 hover:bg-indigo-700 disabled:opacity-50 text-white rounded-xl font-bold text-xs flex items-center gap-1.5 transition-colors border border-indigo-700"
+        >
+          <RefreshCw className={`h-3.5 w-3.5 ${refreshing ? 'animate-spin' : ''}`} /> Làm mới dữ liệu
+        </button>
       </div>
 
-      {/* Primary KPI Summary Row */}
-      <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border dark:border-slate-800 p-4 shadow-sm text-center">
-          <div className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-1">Học sinh đã tham gia</div>
-          <div className="text-2xl md:text-3xl font-black text-indigo-600 dark:text-indigo-400">
-            {statsSummary.activeStudentsCount} <span className="text-xs font-normal text-gray-400">/ {students.length}</span>
+      {/* KPI Cards */}
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+        <div className="bg-white rounded-2xl border p-4 shadow-sm text-center">
+          <div className="text-xs text-gray-500 font-bold uppercase tracking-wider mb-1">Học sinh đã chơi</div>
+          <div className="text-3xl font-black text-indigo-600">
+            {statsSummary.activeStudentsCount} <span className="text-sm font-medium text-gray-400">/ {students.length}</span>
           </div>
         </div>
         
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border dark:border-slate-800 p-4 shadow-sm text-center">
-          <div className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-1">ELO Trung bình</div>
-          <div className="text-2xl md:text-3xl font-black text-amber-500">{statsSummary.avgElo}</div>
+        <div className="bg-white rounded-2xl border p-4 shadow-sm text-center">
+          <div className="text-xs text-gray-500 font-bold uppercase tracking-wider mb-1">ELO Trung bình</div>
+          <div className="text-3xl font-black text-amber-500">{statsSummary.avgElo}</div>
         </div>
 
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border dark:border-slate-800 p-4 shadow-sm text-center">
-          <div className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-1">Đạt 100% Mastery</div>
-          <div className="text-2xl md:text-3xl font-black text-emerald-500">{statsSummary.masteredCount} <span className="text-xs font-normal text-gray-400">HS</span></div>
+        <div className="bg-white rounded-2xl border p-4 shadow-sm text-center">
+          <div className="text-xs text-gray-500 font-bold uppercase tracking-wider mb-1">Lượt Leo Tháp</div>
+          <div className="text-3xl font-black text-emerald-600">{statsSummary.totalTower}</div>
         </div>
 
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border dark:border-slate-800 p-4 shadow-sm text-center">
-          <div className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-1">Lượt Leo Tháp</div>
-          <div className="text-2xl md:text-3xl font-black text-cyan-600 dark:text-cyan-400">{statsSummary.totalTower}</div>
+        <div className="bg-white rounded-2xl border p-4 shadow-sm text-center">
+          <div className="text-xs text-gray-500 font-bold uppercase tracking-wider mb-1">Trận PvP (1v1)</div>
+          <div className="text-3xl font-black text-purple-600">{statsSummary.totalPvP}</div>
         </div>
 
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border dark:border-slate-800 p-4 shadow-sm text-center">
-          <div className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-1">Trận PvP (1v1)</div>
-          <div className="text-2xl md:text-3xl font-black text-purple-600 dark:text-purple-400">{statsSummary.totalPvP}</div>
-        </div>
-
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border dark:border-slate-800 p-4 shadow-sm text-center">
-          <div className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-1">HS Năng khiếu (Tầng 3-4)</div>
-          <div className="text-2xl md:text-3xl font-black text-rose-500">{statsSummary.giftedStudentsCount} <span className="text-xs font-normal text-gray-400">HS</span></div>
+        <div className="bg-white rounded-2xl border p-4 shadow-sm text-center col-span-2 md:col-span-1">
+          <div className="text-xs text-gray-500 font-bold uppercase tracking-wider mb-1">Tỷ Lệ Thắng PvP</div>
+          <div className="text-3xl font-black text-rose-500">{statsSummary.winRate}%</div>
         </div>
       </div>
 
-      {/* Row: Radar Chart 6 Môn + Diagnosing Weak Topics */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
-        {/* 1. Radar Chart 6 Môn Học */}
-        <div className="lg:col-span-1 bg-white dark:bg-slate-900 rounded-3xl border border-gray-100 dark:border-slate-800 p-6 shadow-sm flex flex-col justify-between space-y-4">
+        {/* WEAKEST TOPICS DIAGNOSTICS */}
+        <div className="lg:col-span-1 bg-white rounded-3xl border border-gray-100 p-6 shadow-sm flex flex-col space-y-4">
           <div>
-            <h3 className="text-base font-bold text-gray-900 dark:text-slate-100 flex items-center gap-2">
-              <BarChart3 className="h-5 w-5 text-indigo-500" /> Năng Lực Theo 6 Môn Học
+            <h3 className="text-base font-bold text-gray-900 flex items-center gap-1.5">
+              <AlertTriangle className="h-5 w-5 text-amber-500" /> Chẩn đoán kiến thức yếu
             </h3>
-            <p className="text-xs text-gray-500 dark:text-slate-400 mt-1">Mạng lưới so sánh chỉ số am hiểu trung bình của học sinh trên 6 môn học.</p>
+            <p className="text-xs text-gray-500 mt-0.5">Danh sách các chuyên đề học sinh trả lời sai nhiều nhất (cần ôn tập thêm).</p>
           </div>
 
-          {/* SVG Radar Chart Implementation */}
-          <div className="relative flex items-center justify-center my-2 py-4">
-            <svg viewBox="0 0 300 260" className="w-full max-w-[280px] h-auto overflow-visible">
-              {[0.2, 0.4, 0.6, 0.8, 1.0].map((level, idx) => {
-                const points = subjectRadarData.map((_, i) => {
-                  const angle = (Math.PI * 2 / 6) * i - Math.PI / 2;
-                  const r = 90 * level;
-                  const x = 150 + r * Math.cos(angle);
-                  const y = 130 + r * Math.sin(angle);
-                  return `${x},${y}`;
-                }).join(' ');
-                return <polygon key={idx} points={points} fill="none" stroke="currentColor" className="text-gray-200 dark:text-slate-800" strokeWidth="1" strokeDasharray={level === 1 ? 'none' : '2,2'} />;
-              })}
-
-              {subjectRadarData.map((s, i) => {
-                const angle = (Math.PI * 2 / 6) * i - Math.PI / 2;
-                const x = 150 + 90 * Math.cos(angle);
-                const y = 130 + 90 * Math.sin(angle);
-                return <line key={i} x1="150" y1="130" x2={x} y2={y} stroke="currentColor" className="text-gray-200 dark:text-slate-800" strokeWidth="1" />;
-              })}
-
-              {(() => {
-                const points = subjectRadarData.map((s, i) => {
-                  const angle = (Math.PI * 2 / 6) * i - Math.PI / 2;
-                  const r = (Math.max(10, Math.min(100, s.val)) / 100) * 90;
-                  const x = 150 + r * Math.cos(angle);
-                  const y = 130 + r * Math.sin(angle);
-                  return `${x},${y}`;
-                }).join(' ');
-                return <polygon points={points} fill="rgba(99, 102, 241, 0.35)" stroke="#6366f1" strokeWidth="2.5" className="animate-in fade-in duration-700" />;
-              })()}
-
-              {subjectRadarData.map((s, i) => {
-                const angle = (Math.PI * 2 / 6) * i - Math.PI / 2;
-                const r = (Math.max(10, Math.min(100, s.val)) / 100) * 90;
-                const x = 150 + r * Math.cos(angle);
-                const y = 130 + r * Math.sin(angle);
-
-                const labelR = 112;
-                const lx = 150 + labelR * Math.cos(angle);
-                const ly = 130 + labelR * Math.sin(angle);
-
-                return (
-                  <g key={i}>
-                    <circle cx={x} cy={y} r="4" fill="#6366f1" className="stroke-white dark:stroke-slate-900" strokeWidth="1.5" />
-                    <text 
-                      x={lx} 
-                      y={ly} 
-                      textAnchor="middle" 
-                      dominantBaseline="middle" 
-                      className="text-[9px] font-extrabold fill-gray-600 dark:fill-slate-400"
-                    >
-                      {s.label} ({s.val}%)
-                    </text>
-                  </g>
-                );
-              })}
-            </svg>
-          </div>
-
-          <div className="bg-indigo-50/50 dark:bg-slate-800/40 p-3 rounded-2xl border border-indigo-100/50 dark:border-slate-800 text-[11px] text-gray-600 dark:text-slate-400 flex items-center gap-2">
-            <Sparkles className="h-4 w-4 text-indigo-500 flex-shrink-0" />
-            <span>Phân tích tự động: Học sinh lớp nắm vững nhất môn <strong>Toán học</strong> và cần rèn luyện thêm ở <strong>Tiếng Việt & Khoa học</strong>.</span>
-          </div>
-        </div>
-
-        {/* 2. Weakest Topics Diagnostics & 1-Click Revenge Actions */}
-        <div className="lg:col-span-2 bg-white dark:bg-slate-900 rounded-3xl border border-gray-100 dark:border-slate-800 p-6 shadow-sm flex flex-col justify-between space-y-4">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div>
-              <h3 className="text-base font-bold text-gray-900 dark:text-slate-100 flex items-center gap-2">
-                <AlertTriangle className="h-5 w-5 text-amber-500" /> Chẩn Đoán Chuyên Đề Yếu & Hành Động Sư Phạm
-              </h3>
-              <p className="text-xs text-gray-500 dark:text-slate-400 mt-0.5">Top chuyên đề tỷ lệ sai cao nhất. Bấm nút ⚡ để giao bài tập phục thù cho học sinh.</p>
-            </div>
-          </div>
-
-          <div className="space-y-3 flex-1 overflow-y-auto max-h-[380px] pr-1 custom-scrollbar">
+          <div className="space-y-3 flex-1 overflow-y-auto max-h-[360px] pr-1 custom-scrollbar">
             {topicStats.length === 0 ? (
               <div className="h-full flex items-center justify-center text-center p-6 text-gray-400 text-sm italic">
                 Chưa ghi nhận lượt chơi nào để chẩn đoán.
@@ -656,37 +562,27 @@ export const ArenaStatsDashboard: React.FC = () => {
               topicStats.slice(0, 5).map((t, idx) => {
                 const colors = ['bg-rose-500', 'bg-orange-500', 'bg-amber-500', 'bg-amber-400', 'bg-indigo-400'];
                 return (
-                  <div key={idx} className="p-4 bg-gray-50/70 dark:bg-slate-850 border border-gray-100 dark:border-slate-800 rounded-2xl hover:border-indigo-200 transition-all flex flex-col md:flex-row md:items-center justify-between gap-3">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded bg-indigo-100 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300">
-                          {t.subject === 'math' ? 'Toán' : t.subject === 'science' ? 'Khoa học' : t.subject === 'technology' ? 'Công nghệ' : t.subject === 'vietnamese' ? 'Tiếng Việt' : t.subject === 'english' ? 'Tiếng Anh' : 'Sử & Địa'}
+                  <div key={idx} className="p-3 bg-gray-50/50 hover:bg-gray-50 border rounded-2xl transition-all">
+                    <div className="flex justify-between items-start gap-2 mb-1.5">
+                      <div className="min-w-0">
+                        <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                          {t.subject === 'math' ? 'Toán' : t.subject === 'science' ? 'Khoa học' : t.subject === 'technology' ? 'Công nghệ' : t.subject === 'vietnamese' ? 'Tiếng Việt' : t.subject === 'english' ? 'Tiếng Anh' : 'Lịch sử & Địa lí'}
+                        </div>
+                        <div className="text-sm font-bold text-gray-900 truncate" title={t.topic}>{t.topic}</div>
+                      </div>
+                      <div className="text-right flex-shrink-0">
+                        <span className="inline-block px-2 py-0.5 rounded-full text-[10px] font-black bg-rose-50 text-rose-600 border border-rose-100">
+                          {t.errorRate}% Lỗi
                         </span>
-                        <h4 className="text-sm font-bold text-gray-900 dark:text-slate-100 truncate" title={t.topic}>{t.topic}</h4>
-                      </div>
-                      
-                      <div className="w-full bg-gray-200 dark:bg-slate-800 rounded-full h-2 my-2">
-                        <div className={`h-2 rounded-full ${colors[idx % colors.length]}`} style={{ width: `${t.errorRate}%` }} />
-                      </div>
-
-                      <div className="flex items-center gap-4 text-[11px] text-gray-500 dark:text-slate-400 font-medium">
-                        <span>Lượt chơi: <strong>{t.totalAttempts}</strong></span>
-                        <span>Độ am hiểu TB: <strong>{t.avgMastery}%</strong></span>
-                        <span className="text-emerald-600 dark:text-emerald-400">🏆 100% Mastery: <strong>{t.masteredCount} HS</strong></span>
                       </div>
                     </div>
-
-                    <div className="flex items-center gap-2 flex-shrink-0">
-                      <span className="px-2.5 py-1 rounded-full text-xs font-black bg-rose-50 text-rose-600 border border-rose-100 dark:bg-rose-950/30 dark:border-rose-900/40">
-                        {t.errorRate}% Lỗi
-                      </span>
-                      <button 
-                        onClick={() => setRevengeModalTopic(t)}
-                        className="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-md shadow-indigo-200 dark:shadow-none active:scale-95 transition-all"
-                        title="Tự động tạo giao bài tập phục thù chuyên đề này"
-                      >
-                        <Zap className="h-3.5 w-3.5 fill-amber-300 text-amber-300" /> Giao Bài Phục Thù
-                      </button>
+                    {/* Error rate progress bar */}
+                    <div className="w-full bg-gray-200/80 rounded-full h-2">
+                      <div className={`h-2 rounded-full ${colors[idx % colors.length]}`} style={{ width: `${t.errorRate}%` }} />
+                    </div>
+                    <div className="flex justify-between items-center text-[10px] text-gray-500 mt-1.5 font-medium">
+                      <span>Lượt chơi: {t.totalAttempts}</span>
+                      <span>Độ am hiểu TB: {t.avgMastery}%</span>
                     </div>
                   </div>
                 );
@@ -695,7 +591,7 @@ export const ArenaStatsDashboard: React.FC = () => {
           </div>
         </div>
 
-      {/* RECENT ACTIVITY LOG */}
+        {/* RECENT ACTIVITY LOG */}
         <div className="lg:col-span-2 bg-white rounded-3xl border border-gray-100 p-6 shadow-sm flex flex-col space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
