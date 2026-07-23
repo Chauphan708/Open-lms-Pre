@@ -333,6 +333,12 @@ export const ArenaStatsDashboard: React.FC = () => {
     ]);
     const activeStudentsCount = students.filter(s => activeIds.has(s.id)).length;
 
+    // PvP Win rate
+    const wins = students.reduce((sum, s) => sum + s.wins, 0);
+    const losses = students.reduce((sum, s) => sum + s.losses, 0);
+    const totalWinsLosses = wins + losses;
+    const winRate = totalWinsLosses > 0 ? Math.round((wins / totalWinsLosses) * 100) : 0;
+
     // Count students with at least one 100% mastered topic
     const masteredCount = students.filter(s => s.topic_mastery && Object.values(s.topic_mastery).some(v => v >= 100)).length;
     
