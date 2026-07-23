@@ -992,7 +992,9 @@ export const ArenaStatsDashboard: React.FC = () => {
                                           return (
                                             <div key={topic} className="space-y-1">
                                               <div className="flex justify-between text-[11px] font-bold">
-                                                <span className="text-gray-700 truncate max-w-[200px]">{topic}</span>
+                                                <span className="text-gray-700 truncate max-w-[200px] flex items-center gap-1">
+                                                  {topic} {mastery >= 100 && <span title="Đã làm chủ 100%">🏆</span>}
+                                                </span>
                                                 <span className="text-gray-900">{mastery}%</span>
                                               </div>
                                               <div className="w-full bg-gray-100 rounded-full h-1.5">
