@@ -1394,7 +1394,7 @@ export const ArenaStatsDashboard: React.FC = () => {
             </div>
 
             <div className="grid grid-cols-3 gap-4 py-4">
-              {students.slice(0, 3).map((s, idx) => {
+              {[...students].sort((a, b) => b.elo_rating - a.elo_rating).slice(0, 3).map((s, idx) => {
                 const ranks = ['🥇 Hạng 1', '🥈 Hạng 2', '🥉 Hạng 3'];
                 const bgColors = [
                   'bg-gradient-to-b from-amber-500/10 to-amber-500/5 border-amber-300 dark:border-amber-700',
