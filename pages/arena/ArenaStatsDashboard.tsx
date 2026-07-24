@@ -753,93 +753,116 @@ export const ArenaStatsDashboard: React.FC = () => {
             </div>
           </div>
 
-          <div className="flex-1 overflow-y-auto max-h-[360px] pr-1 custom-scrollbar space-y-3">
+          <div className="flex-1 overflow-y-auto max-h-[380px] pr-1 custom-scrollbar">
             {enrichedAttempts.length === 0 && enrichedMatches.length === 0 ? (
               <div className="h-full flex items-center justify-center text-center p-6 text-gray-400 text-sm italic">
                 Chưa có hoạt động nào trong sảnh đấu gần đây.
               </div>
             ) : (
-              // Merge PvP and Tower Mode and sort by date
-              [
-                ...enrichedAttempts.map(a => ({
-                  type: 'tower' as const,
-                  date: new Date(a.created_at),
-                  data: a
-                })),
-                ...enrichedMatches.filter(m => m.status === 'finished').map(m => ({
-                  type: 'pvp' as const,
-                  date: new Date(m.created_at),
-                  data: m
-                }))
-              ]
-              .filter(activity => {
-                if (logFilter === 'all') return true;
-                if (logFilter === 'tower') return activity.type === 'tower';
-                if (logFilter === 'pvp') return activity.type === 'pvp' && !(activity.data as any).source?.startsWith('tournament');
-                if (logFilter === 'tournament') return activity.type === 'pvp' && (activity.data as any).source?.startsWith('tournament');
-                return true;
-              })
-              .sort((a, b) => b.date.getTime() - a.date.getTime())
-              .map((activity, index) => {
-                if (activity.type === 'tower') {
-                  const t = activity.data as typeof enrichedAttempts[0];
-                  return (
-                    <div key={`t-${t.id}-${index}`} className="flex items-center gap-3 p-3 bg-gray-50/40 border border-gray-100 hover:border-indigo-100 hover:bg-indigo-50/10 rounded-2xl transition-all">
-                      <div className={`p-2 rounded-xl flex-shrink-0 ${t.is_victory ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50/80 text-rose-500'}`}>
-                        <Trophy className="h-4.5 w-4.5" />
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <div className="text-sm font-bold text-gray-900">
-                          {t.student_name} <span className="text-xs font-normal text-gray-500">lớp {t.student_class}</span>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {
+                  [
+                    ...enrichedAttempts.map(a => ({
+                      type: 'tower' as const,
+                      date: new Date(a.created_at),
+                      data: a
+                    })),
+                    ...enrichedMatches.filter(m => m.status === 'finished').map(m => ({
+                      type: 'pvp' as const,
+                      date: new Date(m.created_at),
+                      data: m
+                    }))
+                  ]
+                  .filter(activity => {
+                    if (logFilter === 'all') return true;
+                    if (logFilter === 'tower') return activity.type === 'tower';
+                    if (logFilter === 'pvp') return activity.type === 'pvp' && !(activity.data as any).source?.startsWith('tournament');
+                    if (logFilter === 'tournament') return activity.type === 'pvp' && (activity.data as any).source?.startsWith('tournament');
+                    return true;
+                  })
+                  .sort((a, b) => b.date.getTime() - a.date.getTime())
+                  .map((activity, index) => {
+                    if (activity.type === 'tower') {
+                      const t = activity.data as typeof enrichedAttempts[0];
+                      return (
+                        <div key={`t-${t.id}-${index}`} className="p-3 bg-gray-50/70 dark:bg-slate-850 border border-gray-100 dark:border-slate-800 hover:border-indigo-200 dark:hover:border-indigo-800 rounded-2xl transition-all flex flex-col justify-between space-y-2">
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="flex items-center gap-2 min-w-0">
+                              <div className={`p-1.5 rounded-xl flex-shrink-0 ${t.is_victory ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300' : 'bg-rose-100 text-rose-600 dark:bg-rose-950 dark:text-rose-300'}`}>
+                                <Trophy className="h-4 w-4" />
+                              </div>
+                              <div className="min-w-0">
+                                <h5 className="text-xs font-bold text-gray-900 dark:text-slate-100 truncate">
+                                  {t.student_name}
+                                </h5>
+                                <span className="text-[10px] text-gray-400 font-semibold block">Lớp {t.student_class}</span>
+                              </div>
+                            </div>
+
+                            <span className="text-[10px] text-gray-400 font-bold whitespace-nowrap">
+                              {activity.date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            </span>
+                          </div>
+
+                          <div className="text-[11px] text-gray-600 dark:text-slate-400">
+                            <span className="font-bold text-indigo-600 dark:text-indigo-400">
+                              {t.subject === 'math' ? 'Toán' : t.subject === 'science' ? 'Khoa học' : t.subject === 'technology' ? 'Công nghệ' : t.subject === 'vietnamese' ? 'Tiếng Việt' : t.subject === 'english' ? 'Tiếng Anh' : 'Sử & Địa'}
+                            </span>
+                            <span className="mx-1">•</span>
+                            <span className="truncate">{t.topic}</span>
+                          </div>
+
+                          <div className="flex items-center justify-between gap-2 pt-1 border-t border-gray-100 dark:border-slate-800 text-[10px]">
+                            <span className={`font-bold px-2 py-0.5 rounded-md ${t.is_victory ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-amber-50 text-amber-700 border border-amber-200'}`}>
+                              {t.is_victory ? '🏆 Hoàn thành' : `❌ Thất bại (Tầng ${t.end_floor})`}
+                            </span>
+                            <span className="text-gray-500 font-medium">
+                              Đúng <strong>{t.correct_answers}/{t.total_questions}</strong> • ELO: <strong className={t.elo_change >= 0 ? 'text-emerald-600' : 'text-rose-500'}>{t.elo_change >= 0 ? `+${t.elo_change}` : t.elo_change}</strong>
+                            </span>
+                          </div>
                         </div>
-                        <div className="text-xs text-gray-500 font-medium mt-0.5">
-                          Môn: <span className="text-indigo-600 font-semibold">{t.subject === 'math' ? 'Toán' : t.subject === 'science' ? 'Khoa học' : t.subject === 'technology' ? 'Công nghệ' : t.subject === 'vietnamese' ? 'Tiếng Việt' : t.subject === 'english' ? 'Tiếng Anh' : t.subject === 'history_geography' ? 'Lịch sử & Địa lí' : t.subject}</span> • Chủ đề: <span className="text-indigo-600 font-semibold">{t.topic}</span> (Khối {t.grade})
+                      );
+                    } else {
+                      const m = activity.data as typeof enrichedMatches[0];
+                      const p1Win = m.winner_id === m.player1_id;
+                      return (
+                        <div key={`m-${m.id}-${index}`} className="p-3 bg-gray-50/70 dark:bg-slate-850 border border-gray-100 dark:border-slate-800 hover:border-purple-200 dark:hover:border-purple-800 rounded-2xl transition-all flex flex-col justify-between space-y-2">
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="flex items-center gap-2 min-w-0">
+                              <div className="p-1.5 bg-purple-100 text-purple-700 dark:bg-purple-950 dark:text-purple-300 rounded-xl flex-shrink-0">
+                                <Brain className="h-4 w-4" />
+                              </div>
+                              <div className="min-w-0">
+                                <h5 className="text-xs font-bold text-gray-900 dark:text-slate-100 truncate">
+                                  {m.player1_name} vs {m.player2_name}
+                                </h5>
+                                <span className="text-[10px] text-gray-400 font-semibold block">Trận Đấu Trí 1v1</span>
+                              </div>
+                            </div>
+
+                            <span className="text-[10px] text-gray-400 font-bold whitespace-nowrap">
+                              {activity.date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            </span>
+                          </div>
+
+                          <div className="text-[11px] text-gray-600 dark:text-slate-400">
+                            <span>Môn: <strong>{m.filter_subject === 'math' ? 'Toán' : m.filter_subject === 'science' ? 'Khoa học' : 'Đấu Trí'}</strong> (Khối {m.filter_grade})</span>
+                          </div>
+
+                          <div className="flex items-center justify-between gap-2 pt-1 border-t border-gray-100 dark:border-slate-800 text-[10px]">
+                            <span className="bg-purple-50 text-purple-700 border border-purple-200 font-bold px-2 py-0.5 rounded-md">
+                              ⚔️ Thắng: {p1Win ? m.player1_name : m.player2_name}
+                            </span>
+                            <span className="text-gray-500 font-medium">
+                              Tỷ số: <strong>{p1Win ? m.player1_score : m.player2_score} - {p1Win ? m.player2_score : m.player1_score}</strong>
+                            </span>
+                          </div>
                         </div>
-                        <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${t.is_victory ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>
-                            {t.is_victory ? '🏆 Chiến Thắng' : `❌ Thất bại (Tầng ${t.end_floor})`}
-                          </span>
-                          <span className="text-[10px] text-gray-400 font-medium">
-                            Đúng {t.correct_answers}/{t.total_questions} câu • ELO: {t.elo_change >= 0 ? `+${t.elo_change}` : t.elo_change}
-                          </span>
-                        </div>
-                      </div>
-                      <div className="text-[10px] text-gray-400 font-bold whitespace-nowrap self-start mt-0.5">
-                        {activity.date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                      </div>
-                    </div>
-                  );
-                } else {
-                  const m = activity.data as typeof enrichedMatches[0];
-                  const p1Win = m.winner_id === m.player1_id;
-                  return (
-                    <div key={`m-${m.id}-${index}`} className="flex items-center gap-3 p-3 bg-gray-50/40 border border-gray-100 hover:border-purple-100 hover:bg-purple-50/10 rounded-2xl transition-all">
-                      <div className="p-2 bg-purple-50 text-purple-600 rounded-xl flex-shrink-0">
-                        <Brain className="h-4.5 w-4.5" />
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <div className="text-sm font-bold text-gray-900">
-                          {m.player1_name} vs {m.player2_name}
-                        </div>
-                        <div className="text-xs text-gray-500 font-medium mt-0.5">
-                          Trận Đấu Trí 1v1 • Môn: {m.filter_subject === 'math' ? 'Toán' : m.filter_subject === 'science' ? 'Khoa học' : 'Đấu Trí'} (Lớp {m.filter_grade})
-                        </div>
-                        <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-                          <span className="text-[10px] bg-purple-100 text-purple-700 font-black px-2 py-0.5 rounded-full">
-                            ⚔️ PvP Kết thúc
-                          </span>
-                          <span className="text-[10px] text-gray-400 font-medium">
-                            Thắng: <strong className="text-purple-600">{p1Win ? m.player1_name : m.player2_name}</strong> ({p1Win ? m.player1_score : m.player2_score} - {p1Win ? m.player2_score : m.player1_score} điểm)
-                          </span>
-                        </div>
-                      </div>
-                      <div className="text-[10px] text-gray-400 font-bold whitespace-nowrap self-start mt-0.5">
-                        {activity.date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                      </div>
-                    </div>
-                  );
+                      );
+                    }
+                  })
                 }
-              })
+              </div>
             )}
           </div>
         </div>
