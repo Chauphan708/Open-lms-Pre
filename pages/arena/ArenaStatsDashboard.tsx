@@ -609,13 +609,13 @@ export const ArenaStatsDashboard: React.FC = () => {
 
           {/* SVG Radar Chart Implementation */}
           <div className="relative flex items-center justify-center my-2 py-4">
-            <svg viewBox="0 0 300 260" className="w-full max-w-[280px] h-auto overflow-visible">
+            <svg viewBox="0 0 340 280" className="w-full max-w-[320px] h-auto overflow-visible">
               {[0.2, 0.4, 0.6, 0.8, 1.0].map((level, idx) => {
                 const points = subjectRadarData.map((_, i) => {
                   const angle = (Math.PI * 2 / 6) * i - Math.PI / 2;
-                  const r = 90 * level;
-                  const x = 150 + r * Math.cos(angle);
-                  const y = 130 + r * Math.sin(angle);
+                  const r = 100 * level;
+                  const x = 170 + r * Math.cos(angle);
+                  const y = 140 + r * Math.sin(angle);
                   return `${x},${y}`;
                 }).join(' ');
                 return <polygon key={idx} points={points} fill="none" stroke="currentColor" className="text-gray-200 dark:text-slate-800" strokeWidth="1" strokeDasharray={level === 1 ? 'none' : '2,2'} />;
@@ -623,17 +623,17 @@ export const ArenaStatsDashboard: React.FC = () => {
 
               {subjectRadarData.map((s, i) => {
                 const angle = (Math.PI * 2 / 6) * i - Math.PI / 2;
-                const x = 150 + 90 * Math.cos(angle);
-                const y = 130 + 90 * Math.sin(angle);
-                return <line key={i} x1="150" y1="130" x2={x} y2={y} stroke="currentColor" className="text-gray-200 dark:text-slate-800" strokeWidth="1" />;
+                const x = 170 + 100 * Math.cos(angle);
+                const y = 140 + 100 * Math.sin(angle);
+                return <line key={i} x1="170" y1="140" x2={x} y2={y} stroke="currentColor" className="text-gray-200 dark:text-slate-800" strokeWidth="1" />;
               })}
 
               {(() => {
                 const points = subjectRadarData.map((s, i) => {
                   const angle = (Math.PI * 2 / 6) * i - Math.PI / 2;
-                  const r = (Math.max(10, Math.min(100, s.val)) / 100) * 90;
-                  const x = 150 + r * Math.cos(angle);
-                  const y = 130 + r * Math.sin(angle);
+                  const r = (Math.max(10, Math.min(100, s.val)) / 100) * 100;
+                  const x = 170 + r * Math.cos(angle);
+                  const y = 140 + r * Math.sin(angle);
                   return `${x},${y}`;
                 }).join(' ');
                 return <polygon points={points} fill="rgba(99, 102, 241, 0.35)" stroke="#6366f1" strokeWidth="2.5" className="animate-in fade-in duration-700" />;
@@ -641,13 +641,13 @@ export const ArenaStatsDashboard: React.FC = () => {
 
               {subjectRadarData.map((s, i) => {
                 const angle = (Math.PI * 2 / 6) * i - Math.PI / 2;
-                const r = (Math.max(10, Math.min(100, s.val)) / 100) * 90;
-                const x = 150 + r * Math.cos(angle);
-                const y = 130 + r * Math.sin(angle);
+                const r = (Math.max(10, Math.min(100, s.val)) / 100) * 100;
+                const x = 170 + r * Math.cos(angle);
+                const y = 140 + r * Math.sin(angle);
 
-                const labelR = 112;
-                const lx = 150 + labelR * Math.cos(angle);
-                const ly = 130 + labelR * Math.sin(angle);
+                const labelR = 125;
+                const lx = 170 + labelR * Math.cos(angle);
+                const ly = 140 + labelR * Math.sin(angle);
 
                 return (
                   <g key={i}>
@@ -657,7 +657,7 @@ export const ArenaStatsDashboard: React.FC = () => {
                       y={ly} 
                       textAnchor="middle" 
                       dominantBaseline="middle" 
-                      className="text-[9px] font-extrabold fill-gray-600 dark:fill-slate-400"
+                      className="text-[10px] font-extrabold fill-gray-700 dark:fill-slate-300"
                     >
                       {s.label} ({s.val}%)
                     </text>

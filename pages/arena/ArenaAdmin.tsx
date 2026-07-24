@@ -1711,7 +1711,7 @@ export const ArenaAdmin: React.FC = () => {
     }
 
     return (
-        <div className="max-w-5xl mx-auto">
+        <div className="max-w-7xl mx-auto w-full px-2 sm:px-4">
             {/* Header */}
             <div className="flex items-center justify-between mb-6 flex-wrap gap-4">
                 <div className="flex items-center gap-3">
