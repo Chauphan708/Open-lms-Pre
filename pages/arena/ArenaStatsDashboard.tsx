@@ -1465,6 +1465,7 @@ export const ArenaStatsDashboard: React.FC = () => {
             </div>
           </div>
         </div>
+      )}
       {/* 100% Mastery Report Modal */}
       {showMasteryReportModal && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-in fade-in">
