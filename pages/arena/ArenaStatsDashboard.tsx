@@ -110,6 +110,8 @@ export const ArenaStatsDashboard: React.FC = () => {
   // Modals & Revenge Assignment States
   const [showHallOfFameModal, setShowHallOfFameModal] = useState(false);
   const [showMasteryReportModal, setShowMasteryReportModal] = useState(false);
+  const [activeKpiModal, setActiveKpiModal] = useState<'active_students' | 'avg_elo' | 'tower_attempts' | 'pvp_matches' | 'gifted_students' | null>(null);
+  const [kpiModalSearch, setKpiModalSearch] = useState('');
   const [masteryModalSearch, setMasteryModalSearch] = useState('');
   const [masteryModalTopicFilter, setMasteryModalTopicFilter] = useState('');
   const [revengeModalTopic, setRevengeModalTopic] = useState<any | null>(null);
@@ -565,16 +567,24 @@ export const ArenaStatsDashboard: React.FC = () => {
 
       {/* Primary KPI Summary Row */}
       <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border dark:border-slate-800 p-4 shadow-sm text-center">
-          <div className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-1">Học sinh đã tham gia</div>
+        <div 
+          onClick={() => { setActiveKpiModal('active_students'); setKpiModalSearch(''); }}
+          className="bg-white dark:bg-slate-900 rounded-2xl border dark:border-slate-800 p-4 shadow-sm text-center cursor-pointer hover:border-indigo-400 hover:shadow-md transition-all group"
+          title="Bấm để xem danh sách học sinh đã tham gia Arena"
+        >
+          <div className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-1 group-hover:text-indigo-600 transition-colors">Học sinh đã tham gia</div>
           <div className="text-2xl md:text-3xl font-black text-indigo-600 dark:text-indigo-400">
-            {statsSummary.activeStudentsCount} <span className="text-xs font-normal text-gray-400">/ {students.length}</span>
+            {statsSummary.activeStudentsCount} <span className="text-xs font-normal text-gray-400">/ {students.length} 🔍</span>
           </div>
         </div>
         
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border dark:border-slate-800 p-4 shadow-sm text-center">
-          <div className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-1">ELO Trung bình</div>
-          <div className="text-2xl md:text-3xl font-black text-amber-500">{statsSummary.avgElo}</div>
+        <div 
+          onClick={() => { setActiveKpiModal('avg_elo'); setKpiModalSearch(''); }}
+          className="bg-white dark:bg-slate-900 rounded-2xl border dark:border-slate-800 p-4 shadow-sm text-center cursor-pointer hover:border-amber-400 hover:shadow-md transition-all group"
+          title="Bấm để xem bảng xếp hạng ELO & danh hiệu học sinh"
+        >
+          <div className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-1 group-hover:text-amber-600 transition-colors">ELO Trung bình</div>
+          <div className="text-2xl md:text-3xl font-black text-amber-500">{statsSummary.avgElo} <span className="text-xs font-normal text-gray-400">🔍</span></div>
         </div>
 
         <div 
@@ -586,19 +596,31 @@ export const ArenaStatsDashboard: React.FC = () => {
           <div className="text-2xl md:text-3xl font-black text-emerald-500">{statsSummary.masteredCount} <span className="text-xs font-normal text-gray-400">HS 🔍</span></div>
         </div>
 
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border dark:border-slate-800 p-4 shadow-sm text-center">
-          <div className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-1">Lượt Leo Tháp</div>
-          <div className="text-2xl md:text-3xl font-black text-cyan-600 dark:text-cyan-400">{statsSummary.totalTower}</div>
+        <div 
+          onClick={() => { setActiveKpiModal('tower_attempts'); setKpiModalSearch(''); }}
+          className="bg-white dark:bg-slate-900 rounded-2xl border dark:border-slate-800 p-4 shadow-sm text-center cursor-pointer hover:border-cyan-400 hover:shadow-md transition-all group"
+          title="Bấm để xem danh sách lịch sử lượt Leo Tháp"
+        >
+          <div className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-1 group-hover:text-cyan-600 transition-colors">Lượt Leo Tháp</div>
+          <div className="text-2xl md:text-3xl font-black text-cyan-600 dark:text-cyan-400">{statsSummary.totalTower} <span className="text-xs font-normal text-gray-400">🔍</span></div>
         </div>
 
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border dark:border-slate-800 p-4 shadow-sm text-center">
-          <div className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-1">Trận PvP (1v1)</div>
-          <div className="text-2xl md:text-3xl font-black text-purple-600 dark:text-purple-400">{statsSummary.totalPvP}</div>
+        <div 
+          onClick={() => { setActiveKpiModal('pvp_matches'); setKpiModalSearch(''); }}
+          className="bg-white dark:bg-slate-900 rounded-2xl border dark:border-slate-800 p-4 shadow-sm text-center cursor-pointer hover:border-purple-400 hover:shadow-md transition-all group"
+          title="Bấm để xem thống kê các trận đối đầu PvP 1v1"
+        >
+          <div className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-1 group-hover:text-purple-600 transition-colors">Trận PvP (1v1)</div>
+          <div className="text-2xl md:text-3xl font-black text-purple-600 dark:text-purple-400">{statsSummary.totalPvP} <span className="text-xs font-normal text-gray-400">🔍</span></div>
         </div>
 
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border dark:border-slate-800 p-4 shadow-sm text-center">
-          <div className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-1">HS Năng khiếu (Tầng 3-4)</div>
-          <div className="text-2xl md:text-3xl font-black text-rose-500">{statsSummary.giftedStudentsCount} <span className="text-xs font-normal text-gray-400">HS</span></div>
+        <div 
+          onClick={() => { setActiveKpiModal('gifted_students'); setKpiModalSearch(''); }}
+          className="bg-white dark:bg-slate-900 rounded-2xl border dark:border-slate-800 p-4 shadow-sm text-center cursor-pointer hover:border-rose-400 hover:shadow-md transition-all group"
+          title="Bấm để xem danh sách học sinh năng khiếu đạt Tầng 3-4"
+        >
+          <div className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-1 group-hover:text-rose-600 transition-colors">HS Năng khiếu (Tầng 3-4)</div>
+          <div className="text-2xl md:text-3xl font-black text-rose-500">{statsSummary.giftedStudentsCount} <span className="text-xs font-normal text-gray-400">HS 🔍</span></div>
         </div>
       </div>
 
@@ -1698,6 +1720,268 @@ export const ArenaStatsDashboard: React.FC = () => {
 
               <button 
                 onClick={() => setShowMasteryReportModal(false)}
+                className="px-5 py-2.5 bg-gray-100 dark:bg-slate-800 hover:bg-gray-200 text-gray-700 dark:text-slate-300 text-xs font-bold rounded-xl"
+              >
+                Đóng
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* KPI Detail Modal (For 5 remaining KPI cards) */}
+      {activeKpiModal && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-in fade-in">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-3xl w-full p-6 border border-gray-100 dark:border-slate-800 shadow-2xl relative space-y-5 max-h-[90vh] flex flex-col">
+            <button 
+              onClick={() => setActiveKpiModal(null)}
+              className="absolute top-5 right-5 p-2 text-gray-400 hover:text-gray-600 dark:hover:text-slate-200 rounded-full hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors"
+            >
+              <X className="h-5 w-5" />
+            </button>
+
+            {/* Modal Titles per KPI type */}
+            {activeKpiModal === 'active_students' && (
+              <div className="flex items-center gap-3">
+                <div className="p-3 bg-indigo-100 dark:bg-indigo-950/50 text-indigo-600 rounded-2xl">
+                  <Users className="h-7 w-7" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-black text-gray-900 dark:text-slate-100 tracking-tight">👥 Danh Sách Học Sinh Đã Tham Gia Arena</h3>
+                  <p className="text-xs text-gray-500 dark:text-slate-400">Thống kê {statsSummary.activeStudentsCount} học sinh có tương tác rèn luyện trên đấu trường.</p>
+                </div>
+              </div>
+            )}
+
+            {activeKpiModal === 'avg_elo' && (
+              <div className="flex items-center gap-3">
+                <div className="p-3 bg-amber-100 dark:bg-amber-950/50 text-amber-600 rounded-2xl">
+                  <Trophy className="h-7 w-7" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-black text-gray-900 dark:text-slate-100 tracking-tight">⭐ Xếp Hạng ELO Trung Bình & Danh Hiệu</h3>
+                  <p className="text-xs text-gray-500 dark:text-slate-400">Chỉ số ELO trung bình toàn lớp là {statsSummary.avgElo}. Xếp hạng chi tiết từng học sinh.</p>
+                </div>
+              </div>
+            )}
+
+            {activeKpiModal === 'tower_attempts' && (
+              <div className="flex items-center gap-3">
+                <div className="p-3 bg-cyan-100 dark:bg-cyan-950/50 text-cyan-600 rounded-2xl">
+                  <Zap className="h-7 w-7" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-black text-gray-900 dark:text-slate-100 tracking-tight">🗼 Chi Tiết {statsSummary.totalTower} Lượt Leo Tháp</h3>
+                  <p className="text-xs text-gray-500 dark:text-slate-400">Thống kê các lần học sinh tham gia thử thách Leo Tháp Tri Thức.</p>
+                </div>
+              </div>
+            )}
+
+            {activeKpiModal === 'pvp_matches' && (
+              <div className="flex items-center gap-3">
+                <div className="p-3 bg-purple-100 dark:bg-purple-950/50 text-purple-600 rounded-2xl">
+                  <Swords className="h-7 w-7" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-black text-gray-900 dark:text-slate-100 tracking-tight">⚔️ Nhật Ký {statsSummary.totalPvP} Trận Đối Đầu PvP (1v1)</h3>
+                  <p className="text-xs text-gray-500 dark:text-slate-400">Lịch sử thi đấu trực tiếp giữa các học sinh trong hệ thống.</p>
+                </div>
+              </div>
+            )}
+
+            {activeKpiModal === 'gifted_students' && (
+              <div className="flex items-center gap-3">
+                <div className="p-3 bg-rose-100 dark:bg-rose-950/50 text-rose-600 rounded-2xl">
+                  <Award className="h-7 w-7" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-black text-gray-900 dark:text-slate-100 tracking-tight">🔥 Danh Sách Học Sinh Năng Khiếu (Tầng 3 - 4)</h3>
+                  <p className="text-xs text-gray-500 dark:text-slate-400">Top {statsSummary.giftedStudentsCount} học sinh có năng lực vượt trội chinh phục tầng tháp cao nhất.</p>
+                </div>
+              </div>
+            )}
+
+            {/* Filter Search Toolbar */}
+            <div className="relative w-full">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <input 
+                type="text"
+                value={kpiModalSearch}
+                onChange={(e) => setKpiModalSearch(e.target.value)}
+                placeholder="Tìm kiếm theo tên học sinh, lớp, chuyên đề..."
+                className="w-full pl-9 pr-3 py-2 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl text-xs font-semibold focus:outline-none focus:border-indigo-500 dark:text-slate-100"
+              />
+            </div>
+
+            {/* Modal Body content depending on activeKpiModal */}
+            <div className="flex-1 overflow-y-auto pr-1 custom-scrollbar max-h-[50vh] space-y-3">
+              {/* 1 & 2 & 5: Student-based KPIs */}
+              {(activeKpiModal === 'active_students' || activeKpiModal === 'avg_elo' || activeKpiModal === 'gifted_students') && (
+                (() => {
+                  let filteredList = [...students];
+                  if (activeKpiModal === 'active_students') {
+                    filteredList = filteredList.filter(s => s.tower_floor > 1 || (s.unlocked_badges && s.unlocked_badges.length > 0) || s.elo_rating !== 1000);
+                  } else if (activeKpiModal === 'gifted_students') {
+                    filteredList = filteredList.filter(s => s.tower_floor >= 3);
+                  }
+                  
+                  if (activeKpiModal === 'avg_elo') {
+                    filteredList.sort((a, b) => b.elo_rating - a.elo_rating);
+                  } else {
+                    filteredList.sort((a, b) => b.tower_floor - a.tower_floor);
+                  }
+
+                  if (kpiModalSearch) {
+                    const q = kpiModalSearch.toLowerCase();
+                    filteredList = filteredList.filter(s => 
+                      (s.profiles?.name || '').toLowerCase().includes(q) || 
+                      (s.profiles?.class_name || '').toLowerCase().includes(q)
+                    );
+                  }
+
+                  if (filteredList.length === 0) {
+                    return <div className="text-center py-10 text-gray-400 text-xs italic">Không tìm thấy dữ liệu phù hợp.</div>;
+                  }
+
+                  return (
+                    <div className="divide-y divide-gray-100 dark:divide-slate-800">
+                      {filteredList.map((s, idx) => {
+                        const totalTowerCount = towerAttempts.filter(a => a.student_id === s.id).length;
+                        return (
+                          <div key={s.id} className="py-3 flex items-center justify-between gap-3 hover:bg-gray-50/60 dark:hover:bg-slate-800/40 px-2 rounded-xl">
+                            <div className="flex items-center gap-3">
+                              <span className="w-6 text-center font-black text-xs text-gray-400">#{idx + 1}</span>
+                              <div className="w-9 h-9 rounded-full bg-indigo-600 text-white font-black text-xs flex items-center justify-center shadow-sm">
+                                {s.profiles?.name?.charAt(0).toUpperCase() || 'S'}
+                              </div>
+                              <div>
+                                <h4 className="font-extrabold text-xs text-gray-900 dark:text-slate-100">
+                                  {s.profiles?.name || 'Học sinh'} <span className="text-[11px] font-normal text-gray-400">(Lớp {s.profiles?.class_name || '5'})</span>
+                                </h4>
+                                <div className="flex items-center gap-2 text-[10px] text-gray-500 dark:text-slate-400">
+                                  <span>Lớp nhân vật: <strong className="capitalize">{s.avatar_class}</strong></span>
+                                  <span>•</span>
+                                  <span>Lượt chơi: <strong>{totalTowerCount} lần</strong></span>
+                                </div>
+                              </div>
+                            </div>
+
+                            <div className="text-right">
+                              <span className="text-sm font-black text-amber-500 block">{s.elo_rating} ELO</span>
+                              <span className="text-[10px] font-bold text-cyan-600 dark:text-cyan-400 bg-cyan-50 dark:bg-cyan-950/50 px-2 py-0.5 rounded-full">
+                                🏰 Tầng {s.tower_floor}
+                              </span>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  );
+                })()
+              )}
+
+              {/* 3: Tower Attempts Modal */}
+              {activeKpiModal === 'tower_attempts' && (
+                (() => {
+                  let filteredAttempts = enrichedAttempts;
+                  if (kpiModalSearch) {
+                    const q = kpiModalSearch.toLowerCase();
+                    filteredAttempts = filteredAttempts.filter(a => {
+                      const stud = students.find(s => s.id === a.student_id);
+                      const name = (stud?.profiles?.name || '').toLowerCase();
+                      const topic = (a.topic || '').toLowerCase();
+                      return name.includes(q) || topic.includes(q);
+                    });
+                  }
+
+                  if (filteredAttempts.length === 0) {
+                    return <div className="text-center py-10 text-gray-400 text-xs italic">Chưa có lượt leo tháp nào.</div>;
+                  }
+
+                  return (
+                    <div className="space-y-2">
+                      {filteredAttempts.map(a => {
+                        const stud = students.find(s => s.id === a.student_id);
+                        return (
+                          <div key={a.id} className="p-3 bg-gray-50 dark:bg-slate-800/60 rounded-xl border border-gray-100 dark:border-slate-800 flex items-center justify-between text-xs">
+                            <div className="space-y-0.5">
+                              <div className="font-bold text-gray-900 dark:text-slate-100 flex items-center gap-1.5">
+                                <span>{stud?.profiles?.name || 'Học sinh'}</span>
+                                <span className="text-[10px] text-gray-400">({stud?.profiles?.class_name || '5'})</span>
+                                <span className={`text-[9px] px-1.5 py-0.5 rounded font-black ${a.is_victory ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}`}>
+                                  {a.is_victory ? 'THẮNG' : 'THẤT BẠI'}
+                                </span>
+                              </div>
+                              <div className="text-[10px] text-gray-500 dark:text-slate-400">
+                                Chủ đề: <strong>{a.topic || 'Tổng hợp'}</strong> • Đúng: {a.correct_answers}/{a.total_questions} câu
+                              </div>
+                            </div>
+                            <div className="text-right">
+                              <span className="font-black text-cyan-600 dark:text-cyan-400 block">Tầng {a.end_floor}</span>
+                              <span className="text-[9px] text-gray-400">{new Date(a.created_at).toLocaleString('vi-VN')}</span>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  );
+                })()
+              )}
+
+              {/* 4: PvP Matches Modal */}
+              {activeKpiModal === 'pvp_matches' && (
+                (() => {
+                  let filteredMatches = matchHistory;
+                  if (kpiModalSearch) {
+                    const q = kpiModalSearch.toLowerCase();
+                    filteredMatches = filteredMatches.filter(m => {
+                      const p1 = students.find(s => s.id === m.player1_id);
+                      const p2 = students.find(s => s.id === m.player2_id);
+                      return (p1?.profiles?.name || '').toLowerCase().includes(q) || (p2?.profiles?.name || '').toLowerCase().includes(q);
+                    });
+                  }
+
+                  if (filteredMatches.length === 0) {
+                    return <div className="text-center py-10 text-gray-400 text-xs italic">Chưa có trận PvP 1v1 nào.</div>;
+                  }
+
+                  return (
+                    <div className="space-y-2">
+                      {filteredMatches.map(m => {
+                        const p1 = students.find(s => s.id === m.player1_id);
+                        const p2 = students.find(s => s.id === m.player2_id);
+                        const winner = students.find(s => s.id === m.winner_id);
+
+                        return (
+                          <div key={m.id} className="p-3 bg-purple-50/50 dark:bg-purple-950/20 border border-purple-100 dark:border-purple-900/40 rounded-xl flex items-center justify-between text-xs">
+                            <div>
+                              <div className="font-bold text-gray-900 dark:text-slate-100 flex items-center gap-2">
+                                <span>{p1?.profiles?.name || 'Player 1'}</span>
+                                <span className="text-purple-600 font-black">VS</span>
+                                <span>{p2?.profiles?.name || 'Player 2'}</span>
+                              </div>
+                              <div className="text-[10px] text-gray-500 dark:text-slate-400 pt-0.5">
+                                Tỷ số: {m.player1_score} - {m.player2_score} • Trạng thái: <strong className="uppercase">{m.status}</strong>
+                              </div>
+                            </div>
+                            <div className="text-right">
+                              <span className="text-xs font-black text-amber-500 block">
+                                {winner ? `🏆 Thắng: ${winner.profiles?.name}` : 'Hòa / Đang đấu'}
+                              </span>
+                              <span className="text-[9px] text-gray-400">{new Date(m.created_at).toLocaleString('vi-VN')}</span>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  );
+                })()
+              )}
+            </div>
+
+            <div className="flex justify-end pt-3 border-t border-gray-100 dark:border-slate-800">
+              <button 
+                onClick={() => setActiveKpiModal(null)}
                 className="px-5 py-2.5 bg-gray-100 dark:bg-slate-800 hover:bg-gray-200 text-gray-700 dark:text-slate-300 text-xs font-bold rounded-xl"
               >
                 Đóng
