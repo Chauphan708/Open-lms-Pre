@@ -2,7 +2,8 @@ import React, { useEffect, useState, useMemo } from 'react';
 import { supabase } from '../../services/supabaseClient';
 import { 
   Brain, Trophy, Target, Search, Users, ChevronRight, ChevronDown, 
-  TrendingUp, BarChart3, Clock, AlertTriangle, CheckCircle, RefreshCw, X, ShieldAlert, Download 
+  TrendingUp, BarChart3, Clock, AlertTriangle, CheckCircle, RefreshCw, X, ShieldAlert, Download,
+  Zap, Swords, Award
 } from 'lucide-react';
 import MathText from '../../components/MathText';
 
