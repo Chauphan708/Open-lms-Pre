@@ -932,7 +932,7 @@ export const TowerMode: React.FC = () => {
         const updatedPool = [...pool, ...mappedGenerated];
         setQuestionPool(updatedPool);
         
-        const nextQ = mappedGenerated[0];
+        const nextQ = shuffleQuestionOptions(mappedGenerated[0]);
         setCurrentQ(nextQ);
         setUsedIds(prev => new Set([...prev, nextQ.id]));
         setTimer(baseTimerLimit);
@@ -962,8 +962,43 @@ export const TowerMode: React.FC = () => {
       return;
     }
 
+    // Helper function to shuffle options (A, B, C, D) dynamically for each question display
+    const shuffleQuestionOptions = (question: ArenaQuestion): ArenaQuestion => {
+      if (!question.answers || question.answers.length <= 1 || question.type === 'SHORT_ANSWER') {
+        return question;
+      }
+
+      // Create indexed array of options
+      const optionsWithIndex = question.answers.map((opt, idx) => ({
+        opt,
+        isCorrect: idx === question.correct_index,
+        isMultipleCorrect: question.correct_indices ? question.correct_indices.includes(idx) : false,
+        originalIndex: idx
+      }));
+
+      // Fisher-Yates Shuffle
+      for (let i = optionsWithIndex.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [optionsWithIndex[i], optionsWithIndex[j]] = [optionsWithIndex[j], optionsWithIndex[i]];
+      }
+
+      const shuffledAnswers = optionsWithIndex.map(item => item.opt);
+      const newCorrectIndex = optionsWithIndex.findIndex(item => item.isCorrect);
+      const newCorrectIndices = optionsWithIndex
+        .map((item, newIdx) => item.isMultipleCorrect ? newIdx : -1)
+        .filter(idx => idx !== -1);
+
+      return {
+        ...question,
+        answers: shuffledAnswers,
+        correct_index: newCorrectIndex !== -1 ? newCorrectIndex : question.correct_index,
+        correct_indices: newCorrectIndices.length > 0 ? newCorrectIndices : question.correct_indices
+      };
+    };
+
     // Pick random question from available list
-    const chosen = available[Math.floor(Math.random() * available.length)];
+    const chosenRaw = available[Math.floor(Math.random() * available.length)];
+    const chosen = shuffleQuestionOptions(chosenRaw);
     setCurrentQ(chosen);
     setUsedIds(prev => new Set([...prev, chosen.id]));
     setTimer(baseTimerLimit);
