@@ -1179,7 +1179,11 @@ export const TowerMode: React.FC = () => {
         finalLives = lives - 1;
         setLives(finalLives);
         if (finalLives <= 0) {
-          handleGameOver(newMastery, finalCorrectAnswers, finalTotalQuestions, finalXpGainedRun, finalEloChangeRun);
+          if (newMastery >= 100) {
+            handleVictory(newMastery, finalCorrectAnswers, finalTotalQuestions, finalXpGainedRun, finalEloChangeRun);
+          } else {
+            handleGameOver(newMastery, finalCorrectAnswers, finalTotalQuestions, finalXpGainedRun, finalEloChangeRun);
+          }
           return;
         }
       }
