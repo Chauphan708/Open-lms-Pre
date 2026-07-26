@@ -830,7 +830,7 @@ export const ArenaStatsDashboard: React.FC = () => {
                             </div>
 
                             <span className="text-[10px] text-gray-400 font-bold whitespace-nowrap">
-                              {activity.date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                              {activity.date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
                             </span>
                           </div>
 
