@@ -109,6 +109,7 @@ export const ArenaStatsDashboard: React.FC = () => {
 
   // Modals & Revenge Assignment States
   const [showHallOfFameModal, setShowHallOfFameModal] = useState(false);
+  const [showMasteryReportModal, setShowMasteryReportModal] = useState(false);
   const [revengeModalTopic, setRevengeModalTopic] = useState<any | null>(null);
   const [revengeAssignedSuccess, setRevengeAssignedSuccess] = useState(false);
 
@@ -574,9 +575,13 @@ export const ArenaStatsDashboard: React.FC = () => {
           <div className="text-2xl md:text-3xl font-black text-amber-500">{statsSummary.avgElo}</div>
         </div>
 
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border dark:border-slate-800 p-4 shadow-sm text-center">
-          <div className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-1">Đạt 100% Mastery</div>
-          <div className="text-2xl md:text-3xl font-black text-emerald-500">{statsSummary.masteredCount} <span className="text-xs font-normal text-gray-400">HS</span></div>
+        <div 
+          onClick={() => setShowMasteryReportModal(true)}
+          className="bg-white dark:bg-slate-900 rounded-2xl border dark:border-slate-800 p-4 shadow-sm text-center cursor-pointer hover:border-emerald-400 hover:shadow-md transition-all group"
+          title="Bấm để xem danh sách học sinh đã hoàn thiện 100% chuyên đề"
+        >
+          <div className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-1 group-hover:text-emerald-600 transition-colors">Đạt 100% Mastery</div>
+          <div className="text-2xl md:text-3xl font-black text-emerald-500">{statsSummary.masteredCount} <span className="text-xs font-normal text-gray-400">HS 🔍</span></div>
         </div>
 
         <div className="bg-white dark:bg-slate-900 rounded-2xl border dark:border-slate-800 p-4 shadow-sm text-center">
@@ -1456,6 +1461,113 @@ export const ArenaStatsDashboard: React.FC = () => {
                 className="px-5 py-2.5 bg-amber-500 hover:bg-amber-600 text-gray-950 text-xs font-black rounded-xl flex items-center gap-2 shadow-md shadow-amber-500/20"
               >
                 <Download className="h-4 w-4" /> In Bảng Khen Thưởng
+              </button>
+            </div>
+          </div>
+        </div>
+      {/* 100% Mastery Report Modal */}
+      {showMasteryReportModal && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-in fade-in">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-3xl w-full p-6 border border-gray-100 dark:border-slate-800 shadow-2xl relative space-y-5 max-h-[90vh] flex flex-col">
+            <button 
+              onClick={() => setShowMasteryReportModal(false)}
+              className="absolute top-5 right-5 p-2 text-gray-400 hover:text-gray-600 dark:hover:text-slate-200 rounded-full hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors"
+            >
+              <X className="h-5 w-5" />
+            </button>
+
+            <div className="flex items-center gap-3">
+              <div className="p-3 bg-emerald-100 dark:bg-emerald-950/50 text-emerald-600 rounded-2xl">
+                <CheckCircle className="h-7 w-7" />
+              </div>
+              <div>
+                <h3 className="text-xl font-black text-gray-900 dark:text-slate-100 tracking-tight">🏆 Báo Cáo Học Sinh Hoàn Thành 100% Chuyên Đề</h3>
+                <p className="text-xs text-gray-500 dark:text-slate-400">Danh sách các học sinh đã đạt mốc độ am hiểu tuyệt đối (100% Mastery) từng chuyên đề.</p>
+              </div>
+            </div>
+
+            <div className="flex-1 overflow-y-auto pr-1 custom-scrollbar space-y-4">
+              {(() => {
+                const masteredStudents = students.filter(s => s.topic_mastery && Object.values(s.topic_mastery).some(v => v >= 100));
+                
+                if (masteredStudents.length === 0) {
+                  return (
+                    <div className="text-center py-12 text-gray-400 text-sm italic">
+                      Chưa ghi nhận học sinh nào đạt 100% Mastery chuyên đề nào.
+                    </div>
+                  );
+                }
+
+                return masteredStudents.map(s => {
+                  const masteredTopics = Object.entries(s.topic_mastery || {}).filter(([_, m]) => m >= 100);
+                  const attempts = enrichedAttempts.filter(a => a.student_id === s.id);
+
+                  return (
+                    <div key={s.id} className="p-4 bg-gray-50/70 dark:bg-slate-850 border border-gray-100 dark:border-slate-800 rounded-2xl space-y-3">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-full bg-emerald-600 text-white font-black flex items-center justify-center text-sm shadow-md">
+                            {s.profiles?.name?.charAt(0).toUpperCase() || 'S'}
+                          </div>
+                          <div>
+                            <h4 className="font-extrabold text-sm text-gray-900 dark:text-slate-100">
+                              {s.profiles?.name || 'Học sinh'} <span className="text-xs font-normal text-gray-500">(Lớp {s.profiles?.class_name || '5'})</span>
+                            </h4>
+                            <span className="text-[11px] text-emerald-600 dark:text-emerald-400 font-bold">
+                              🏆 Đã làm chủ {masteredTopics.length} chuyên đề
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className="text-right">
+                          <span className="text-sm font-black text-amber-500">{s.elo_rating} ELO</span>
+                          <span className="text-[10px] text-gray-400 block font-semibold">Tầng {s.tower_floor}</span>
+                        </div>
+                      </div>
+
+                      {/* Mastered topics detailed breakdown */}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-2 border-t border-gray-200/50 dark:border-slate-800">
+                        {masteredTopics.map(([topicName, _]) => {
+                          const topicAttempts = attempts.filter(a => a.topic?.toLowerCase() === topicName.toLowerCase());
+                          const totalAttemptsCount = topicAttempts.length;
+                          
+                          // Find latest victory timestamp as mastery achieve time
+                          const victoryAttempt = topicAttempts.find(a => a.is_victory);
+                          const achievedTimeStr = victoryAttempt 
+                            ? new Date(victoryAttempt.created_at).toLocaleString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+                            : 'Đã cập nhật';
+
+                          return (
+                            <div key={topicName} className="p-2.5 bg-white dark:bg-slate-900 rounded-xl border border-gray-100 dark:border-slate-800 space-y-1">
+                              <div className="flex items-center justify-between text-xs font-bold text-gray-900 dark:text-slate-100">
+                                <span className="truncate flex items-center gap-1 text-emerald-600 dark:text-emerald-400" title={topicName}>
+                                  ⭐ {topicName}
+                                </span>
+                                <span className="text-[10px] bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300 px-1.5 py-0.5 rounded font-black">
+                                  100%
+                                </span>
+                              </div>
+
+                              <div className="flex justify-between items-center text-[10px] text-gray-500 dark:text-slate-400 font-medium pt-0.5">
+                                <span>Số lần làm bài: <strong>{totalAttemptsCount > 0 ? totalAttemptsCount : 1} lần</strong></span>
+                                <span className="text-gray-400">Thời gian: <strong>{achievedTimeStr}</strong></span>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  );
+                });
+              })()}
+            </div>
+
+            <div className="flex justify-end gap-2 pt-2 border-t border-gray-100 dark:border-slate-800">
+              <button 
+                onClick={() => setShowMasteryReportModal(false)}
+                className="px-5 py-2.5 bg-gray-100 dark:bg-slate-800 hover:bg-gray-200 text-gray-700 dark:text-slate-300 text-xs font-bold rounded-xl"
+              >
+                Đóng
               </button>
             </div>
           </div>
