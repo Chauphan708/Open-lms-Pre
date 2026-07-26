@@ -110,6 +110,8 @@ export const ArenaStatsDashboard: React.FC = () => {
   // Modals & Revenge Assignment States
   const [showHallOfFameModal, setShowHallOfFameModal] = useState(false);
   const [showMasteryReportModal, setShowMasteryReportModal] = useState(false);
+  const [masteryModalSearch, setMasteryModalSearch] = useState('');
+  const [masteryModalTopicFilter, setMasteryModalTopicFilter] = useState('');
   const [revengeModalTopic, setRevengeModalTopic] = useState<any | null>(null);
   const [revengeAssignedSuccess, setRevengeAssignedSuccess] = useState(false);
 
@@ -1469,7 +1471,7 @@ export const ArenaStatsDashboard: React.FC = () => {
       {/* 100% Mastery Report Modal */}
       {showMasteryReportModal && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-in fade-in">
-          <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-3xl w-full p-6 border border-gray-100 dark:border-slate-800 shadow-2xl relative space-y-5 max-h-[90vh] flex flex-col">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-4xl w-full p-6 border border-gray-100 dark:border-slate-800 shadow-2xl relative space-y-5 max-h-[90vh] flex flex-col">
             <button 
               onClick={() => setShowMasteryReportModal(false)}
               className="absolute top-5 right-5 p-2 text-gray-400 hover:text-gray-600 dark:hover:text-slate-200 rounded-full hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors"
@@ -1477,30 +1479,117 @@ export const ArenaStatsDashboard: React.FC = () => {
               <X className="h-5 w-5" />
             </button>
 
-            <div className="flex items-center gap-3">
-              <div className="p-3 bg-emerald-100 dark:bg-emerald-950/50 text-emerald-600 rounded-2xl">
-                <CheckCircle className="h-7 w-7" />
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <div className="p-3 bg-emerald-100 dark:bg-emerald-950/50 text-emerald-600 rounded-2xl">
+                  <CheckCircle className="h-7 w-7" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-black text-gray-900 dark:text-slate-100 tracking-tight">🏆 Báo Cáo Học Sinh Hoàn Thành 100% Chuyên Đề</h3>
+                  <p className="text-xs text-gray-500 dark:text-slate-400">Danh sách các học sinh đã đạt mốc độ am hiểu tuyệt đối (100% Mastery) từng chuyên đề.</p>
+                </div>
               </div>
-              <div>
-                <h3 className="text-xl font-black text-gray-900 dark:text-slate-100 tracking-tight">🏆 Báo Cáo Học Sinh Hoàn Thành 100% Chuyên Đề</h3>
-                <p className="text-xs text-gray-500 dark:text-slate-400">Danh sách các học sinh đã đạt mốc độ am hiểu tuyệt đối (100% Mastery) từng chuyên đề.</p>
-              </div>
+
+              {/* Summary Badges */}
+              {(() => {
+                const allMasteredStudents = students.filter(s => s.topic_mastery && Object.values(s.topic_mastery).some(v => v >= 100));
+                const allMasteredTopicsSet = new Set<string>();
+                allMasteredStudents.forEach(s => {
+                  Object.entries(s.topic_mastery || {}).forEach(([topic, m]) => {
+                    if (m >= 100) allMasteredTopicsSet.add(topic);
+                  });
+                });
+                return (
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    <span className="px-3 py-1.5 bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300 rounded-xl text-xs font-black border border-emerald-200/50">
+                      👥 {allMasteredStudents.length} Học Sinh
+                    </span>
+                    <span className="px-3 py-1.5 bg-indigo-50 text-indigo-700 dark:bg-indigo-950/50 dark:text-indigo-300 rounded-xl text-xs font-black border border-indigo-200/50">
+                      📚 {allMasteredTopicsSet.size} Chuyên Đề
+                    </span>
+                  </div>
+                );
+              })()}
             </div>
 
-            <div className="flex-1 overflow-y-auto pr-1 custom-scrollbar space-y-4">
+            {/* Filter & Search Toolbar */}
+            <div className="flex flex-col sm:flex-row items-center gap-3 bg-gray-50 dark:bg-slate-800/50 p-3 rounded-2xl border border-gray-100 dark:border-slate-800">
+              <div className="relative flex-1 w-full">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <input 
+                  type="text"
+                  value={masteryModalSearch}
+                  onChange={(e) => setMasteryModalSearch(e.target.value)}
+                  placeholder="Tìm học sinh, lớp..."
+                  className="w-full pl-9 pr-3 py-2 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl text-xs font-semibold focus:outline-none focus:border-emerald-500 dark:text-slate-100"
+                />
+              </div>
+
+              {/* Topic Filter Dropdown */}
+              <div className="w-full sm:w-64">
+                <select
+                  value={masteryModalTopicFilter}
+                  onChange={(e) => setMasteryModalTopicFilter(e.target.value)}
+                  className="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl text-xs font-semibold focus:outline-none focus:border-emerald-500 dark:text-slate-100"
+                >
+                  <option value="">-- Tất cả chuyên đề 100% --</option>
+                  {(() => {
+                    const topicSet = new Set<string>();
+                    students.forEach(s => {
+                      Object.entries(s.topic_mastery || {}).forEach(([topic, m]) => {
+                        if (m >= 100) topicSet.add(topic);
+                      });
+                    });
+                    return Array.from(topicSet).sort().map(topic => (
+                      <option key={topic} value={topic}>{topic}</option>
+                    ));
+                  })()}
+                </select>
+              </div>
+
+              {(masteryModalSearch || masteryModalTopicFilter) && (
+                <button 
+                  onClick={() => { setMasteryModalSearch(''); setMasteryModalTopicFilter(''); }}
+                  className="text-xs font-bold text-gray-500 hover:text-rose-500 px-2 py-1"
+                >
+                  Đặt lại
+                </button>
+              )}
+            </div>
+
+            {/* List Content */}
+            <div className="flex-1 overflow-y-auto pr-1 custom-scrollbar space-y-4 max-h-[50vh]">
               {(() => {
-                const masteredStudents = students.filter(s => s.topic_mastery && Object.values(s.topic_mastery).some(v => v >= 100));
+                const filtered = students.filter(s => {
+                  const hasMastery = s.topic_mastery && Object.values(s.topic_mastery).some(v => v >= 100);
+                  if (!hasMastery) return false;
+
+                  const name = (s.profiles?.name || '').toLowerCase();
+                  const cls = (s.profiles?.class_name || '').toLowerCase();
+                  const matchesSearch = !masteryModalSearch || name.includes(masteryModalSearch.toLowerCase()) || cls.includes(masteryModalSearch.toLowerCase());
+
+                  let matchesTopic = true;
+                  if (masteryModalTopicFilter) {
+                    matchesTopic = !!(s.topic_mastery && (s.topic_mastery[masteryModalTopicFilter] || 0) >= 100);
+                  }
+
+                  return matchesSearch && matchesTopic;
+                });
                 
-                if (masteredStudents.length === 0) {
+                if (filtered.length === 0) {
                   return (
-                    <div className="text-center py-12 text-gray-400 text-sm italic">
-                      Chưa ghi nhận học sinh nào đạt 100% Mastery chuyên đề nào.
+                    <div className="text-center py-12 text-gray-400 text-sm italic border border-dashed border-gray-200 dark:border-slate-800 rounded-2xl">
+                      Không tìm thấy kết quả phù hợp với bộ lọc.
                     </div>
                   );
                 }
 
-                return masteredStudents.map(s => {
-                  const masteredTopics = Object.entries(s.topic_mastery || {}).filter(([_, m]) => m >= 100);
+                return filtered.map(s => {
+                  let masteredTopics = Object.entries(s.topic_mastery || {}).filter(([_, m]) => m >= 100);
+                  if (masteryModalTopicFilter) {
+                    masteredTopics = masteredTopics.filter(([t, _]) => t.toLowerCase() === masteryModalTopicFilter.toLowerCase());
+                  }
+
                   const attempts = enrichedAttempts.filter(a => a.student_id === s.id);
 
                   return (
@@ -1527,7 +1616,7 @@ export const ArenaStatsDashboard: React.FC = () => {
                       </div>
 
                       {/* Mastered topics detailed breakdown */}
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-2 border-t border-gray-200/50 dark:border-slate-800">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 pt-2 border-t border-gray-200/50 dark:border-slate-800">
                         {masteredTopics.map(([topicName, _]) => {
                           const topicAttempts = attempts.filter(a => a.topic?.toLowerCase() === topicName.toLowerCase());
                           const totalAttemptsCount = topicAttempts.length;
@@ -1550,7 +1639,7 @@ export const ArenaStatsDashboard: React.FC = () => {
                               </div>
 
                               <div className="flex justify-between items-center text-[10px] text-gray-500 dark:text-slate-400 font-medium pt-0.5">
-                                <span>Số lần làm bài: <strong>{totalAttemptsCount > 0 ? totalAttemptsCount : 1} lần</strong></span>
+                                <span>Lần làm: <strong>{totalAttemptsCount > 0 ? totalAttemptsCount : 1} lần</strong></span>
                                 <span className="text-gray-400">Thời gian: <strong>{achievedTimeStr}</strong></span>
                               </div>
                             </div>
@@ -1563,7 +1652,50 @@ export const ArenaStatsDashboard: React.FC = () => {
               })()}
             </div>
 
-            <div className="flex justify-end gap-2 pt-2 border-t border-gray-100 dark:border-slate-800">
+            <div className="flex justify-between items-center gap-2 pt-3 border-t border-gray-100 dark:border-slate-800">
+              <button
+                onClick={() => {
+                  const rows: string[][] = [];
+                  const headers = ['Họ tên', 'Lớp', 'Chuyên đề 100%', 'Số lần làm bài', 'Thời gian đạt'];
+                  
+                  students.forEach(s => {
+                    const name = s.profiles?.name || 'Học sinh';
+                    const cls = s.profiles?.class_name || '5';
+                    const mastered = Object.entries(s.topic_mastery || {}).filter(([_, m]) => m >= 100);
+                    const attempts = enrichedAttempts.filter(a => a.student_id === s.id);
+
+                    mastered.forEach(([topicName, _]) => {
+                      const topicAttempts = attempts.filter(a => a.topic?.toLowerCase() === topicName.toLowerCase());
+                      const totalAttemptsCount = topicAttempts.length;
+                      const victoryAttempt = topicAttempts.find(a => a.is_victory);
+                      const achievedTimeStr = victoryAttempt 
+                        ? new Date(victoryAttempt.created_at).toLocaleString('vi-VN')
+                        : 'Đã cập nhật';
+
+                      rows.push([
+                        `"${name}"`,
+                        `"${cls}"`,
+                        `"${topicName.replace(/"/g, '""')}"`,
+                        String(totalAttemptsCount > 0 ? totalAttemptsCount : 1),
+                        `"${achievedTimeStr}"`
+                      ]);
+                    });
+                  });
+
+                  const csvContent = '\ufeff' + [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+                  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                  const link = document.createElement('a');
+                  link.href = URL.createObjectURL(blob);
+                  link.download = `bao_cao_mastery_100_${new Date().toLocaleDateString('vi-VN').replace(/\//g, '-')}.csv`;
+                  document.body.appendChild(link);
+                  link.click();
+                  document.body.removeChild(link);
+                }}
+                className="px-4 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-xs font-bold rounded-xl flex items-center gap-1.5 border border-emerald-200"
+              >
+                <Download className="h-4 w-4" /> Xuất Báo Cáo CSV
+              </button>
+
               <button 
                 onClick={() => setShowMasteryReportModal(false)}
                 className="px-5 py-2.5 bg-gray-100 dark:bg-slate-800 hover:bg-gray-200 text-gray-700 dark:text-slate-300 text-xs font-bold rounded-xl"
