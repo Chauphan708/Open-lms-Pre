@@ -1784,7 +1784,7 @@ export const ArenaStatsDashboard: React.FC = () => {
                   <Swords className="h-7 w-7" />
                 </div>
                 <div>
-                  <h3 className="text-xl font-black text-gray-900 dark:text-slate-100 tracking-tight">⚔️ Nhật Ký {statsSummary.totalPvP} Trận Đối Đầu PvP (1v1)</h3>
+                  <h3 className="text-xl font-black text-gray-900 dark:text-slate-100 tracking-tight">⚔️ Nhật Ký {matchHistory.length} Trận Đối Đầu PvP (1v1)</h3>
                   <p className="text-xs text-gray-500 dark:text-slate-400">Lịch sử thi đấu trực tiếp giữa các học sinh trong hệ thống.</p>
                 </div>
               </div>
@@ -1797,7 +1797,7 @@ export const ArenaStatsDashboard: React.FC = () => {
                 </div>
                 <div>
                   <h3 className="text-xl font-black text-gray-900 dark:text-slate-100 tracking-tight">🔥 Danh Sách Học Sinh Năng Khiếu (Tầng 3 - 4)</h3>
-                  <p className="text-xs text-gray-500 dark:text-slate-400">Top {statsSummary.giftedStudentsCount} học sinh có năng lực vượt trội chinh phục tầng tháp cao nhất.</p>
+                  <p className="text-xs text-gray-500 dark:text-slate-400">Học sinh có năng lực vượt trội chinh phục tầng tháp cao nhất (Tầng 3 - 4).</p>
                 </div>
               </div>
             )}
@@ -1821,9 +1821,9 @@ export const ArenaStatsDashboard: React.FC = () => {
                 (() => {
                   let filteredList = [...students];
                   if (activeKpiModal === 'active_students') {
-                    filteredList = filteredList.filter(s => s.tower_floor > 1 || (s.unlocked_badges && s.unlocked_badges.length > 0) || s.elo_rating !== 1000);
+                    filteredList = filteredList.filter(s => s.tower_floor > 1 || (s.unlocked_badges && s.unlocked_badges.length > 0) || (s.elo_rating && s.elo_rating > 0 && s.elo_rating !== 1000));
                   } else if (activeKpiModal === 'gifted_students') {
-                    filteredList = filteredList.filter(s => s.tower_floor >= 3);
+                    filteredList = filteredList.filter(s => s.tower_floor >= 3 && s.tower_floor <= 4);
                   }
                   
                   if (activeKpiModal === 'avg_elo') {
