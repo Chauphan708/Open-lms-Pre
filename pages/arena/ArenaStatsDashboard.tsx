@@ -114,6 +114,7 @@ export const ArenaStatsDashboard: React.FC = () => {
   const [activeKpiModal, setActiveKpiModal] = useState<'active_students' | 'avg_elo' | 'tower_attempts' | 'pvp_matches' | 'gifted_students' | null>(null);
   const [kpiModalSearch, setKpiModalSearch] = useState('');
   const [masteryModalSearch, setMasteryModalSearch] = useState('');
+  const [masteryModalClassFilter, setMasteryModalClassFilter] = useState('');
   const [masteryModalStudentFilter, setMasteryModalStudentFilter] = useState('');
   const [masteryModalTopicFilter, setMasteryModalTopicFilter] = useState('');
   const [revengeModalTopic, setRevengeModalTopic] = useState<any | null>(null);
@@ -1538,6 +1539,23 @@ export const ArenaStatsDashboard: React.FC = () => {
 
             {/* Filter & Search Toolbar */}
             <div className="flex flex-col sm:flex-row items-center gap-3 bg-gray-50 dark:bg-slate-800/50 p-3 rounded-2xl border border-gray-100 dark:border-slate-800">
+              {/* Class Dropdown Filter */}
+              <div className="w-full sm:w-44">
+                <select
+                  value={masteryModalClassFilter}
+                  onChange={(e) => {
+                    setMasteryModalClassFilter(e.target.value);
+                    setMasteryModalStudentFilter(''); // Reset student filter when class changes
+                  }}
+                  className="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl text-xs font-semibold focus:outline-none focus:border-emerald-500 dark:text-slate-100"
+                >
+                  <option value="">-- Tất cả Lớp --</option>
+                  {classesList.map(cls => (
+                    <option key={cls} value={cls}>Lớp {cls}</option>
+                  ))}
+                </select>
+              </div>
+
               {/* Student Dropdown Filter */}
               <div className="w-full sm:flex-1">
                 <select
@@ -1545,9 +1563,14 @@ export const ArenaStatsDashboard: React.FC = () => {
                   onChange={(e) => setMasteryModalStudentFilter(e.target.value)}
                   className="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl text-xs font-semibold focus:outline-none focus:border-emerald-500 dark:text-slate-100"
                 >
-                  <option value="">-- Tất cả học sinh 100% Mastery --</option>
+                  <option value="">-- Tất cả học sinh --</option>
                   {(() => {
-                    const masteredStudents = students.filter(s => s.topic_mastery && Object.values(s.topic_mastery).some(v => v >= 100));
+                    const masteredStudents = students.filter(s => {
+                      const hasM = s.topic_mastery && Object.values(s.topic_mastery).some(v => v >= 100);
+                      if (!hasM) return false;
+                      if (masteryModalClassFilter && (s.profiles?.class_name?.trim() !== masteryModalClassFilter)) return false;
+                      return true;
+                    });
                     return masteredStudents
                       .sort((a, b) => (a.profiles?.name || '').localeCompare(b.profiles?.name || ''))
                       .map(s => (
@@ -1570,6 +1593,7 @@ export const ArenaStatsDashboard: React.FC = () => {
                   {(() => {
                     const topicSet = new Set<string>();
                     students.forEach(s => {
+                      if (masteryModalClassFilter && (s.profiles?.class_name?.trim() !== masteryModalClassFilter)) return;
                       Object.entries(s.topic_mastery || {}).forEach(([topic, m]) => {
                         if (m >= 100) topicSet.add(topic);
                       });
@@ -1581,9 +1605,9 @@ export const ArenaStatsDashboard: React.FC = () => {
                 </select>
               </div>
 
-              {(masteryModalStudentFilter || masteryModalTopicFilter) && (
+              {(masteryModalClassFilter || masteryModalStudentFilter || masteryModalTopicFilter) && (
                 <button 
-                  onClick={() => { setMasteryModalStudentFilter(''); setMasteryModalTopicFilter(''); }}
+                  onClick={() => { setMasteryModalClassFilter(''); setMasteryModalStudentFilter(''); setMasteryModalTopicFilter(''); }}
                   className="text-xs font-bold text-gray-500 hover:text-rose-500 px-2 py-1 flex-shrink-0"
                 >
                   Đặt lại
@@ -1597,6 +1621,10 @@ export const ArenaStatsDashboard: React.FC = () => {
                 const filtered = students.filter(s => {
                   const hasMastery = s.topic_mastery && Object.values(s.topic_mastery).some(v => v >= 100);
                   if (!hasMastery) return false;
+
+                  if (masteryModalClassFilter && s.profiles?.class_name?.trim() !== masteryModalClassFilter) {
+                    return false;
+                  }
 
                   let matchesStudent = true;
                   if (masteryModalStudentFilter) {
