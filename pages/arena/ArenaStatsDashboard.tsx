@@ -114,6 +114,7 @@ export const ArenaStatsDashboard: React.FC = () => {
   const [activeKpiModal, setActiveKpiModal] = useState<'active_students' | 'avg_elo' | 'tower_attempts' | 'pvp_matches' | 'gifted_students' | null>(null);
   const [kpiModalSearch, setKpiModalSearch] = useState('');
   const [masteryModalSearch, setMasteryModalSearch] = useState('');
+  const [masteryModalStudentFilter, setMasteryModalStudentFilter] = useState('');
   const [masteryModalTopicFilter, setMasteryModalTopicFilter] = useState('');
   const [revengeModalTopic, setRevengeModalTopic] = useState<any | null>(null);
   const [revengeAssignedSuccess, setRevengeAssignedSuccess] = useState(false);
@@ -1537,15 +1538,25 @@ export const ArenaStatsDashboard: React.FC = () => {
 
             {/* Filter & Search Toolbar */}
             <div className="flex flex-col sm:flex-row items-center gap-3 bg-gray-50 dark:bg-slate-800/50 p-3 rounded-2xl border border-gray-100 dark:border-slate-800">
-              <div className="relative flex-1 w-full">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                <input 
-                  type="text"
-                  value={masteryModalSearch}
-                  onChange={(e) => setMasteryModalSearch(e.target.value)}
-                  placeholder="Tìm học sinh, lớp..."
-                  className="w-full pl-9 pr-3 py-2 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl text-xs font-semibold focus:outline-none focus:border-emerald-500 dark:text-slate-100"
-                />
+              {/* Student Dropdown Filter */}
+              <div className="w-full sm:flex-1">
+                <select
+                  value={masteryModalStudentFilter}
+                  onChange={(e) => setMasteryModalStudentFilter(e.target.value)}
+                  className="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl text-xs font-semibold focus:outline-none focus:border-emerald-500 dark:text-slate-100"
+                >
+                  <option value="">-- Tất cả học sinh 100% Mastery --</option>
+                  {(() => {
+                    const masteredStudents = students.filter(s => s.topic_mastery && Object.values(s.topic_mastery).some(v => v >= 100));
+                    return masteredStudents
+                      .sort((a, b) => (a.profiles?.name || '').localeCompare(b.profiles?.name || ''))
+                      .map(s => (
+                        <option key={s.id} value={s.id}>
+                          {s.profiles?.name || 'Học sinh'} (Lớp {s.profiles?.class_name || '5'})
+                        </option>
+                      ));
+                  })()}
+                </select>
               </div>
 
               {/* Topic Filter Dropdown */}
@@ -1570,10 +1581,10 @@ export const ArenaStatsDashboard: React.FC = () => {
                 </select>
               </div>
 
-              {(masteryModalSearch || masteryModalTopicFilter) && (
+              {(masteryModalStudentFilter || masteryModalTopicFilter) && (
                 <button 
-                  onClick={() => { setMasteryModalSearch(''); setMasteryModalTopicFilter(''); }}
-                  className="text-xs font-bold text-gray-500 hover:text-rose-500 px-2 py-1"
+                  onClick={() => { setMasteryModalStudentFilter(''); setMasteryModalTopicFilter(''); }}
+                  className="text-xs font-bold text-gray-500 hover:text-rose-500 px-2 py-1 flex-shrink-0"
                 >
                   Đặt lại
                 </button>
@@ -1587,16 +1598,17 @@ export const ArenaStatsDashboard: React.FC = () => {
                   const hasMastery = s.topic_mastery && Object.values(s.topic_mastery).some(v => v >= 100);
                   if (!hasMastery) return false;
 
-                  const name = (s.profiles?.name || '').toLowerCase();
-                  const cls = (s.profiles?.class_name || '').toLowerCase();
-                  const matchesSearch = !masteryModalSearch || name.includes(masteryModalSearch.toLowerCase()) || cls.includes(masteryModalSearch.toLowerCase());
+                  let matchesStudent = true;
+                  if (masteryModalStudentFilter) {
+                    matchesStudent = s.id === masteryModalStudentFilter;
+                  }
 
                   let matchesTopic = true;
                   if (masteryModalTopicFilter) {
                     matchesTopic = !!(s.topic_mastery && (s.topic_mastery[masteryModalTopicFilter] || 0) >= 100);
                   }
 
-                  return matchesSearch && matchesTopic;
+                  return matchesStudent && matchesTopic;
                 });
                 
                 if (filtered.length === 0) {
