@@ -791,7 +791,7 @@ export const ArenaStatsDashboard: React.FC = () => {
                 Chưa có hoạt động nào trong sảnh đấu gần đây.
               </div>
             ) : (
-              <div className="space-y-2">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {
                   [
                     ...enrichedAttempts.map(a => ({
