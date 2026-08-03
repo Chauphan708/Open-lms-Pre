@@ -91,6 +91,8 @@ export interface Exam {
   questions: Question[];
   category: 'EXAM' | 'TASK';
   deletedAt?: string; // Soft delete timestamp (thùng rác)
+  teacherId?: string;
+  teacher_id?: string;
   
   // Sharing Features
   isPublic?: boolean;
@@ -312,6 +314,9 @@ export interface ArenaQuestion {
   guide?: string; // Hướng dẫn (gợi ý cách làm, không nêu đáp án)
   explanation?: string; // Lời giải chi tiết (chi tiết các bước và đáp án)
   case_sensitive?: boolean;
+  teacher_id?: string;
+  created_by?: string;
+  teacherId?: string;
 }
 
 export interface ArenaMatch {
@@ -405,6 +410,97 @@ export interface ClassSeatingChart {
   seats: ClassSeat[];
   createdAt: string;
   updatedAt: string;
+}
+
+// ============================================
+// E-LEARNING TYPES
+// ============================================
+
+export interface ELVideoQuestion {
+  id: string;
+  timestamp: number;
+  question: string;
+  options: string[];
+  correctIndex: number;
+}
+
+export interface ELCourse {
+  id: string;
+  title: string;
+  description?: string;
+  subject?: string;
+  coverImage?: string;
+  createdBy: string;
+  assignedClassIds: string[];
+  isPublished: boolean;
+  deadline?: string;
+  xpReward: number;
+  orderIndex: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ELChapter {
+  id: string;
+  courseId: string;
+  title: string;
+  isHidden: boolean;
+  orderIndex: number;
+  createdAt: string;
+}
+
+export interface ELLesson {
+  id: string;
+  chapterId: string;
+  courseId: string;
+  title: string;
+  content?: string;
+  driveUrl?: string;
+  videoUrl?: string;
+  videoDuration: number;
+  minStudyTime: number;
+  requiresPrevious: boolean;
+  isHidden: boolean;
+  quizId?: string;
+  videoQuestions: ELVideoQuestion[];
+  xpReward: number;
+  orderIndex: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ELStudentProgress {
+  id: string;
+  studentId: string;
+  courseId: string;
+  completedLessons: string[];
+  currentLessonId?: string;
+  totalStudyTime: number;
+  bestQuizScores: Record<string, number>;
+  enrolledAt: string;
+  completedAt?: string;
+}
+
+export interface ELStudyHistory {
+  id: string;
+  studentId: string;
+  courseId: string;
+  lessonId: string;
+  actionType: 'VIDEO_WATCH' | 'DOC_READ' | 'QUIZ_ATTEMPT' | 'LESSON_COMPLETE' | 'COURSE_COMPLETE';
+  score?: number;
+  timeSpent: number;
+  metadata?: Record<string, any>;
+  createdAt: string;
+}
+
+export interface ELLessonComment {
+  id: string;
+  lessonId: string;
+  userId: string;
+  userName: string;
+  content: string;
+  parentCommentId?: string;
+  createdAt: string;
 }
 
 export interface AppState {
@@ -561,6 +657,41 @@ export interface AppState {
   // ONE-CLICK SYNC SYSTEM (LOCAL -> SUPABASE)
   // ============================================
   syncLocalAttemptsToCloud: () => Promise<{ success: boolean; count: number }>;
+
+  // ============================================
+  // E-LEARNING STATE & ACTIONS
+  // ============================================
+  elCourses: ELCourse[];
+  elChapters: ELChapter[];
+  elLessons: ELLesson[];
+  elStudentProgress: ELStudentProgress[];
+  elStudyHistory: ELStudyHistory[];
+  elLessonComments: ELLessonComment[];
+  elLoading: boolean;
+
+  fetchELCourses: () => Promise<void>;
+  fetchELCourseDetail: (courseId: string) => Promise<void>;
+  addELCourse: (course: Omit<ELCourse, 'id' | 'createdAt' | 'updatedAt'>) => Promise<ELCourse | null>;
+  updateELCourse: (id: string, updates: Partial<ELCourse>) => Promise<boolean>;
+  deleteELCourse: (id: string) => Promise<boolean>;
+
+  addELChapter: (chapter: Omit<ELChapter, 'id' | 'createdAt'>) => Promise<ELChapter | null>;
+  updateELChapter: (id: string, updates: Partial<ELChapter>) => Promise<boolean>;
+  deleteELChapter: (id: string) => Promise<boolean>;
+
+  addELLesson: (lesson: Omit<ELLesson, 'id' | 'createdAt' | 'updatedAt'>) => Promise<ELLesson | null>;
+  updateELLesson: (id: string, updates: Partial<ELLesson>) => Promise<boolean>;
+  deleteELLesson: (id: string) => Promise<boolean>;
+
+  enrollCourse: (studentId: string, courseId: string) => Promise<boolean>;
+  markLessonComplete: (studentId: string, courseId: string, lessonId: string, quizScore?: number) => Promise<boolean>;
+  logStudyActivity: (entry: Omit<ELStudyHistory, 'id' | 'createdAt'>) => Promise<void>;
+  fetchELStudentProgress: (studentId?: string, courseId?: string) => Promise<void>;
+  fetchELStudyHistory: (courseId: string) => Promise<void>;
+
+  fetchELComments: (lessonId: string) => Promise<void>;
+  addELComment: (comment: Omit<ELLessonComment, 'id' | 'createdAt'>) => Promise<boolean>;
+  deleteELComment: (id: string) => Promise<boolean>;
 }
 
 

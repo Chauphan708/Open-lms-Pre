@@ -250,7 +250,9 @@ export const createArenaSlice: StateCreator<AppState, [], [], ArenaSliceState> =
       guide: q.guide || null,
       explanation: q.explanation || null,
       grade: q.grade,
-      case_sensitive: q.case_sensitive ?? false
+      case_sensitive: q.case_sensitive ?? false,
+      teacher_id: q.teacher_id || q.created_by || q.teacherId || get().user?.id,
+      created_by: q.created_by || q.teacher_id || q.teacherId || get().user?.id
     };
     
     let { error } = await supabase.from('arena_questions').insert(rowFull);

@@ -12,7 +12,7 @@ import rehypeKatex from 'rehype-katex';
 
 
 export const ExamList: React.FC = () => {
-  const { exams, assignments, user, classes, attempts, createLiveSession, updateExam, softDeleteExam, restoreExam, bulkUpdateTopic, bulkDeleteTopic, customTopics, addCustomTopic, fetchExams, fetchClasses, fetchAssignments, fetchAttempts } = useStore();
+  const { exams, assignments, user, classes, attempts, users, createLiveSession, updateExam, softDeleteExam, restoreExam, bulkUpdateTopic, bulkDeleteTopic, customTopics, addCustomTopic, fetchExams, fetchClasses, fetchAssignments, fetchAttempts } = useStore();
 
   useEffect(() => {
     if (user) {
@@ -44,8 +44,11 @@ export const ExamList: React.FC = () => {
   const [filterQuestionType, setFilterQuestionType] = useState('');
   const [filterCategory, setFilterCategory] = useState('');
   const [filterTopic, setFilterTopic] = useState('');
+  const [filterTeacher, setFilterTeacher] = useState('');
   const [showFilters, setShowFilters] = useState(false);
   const [showTrash, setShowTrash] = useState(false);
+
+  const teachersList = useMemo(() => users.filter(u => u.role === 'TEACHER' || u.role === 'ADMIN'), [users]);
 
   // Inline edit
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -128,9 +131,13 @@ export const ExamList: React.FC = () => {
         matchesType = exam.questions.some(q => q.type === filterQuestionType);
       }
 
-      return matchesSearch && matchesSubject && matchesGrade && matchesTopic && matchesDate && matchesDuration && matchesDifficulty && matchesType && matchesCategory;
+      const matchesTeacher = filterTeacher
+        ? (exam.teacherId === filterTeacher || (users.find(u => u.id === exam.teacherId)?.name === filterTeacher))
+        : true;
+
+      return matchesSearch && matchesSubject && matchesGrade && matchesTopic && matchesDate && matchesDuration && matchesDifficulty && matchesType && matchesCategory && matchesTeacher;
     });
-  }, [exams, searchTerm, filterSubject, filterGrade, filterTopic, filterDate, filterDuration, filterDifficulty, filterQuestionType, filterCategory]);
+  }, [exams, users, searchTerm, filterSubject, filterGrade, filterTopic, filterDate, filterDuration, filterDifficulty, filterQuestionType, filterCategory, filterTeacher]);
 
   const trashedExams = useMemo(() => exams.filter(e => e.deletedAt), [exams]);
 
@@ -429,12 +436,31 @@ export const ExamList: React.FC = () => {
                 </select>
               </div>
             </div>
+            {/* 8. Teacher (Admin Only) */}
+            {user?.role === 'ADMIN' && (
+              <div>
+                <label className="block text-xs font-bold text-gray-500 dark:text-slate-400 mb-1">Giáo viên tạo</label>
+                <div className="relative">
+                  <GraduationCap className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-3 w-3" />
+                  <select
+                    value={filterTeacher} onChange={e => setFilterTeacher(e.target.value)}
+                    className="w-full pl-8 pr-2 py-2 border dark:border-slate-800 rounded-lg text-xs bg-white dark:bg-slate-900 text-gray-900 dark:text-slate-100 outline-none focus:border-indigo-500 appearance-none font-bold"
+                  >
+                    <option value="">Tất cả GV</option>
+                    {teachersList.map(t => (
+                      <option key={t.id} value={t.id}>{t.name}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            )}
           </div>
           <div className="mt-4 pt-3 border-t dark:border-slate-800 flex justify-end">
             <button
               onClick={() => {
                 setFilterSubject(''); setFilterGrade(''); setFilterDate(''); setFilterTopic('');
                 setSearchTerm(''); setFilterDuration(''); setFilterDifficulty(''); setFilterQuestionType('');
+                setFilterCategory(''); setFilterTeacher('');
               }}
               className="text-xs text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/20 px-3 py-1.5 rounded-lg flex items-center gap-1 transition-colors"
             >
@@ -544,6 +570,11 @@ export const ExamList: React.FC = () => {
                           )}
 
                           {exam.subject && <span className="bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-slate-300 px-2 py-0.5 rounded text-xs">{exam.subject}</span>}
+                          {user?.role === 'ADMIN' && (
+                            <span className="bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 px-2 py-0.5 rounded text-xs font-semibold" title="Giáo viên tạo">
+                              👤 {users.find(u => u.id === exam.teacherId)?.name || exam.originalAuthorName || 'Giáo viên'}
+                            </span>
+                          )}
                         </div>
                       </div>
                     </div>

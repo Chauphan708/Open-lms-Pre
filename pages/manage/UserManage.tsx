@@ -21,14 +21,17 @@ export const UserManage: React.FC<Props> = ({ targetRole, title }) => {
     const [isCreating, setIsCreating] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedClassFilter, setSelectedClassFilter] = useState('');
+    const [selectedTeacherFilter, setSelectedTeacherFilter] = useState('');
 
     useEffect(() => {
         fetchClasses();
     }, [fetchClasses]);
 
+    const teachersList = React.useMemo(() => users.filter(u => u.role === 'TEACHER' || u.role === 'ADMIN'), [users]);
+
     const displayClasses = currentUser?.role === 'TEACHER'
         ? classes.filter(c => c.teacherId === currentUser.id)
-        : classes;
+        : (selectedTeacherFilter ? classes.filter(c => c.teacherId === selectedTeacherFilter) : classes);
 
     // Bulk Topic Management State
     const [showBulkTopicModal, setShowBulkTopicModal] = useState(false);
@@ -214,6 +217,16 @@ export const UserManage: React.FC<Props> = ({ targetRole, title }) => {
                 const classNameMatch = sClassName && sClassName === classObj.name.trim().toLowerCase();
                 if (!inStudentIds && !classNameMatch) return false;
             }
+        }
+
+        // Bộ lọc Giáo viên phụ trách (dành cho ADMIN khi xem danh sách HS)
+        if (currentUser?.role === 'ADMIN' && targetRole === 'STUDENT' && selectedTeacherFilter) {
+            const teacherClassIds = classes.filter(c => c.teacherId === selectedTeacherFilter).map(c => c.id);
+            const studentInTeacherClass = classes.some(c => 
+                teacherClassIds.includes(c.id) && 
+                (c.studentIds.includes(u.id) || (u.className && (c.name === u.className || (u.className.includes('|') && u.className.split('|')[0] === c.id))))
+            );
+            if (!studentInTeacherClass) return false;
         }
 
         // Data Isolation: If current user is a teacher and looking at students, ONLY show students in THEIR classes
@@ -866,6 +879,20 @@ export const UserManage: React.FC<Props> = ({ targetRole, title }) => {
                             <option value="">-- Tất cả các lớp --</option>
                             {displayClasses.map(c => (
                                 <option key={c.id} value={c.id}>{c.name}</option>
+                            ))}
+                        </select>
+                    </div>
+                )}
+                {targetRole === 'STUDENT' && currentUser?.role === 'ADMIN' && (
+                    <div className="w-full sm:w-48 flex-shrink-0">
+                        <select
+                            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500 bg-white text-gray-950 font-medium dark:bg-slate-900 dark:border-slate-800"
+                            value={selectedTeacherFilter}
+                            onChange={e => setSelectedTeacherFilter(e.target.value)}
+                        >
+                            <option value="">-- Tất cả Giáo viên --</option>
+                            {teachersList.map(t => (
+                                <option key={t.id} value={t.id}>{t.name}</option>
                             ))}
                         </select>
                     </div>

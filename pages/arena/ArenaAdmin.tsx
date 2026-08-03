@@ -39,7 +39,7 @@ export const normalizeSubject = (sub: string): string => {
 };
 
 export const ArenaAdmin: React.FC = () => {
-    const { arenaQuestions, arenaQuestionsHasMore, fetchArenaQuestions, loadMoreArenaQuestions, addArenaQuestion, updateArenaQuestion, deleteArenaQuestion, bulkDeleteArenaQuestions, bulkAddArenaQuestions, questionBank, exams, arenaTotalCount, arenaDifficultyCounts, arenaFilteredCount } = useStore();
+    const { arenaQuestions, arenaQuestionsHasMore, fetchArenaQuestions, loadMoreArenaQuestions, addArenaQuestion, updateArenaQuestion, deleteArenaQuestion, bulkDeleteArenaQuestions, bulkAddArenaQuestions, questionBank, exams, arenaTotalCount, arenaDifficultyCounts, arenaFilteredCount, user: currentUser, users } = useStore();
     const navigate = useNavigate();
 
     const [loading, setLoading] = useState(true);
@@ -65,7 +65,10 @@ export const ArenaAdmin: React.FC = () => {
     const [filterGrade, setFilterGrade] = useState('');
     const [filterTopic, setFilterTopic] = useState('');
     const [filterType, setFilterType] = useState('');
+    const [filterTeacher, setFilterTeacher] = useState('');
     const [searchQuery, setSearchQuery] = useState('');
+
+    const teachersList = useMemo(() => users.filter(u => u.role === 'TEACHER' || u.role === 'ADMIN'), [users]);
 
     const [editing, setEditing] = useState<ArenaQuestion | null>(null);
     const [isNew, setIsNew] = useState(false);
@@ -568,7 +571,13 @@ export const ArenaAdmin: React.FC = () => {
             qContent.toLowerCase().includes(searchQuery.toLowerCase()) || 
             (qTopic.toLowerCase().includes(searchQuery.toLowerCase()));
 
-        return matchesSubject && matchesDifficulty && matchesGrade && matchesTopic && matchesSearch;
+        const qCreatorId = (q as any).teacher_id || (q as any).created_by || (q as any).teacherId;
+        const matchesTeacher = !filterTeacher || (
+            qCreatorId === filterTeacher ||
+            users.find(u => u.id === qCreatorId)?.name === filterTeacher
+        );
+
+        return matchesSubject && matchesDifficulty && matchesGrade && matchesTopic && matchesSearch && matchesTeacher;
     });
 
     // Ngân hàng đề: gộp MCQ, MCQ_MULTIPLE, SHORT_ANSWER từ cả questionBank VÀ exams
@@ -1858,6 +1867,13 @@ export const ArenaAdmin: React.FC = () => {
                         <option value="SHORT_ANSWER">Tự luận ngắn (Điền từ)</option>
                     </select>
 
+                    {currentUser?.role === 'ADMIN' && (
+                        <select value={filterTeacher} onChange={e => setFilterTeacher(e.target.value)} className="border border-gray-200 rounded-lg px-2.5 py-1.5 text-xs outline-none focus:ring-2 focus:ring-indigo-500 bg-white font-bold text-gray-700 cursor-pointer hover:border-gray-300 dark:bg-slate-900 dark:border-slate-800 dark:text-slate-300">
+                            <option value="">Tất cả GV tạo</option>
+                            {teachersList.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
+                        </select>
+                    )}
+
                     <label className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 dark:bg-slate-850 px-3 py-1.5 rounded-lg border border-gray-200 transition-colors bg-white text-xs font-bold text-gray-600 select-none dark:border-slate-800 dark:text-slate-400 dark:hover:bg-slate-850/50">
                         <input
                             type="checkbox"
@@ -1911,6 +1927,11 @@ export const ArenaAdmin: React.FC = () => {
                                         <span className="bg-emerald-50 text-emerald-700 px-2.5 py-0.5 rounded-lg text-xs font-bold">
                                             ⚡ +{q.xp_reward || 10} XP
                                         </span>
+                                        {currentUser?.role === 'ADMIN' && ((q as any).teacher_id || (q as any).created_by || (q as any).teacherId) && (
+                                            <span className="bg-amber-50 text-amber-700 px-2.5 py-0.5 rounded-lg text-xs font-bold">
+                                                👤 {users.find(u => u.id === ((q as any).teacher_id || (q as any).created_by || (q as any).teacherId))?.name || 'Giáo viên'}
+                                            </span>
+                                        )}
                                     </div>
                                     <MathText className="font-bold text-gray-900 text-sm md:text-base leading-relaxed dark:text-slate-100" inline>{q.content}</MathText>
                                 </div>
