@@ -7,7 +7,9 @@ import {
 import { computeStudentAnalytics, TIME_PERIODS, TimePeriod, StudentAnalytics } from '../../utils/analyticsEngine';
 import { getRecommendations, getRecentExamIds } from '../../utils/recommendationEngine';
 import { generateTeacherStudentAnalysis } from '../../services/geminiService';
+import { exportClassAnalyticsToExcel, ClassAnalyticsExport } from '../../services/exportReportService';
 import { supabase } from '../../services/supabaseClient';
+import { Download } from 'lucide-react';
 
 // ============================================================
 // SUB COMPONENTS (Reused from LearningAnalytics or adapted)
@@ -1392,7 +1394,7 @@ export const TeacherAnalytics: React.FC = () => {
             <select
               value={selectedClassId}
               onChange={e => setSelectedClassId(e.target.value)}
-              className="w-full p-2.5 border border-gray-300 dark:border-slate-800 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500 bg-white dark:bg-slate-950 text-gray-900 dark:text-slate-100"
+              className="w-full p-2.5 border border-gray-300 dark:border-slate-800 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500 bg-white dark:bg-slate-955 text-gray-900 dark:text-slate-100 text-sm"
             >
               <option value="">-- Chọn lớp --</option>
               {myClasses.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
@@ -1478,9 +1480,49 @@ export const TeacherAnalytics: React.FC = () => {
                 </div>
               </div>
 
+              <div className="space-y-2">
+                <label className="text-sm font-bold text-gray-700 flex items-center gap-2">
+                  <Clock className="h-4 w-4" /> Khoảng thời gian
+                </label>
+                <select
+                  value={selectedPeriod.label}
+                  onChange={e => {
+                    const p = TIME_PERIODS.find(item => item.label === e.target.value);
+                    if (p) setSelectedPeriod(p);
+                  }}
+                  className="p-2.5 border border-gray-300 dark:border-slate-800 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500 bg-white dark:bg-slate-950 text-gray-900 dark:text-slate-100 text-sm h-[46px]"
+                >
+                  {TIME_PERIODS.map(p => <option key={p.label} value={p.label}>{p.label}</option>)}
+                </select>
+              </div>
+
+              <button
+                disabled={!selectedClassId || studentsInClass.length === 0}
+                onClick={() => {
+                  const exportData: ClassAnalyticsExport[] = studentsInClass.map(s => {
+                    const st = computeStudentAnalytics(s.id, attempts, exams, questionBank, selectedPeriod.days);
+                    return {
+                      studentName: s.name,
+                      className: myClasses.find(c => c.id === selectedClassId)?.name || 'N/A',
+                      totalExams: st?.totalAttempts || 0,
+                      avgScore: st?.avgScore || 0,
+                      highestScore: st?.maxScore || 0,
+                      lowestScore: st?.minScore || 0,
+                      completionRate: 100
+                    };
+                  });
+                  const timeKey = selectedPeriod.days === 1 ? 'day' : selectedPeriod.days === 7 ? 'week' : selectedPeriod.days === 30 ? 'month' : 'all';
+                  exportClassAnalyticsToExcel(exportData, timeKey, myClasses.find(c => c.id === selectedClassId)?.name);
+                }}
+                className="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white rounded-xl font-bold text-xs flex items-center gap-2 shadow-sm transition h-[46px]"
+                title="Xuất bảng tổng hợp kết quả học tập lớp ra Excel (.xlsx) phục vụ minh chứng SKKN"
+              >
+                <Download className="h-4 w-4" /> Xuất Excel (.xlsx)
+              </button>
+
               <div className="flex-shrink-0 space-y-2 min-w-[150px]">
                 <label className="text-sm font-bold text-gray-700 flex items-center gap-2">
-                  <Clock className="h-4 w-4" /> Thời gian
+                  <Clock className="h-4 w-4" /> Thời gian (cũ)
                 </label>
                 <div className="flex gap-2">
                   <select

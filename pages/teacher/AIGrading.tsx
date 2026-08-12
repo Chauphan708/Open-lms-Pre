@@ -5,6 +5,7 @@ import { externalSupabase, uploadToExternalStorage, deleteFromExternalStorage } 
 import { analyzeStudentMaterial, analyzeStudentText } from '../../services/geminiService';
 import { AISubmission, AIGradingReview, Class, User } from '../../types';
 import imageCompression from 'browser-image-compression';
+import { exportGradingReviewsToDocx, filterRecordsByTime } from '../../services/exportReportService';
 import {
     Upload, Search, FileImage, FileText, Bot, Check, X,
     Save, Filter, Star, Eye, Download, Trash2, Zap, AlertCircle, Type, BookOpen
@@ -58,6 +59,20 @@ export const AIGrading: React.FC = () => {
     const [gradingHistory, setGradingHistory] = useState<GradingRecord[]>([]);
     const [historySearch, setHistorySearch] = useState('');
     const [expandedHistory, setExpandedHistory] = useState<number | null>(null);
+    const [exportTimeFilter, setExportTimeFilter] = useState<'all' | 'day' | 'week' | 'month'>('all');
+
+    const handleExportWord = async () => {
+        if (gradingHistory.length === 0) {
+            return toast.error("Chưa có lịch sử bài chấm để xuất báo cáo.");
+        }
+        try {
+            toast.loading("Đang khởi tạo file Word minh chứng SKKN...", { id: 'docx_export' });
+            await exportGradingReviewsToDocx(gradingHistory, exportTimeFilter, selectedClass?.name);
+            toast.success("Xuất file Word thành công!", { id: 'docx_export' });
+        } catch (err: any) {
+            toast.error(`Lỗi khi xuất Word: ${err.message}`, { id: 'docx_export' });
+        }
+    };
 
     // Batch Scan (A2)
     const [batchScanning, setBatchScanning] = useState(false);
@@ -596,12 +611,32 @@ export const AIGrading: React.FC = () => {
                     <h2 className="text-xl font-bold flex items-center gap-2">
                         <Filter className="h-5 w-5 text-gray-500 dark:text-slate-500" /> Lịch Sử Chấm Bài ({gradingHistory.length})
                     </h2>
-                    <div className="flex gap-2 items-center">
+                    <div className="flex flex-wrap gap-2 items-center">
+                        <div className="flex items-center bg-gray-100 dark:bg-slate-800 p-1 rounded-lg text-xs font-semibold">
+                            {(['all', 'day', 'week', 'month'] as const).map(tf => (
+                                <button
+                                    key={tf}
+                                    onClick={() => setExportTimeFilter(tf)}
+                                    className={`px-2.5 py-1 rounded-md transition ${exportTimeFilter === tf ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm font-bold' : 'text-gray-500 dark:text-slate-400 hover:text-gray-700'}`}
+                                >
+                                    {tf === 'all' ? 'Tất cả' : tf === 'day' ? 'Hôm nay' : tf === 'week' ? 'Tuần này' : 'Tháng này'}
+                                </button>
+                            ))}
+                        </div>
+
+                        <button
+                            onClick={handleExportWord}
+                            className="px-3 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-bold text-xs flex items-center gap-1.5 shadow-sm transition"
+                            title="Xuất phiếu nhận xét Word phục vụ làm minh chứng SKKN"
+                        >
+                            <Download className="h-3.5 w-3.5" /> Xuất Word (.docx)
+                        </button>
+
                         <div className="relative">
                             <Search className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                             <input type="text" value={historySearch} onChange={e => setHistorySearch(e.target.value)}
                                 placeholder="Tìm Tên, Tiêu đề..."
-                                className="pl-9 pr-4 py-2 border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 w-64 text-sm dark:border-slate-800" />
+                                className="pl-9 pr-4 py-2 border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 w-48 text-sm dark:border-slate-800" />
                         </div>
                         <button onClick={handleBatchScan} disabled={batchScanning || classStudents.length === 0}
                             className="px-4 py-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-lg font-bold text-sm hover:shadow-lg disabled:opacity-50 flex items-center gap-2 whitespace-nowrap">

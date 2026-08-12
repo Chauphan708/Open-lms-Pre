@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ParentLayout } from '../../components/ParentLayout';
 import { useParentStore } from '../../services/parentStore';
-import { User, Users, Activity, FileText, CheckCircle, AlertTriangle, Medal, Layers, Plus, X, Link as LinkIcon, UserPlus } from 'lucide-react';
+import { User, Users, Activity, FileText, CheckCircle, AlertTriangle, Medal, Layers, Plus, X, Link as LinkIcon, UserPlus, BookOpen } from 'lucide-react';
 import { supabase } from '../../services/supabaseClient';
 
 export const ParentDashboard = () => {
@@ -24,6 +24,8 @@ export const ParentDashboard = () => {
   });
   const [recentBehaviors, setRecentBehaviors] = useState<any[]>([]);
   const [recentExams, setRecentExams] = useState<any[]>([]);
+  const [elProgress, setElProgress] = useState<any[]>([]);
+  const [elTotalStudyTime, setElTotalStudyTime] = useState<number>(0);
 
   useEffect(() => {
     if (linkedStudents.length > 0 && !selectedStudentId) {
@@ -87,6 +89,37 @@ export const ParentDashboard = () => {
         .eq('student_id', studentId)
         .order('submitted_at', { ascending: false })
         .limit(3);
+
+      // 7. E-Learning Progress
+      const { data: elProgressData } = await supabase
+        .from('el_student_progress')
+        .select('*')
+        .eq('student_id', studentId);
+      
+      let enrichedProgress = [];
+      if (elProgressData && elProgressData.length > 0) {
+        const courseIds = elProgressData.map(p => p.course_id);
+        const { data: coursesData } = await supabase
+          .from('el_courses')
+          .select('id, title')
+          .in('id', courseIds);
+        
+        enrichedProgress = elProgressData.map(p => ({
+          ...p,
+          el_courses: coursesData?.find(c => c.id === p.course_id)
+        }));
+      }
+
+      // 8. Total study time
+      const { data: elHistoryData } = await supabase
+        .from('el_study_history')
+        .select('duration_minutes')
+        .eq('student_id', studentId);
+
+      const totalStudyMinutes = (elHistoryData || []).reduce((sum, h) => sum + (h.duration_minutes || 0), 0);
+
+      setElProgress(enrichedProgress);
+      setElTotalStudyTime(totalStudyMinutes);
 
       setRecentBehaviors(behaviorData || []);
       setRecentExams(recentAttempts || []);
@@ -320,6 +353,72 @@ export const ParentDashboard = () => {
                    </button>
                  )}
                </div>
+            </div>
+
+            {/* E-Learning Widget */}
+            <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+              <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2 mb-6">
+                <BookOpen className="text-emerald-500 w-5 h-5" /> 📚 Tiến độ E-Learning
+              </h3>
+              
+              {stats.isLoading ? (
+                <div className="animate-pulse space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="h-20 bg-gray-100 rounded-xl" />
+                    <div className="h-20 bg-gray-100 rounded-xl" />
+                    <div className="h-20 bg-gray-100 rounded-xl" />
+                  </div>
+                  <div className="h-24 bg-gray-100 rounded-xl" />
+                  <div className="h-24 bg-gray-100 rounded-xl" />
+                </div>
+              ) : elProgress.length > 0 ? (
+                <div className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="bg-emerald-50 rounded-xl p-4 border border-emerald-100 flex flex-col justify-center">
+                      <p className="text-emerald-700 text-sm font-medium mb-1">Khóa học đang tham gia</p>
+                      <p className="text-2xl font-bold text-emerald-900">{elProgress.length}</p>
+                    </div>
+                    <div className="bg-emerald-50 rounded-xl p-4 border border-emerald-100 flex flex-col justify-center">
+                      <p className="text-emerald-700 text-sm font-medium mb-1">Khóa học hoàn thành</p>
+                      <p className="text-2xl font-bold text-emerald-900">
+                        {elProgress.filter(p => p.completion_percentage >= 100).length}
+                      </p>
+                    </div>
+                    <div className="bg-emerald-50 rounded-xl p-4 border border-emerald-100 flex flex-col justify-center">
+                      <p className="text-emerald-700 text-sm font-medium mb-1">Tổng thời gian học</p>
+                      <p className="text-2xl font-bold text-emerald-900">
+                        {Math.floor(elTotalStudyTime / 60)}h {elTotalStudyTime % 60}m
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="space-y-3">
+                    {elProgress.map((prog, idx) => (
+                      <div key={idx} className="bg-gray-50 rounded-xl p-4 border border-gray-100 flex flex-col gap-2">
+                        <div className="flex justify-between items-center">
+                          <p className="font-bold text-gray-800">
+                            {prog.el_courses?.title || 'Khóa học không xác định'}
+                          </p>
+                          <p className="text-sm font-medium text-emerald-600">
+                            {prog.completed_lessons || 0}/{prog.total_lessons || 0} bài ({prog.completion_percentage || 0}%)
+                          </p>
+                        </div>
+                        <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
+                          <div 
+                            className="bg-emerald-500 h-2 rounded-full transition-all duration-500 ease-out" 
+                            style={{ width: `${Math.min(prog.completion_percentage || 0, 100)}%` }}
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center py-12 text-gray-400">
+                  <BookOpen className="w-16 h-16 mb-4 opacity-20" />
+                  <p className="text-sm">Con bạn chưa tham gia khóa học online nào</p>
+                </div>
+              )}
             </div>
           </>
         ) : (

@@ -1540,4 +1540,128 @@ export const generateMissingQuestionFields = async (
 };
 
 
+// ═══════════════════════════════════════════════════════════════
+// E-LEARNING: AI-Powered Lesson & Video Question Generation
+// ═══════════════════════════════════════════════════════════════
 
+/**
+ * Generates a structured lesson in Markdown from raw document text.
+ * Uses RAG-style prompting: given raw educational content, the AI
+ * rewrites it as a clear, student-friendly Markdown lesson.
+ */
+export const generateLessonContent = async (
+  rawText: string,
+  subject?: string,
+  classLevel?: string,
+): Promise<string> => {
+  const ai = getAiClient();
+  const trimmed = rawText.trim().substring(0, 15000); // Cap input to ~15k chars
+
+  const prompt = `Bạn là một giáo viên giỏi, chuyên soạn bài giảng trực tuyến cho học sinh ${classLevel || 'tiểu học & THCS'}.
+
+Dựa trên tài liệu thô bên dưới, hãy viết lại thành MỘT BÀI GIẢNG MARKDOWN hoàn chỉnh, rõ ràng, hấp dẫn. Tuân thủ quy tắc:
+
+1. Cấu trúc bài giảng:
+   - **Tiêu đề bài** (heading ##)
+   - **Mục tiêu bài học** (3-5 dấu chấm, ngắn gọn)
+   - **Kiến thức chính** (chia thành 2-4 phần con ### với giải thích rõ ràng)
+   - **Ví dụ minh họa** (ít nhất 2 ví dụ có lời giải)
+   - **Lưu ý quan trọng** (dạng blockquote > hoặc bullet point ⚠️)
+   - **Tóm tắt bài học** (5-7 dòng tổng kết)
+2. Ngôn ngữ: Tiếng Việt, thân thiện, dễ hiểu cho lứa tuổi học sinh.
+3. Công thức toán: Dùng cú pháp LaTeX inline $...$ và block $$...$$.
+4. Không thêm thông tin sai hoặc bịa đặt. Chỉ dựa trên tài liệu gốc.
+5. Trả về THUẦN Markdown, KHÔNG bọc trong code block.
+${subject ? `6. Môn học: ${subject}.` : ''}
+
+--- TÀI LIỆU GỐC ---
+${trimmed}
+--- HẾT TÀI LIỆU ---`;
+
+  for (const model of AI_MODELS) {
+    try {
+      const response = await ai.models.generateContent({
+        model,
+        contents: prompt,
+        config: { temperature: 0.5, maxOutputTokens: 4096 },
+      });
+      const text = response.text?.trim();
+      if (text && text.length > 100) {
+        return text;
+      }
+    } catch (err: any) {
+      console.warn(`[generateLessonContent] Model ${model} failed:`, err.message);
+      continue;
+    }
+  }
+  throw new Error('Không thể tạo bài giảng. Vui lòng thử lại sau.');
+};
+
+/**
+ * Generates timestamped video checkpoint questions from lesson content.
+ * Returns an array of objects matching ELVideoQuestion interface.
+ *
+ * @param content - The lesson text or summary
+ * @param videoDurationSec - Total video duration in seconds (to distribute timestamps)
+ * @param count - Number of questions to generate (default 3)
+ */
+export const generateVideoQuestions = async (
+  content: string,
+  videoDurationSec: number,
+  count: number = 3,
+): Promise<{ timestamp: number; question: string; options: string[]; correctIndex: number }[]> => {
+  const ai = getAiClient();
+  const trimmed = content.trim().substring(0, 8000);
+
+  const prompt = `Bạn là AI chuyên tạo câu hỏi kiểm tra xen kẽ trong video bài giảng.
+
+Yêu cầu: Tạo CHÍNH XÁC ${count} câu hỏi trắc nghiệm (4 đáp án A-D) để chèn vào video dài ${videoDurationSec} giây.
+
+Quy tắc:
+1. Mỗi câu hỏi phải liên quan trực tiếp đến nội dung bài giảng.
+2. Câu hỏi ngắn gọn (<80 ký tự), phù hợp hiển thị overlay trên video.
+3. Đáp án ngắn (<40 ký tự mỗi đáp án).
+4. Phân bổ timestamp đều trong video (không đặt ở đầu hoặc cuối quá gần).
+   - Câu 1 ở khoảng 25-35% video
+   - Câu 2 ở khoảng 50-60% video
+   - Câu 3 ở khoảng 70-85% video
+   (Nếu cần ${count} câu, phân bổ đều tương tự)
+5. Trả về RAW JSON array, KHÔNG bọc markdown code block.
+
+Định dạng mỗi phần tử:
+{
+  "timestamp": <số giây (integer)>,
+  "question": "<nội dung câu hỏi>",
+  "options": ["A. ...", "B. ...", "C. ...", "D. ..."],
+  "correctIndex": <0|1|2|3>
+}
+
+--- NỘI DUNG BÀI GIẢNG ---
+${trimmed}
+--- HẾT NỘI DUNG ---`;
+
+  for (const model of AI_MODELS) {
+    try {
+      const response = await ai.models.generateContent({
+        model,
+        contents: prompt,
+        config: { temperature: 0.6, maxOutputTokens: 2048 },
+      });
+      const raw = cleanJsonString(response.text || '');
+      const parsed = JSON.parse(raw);
+
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        return parsed.map((q: any) => ({
+          timestamp: Math.max(10, Math.min(videoDurationSec - 10, Number(q.timestamp) || 60)),
+          question: String(q.question || ''),
+          options: Array.isArray(q.options) ? q.options.map(String).slice(0, 4) : ['A', 'B', 'C', 'D'],
+          correctIndex: Math.min(3, Math.max(0, Number(q.correctIndex) || 0)),
+        }));
+      }
+    } catch (err: any) {
+      console.warn(`[generateVideoQuestions] Model ${model} failed:`, err.message);
+      continue;
+    }
+  }
+  throw new Error('Không thể tạo câu hỏi video. Vui lòng thử lại sau.');
+};

@@ -62,6 +62,11 @@ import { CountdownTimer } from './pages/tools/CountdownTimer';
 // EduGames SSO Bridge
 import { EduGamesRedirect } from './pages/EduGamesRedirect';
 
+// E-LEARNING MODULE
+import { CourseDashboard } from './pages/elearning/CourseDashboard';
+import { CourseLearn } from './pages/elearning/CourseLearn';
+import { CourseManage } from './pages/elearning/CourseManage';
+
 // PARENT PORTAL
 import { ParentLogin } from './pages/parent/ParentLogin';
 import { ParentDashboard } from './pages/parent/ParentDashboard';
@@ -570,6 +575,23 @@ function App() {
         <Route path="/arena/tournament/:id" element={
           <ProtectedRoute roles={['STUDENT']}>
             <TournamentLobby />
+          </ProtectedRoute>
+        } />
+
+        {/* E-LEARNING ROUTES */}
+        <Route path="/elearning" element={
+          <ProtectedRoute roles={['STUDENT', 'TEACHER', 'ADMIN']}>
+            <CourseDashboard />
+          </ProtectedRoute>
+        } />
+        <Route path="/elearning/course/:id" element={
+          <ProtectedRoute roles={['STUDENT', 'TEACHER', 'ADMIN']}>
+            <CourseLearn />
+          </ProtectedRoute>
+        } />
+        <Route path="/elearning/manage/:id" element={
+          <ProtectedRoute roles={['TEACHER', 'ADMIN']}>
+            <CourseManage />
           </ProtectedRoute>
         } />
 

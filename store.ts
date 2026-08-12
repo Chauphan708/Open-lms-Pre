@@ -5,7 +5,8 @@ import { createExamSlice } from './store/examSlice';
 import { createClassSlice } from './store/classSlice';
 import { createAppSlice } from './store/appSlice';
 import { createDiscussionSlice } from './store/discussionSlice';
-import { AppState, Exam, Attempt, User, AcademicYear, Class, Assignment, LiveSession, DiscussionSession, DiscussionRound, Notification, WebResource, ChatMessage, CustomToolMenu, Poll, BreakoutRoom, ArenaMatchFilters, QuestionBankItem, SiteSettings } from './types';
+import { createELearningSlice } from './store/elearningSlice';
+import { AppState, Exam, Attempt, User, AcademicYear, Class, Assignment, LiveSession, DiscussionSession, DiscussionRound, Notification, WebResource, ChatMessage, CustomToolMenu, Poll, BreakoutRoom, ArenaMatchFilters, QuestionBankItem, SiteSettings, ELCourse, ELChapter, ELLesson, ELStudentProgress, ELStudyHistory, ELLessonComment } from './types';
 import { supabase } from './services/supabaseClient';
 import { RealtimeChannel } from '@supabase/supabase-js';
 
@@ -28,6 +29,7 @@ export const useStore = create<AppState>((set, get, api) => ({
   ...createClassSlice(set, get, api),
   ...createAppSlice(set, get, api),
   ...createDiscussionSlice(set, get, api),
+  ...createELearningSlice(set, get, api),
 
   isDataLoading: false,
 
