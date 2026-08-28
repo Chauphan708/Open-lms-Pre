@@ -478,7 +478,7 @@ const EvaluationModal: React.FC<{
 // MAIN PAGE COMPONENT
 // ============================================
 export const DailyEvaluation: React.FC = () => {
-  const { user, classes, users } = useStore();
+  const { user, classes, users, fetchClasses } = useStore();
   const { evaluations, isLoading, fetchEvaluations, loadCommentSuggestions } = useEvaluationStore();
   const { groups, groupMembers, fetchClassFunData } = useClassFunStore();
 
@@ -493,6 +493,13 @@ export const DailyEvaluation: React.FC = () => {
   const [modalIsBatch, setModalIsBatch] = useState(false);
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+
+  // Fetch classes on mount / refresh
+  useEffect(() => {
+    if (user) {
+      fetchClasses();
+    }
+  }, [user, fetchClasses]);
 
   // Lấy lớp của GV
   const teacherClasses = useMemo(() =>

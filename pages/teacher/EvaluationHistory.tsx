@@ -269,7 +269,7 @@ const StudentDetailModal: React.FC<{
 // MAIN PAGE COMPONENT
 // ============================================
 export const EvaluationHistory: React.FC = () => {
-  const { user, classes, users } = useStore();
+  const { user, classes, users, fetchClasses } = useStore();
   const { evaluations, isLoading, fetchEvaluationsByRange } = useEvaluationStore();
 
   const [selectedClassId, setSelectedClassId] = useState('');
@@ -285,6 +285,13 @@ export const EvaluationHistory: React.FC = () => {
 
   // Detail modal
   const [detailStudentId, setDetailStudentId] = useState<string | null>(null);
+
+  // Fetch classes on mount / refresh
+  useEffect(() => {
+    if (user) {
+      fetchClasses();
+    }
+  }, [user, fetchClasses]);
 
   const teacherClasses = useMemo(() =>
     classes.filter(c => c.teacherId === user?.id),
