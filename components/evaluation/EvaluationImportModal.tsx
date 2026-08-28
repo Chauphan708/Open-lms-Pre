@@ -59,6 +59,16 @@ export const EvaluationImportModal: React.FC<EvaluationImportModalProps> = ({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { saveEvaluation, saveBatchEvaluation } = useEvaluationStore();
 
+  // Stats
+  const validRows = useMemo(() => parsedRows.filter(r => r.isMatched), [parsedRows]);
+  const invalidRows = useMemo(() => parsedRows.filter(r => !r.isMatched), [parsedRows]);
+
+  const filteredPreviewRows = useMemo(() => {
+    if (previewFilter === 'valid') return validRows;
+    if (previewFilter === 'invalid') return invalidRows;
+    return parsedRows;
+  }, [parsedRows, validRows, invalidRows, previewFilter]);
+
   if (!isOpen) return null;
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -91,16 +101,6 @@ export const EvaluationImportModal: React.FC<EvaluationImportModalProps> = ({
     setParseError(null);
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
-
-  // Stats
-  const validRows = parsedRows.filter(r => r.isMatched);
-  const invalidRows = parsedRows.filter(r => !r.isMatched);
-
-  const filteredPreviewRows = useMemo(() => {
-    if (previewFilter === 'valid') return validRows;
-    if (previewFilter === 'invalid') return invalidRows;
-    return parsedRows;
-  }, [parsedRows, validRows, invalidRows, previewFilter]);
 
   const handleConfirmImport = async () => {
     if (validRows.length === 0) {

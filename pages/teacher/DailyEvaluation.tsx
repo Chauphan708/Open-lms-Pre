@@ -1040,28 +1040,32 @@ export const DailyEvaluation: React.FC = () => {
       />
 
       {/* Export Modal */}
-      <EvaluationExportModal
-        isOpen={isExportModalOpen}
-        onClose={() => setIsExportModalOpen(false)}
-        className={selectedClass?.name || 'Lớp'}
-        classId={selectedClassId}
-        students={classStudents}
-        currentSelectedDate={selectedDate}
-      />
+      {isExportModalOpen && (
+        <EvaluationExportModal
+          isOpen={isExportModalOpen}
+          onClose={() => setIsExportModalOpen(false)}
+          className={selectedClass?.name || 'Lớp'}
+          classId={selectedClassId}
+          students={classStudents}
+          currentSelectedDate={selectedDate}
+        />
+      )}
 
       {/* Import Modal */}
-      <EvaluationImportModal
-        isOpen={isImportModalOpen}
-        onClose={() => setIsImportModalOpen(false)}
-        className={selectedClass?.name || 'Lớp'}
-        classId={selectedClassId}
-        teacherId={user?.id || ''}
-        students={classStudents}
-        currentSelectedDate={selectedDate}
-        onImportSuccess={() => {
-          fetchEvaluations(selectedClassId, selectedDate);
-        }}
-      />
+      {isImportModalOpen && (
+        <EvaluationImportModal
+          isOpen={isImportModalOpen}
+          onClose={() => setIsImportModalOpen(false)}
+          className={selectedClass?.name || 'Lớp'}
+          classId={selectedClassId}
+          teacherId={user?.id || ''}
+          students={classStudents}
+          currentSelectedDate={selectedDate}
+          onImportSuccess={() => {
+            fetchEvaluations(selectedClassId, selectedDate);
+          }}
+        />
+      )}
     </div>
   );
 };
