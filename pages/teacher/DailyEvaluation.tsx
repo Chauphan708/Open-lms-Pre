@@ -28,7 +28,12 @@ import {
   Heart,
   MessageSquare,
   Sparkles,
+  Download,
+  Upload,
+  FileSpreadsheet,
 } from 'lucide-react';
+import { EvaluationExportModal } from '../../components/evaluation/EvaluationExportModal';
+import { EvaluationImportModal } from '../../components/evaluation/EvaluationImportModal';
 
 // ============================================
 // CONSTANTS
@@ -486,6 +491,8 @@ export const DailyEvaluation: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalStudentIds, setModalStudentIds] = useState<string[]>([]);
   const [modalIsBatch, setModalIsBatch] = useState(false);
+  const [isExportModalOpen, setIsExportModalOpen] = useState(false);
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
 
   // Lấy lớp của GV
   const teacherClasses = useMemo(() =>
@@ -715,14 +722,51 @@ export const DailyEvaluation: React.FC = () => {
   return (
     <div className="max-w-6xl mx-auto">
       {/* Page Header */}
-      <div className="mb-6">
-        <h1 className="text-2xl font-extrabold text-gray-900 flex items-center gap-3 dark:text-slate-100">
-          <div className="bg-gradient-to-br from-indigo-500 to-purple-600 p-2.5 rounded-xl shadow-lg shadow-indigo-200">
-            <FileText className="h-6 w-6 text-white" />
-          </div>
-          Nhận xét Thường xuyên
-        </h1>
-        <p className="text-gray-500 mt-1 text-sm dark:text-slate-500">Đánh giá học sinh theo Thông tư 27/2021/TT-BGDĐT</p>
+      <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-extrabold text-gray-900 flex items-center gap-3 dark:text-slate-100">
+            <div className="bg-gradient-to-br from-indigo-500 to-purple-600 p-2.5 rounded-xl shadow-lg shadow-indigo-200">
+              <FileText className="h-6 w-6 text-white" />
+            </div>
+            Nhận xét Thường xuyên
+          </h1>
+          <p className="text-gray-500 mt-1 text-sm dark:text-slate-500">Đánh giá học sinh theo Thông tư 27/2021/TT-BGDĐT</p>
+        </div>
+
+        {/* Excel Import / Export Toolbar */}
+        <div className="flex items-center gap-2.5 self-start sm:self-auto">
+          <button
+            type="button"
+            onClick={() => {
+              if (!selectedClassId) {
+                alert('Vui lòng chọn một lớp học trước khi tải lên.');
+                return;
+              }
+              setIsImportModalOpen(true);
+            }}
+            className="px-3.5 py-2.5 text-xs font-bold text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-900/50 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 rounded-xl transition-all flex items-center gap-1.5 shadow-sm active:scale-95"
+            title="Nhập nhận xét từ file Excel (.xlsx, .xls, .csv)"
+          >
+            <Upload className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+            Tải lên Excel
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              if (!selectedClassId) {
+                alert('Vui lòng chọn một lớp học trước khi tải về.');
+                return;
+              }
+              setIsExportModalOpen(true);
+            }}
+            className="px-4 py-2.5 text-xs font-extrabold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl shadow-md shadow-emerald-600/20 transition-all flex items-center gap-1.5 active:scale-95"
+            title="Tải về file Excel mẫu hoặc xuất dữ liệu nhận xét"
+          >
+            <Download className="h-4 w-4" />
+            Tải về (Excel / Mẫu)
+          </button>
+        </div>
       </div>
 
       {/* Filters Bar */}
@@ -993,6 +1037,30 @@ export const DailyEvaluation: React.FC = () => {
         existingEvaluation={!modalIsBatch && modalStudentIds.length === 1 ? studentEvaluationsMap[modalStudentIds[0]]?.[studentEvaluationsMap[modalStudentIds[0]].length - 1] || null : null}
         isBatch={modalIsBatch}
         onSave={handleSaveComplete}
+      />
+
+      {/* Export Modal */}
+      <EvaluationExportModal
+        isOpen={isExportModalOpen}
+        onClose={() => setIsExportModalOpen(false)}
+        className={selectedClass?.name || 'Lớp'}
+        classId={selectedClassId}
+        students={classStudents}
+        currentSelectedDate={selectedDate}
+      />
+
+      {/* Import Modal */}
+      <EvaluationImportModal
+        isOpen={isImportModalOpen}
+        onClose={() => setIsImportModalOpen(false)}
+        className={selectedClass?.name || 'Lớp'}
+        classId={selectedClassId}
+        teacherId={user?.id || ''}
+        students={classStudents}
+        currentSelectedDate={selectedDate}
+        onImportSuccess={() => {
+          fetchEvaluations(selectedClassId, selectedDate);
+        }}
       />
     </div>
   );
