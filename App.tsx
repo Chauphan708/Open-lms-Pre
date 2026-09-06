@@ -6,9 +6,10 @@ import { useParentStore } from './services/parentStore';
 import { supabase } from './services/supabaseClient';
 import { useStore } from './store';
 import { UserRole } from './types';
-import { Loader2, LogIn, Key, Mail, Eye, EyeOff, X } from 'lucide-react';
+import { Loader2, LogIn, Key, Mail, Eye, EyeOff, X, CheckCircle2, AlertCircle, ArrowRight } from 'lucide-react';
 
 // LAZY LOADED ROUTE COMPONENTS
+const ResetPassword = lazy(() => import('./pages/ResetPassword').then(m => ({ default: m.ResetPassword })));
 const Dashboard = lazy(() => import('./pages/Dashboard').then(m => ({ default: m.Dashboard })));
 const ExamCreate = lazy(() => import('./pages/ExamCreate').then(m => ({ default: m.ExamCreate })));
 const ExamMatrix = lazy(() => import('./pages/ExamMatrix').then(m => ({ default: m.ExamMatrix })));
@@ -75,6 +76,145 @@ const Login = () => {
   const [error, setError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showForgotPassword, setShowForgotPassword] = useState(false);
+
+  // Auto Forgot Password State
+  const [forgotInput, setForgotInput] = useState('');
+  const [forgotLoading, setForgotLoading] = useState(false);
+  const [forgotResult, setForgotResult] = useState<{
+    type: 'success' | 'error' | 'student';
+    message: string;
+    maskedEmail?: string;
+  } | null>(null);
+
+  const maskEmail = (emailStr: string) => {
+    if (!emailStr || !emailStr.includes('@')) return emailStr;
+    const [name, domain] = emailStr.split('@');
+    if (name.length <= 2) return `${name[0]}*@${domain}`;
+    const start = name.slice(0, 2);
+    const end = name.slice(-2);
+    return `${start}${'•'.repeat(Math.max(3, name.length - 4))}${end}@${domain}`;
+  };
+
+  const handleOpenForgotPassword = () => {
+    const currentInput = email.trim();
+    setForgotInput(currentInput);
+    setShowForgotPassword(true);
+    if (currentInput) {
+      triggerResetPassword(currentInput);
+    } else {
+      setForgotResult(null);
+    }
+  };
+
+  const triggerResetPassword = async (identifier: string) => {
+    const cleanId = identifier.trim().toLowerCase();
+    if (!cleanId) {
+      setForgotResult({
+        type: 'error',
+        message: 'Vui lòng nhập Tên đăng nhập hoặc Email của bạn.'
+      });
+      return;
+    }
+
+    setForgotLoading(true);
+    setForgotResult(null);
+
+    try {
+      // 1. Kiểm tra bảng profiles (Học sinh, Giáo viên, Admin)
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('id, name, email, role')
+        .or(`email.ilike.${cleanId},email.ilike.${cleanId}@openlms.edu,id.eq.${cleanId}`)
+        .maybeSingle();
+
+      if (profile) {
+        if (profile.role === 'STUDENT') {
+          setForgotResult({
+            type: 'student',
+            message: 'Tài khoản học sinh không sử dụng email để khôi phục. Em vui lòng liên hệ Giáo viên chủ nhiệm để được cấp lại mật khẩu ngay nhé!'
+          });
+          setForgotLoading(false);
+          return;
+        }
+
+        // GV hoặc ADMIN
+        let targetEmail = profile.email;
+        if ((!targetEmail || targetEmail.includes('@openlms.edu')) && profile.role === 'ADMIN' && siteSettings?.email) {
+          targetEmail = siteSettings.email;
+        }
+
+        if (!targetEmail || !targetEmail.includes('@')) {
+          setForgotResult({
+            type: 'error',
+            message: 'Tài khoản này chưa có địa chỉ email hợp lệ để nhận liên kết khôi phục.'
+          });
+          setForgotLoading(false);
+          return;
+        }
+
+        const { error: sendErr } = await supabase.auth.resetPasswordForEmail(targetEmail, {
+          redirectTo: `${window.location.origin}/reset-password`
+        });
+
+        if (sendErr) {
+          setForgotResult({
+            type: 'error',
+            message: sendErr.message || 'Không thể gửi email. Vui lòng thử lại sau.'
+          });
+        } else {
+          setForgotResult({
+            type: 'success',
+            maskedEmail: maskEmail(targetEmail),
+            message: `Hệ thống đã tự động gửi liên kết đổi mật khẩu đến email đã tạo của bạn. Vui lòng kiểm tra hộp thư đến (và thư mục Thư rác/Spam) để hoàn tất.`
+          });
+        }
+        setForgotLoading(false);
+        return;
+      }
+
+      // 2. Kiểm tra bảng parents (nếu phụ huynh đăng nhập ở cổng chính)
+      const { data: parent } = await supabase
+        .from('parents')
+        .select('id, name, email, link_code')
+        .or(`link_code.ilike.${cleanId},email.ilike.${cleanId},phone.eq.${cleanId}`)
+        .maybeSingle();
+
+      if (parent && parent.email) {
+        const { error: sendErr } = await supabase.auth.resetPasswordForEmail(parent.email, {
+          redirectTo: `${window.location.origin}/reset-password?role=parent`
+        });
+
+        if (sendErr) {
+          setForgotResult({
+            type: 'error',
+            message: sendErr.message || 'Lỗi gửi email khôi phục phụ huynh.'
+          });
+        } else {
+          setForgotResult({
+            type: 'success',
+            maskedEmail: maskEmail(parent.email),
+            message: `Hệ thống đã tự động gửi liên kết đổi mật khẩu đến email đã tạo của Phụ huynh.`
+          });
+        }
+        setForgotLoading(false);
+        return;
+      }
+
+      // 3. Không tìm thấy tài khoản
+      setForgotResult({
+        type: 'error',
+        message: `Không tìm thấy tài khoản tương ứng với "${identifier}". Vui lòng kiểm tra lại Tên đăng nhập hoặc Email.`
+      });
+    } catch (e: any) {
+      console.error("Forgot password error:", e);
+      setForgotResult({
+        type: 'error',
+        message: 'Có lỗi xảy ra khi tìm kiếm tài khoản. Vui lòng thử lại.'
+      });
+    } finally {
+      setForgotLoading(false);
+    }
+  };
 
   const handleRealLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -163,7 +303,7 @@ const Login = () => {
             <div className="flex justify-end items-center mt-1">
               <button 
                 type="button" 
-                onClick={() => setShowForgotPassword(true)}
+                onClick={handleOpenForgotPassword}
                 className="text-xs text-indigo-600 hover:text-indigo-800 font-medium"
               >
                 Quên mật khẩu?
@@ -185,31 +325,121 @@ const Login = () => {
         {/* Forgot Password Modal */}
         {showForgotPassword && (
           <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 animate-fade-in text-left">
+            <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md p-6 animate-fade-in text-left border border-gray-100">
               <div className="flex justify-between items-center mb-4">
-                <h3 className="text-lg font-bold text-gray-900">Khôi phục mật khẩu?</h3>
-                <button onClick={() => setShowForgotPassword(false)} className="text-gray-400 hover:text-gray-600 p-1">
+                <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+                  <Key className="h-5 w-5 text-indigo-600" /> Khôi phục mật khẩu
+                </h3>
+                <button 
+                  onClick={() => setShowForgotPassword(false)} 
+                  className="text-gray-400 hover:text-gray-600 p-1.5 rounded-lg hover:bg-gray-100"
+                >
                   <X className="h-5 w-5" />
                 </button>
               </div>
-              <div className="bg-indigo-50 border border-indigo-100 p-4 rounded-xl mb-4 text-indigo-800 text-sm">
-                <p className="font-bold flex items-center gap-2 mb-2">
-                  <Mail className="h-4 w-4 text-indigo-600" /> Email Hỗ trợ kỹ thuật:
-                </p>
-                <p className="font-mono bg-white/70 p-2 rounded-lg border border-indigo-200 break-all text-xs font-semibold text-indigo-950">
-                  {siteSettings?.email || 'admin@school.edu'}
-                </p>
-                <p className="mt-4 opacity-90 leading-relaxed text-xs">
-                  Để bảo mật cao nhất, mật khẩu sẽ không hiển thị tại đây. 
-                  Bạn có thể liên hệ quản trị viên trường học hoặc hỗ trợ kỹ thuật để khôi phục mật khẩu.
-                </p>
-              </div>
-              <button 
-                onClick={() => setShowForgotPassword(false)}
-                className="w-full bg-indigo-600 text-white py-2.5 rounded-xl font-bold hover:bg-indigo-700 transition-all text-sm"
-              >
-                Tôi đã hiểu
-              </button>
+
+              {/* Status / Results */}
+              {forgotLoading ? (
+                <div className="py-8 text-center space-y-3">
+                  <Loader2 className="h-8 w-8 text-indigo-600 animate-spin mx-auto" />
+                  <p className="text-sm font-medium text-gray-600">Đang nhận diện tài khoản và gửi liên kết đổi mật khẩu...</p>
+                </div>
+              ) : forgotResult?.type === 'success' ? (
+                <div className="space-y-4 py-2 text-center">
+                  <div className="h-14 w-14 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto">
+                    <CheckCircle2 className="h-8 w-8" />
+                  </div>
+                  <div className="space-y-2">
+                    <h4 className="font-bold text-gray-900 text-base">Đã gửi liên kết thành công!</h4>
+                    <p className="text-xs text-gray-600 leading-relaxed">
+                      Hệ thống đã tự động gửi liên kết đặt lại mật khẩu đến email đã tạo của bạn:
+                    </p>
+                    <div className="bg-emerald-50 border border-emerald-200 text-emerald-900 font-mono font-bold text-xs p-2.5 rounded-xl inline-block">
+                      {forgotResult.maskedEmail}
+                    </div>
+                    <p className="text-xs text-gray-500 leading-relaxed pt-1">
+                      Vui lòng mở hộp thư đến (hoặc kiểm tra thư mục <b>Spam / Thư rác</b>) và bấm vào liên kết trong email để đặt mật khẩu mới.
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => setShowForgotPassword(false)}
+                    className="w-full bg-indigo-600 text-white py-2.5 rounded-xl font-bold hover:bg-indigo-700 transition-all text-sm mt-2"
+                  >
+                    Đã hiểu
+                  </button>
+                </div>
+              ) : forgotResult?.type === 'student' ? (
+                <div className="space-y-4 py-2">
+                  <div className="bg-amber-50 border border-amber-200 p-4 rounded-2xl text-amber-900 text-xs leading-relaxed space-y-2">
+                    <div className="font-bold flex items-center gap-2 text-amber-800 text-sm">
+                      <AlertCircle className="h-5 w-5 text-amber-600 flex-shrink-0" />
+                      Dành cho Học sinh:
+                    </div>
+                    <p>
+                      {forgotResult.message}
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => setShowForgotPassword(false)}
+                    className="w-full bg-indigo-600 text-white py-2.5 rounded-xl font-bold hover:bg-indigo-700 transition-all text-sm"
+                  >
+                    Đã hiểu
+                  </button>
+                </div>
+              ) : (
+                <div className="space-y-4 py-1">
+                  <p className="text-xs text-gray-600 leading-relaxed">
+                    Hệ thống sẽ <b>tự động tra cứu và gửi liên kết đổi mật khẩu</b> tới địa chỉ email đã đăng ký của bạn. Bạn không cần phải nhớ hay gõ lại email.
+                  </p>
+
+                  <div className="space-y-1.5">
+                    <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider">
+                      Tên đăng nhập / Email của bạn
+                    </label>
+                    <div className="relative">
+                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                      <input
+                        type="text"
+                        placeholder="admin@school.edu hoặc tên tài khoản"
+                        value={forgotInput}
+                        onChange={e => setForgotInput(e.target.value)}
+                        onKeyDown={e => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            triggerResetPassword(forgotInput);
+                          }
+                        }}
+                        className="w-full border border-gray-300 rounded-xl pl-10 pr-4 py-2.5 focus:ring-2 focus:ring-indigo-500 outline-none text-sm"
+                      />
+                    </div>
+                  </div>
+
+                  {forgotResult?.type === 'error' && (
+                    <div className="bg-rose-50 border border-rose-200 text-rose-700 p-3 rounded-xl text-xs font-medium flex items-center gap-2">
+                      <AlertCircle className="h-4 w-4 flex-shrink-0 text-rose-500" />
+                      <span>{forgotResult.message}</span>
+                    </div>
+                  )}
+
+                  <div className="pt-2 flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setShowForgotPassword(false)}
+                      className="flex-1 border border-gray-200 text-gray-600 py-2.5 rounded-xl font-bold hover:bg-gray-50 transition-all text-xs"
+                    >
+                      Hủy bỏ
+                    </button>
+                    <button
+                      type="button"
+                      disabled={!forgotInput.trim()}
+                      onClick={() => triggerResetPassword(forgotInput)}
+                      className="flex-1 bg-indigo-600 text-white py-2.5 rounded-xl font-bold hover:bg-indigo-700 transition-all text-xs shadow-md disabled:opacity-50"
+                    >
+                      Gửi liên kết
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         )}
@@ -276,6 +506,7 @@ function App() {
       <Suspense fallback={<PageSkeleton />}>
         <Routes>
         <Route path="/login" element={<LoginRoute />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
 
         {/* PARENT ROUTES */}
         <Route path="/parent/login" element={<ParentLoginRoute />} />

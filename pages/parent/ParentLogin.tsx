@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useParentStore } from '../../services/parentStore';
-import { Key, Lock, Users, Loader2, ArrowRight, User, Mail, Phone, Eye, EyeOff } from 'lucide-react';
+import { supabase } from '../../services/supabaseClient';
+import { Key, Lock, Users, Loader2, ArrowRight, User, Mail, Phone, Eye, EyeOff, CheckCircle2, AlertCircle, X } from 'lucide-react';
 
 export const ParentLogin = () => {
   const { parentLogin, parentRegister, isParentLoading } = useParentStore();
@@ -14,6 +15,92 @@ export const ParentLogin = () => {
   const [linkCodeOrEmail, setLinkCodeOrEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+
+  // Forgot Password States
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [forgotInput, setForgotInput] = useState('');
+  const [forgotLoading, setForgotLoading] = useState(false);
+  const [forgotResult, setForgotResult] = useState<{
+    type: 'success' | 'error';
+    message: string;
+    maskedEmail?: string;
+  } | null>(null);
+
+  const maskEmail = (emailStr: string) => {
+    if (!emailStr || !emailStr.includes('@')) return emailStr;
+    const [name, domain] = emailStr.split('@');
+    if (name.length <= 2) return `${name[0]}*@${domain}`;
+    const start = name.slice(0, 2);
+    const end = name.slice(-2);
+    return `${start}${'•'.repeat(Math.max(3, name.length - 4))}${end}@${domain}`;
+  };
+
+  const handleOpenForgotPassword = () => {
+    const currentInput = linkCodeOrEmail.trim();
+    setForgotInput(currentInput);
+    setShowForgotPassword(true);
+    if (currentInput) {
+      triggerResetPassword(currentInput);
+    } else {
+      setForgotResult(null);
+    }
+  };
+
+  const triggerResetPassword = async (identifier: string) => {
+    const cleanId = identifier.trim().toLowerCase();
+    if (!cleanId) {
+      setForgotResult({
+        type: 'error',
+        message: 'Vui lòng nhập Email hoặc Mã liên kết của bạn.'
+      });
+      return;
+    }
+
+    setForgotLoading(true);
+    setForgotResult(null);
+
+    try {
+      const { data: parent } = await supabase
+        .from('parents')
+        .select('id, name, email, link_code')
+        .or(`link_code.ilike.${cleanId},email.ilike.${cleanId},phone.eq.${cleanId}`)
+        .maybeSingle();
+
+      if (parent && parent.email) {
+        const { error: sendErr } = await supabase.auth.resetPasswordForEmail(parent.email, {
+          redirectTo: `${window.location.origin}/reset-password?role=parent`
+        });
+
+        if (sendErr) {
+          setForgotResult({
+            type: 'error',
+            message: sendErr.message || 'Lỗi khi gửi email khôi phục. Vui lòng thử lại.'
+          });
+        } else {
+          setForgotResult({
+            type: 'success',
+            maskedEmail: maskEmail(parent.email),
+            message: `Hệ thống đã tự động gửi liên kết đổi mật khẩu đến email phụ huynh: ${maskEmail(parent.email)}. Vui lòng kiểm tra hộp thư đến (và thư mục Spam) để hoàn tất.`
+          });
+        }
+        setForgotLoading(false);
+        return;
+      }
+
+      setForgotResult({
+        type: 'error',
+        message: `Không tìm thấy tài khoản phụ huynh tương ứng với "${identifier}". Vui lòng kiểm tra lại Mã liên kết hoặc Email.`
+      });
+    } catch (e: any) {
+      console.error("Forgot password error:", e);
+      setForgotResult({
+        type: 'error',
+        message: 'Có lỗi xảy ra khi tìm kiếm tài khoản. Vui lòng thử lại.'
+      });
+    } finally {
+      setForgotLoading(false);
+    }
+  };
   
   // Register Form States
   const [regName, setRegName] = useState('');
@@ -175,6 +262,15 @@ export const ParentLogin = () => {
               {!linkCodeOrEmail.includes('@') && (
                 <p className="text-[10px] text-gray-400 mt-1">Bỏ trống mật khẩu nếu dùng Mã liên kết do Giáo viên cấp.</p>
               )}
+              <div className="flex justify-end items-center mt-1.5">
+                <button
+                  type="button"
+                  onClick={handleOpenForgotPassword}
+                  className="text-xs text-emerald-600 hover:text-emerald-800 font-semibold transition-colors"
+                >
+                  Quên mật khẩu?
+                </button>
+              </div>
             </div>
 
             <button 
@@ -288,6 +384,110 @@ export const ParentLogin = () => {
             }
           </p>
         </div>
+
+        {/* Parent Forgot Password Modal */}
+        {showForgotPassword && (
+          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md p-6 animate-fade-in text-left border border-gray-100">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+                  <Key className="h-5 w-5 text-emerald-600" /> Khôi phục mật khẩu Phụ huynh
+                </h3>
+                <button 
+                  onClick={() => setShowForgotPassword(false)} 
+                  className="text-gray-400 hover:text-gray-600 p-1.5 rounded-lg hover:bg-gray-100"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+
+              {/* Status / Results */}
+              {forgotLoading ? (
+                <div className="py-8 text-center space-y-3">
+                  <Loader2 className="h-8 w-8 text-emerald-600 animate-spin mx-auto" />
+                  <p className="text-sm font-medium text-gray-600">Đang nhận diện tài khoản và gửi liên kết đổi mật khẩu...</p>
+                </div>
+              ) : forgotResult?.type === 'success' ? (
+                <div className="space-y-4 py-2 text-center">
+                  <div className="h-14 w-14 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto">
+                    <CheckCircle2 className="h-8 w-8" />
+                  </div>
+                  <div className="space-y-2">
+                    <h4 className="font-bold text-gray-900 text-base">Đã gửi liên kết thành công!</h4>
+                    <p className="text-xs text-gray-600 leading-relaxed">
+                      Hệ thống đã tự động gửi liên kết đặt lại mật khẩu đến email phụ huynh đã tạo của bạn:
+                    </p>
+                    <div className="bg-emerald-50 border border-emerald-200 text-emerald-900 font-mono font-bold text-xs p-2.5 rounded-xl inline-block">
+                      {forgotResult.maskedEmail}
+                    </div>
+                    <p className="text-xs text-gray-500 leading-relaxed pt-1">
+                      Vui lòng mở hộp thư đến (hoặc kiểm tra thư mục <b>Spam / Thư rác</b>) và bấm vào liên kết trong email để đặt mật khẩu mới.
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => setShowForgotPassword(false)}
+                    className="w-full bg-emerald-600 text-white py-2.5 rounded-xl font-bold hover:bg-emerald-700 transition-all text-sm mt-2"
+                  >
+                    Đã hiểu
+                  </button>
+                </div>
+              ) : (
+                <div className="space-y-4 py-1">
+                  <p className="text-xs text-gray-600 leading-relaxed">
+                    Hệ thống sẽ <b>tự động tra cứu và gửi liên kết đổi mật khẩu</b> tới địa chỉ email phụ huynh đã đăng ký. Bạn không cần phải nhớ hay gõ lại email.
+                  </p>
+
+                  <div className="space-y-1.5">
+                    <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider">
+                      Mã liên kết con hoặc Email của bạn
+                    </label>
+                    <div className="relative">
+                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                      <input
+                        type="text"
+                        placeholder="Nhập mã ví dụ: P18342 hoặc email"
+                        value={forgotInput}
+                        onChange={e => setForgotInput(e.target.value)}
+                        onKeyDown={e => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            triggerResetPassword(forgotInput);
+                          }
+                        }}
+                        className="w-full border border-gray-300 rounded-xl pl-10 pr-4 py-2.5 focus:ring-2 focus:ring-emerald-500 outline-none text-sm"
+                      />
+                    </div>
+                  </div>
+
+                  {forgotResult?.type === 'error' && (
+                    <div className="bg-rose-50 border border-rose-200 text-rose-700 p-3 rounded-xl text-xs font-medium flex items-center gap-2">
+                      <AlertCircle className="h-4 w-4 flex-shrink-0 text-rose-500" />
+                      <span>{forgotResult.message}</span>
+                    </div>
+                  )}
+
+                  <div className="pt-2 flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setShowForgotPassword(false)}
+                      className="flex-1 border border-gray-200 text-gray-600 py-2.5 rounded-xl font-bold hover:bg-gray-50 transition-all text-xs"
+                    >
+                      Hủy bỏ
+                    </button>
+                    <button
+                      type="button"
+                      disabled={!forgotInput.trim()}
+                      onClick={() => triggerResetPassword(forgotInput)}
+                      className="flex-1 bg-emerald-600 text-white py-2.5 rounded-xl font-bold hover:bg-emerald-700 transition-all text-xs shadow-md disabled:opacity-50"
+                    >
+                      Gửi liên kết
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
