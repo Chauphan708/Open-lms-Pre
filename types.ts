@@ -526,6 +526,8 @@ export interface AppState {
   academicYears: AcademicYear[];
   addAcademicYear: (year: AcademicYear) => void;
   updateAcademicYear: (year: AcademicYear) => void;
+  setActiveAcademicYear: (yearId: string) => Promise<boolean>;
+  deleteAcademicYear: (yearId: string) => Promise<boolean>;
 
   classes: Class[];
   addClass: (cls: Class) => void;

@@ -78,7 +78,19 @@ export const useStore = create<AppState>((set, get, api) => ({
       const cachedYears = localStorage.getItem('cache_initial_years');
       
       if (cachedUsers) set({ users: JSON.parse(cachedUsers) });
-      if (cachedYears) set({ academicYears: JSON.parse(cachedYears) });
+      if (cachedYears) {
+        try {
+          const parsed = JSON.parse(cachedYears);
+          const mapped = parsed.map((y: any) => ({
+            ...y,
+            isActive: Boolean(y.isActive ?? y.is_active ?? false),
+            semesters: Array.isArray(y.semesters) ? y.semesters : []
+          }));
+          set({ academicYears: mapped });
+        } catch {
+          // ignore cache parse error
+        }
+      }
       
       // Nếu đã có cache thì không cần màn hình block loading toàn màn hình
       if (cachedUsers && cachedYears) {
@@ -113,10 +125,16 @@ export const useStore = create<AppState>((set, get, api) => ({
     }
 
     // 2. Tải Academic Years
-    const yearsPromise = supabase.from('academic_years').select('*').then(({ data }) => {
+    const yearsPromise = supabase.from('academic_years').select('*').order('created_at', { ascending: false }).then(({ data }) => {
       if (data) {
-        set({ academicYears: data as AcademicYear[] });
-        localStorage.setItem('cache_initial_years', JSON.stringify(data));
+        const mappedYears: AcademicYear[] = data.map((y: any) => ({
+          id: String(y.id),
+          name: y.name,
+          isActive: Boolean(y.is_active ?? y.isActive ?? false),
+          semesters: Array.isArray(y.semesters) ? y.semesters : (typeof y.semesters === 'string' ? JSON.parse(y.semesters) : [])
+        }));
+        set({ academicYears: mappedYears });
+        localStorage.setItem('cache_initial_years', JSON.stringify(mappedYears));
       }
     });
     fetchPromises.push(yearsPromise);

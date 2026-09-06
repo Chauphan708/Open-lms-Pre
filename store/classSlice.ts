@@ -3,21 +3,110 @@ import { AppState, AcademicYear, Class } from '../types';
 import { supabase } from '../services/supabaseClient';
 
 export type ClassSliceState = Pick<AppState,
-  | 'academicYears' | 'addAcademicYear' | 'updateAcademicYear'
+  | 'academicYears' | 'addAcademicYear' | 'updateAcademicYear' | 'setActiveAcademicYear' | 'deleteAcademicYear'
   | 'classes' | 'addClass' | 'updateClass' | 'deleteClass'
 >;
 
 export const createClassSlice: StateCreator<AppState, [], [], ClassSliceState> = (set, get) => ({
   academicYears: [],
   addAcademicYear: async (year) => {
-    const { error } = await supabase.from('academic_years').insert(year);
-    if (!error) set((state) => ({ academicYears: [...state.academicYears, year] }));
+    const payload = {
+      id: year.id,
+      name: year.name,
+      is_active: year.isActive ?? false,
+      semesters: year.semesters
+    };
+    const { error } = await supabase.from('academic_years').insert(payload);
+    if (!error) {
+      if (year.isActive) {
+        await supabase.from('academic_years').update({ is_active: false }).neq('id', year.id);
+        set((state) => {
+          const next = [...state.academicYears.map(y => ({ ...y, isActive: false })), year];
+          localStorage.setItem('cache_initial_years', JSON.stringify(next));
+          return { academicYears: next };
+        });
+      } else {
+        set((state) => {
+          const next = [...state.academicYears, year];
+          localStorage.setItem('cache_initial_years', JSON.stringify(next));
+          return { academicYears: next };
+        });
+      }
+    } else {
+      console.error("addAcademicYear error", error);
+      alert("Lỗi thêm năm học: " + error.message);
+    }
   },
   updateAcademicYear: async (updatedYear) => {
-    const { error } = await supabase.from('academic_years').update(updatedYear).eq('id', updatedYear.id);
-    if (!error) set((state) => ({
-      academicYears: state.academicYears.map(y => y.id === updatedYear.id ? updatedYear : y)
-    }));
+    const payload = {
+      name: updatedYear.name,
+      is_active: updatedYear.isActive ?? false,
+      semesters: updatedYear.semesters
+    };
+    const { error } = await supabase.from('academic_years').update(payload).eq('id', updatedYear.id);
+    if (!error) {
+      if (updatedYear.isActive) {
+        await supabase.from('academic_years').update({ is_active: false }).neq('id', updatedYear.id);
+        set((state) => {
+          const next = state.academicYears.map(y => y.id === updatedYear.id ? updatedYear : { ...y, isActive: false });
+          localStorage.setItem('cache_initial_years', JSON.stringify(next));
+          return { academicYears: next };
+        });
+      } else {
+        set((state) => {
+          const next = state.academicYears.map(y => y.id === updatedYear.id ? updatedYear : y);
+          localStorage.setItem('cache_initial_years', JSON.stringify(next));
+          return { academicYears: next };
+        });
+      }
+    } else {
+      console.error("updateAcademicYear error", error);
+      alert("Lỗi cập nhật năm học: " + error.message);
+    }
+  },
+  setActiveAcademicYear: async (yearId: string) => {
+    try {
+      await supabase.from('academic_years').update({ is_active: false }).neq('id', yearId);
+      const { error } = await supabase.from('academic_years').update({ is_active: true }).eq('id', yearId);
+      if (!error) {
+        set((state) => {
+          const next = state.academicYears.map(y => ({
+            ...y,
+            isActive: y.id === yearId
+          }));
+          localStorage.setItem('cache_initial_years', JSON.stringify(next));
+          return { academicYears: next };
+        });
+        return true;
+      } else {
+        console.error("setActiveAcademicYear error", error);
+        alert("Lỗi kích hoạt năm học: " + error.message);
+        return false;
+      }
+    } catch (e: any) {
+      console.error("setActiveAcademicYear error", e);
+      return false;
+    }
+  },
+  deleteAcademicYear: async (yearId: string) => {
+    const classesUsingYear = get().classes.filter(c => c.academicYearId === yearId);
+    if (classesUsingYear.length > 0) {
+      alert(`Không thể xóa năm học này vì đang có ${classesUsingYear.length} lớp học trực thuộc. Vui lòng chuyển hoặc xóa các lớp liên quan trước.`);
+      return false;
+    }
+    const { error } = await supabase.from('academic_years').delete().eq('id', yearId);
+    if (!error) {
+      set((state) => {
+        const next = state.academicYears.filter(y => y.id !== yearId);
+        localStorage.setItem('cache_initial_years', JSON.stringify(next));
+        return { academicYears: next };
+      });
+      return true;
+    } else {
+      console.error("deleteAcademicYear error", error);
+      alert("Lỗi xóa năm học: " + error.message);
+      return false;
+    }
   },
 
   classes: [],

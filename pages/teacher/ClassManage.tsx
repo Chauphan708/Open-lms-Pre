@@ -33,7 +33,8 @@ export const ClassManage: React.FC = () => {
 
   useEffect(() => {
     if (academicYears.length > 0 && !selectedYear) {
-      setSelectedYear(academicYears[0].id);
+      const activeYear = academicYears.find(y => y.isActive);
+      setSelectedYear(activeYear ? activeYear.id : academicYears[0].id);
     }
   }, [academicYears, selectedYear]);
 
