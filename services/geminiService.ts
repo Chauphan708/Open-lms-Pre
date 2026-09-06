@@ -44,56 +44,411 @@ const cleanJsonString = (text: string): string => {
   return clean.trim();
 };
 
-// --- localStorage helpers cho API Key ---
-const GEMINI_KEY_STORAGE = 'gemini_api_key';
+// ═══════════════════════════════════════════════════════════════
+// API KEY STORAGE & PROVIDER HELPERS
+// Ưu tiên 1: OpenRouter API Key (Đa mô hình: Claude, DeepSeek, Gemini...)
+// Ưu tiên 2: Google Gemini API Key (Dự phòng / Trực tiếp)
+// ═══════════════════════════════════════════════════════════════
+
+export const OPENROUTER_KEY_STORAGE = 'openrouter_api_key';
+export const OPENROUTER_MODEL_STORAGE = 'openrouter_model';
+export const DEFAULT_OPENROUTER_MODEL = 'google/gemini-2.5-flash';
+
+export const POPULAR_OPENROUTER_MODELS = [
+  { id: 'google/gemini-2.5-flash', name: 'Google Gemini 2.5 Flash (Khuyên dùng - Nhanh, Đa phương thức)', provider: 'Google' },
+  { id: 'deepseek/deepseek-chat', name: 'DeepSeek V3 (Siêu rẻ, Tư duy sư phạm xuất sắc)', provider: 'DeepSeek' },
+  { id: 'anthropic/claude-3.5-sonnet', name: 'Claude 3.5 Sonnet (Văn phong mượt mà, Đỉnh cao)', provider: 'Anthropic' },
+  { id: 'meta-llama/llama-3.3-70b-instruct', name: 'Meta Llama 3.3 70B Instruct (Mã nguồn mở chất lượng cao)', provider: 'Meta' },
+  { id: 'google/gemini-2.0-flash-exp:free', name: 'Google Gemini 2.0 Flash (Free tier trên OpenRouter)', provider: 'Google' },
+  { id: 'deepseek/deepseek-r1', name: 'DeepSeek R1 (Mô hình suy luận sâu - Reasoning)', provider: 'DeepSeek' },
+  { id: 'openai/gpt-4o-mini', name: 'OpenAI GPT-4o Mini (Tiết kiệm, thông minh)', provider: 'OpenAI' }
+];
+
+export const setOpenRouterApiKey = (key: string) => {
+  localStorage.setItem(OPENROUTER_KEY_STORAGE, key.trim());
+};
+
+export const getOpenRouterApiKey = (): string => {
+  let key = localStorage.getItem(OPENROUTER_KEY_STORAGE) || '';
+  if (!key) {
+    // @ts-ignore
+    if (typeof process !== 'undefined' && process.env && process.env.OPENROUTER_API_KEY) {
+      // @ts-ignore
+      key = process.env.OPENROUTER_API_KEY;
+    }
+  }
+  if (!key) {
+    // @ts-ignore
+    if (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_OPENROUTER_API_KEY) {
+      // @ts-ignore
+      key = import.meta.env.VITE_OPENROUTER_API_KEY;
+    }
+  }
+  return (key && !key.includes('OPENROUTER_API_KEY')) ? key.trim() : '';
+};
+
+export const clearOpenRouterApiKey = () => {
+  localStorage.removeItem(OPENROUTER_KEY_STORAGE);
+};
+
+export const setOpenRouterModel = (model: string) => {
+  localStorage.setItem(OPENROUTER_MODEL_STORAGE, model.trim());
+};
+
+export const getOpenRouterModel = (): string => {
+  let model = localStorage.getItem(OPENROUTER_MODEL_STORAGE) || '';
+  if (!model) {
+    // @ts-ignore
+    if (typeof process !== 'undefined' && process.env && process.env.OPENROUTER_MODEL) {
+      // @ts-ignore
+      model = process.env.OPENROUTER_MODEL;
+    }
+  }
+  return model || DEFAULT_OPENROUTER_MODEL;
+};
+
+// --- Google Gemini Key Helpers (Ưu tiên 2) ---
+export const GEMINI_KEY_STORAGE = 'gemini_api_key';
 
 export const setGeminiApiKey = (key: string) => {
   localStorage.setItem(GEMINI_KEY_STORAGE, key.trim());
 };
 
 export const getGeminiApiKey = (): string => {
-  return localStorage.getItem(GEMINI_KEY_STORAGE) || '';
+  let key = localStorage.getItem(GEMINI_KEY_STORAGE) || '';
+  if (!key) {
+    // @ts-ignore
+    if (typeof process !== 'undefined' && process.env && process.env.API_KEY) {
+      // @ts-ignore
+      key = process.env.API_KEY;
+    }
+  }
+  if (!key) {
+    // @ts-ignore
+    if (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_API_KEY) {
+      // @ts-ignore
+      key = import.meta.env.VITE_API_KEY;
+    }
+  }
+  return (key && !key.includes('API_KEY')) ? key.trim() : '';
 };
 
 export const clearGeminiApiKey = () => {
   localStorage.removeItem(GEMINI_KEY_STORAGE);
 };
 
-const getAiClient = () => {
-  let apiKey = '';
+export const getActiveAiProviderInfo = (): {
+  provider: 'OPENROUTER' | 'GEMINI' | 'NONE';
+  label: string;
+  model?: string;
+  hasFallback: boolean;
+} => {
+  const orKey = getOpenRouterApiKey();
+  const geminiKey = getGeminiApiKey();
 
-  // Ưu tiên 1: Đọc từ localStorage (người dùng tự nhập qua Settings)
-  const storedKey = getGeminiApiKey();
-  if (storedKey) {
-    apiKey = storedKey;
+  if (orKey) {
+    return {
+      provider: 'OPENROUTER',
+      label: `OpenRouter (Ưu tiên 1) - ${getOpenRouterModel()}`,
+      model: getOpenRouterModel(),
+      hasFallback: !!geminiKey
+    };
+  }
+  if (geminiKey) {
+    return {
+      provider: 'GEMINI',
+      label: 'Google Gemini (Ưu tiên 2 / Dự phòng)',
+      model: 'gemini-2.5-flash',
+      hasFallback: false
+    };
+  }
+  return {
+    provider: 'NONE',
+    label: 'Chưa cấu hình API Key',
+    hasFallback: false
+  };
+};
+
+// --- Test API Key Functions ---
+export const testOpenRouterApiKey = async (keyInput?: string, modelInput?: string): Promise<{ success: boolean; message: string }> => {
+  const apiKey = (keyInput !== undefined ? keyInput : getOpenRouterApiKey()).trim();
+  if (!apiKey) {
+    throw new Error('Vui lòng nhập OpenRouter API Key.');
+  }
+  const model = (modelInput || getOpenRouterModel()).trim() || DEFAULT_OPENROUTER_MODEL;
+
+  const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${apiKey}`,
+      'HTTP-Referer': typeof window !== 'undefined' ? window.location.origin : 'http://localhost:5173',
+      'X-Title': 'OpenLMS Education API Test',
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      model: model,
+      messages: [{ role: 'user', content: 'Trả lời đúng 1 từ: Xin chào' }],
+      max_tokens: 30
+    })
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    const errorMsg = errorData?.error?.message || `Lỗi OpenRouter HTTP ${response.status}: ${response.statusText}`;
+    throw new Error(errorMsg);
   }
 
-  // Ưu tiên 2: Đọc từ process.env.API_KEY (build-time .env)
+  const data = await response.json();
+  const reply = data?.choices?.[0]?.message?.content?.trim();
+  if (!reply) {
+    throw new Error('Phản hồi trống từ OpenRouter API.');
+  }
+
+  return { success: true, message: `Kết nối thành công! Phản hồi từ [${model}]: "${reply}"` };
+};
+
+export const testGeminiApiKey = async (keyInput?: string): Promise<{ success: boolean; message: string }> => {
+  const apiKey = (keyInput !== undefined ? keyInput : getGeminiApiKey()).trim();
   if (!apiKey) {
-    // @ts-ignore
-    if (typeof process !== 'undefined' && process.env && process.env.API_KEY) {
-      // @ts-ignore
-      apiKey = process.env.API_KEY;
+    throw new Error('Vui lòng nhập Google Gemini API Key.');
+  }
+
+  const ai = new GoogleGenAI({ apiKey });
+  let response;
+  let lastErrMessage = '';
+
+  try {
+    response = await ai.models.generateContent({
+      model: 'gemini-2.5-flash',
+      contents: 'Trả lời đúng 1 từ: Xin chào'
+    });
+  } catch (e: any) {
+    lastErrMessage = e?.message || e?.toString() || '';
+    if (lastErrMessage.includes('503') || lastErrMessage.includes('demand') || lastErrMessage.includes('429') || lastErrMessage.includes('quota') || lastErrMessage.includes('UNAVAILABLE')) {
+      try {
+        response = await ai.models.generateContent({
+          model: 'gemini-3.5-flash',
+          contents: 'Trả lời đúng 1 từ: Xin chào'
+        });
+      } catch (e2: any) {
+        throw e2;
+      }
+    } else {
+      throw e;
     }
   }
 
-  // Ưu tiên 3: Đọc từ import.meta.env.VITE_API_KEY (Vite fallback)
-  if (!apiKey) {
-    // @ts-ignore
-    if (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_API_KEY) {
-      // @ts-ignore
-      apiKey = import.meta.env.VITE_API_KEY;
-    }
+  if (response && response.text) {
+    return { success: true, message: `Kết nối thành công! Phản hồi từ Google Gemini: "${response.text.trim()}"` };
   }
+  throw new Error('Phản hồi trống từ Google Gemini API.');
+};
 
-  if (!apiKey || apiKey.includes("API_KEY")) {
+export const getAiClient = () => {
+  const geminiKey = getGeminiApiKey();
+  const openRouterKey = getOpenRouterApiKey();
+  const apiKey = geminiKey || openRouterKey;
+
+  if (!apiKey) {
     console.error("CRITICAL: Missing API KEY. Vui lòng vào Cài đặt → API Key để nhập.");
-    throw new Error("Chưa cấu hình API Key. Vui lòng vào Cài đặt → tab 🔑 API Key để nhập Google Gemini API Key của bạn.");
+    throw new Error("Chưa cấu hình API Key. Vui lòng vào Cài đặt → tab 🔑 API Key để nhập OpenRouter API Key (Ưu tiên 1) hoặc Google Gemini API Key (Ưu tiên 2).");
   }
 
-  console.log(`[DEBUG] getAiClient triggered. Source: ${storedKey ? 'localStorage' : '.env'}. Key: ${apiKey.substring(0, 5)}...${apiKey.slice(-5)}`);
+  return new GoogleGenAI({ apiKey: geminiKey || 'dummy_for_client' });
+};
 
-  return new GoogleGenAI({ apiKey });
+export interface UniversalAiOptions {
+  prompt: string;
+  systemInstruction?: string;
+  image?: { data: string; mimeType: string };
+  images?: { data: string; mimeType: string }[];
+  jsonMode?: boolean;
+  schema?: Schema;
+  temperature?: number;
+  maxTokens?: number;
+  cacheKey?: string;
+  model?: string;
+}
+
+export const callAiGeneration = async (opts: UniversalAiOptions): Promise<string> => {
+  // 1. Kiểm tra cache
+  if (opts.cacheKey) {
+    const cached = await getCachedResponse(opts.cacheKey);
+    if (cached) return cached;
+  }
+
+  const openRouterKey = getOpenRouterApiKey();
+  const geminiKey = getGeminiApiKey();
+
+  if (!openRouterKey && !geminiKey) {
+    throw new Error("Chưa cấu hình API Key. Vui lòng vào Cài đặt → tab 🔑 API Key để nhập OpenRouter API Key (Ưu tiên 1) hoặc Google Gemini API Key (Ưu tiên 2).");
+  }
+
+  let lastError: any = null;
+
+  // ═══════════════════════════════════════════════════════════════
+  // ƯU TIÊN 1: OPENROUTER API
+  // ═══════════════════════════════════════════════════════════════
+  if (openRouterKey) {
+    try {
+      const selectedModel = opts.model || getOpenRouterModel();
+      console.log(`[AI Dispatcher] 🚀 Calling OpenRouter (Priority 1) with model: ${selectedModel}`);
+      
+      const messages: any[] = [];
+      if (opts.systemInstruction) {
+        messages.push({ role: 'system', content: opts.systemInstruction });
+      }
+
+      let userContent: any = opts.prompt;
+
+      if (opts.images && opts.images.length > 0) {
+        const parts: any[] = [{ type: 'text', text: opts.prompt }];
+        for (const img of opts.images) {
+          let url = img.data;
+          if (!url.startsWith('data:')) {
+            url = `data:${img.mimeType || 'image/jpeg'};base64,${url}`;
+          }
+          parts.push({
+            type: 'image_url',
+            image_url: { url }
+          });
+        }
+        userContent = parts;
+      } else if (opts.image) {
+        let url = opts.image.data;
+        if (!url.startsWith('data:')) {
+          url = `data:${opts.image.mimeType || 'image/jpeg'};base64,${url}`;
+        }
+        userContent = [
+          { type: 'text', text: opts.prompt },
+          { type: 'image_url', image_url: { url } }
+        ];
+      }
+
+      messages.push({ role: 'user', content: userContent });
+
+      const requestBody: any = {
+        model: selectedModel,
+        messages: messages,
+        temperature: opts.temperature ?? 0.7
+      };
+
+      if (opts.maxTokens) {
+        requestBody.max_tokens = opts.maxTokens;
+      }
+
+      if (opts.jsonMode) {
+        requestBody.response_format = { type: 'json_object' };
+      }
+
+      const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${openRouterKey}`,
+          'HTTP-Referer': typeof window !== 'undefined' ? window.location.origin : 'http://localhost:5173',
+          'X-Title': 'OpenLMS Education AI',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(requestBody)
+      });
+
+      if (!response.ok) {
+        const errJson = await response.json().catch(() => ({}));
+        const errMsg = errJson?.error?.message || `Lỗi OpenRouter HTTP ${response.status}: ${response.statusText}`;
+        throw new Error(errMsg);
+      }
+
+      const data = await response.json();
+      const reply = data?.choices?.[0]?.message?.content;
+      if (typeof reply === 'string') {
+        if (opts.cacheKey && reply) {
+          await setCachedResponse(opts.cacheKey, reply);
+        }
+        return reply;
+      }
+      throw new Error('OpenRouter trả về phản hồi rỗng.');
+    } catch (orErr: any) {
+      console.warn(`[AI Dispatcher] ⚠️ OpenRouter gặp lỗi (${orErr.message}), tự động chuyển sang Google Gemini (Ưu tiên 2)...`, orErr);
+      lastError = orErr;
+      if (!geminiKey) {
+        throw orErr;
+      }
+    }
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  // ƯU TIÊN 2: GOOGLE GEMINI SDK (DỰ PHÒNG / TRỰC TIẾP)
+  // ═══════════════════════════════════════════════════════════════
+  if (geminiKey) {
+    console.log(`[AI Dispatcher] 🔄 Calling Google Gemini SDK (Priority 2)...`);
+    const ai = new GoogleGenAI({ apiKey: geminiKey });
+
+    for (const modelId of AI_MODELS) {
+      try {
+        let contents: any = opts.prompt;
+
+        if (opts.images && opts.images.length > 0) {
+          const imageParts = opts.images.map(img => ({
+            inlineData: {
+              data: img.data.replace(/^data:image\/[a-z]+;base64,/, ''),
+              mimeType: img.mimeType || 'image/jpeg'
+            }
+          }));
+          contents = [{
+            role: 'user',
+            parts: [...imageParts, { text: opts.prompt }]
+          }];
+        } else if (opts.image) {
+          const cleanBase64 = opts.image.data.replace(/^data:image\/[a-z]+;base64,/, '');
+          contents = [
+            opts.prompt,
+            {
+              inlineData: {
+                data: cleanBase64,
+                mimeType: opts.image.mimeType || 'image/jpeg'
+              }
+            }
+          ];
+        }
+
+        const config: any = {};
+        if (opts.systemInstruction) {
+          config.systemInstruction = opts.systemInstruction;
+        }
+        if (opts.jsonMode) {
+          config.responseMimeType = "application/json";
+          if (opts.schema) {
+            config.responseSchema = opts.schema;
+          }
+        }
+        if (opts.temperature !== undefined) {
+          config.temperature = opts.temperature;
+        }
+        if (opts.maxTokens) {
+          config.maxOutputTokens = opts.maxTokens;
+        }
+
+        const response = await ai.models.generateContent({
+          model: modelId,
+          contents,
+          config: Object.keys(config).length > 0 ? config : undefined
+        });
+
+        const resultText = response.text || '';
+        if (opts.cacheKey && resultText) {
+          await setCachedResponse(opts.cacheKey, resultText);
+        }
+        return resultText;
+      } catch (gemErr: any) {
+        console.warn(`[AI Dispatcher] Gemini model ${modelId} failed:`, gemErr?.message || gemErr);
+        lastError = gemErr;
+        // If quota/overload, loop to next fallback model
+        continue;
+      }
+    }
+  }
+
+  throw lastError || new Error("Không thể kết nối dịch vụ AI. Vui lòng kiểm tra lại API Key trong Cài đặt.");
 };
 
 const QUESTION_SCHEMA: Schema = {
@@ -127,8 +482,6 @@ const AI_MODELS = ["gemini-2.5-flash", "gemini-3.5-flash"];
  * Includes model fallback and schema retry logic for robustness.
  */
 export const parseQuestionsFromText = async (rawText: string): Promise<Question[]> => {
-  const ai = getAiClient();
-
   const prompt = `
     You are an AI exam parser for an LMS system. 
     Analyze the following raw text which contains exam questions.
@@ -170,63 +523,13 @@ export const parseQuestionsFromText = async (rawText: string): Promise<Question[
     }));
   };
 
-  let lastError: any = null;
+  const responseText = await callAiGeneration({
+    prompt,
+    jsonMode: true,
+    schema: QUESTION_SCHEMA
+  });
 
-  // Try each model in the fallback list
-  for (const modelId of AI_MODELS) {
-    // Attempt 1: With structured schema
-    try {
-      console.log(`[Parse] Trying ${modelId} with schema...`);
-      const response = await ai.models.generateContent({
-        model: modelId,
-        contents: prompt,
-        config: {
-          responseMimeType: "application/json",
-          responseSchema: QUESTION_SCHEMA
-        }
-      });
-      const result = parseResponse(response.text || "[]");
-      console.log(`[Parse] Success with ${modelId} + schema! Got ${result.length} questions.`);
-      return result;
-    } catch (schemaError: any) {
-      const errMsg = schemaError?.message || schemaError?.toString() || '';
-      console.warn(`[Parse] ${modelId} + schema failed:`, errMsg);
-
-      // If quota error, try next model immediately
-      if (errMsg.includes('429') || errMsg.includes('quota') || errMsg.includes('RESOURCE_EXHAUSTED')) {
-        console.warn(`[Parse] ${modelId} quota exceeded, trying next model...`);
-        lastError = schemaError;
-        continue;
-      }
-
-      // Attempt 2: Same model but WITHOUT schema (more flexible)
-      try {
-        console.log(`[Parse] Retrying ${modelId} without schema...`);
-        const response = await ai.models.generateContent({
-          model: modelId,
-          contents: prompt + "\n\nIMPORTANT: Return ONLY a valid JSON array. No markdown, no explanation, just the JSON array.",
-          config: {
-            responseMimeType: "application/json"
-          }
-        });
-        const result = parseResponse(response.text || "[]");
-        console.log(`[Parse] Success with ${modelId} without schema! Got ${result.length} questions.`);
-        return result;
-      } catch (noSchemaError: any) {
-        const noSchemaMsg = noSchemaError?.message || noSchemaError?.toString() || '';
-        console.warn(`[Parse] ${modelId} without schema also failed:`, noSchemaMsg);
-        lastError = noSchemaError;
-        if (noSchemaMsg.includes('429') || noSchemaMsg.includes('quota') || noSchemaMsg.includes('RESOURCE_EXHAUSTED')) {
-          continue;
-        }
-      }
-    }
-  }
-
-  // All models exhausted
-  const finalMsg = lastError?.message || lastError?.toString() || 'All models failed';
-  console.error("[Parse] All attempts failed:", finalMsg);
-  throw new Error(finalMsg);
+  return parseResponse(responseText);
 };
 
 const ARENA_QUESTION_SCHEMA: Schema = {
@@ -260,8 +563,6 @@ const ARENA_QUESTION_SCHEMA: Schema = {
 };
 
 export const parseArenaQuestionsFromText = async (rawText: string): Promise<Omit<ArenaQuestion, 'id'>[]> => {
-  const ai = getAiClient();
-
   const prompt = `
     You are an AI exam parser for an LMS system. 
     Analyze the following raw text which contains exam questions.
@@ -302,53 +603,13 @@ export const parseArenaQuestionsFromText = async (rawText: string): Promise<Omit
     }));
   };
 
-  let lastError: any = null;
+  const responseText = await callAiGeneration({
+    prompt,
+    jsonMode: true,
+    schema: ARENA_QUESTION_SCHEMA
+  });
 
-  for (const modelId of AI_MODELS) {
-    try {
-      console.log(`[ArenaParse] Trying ${modelId} with schema...`);
-      const response = await ai.models.generateContent({
-        model: modelId,
-        contents: prompt,
-        config: {
-          responseMimeType: "application/json",
-          responseSchema: ARENA_QUESTION_SCHEMA
-        }
-      });
-      const result = parseResponse(response.text || "[]");
-      console.log(`[ArenaParse] Success with ${modelId} + schema! Got ${result.length} questions.`);
-      return result;
-    } catch (schemaError: any) {
-      const errMsg = schemaError?.message || schemaError?.toString() || '';
-      console.warn(`[ArenaParse] ${modelId} + schema failed:`, errMsg);
-
-      if (errMsg.includes('429') || errMsg.includes('quota') || errMsg.includes('RESOURCE_EXHAUSTED')) {
-        lastError = schemaError;
-        continue;
-      }
-
-      try {
-        console.log(`[ArenaParse] Retrying ${modelId} without schema...`);
-        const response = await ai.models.generateContent({
-          model: modelId,
-          contents: prompt + "\n\nIMPORTANT: Return ONLY a valid JSON array. No markdown, no explanation, just the JSON array.",
-          config: {
-            responseMimeType: "application/json"
-          }
-        });
-        const result = parseResponse(response.text || "[]");
-        console.log(`[ArenaParse] Success with ${modelId} without schema! Got ${result.length} questions.`);
-        return result;
-      } catch (noSchemaError: any) {
-        lastError = noSchemaError;
-        continue;
-      }
-    }
-  }
-
-  const finalMsg = lastError?.message || lastError?.toString() || 'All models failed';
-  console.error("[ArenaParse] All attempts failed:", finalMsg);
-  throw new Error(finalMsg);
+  return parseResponse(responseText);
 };
 
 /**
@@ -591,69 +852,13 @@ export const generateQuestionsByTopic = async (
     }));
   };
 
-  let lastError: any = null;
+  const responseText = await callAiGeneration({
+    prompt,
+    jsonMode: true,
+    schema: QUESTION_SCHEMA
+  });
 
-  // Try each model in the fallback list
-  for (const modelId of AI_MODELS) {
-    // Attempt 1: With structured schema
-    try {
-      console.log(`[AI Gen] Trying ${modelId} with schema for ${count} ${questionType} questions...`);
-      const response = await ai.models.generateContent({
-        model: modelId,
-        contents: prompt,
-        config: {
-          responseMimeType: "application/json",
-          responseSchema: QUESTION_SCHEMA
-        }
-      });
-      const result = parseResponse(response.text || "[]");
-      console.log(`[AI Gen] Success with ${modelId} + schema! Got ${result.length} questions.`);
-      return result;
-    } catch (schemaError: any) {
-      const errMsg = schemaError?.message || schemaError?.toString() || '';
-      console.warn(`[AI Gen] ${modelId} + schema failed:`, errMsg);
-
-      // If quota error, try next model immediately
-      if (errMsg.includes('429') || errMsg.includes('quota') || errMsg.includes('RESOURCE_EXHAUSTED')) {
-        console.warn(`[AI Gen] ${modelId} quota exceeded, trying next model...`);
-        lastError = schemaError;
-        continue;
-      }
-
-      // Attempt 2: Same model but WITHOUT schema (more flexible)
-      try {
-        console.log(`[AI Gen] Retrying ${modelId} without schema...`);
-        const response = await ai.models.generateContent({
-          model: modelId,
-          contents: prompt + "\n\nIMPORTANT: Return ONLY a valid JSON array. No markdown, no explanation, just the JSON array.",
-          config: {
-            responseMimeType: "application/json"
-          }
-        });
-        const result = parseResponse(response.text || "[]");
-        console.log(`[AI Gen] Success with ${modelId} without schema! Got ${result.length} questions.`);
-        return result;
-      } catch (noSchemaError: any) {
-        const noSchemaMsg = noSchemaError?.message || noSchemaError?.toString() || '';
-        console.warn(`[AI Gen] ${modelId} without schema also failed:`, noSchemaMsg);
-        lastError = noSchemaError;
-        // If quota error on no-schema attempt too, try next model
-        if (noSchemaMsg.includes('429') || noSchemaMsg.includes('quota') || noSchemaMsg.includes('RESOURCE_EXHAUSTED')) {
-          continue;
-        }
-      }
-    }
-  }
-
-  // All models exhausted
-  const finalMsg = lastError?.message || lastError?.toString() || 'All models failed';
-  console.error("[AI Gen] All attempts failed:", finalMsg);
-  
-  if (finalMsg.includes('429') || finalMsg.includes('quota') || finalMsg.includes('RESOURCE_EXHAUSTED')) {
-    throw new Error("Hạn mức AI (Quota) đã hết hoặc bạn đang gửi yêu cầu quá nhanh. Vui lòng đợi khoảng 1 phút rồi thử lại. Nếu vẫn gặp lỗi, hãy kiểm tra API Key trong phần Cài đặt.");
-  }
-  
-  throw new Error(finalMsg);
+  return parseResponse(responseText);
 };
 
 /**
@@ -665,9 +870,6 @@ export const analyzeStudentAttempt = async (
   userAnswers: Record<string, any>,
   score: number
 ): Promise<string> => {
-  const ai = getAiClient();
-  const modelId = "gemini-2.0-flash";
-
   // Filter wrong answers to save tokens and focus AI
   const wrongAnswers = questions.filter(q => {
     const userAns = userAnswers[q.id];
@@ -705,13 +907,10 @@ export const analyzeStudentAttempt = async (
   `;
 
   try {
-    const response = await ai.models.generateContent({
-      model: modelId,
-      contents: prompt,
-    });
-    return response.text || "Không thể tạo nhận xét lúc này.";
+    const response = await callAiGeneration({ prompt });
+    return response || "Không thể tạo nhận xét lúc này.";
   } catch (error: any) {
-    console.error("Gemini Analysis Error:", error);
+    console.error("AI Attempt Analysis Error:", error);
     return `Lỗi khi phân tích kết quả: ${error?.message || String(error)}`;
   }
 };
@@ -725,9 +924,6 @@ export const analyzeClassPerformance = async (
   attempts: Attempt[],
   customInstructions?: string
 ): Promise<string> => {
-  const ai = getAiClient();
-  const modelId = "gemini-2.0-flash";
-
   if (attempts.length === 0) return "Chưa có dữ liệu bài làm để phân tích.";
 
   // Calculate statistics
@@ -767,13 +963,10 @@ export const analyzeClassPerformance = async (
   `;
 
   try {
-    const response = await ai.models.generateContent({
-      model: modelId,
-      contents: prompt,
-    });
-    return response.text || "Không thể tạo báo cáo lớp học.";
+    const response = await callAiGeneration({ prompt });
+    return response || "Không thể tạo báo cáo lớp học.";
   } catch (error: any) {
-    console.error("Gemini Class Analysis Error:", error);
+    console.error("AI Class Analysis Error:", error);
     return `Lỗi khi phân tích dữ liệu lớp học: ${error?.message || String(error)}`;
   }
 };
@@ -787,9 +980,6 @@ export const generateBehaviorAdvice = async (
   logSummary: string,
   customPrompt?: string
 ): Promise<string> => {
-  const ai = getAiClient();
-  const modelId = "gemini-2.0-flash";
-
   const prompt = `
     Đóng vai một Chuyên gia Tâm lý Học đường và Cố vấn Hành vi.
     Hãy tư vấn cho Giáo viên cách xử lý và giáo dục học sinh sau đây:
@@ -808,27 +998,21 @@ ${logSummary}
   `;
 
   try {
-    const response = await ai.models.generateContent({
-      model: modelId,
-      contents: prompt,
-    });
-    return response.text || "Không thể tạo tư vấn từ AI vào lúc này.";
+    const response = await callAiGeneration({ prompt });
+    return response || "Không thể tạo tư vấn từ AI vào lúc này.";
   } catch (error: any) {
-    console.error("Gemini Behavior Advice Error:", error);
+    console.error("AI Behavior Advice Error:", error);
     return `Lỗi khi kết nối với AI Tư vấn: ${error?.message || String(error)}`;
   }
 };
 
 /**
- * Analyzes handwritten or typed student material from multiple images (base64) using Gemini Pro Vision.
+ * Analyzes handwritten or typed student material from multiple images (base64).
  */
 export const analyzeStudentMaterial = async (
   images: { data: string, mimeType: string }[],
   customPrompt: string = ""
 ): Promise<any> => {
-  const ai = getAiClient();
-  const modelId = "gemini-2.0-flash";
-
   const prompt = `
     Đóng vai một Giáo viên chấm bài xuất sắc. Dưới đây là hình ảnh chụp các trang bài làm của học sinh.
     
@@ -851,34 +1035,17 @@ export const analyzeStudentMaterial = async (
   `;
 
   try {
-    const imageParts = images.map(img => ({
-      inlineData: {
-        data: img.data,
-        mimeType: img.mimeType
-      }
-    }));
-
-    const response = await ai.models.generateContent({
-      model: modelId,
-      contents: [{
-        role: "user",
-        parts: [
-          ...imageParts,
-          { text: prompt }
-        ]
-      }]
+    const rawResponse = await callAiGeneration({
+      prompt,
+      images,
+      jsonMode: true
     });
 
-    const cleanedText = cleanJsonString(response.text || "{}");
-    try {
-      return JSON.parse(cleanedText);
-    } catch (e) {
-      console.error("Failed to parse AI Grading output:", cleanedText);
-      throw new Error("AI returned malformed JSON");
-    }
-  } catch (error) {
-    console.error("Gemini Vision Grading Error:", error);
-    throw new Error("Lỗi khi phân tích hình ảnh qua AI.");
+    const cleanedText = cleanJsonString(rawResponse || "{}");
+    return JSON.parse(cleanedText);
+  } catch (error: any) {
+    console.error("AI Vision Grading Error:", error);
+    throw new Error(`Lỗi khi phân tích hình ảnh qua AI: ${error?.message || String(error)}`);
   }
 };
 
@@ -892,9 +1059,6 @@ export const analyzeStudentText = async (
   customPrompt: string = "",
   rubric: string = ""
 ): Promise<any> => {
-  const ai = getAiClient();
-  const modelId = "gemini-2.0-flash";
-
   const prompt = `
     Đóng vai một Giáo viên chấm bài xuất sắc.
     
@@ -924,21 +1088,16 @@ export const analyzeStudentText = async (
   `;
 
   try {
-    const response = await ai.models.generateContent({
-      model: modelId,
-      contents: [{ role: "user", parts: [{ text: prompt }] }]
+    const rawResponse = await callAiGeneration({
+      prompt,
+      jsonMode: true
     });
 
-    const cleanedText = cleanJsonString(response.text || "{}");
-    try {
-      return JSON.parse(cleanedText);
-    } catch (e) {
-      console.error("Failed to parse AI Text Grading output:", cleanedText);
-      throw new Error("AI returned malformed JSON");
-    }
-  } catch (error) {
-    console.error("Gemini Text Grading Error:", error);
-    throw new Error("Lỗi khi phân tích bài làm qua AI.");
+    const cleanedText = cleanJsonString(rawResponse || "{}");
+    return JSON.parse(cleanedText);
+  } catch (error: any) {
+    console.error("AI Text Grading Error:", error);
+    throw new Error(`Lỗi khi phân tích bài làm qua AI: ${error?.message || String(error)}`);
   }
 };
 
@@ -952,9 +1111,6 @@ export const generateSeatingChart = async (
   cols: number,
   constraints: string = ""
 ): Promise<Array<{ row: number, col: number, studentId: string | null }>> => {
-  const ai = getAiClient();
-  const modelId = "gemini-2.0-flash";
-
   const totalSeats = rows * cols;
   if (students.length > totalSeats) {
     throw new Error(`Grid too small: ${totalSeats} seats for ${students.length} students.`);
@@ -990,15 +1146,12 @@ export const generateSeatingChart = async (
   `;
 
   try {
-    const response = await ai.models.generateContent({
-      model: modelId,
-      contents: prompt,
-      config: {
-        responseMimeType: "application/json"
-      }
+    const rawResponse = await callAiGeneration({
+      prompt,
+      jsonMode: true
     });
 
-    const cleanedText = cleanJsonString(response.text || "[]");
+    const cleanedText = cleanJsonString(rawResponse || "[]");
     const parsedChart = JSON.parse(cleanedText);
 
     if (!Array.isArray(parsedChart)) {
@@ -1006,9 +1159,9 @@ export const generateSeatingChart = async (
     }
 
     return parsedChart;
-  } catch (error) {
-    console.error("Gemini Seating Error:", error);
-    throw new Error("Loi khi tao so do bang AI. Vui long thu lai hoac xep tay.");
+  } catch (error: any) {
+    console.error("AI Seating Error:", error);
+    throw new Error(`Lỗi khi tạo sơ đồ bằng AI: ${error?.message || String(error)}`);
   }
 };
 
@@ -1027,12 +1180,6 @@ export const generatePersonalizedRecommendation = async (
 ): Promise<string> => {
   const weakTopicsKey = analytics.weakTopics.slice(0, 5).map(t => `${t.topic}_${t.incorrectRate}`).join('-');
   const cacheKey = `rec_${analytics.avgScore.toFixed(2)}_${analytics.totalAttempts}_${analytics.studyStreak}_${weakTopicsKey}`;
-  
-  const cached = await getCachedResponse(cacheKey);
-  if (cached) return cached;
-
-  const ai = getAiClient();
-  const modelId = "gemini-2.0-flash";
 
   const subjectSummary = analytics.bySubject
     .map(s => s.subject + ": TB " + s.avgScore + "/10 (xu huong: " + (s.trend === "UP" ? "tot len" : s.trend === "DOWN" ? "giam" : "on dinh") + ")")
@@ -1059,18 +1206,11 @@ export const generatePersonalizedRecommendation = async (
     "Neu HS gioi (>=8.5), hay thach thuc. Neu HS trung binh, hay khuyen khich. Neu HS yeu (<5), hay an can.";
 
   try {
-    const response = await ai.models.generateContent({
-      model: modelId,
-      contents: prompt,
-    });
-    const result = response.text || "AI khong the tao goi y luc nay.";
-    if (response.text) {
-      await setCachedResponse(cacheKey, result);
-    }
-    return result;
-  } catch (error) {
-    console.error("Gemini Personalized Recommendation Error:", error);
-    throw new Error("Khong the ket noi AI. Vui long kiem tra API Key trong Cai dat.");
+    const result = await callAiGeneration({ prompt, cacheKey });
+    return result || "AI không thể tạo gợi ý lúc này.";
+  } catch (error: any) {
+    console.error("AI Personalized Recommendation Error:", error);
+    throw new Error("Không thể kết nối AI. Vui lòng kiểm tra API Key trong Cài đặt.");
   }
 };
 
@@ -1090,12 +1230,6 @@ export const generateTeacherStudentAnalysis = async (
 ): Promise<string> => {
   const weakTopicsKey = analytics.weakTopics.slice(0, 5).map(t => `${t.topic}_${t.incorrectRate}`).join('-');
   const cacheKey = `t_anal_${studentName}_${analytics.avgScore.toFixed(2)}_${analytics.totalAttempts}_${analytics.studyStreak}_${weakTopicsKey}`;
-  
-  const cached = await getCachedResponse(cacheKey);
-  if (cached) return cached;
-
-  const ai = getAiClient();
-  const modelId = "gemini-2.0-flash";
 
   const subjectSummary = analytics.bySubject
     .map(s => s.subject + ": TB " + s.avgScore + "/10 (" + (s.trend === "UP" ? "tốt lên" : s.trend === "DOWN" ? "giảm" : "ổn định") + ")")
@@ -1125,17 +1259,10 @@ export const generateTeacherStudentAnalysis = async (
     Lưu ý: Nếu học sinh giỏi, hãy gợi ý cách bồi dưỡng thêm. Nếu học sinh yếu, hãy gợi ý cách kèm cặp sát sao.`;
 
   try {
-    const response = await ai.models.generateContent({
-      model: modelId,
-      contents: prompt,
-    });
-    const result = response.text || "AI không thể tạo phân tích lúc này.";
-    if (response.text) {
-      await setCachedResponse(cacheKey, result);
-    }
-    return result;
-  } catch (error) {
-    console.error("Gemini Teacher Student Analysis Error:", error);
+    const result = await callAiGeneration({ prompt, cacheKey });
+    return result || "AI không thể tạo phân tích lúc này.";
+  } catch (error: any) {
+    console.error("AI Teacher Student Analysis Error:", error);
     throw new Error("Không thể kết nối AI. Vui lòng kiểm tra API Key.");
   }
 };
@@ -1149,11 +1276,6 @@ export const generateArenaStudyGuide = async (
   incorrectRate: number
 ): Promise<string> => {
   const cacheKey = `guide_${subject}_${topic}_${incorrectRate}`;
-  const cached = await getCachedResponse(cacheKey);
-  if (cached) return cached;
-
-  const ai = getAiClient();
-  const modelId = "gemini-2.0-flash";
 
   const prompt = `Bạn là Trợ lý AI OpenLMS, đóng vai trò như một Thầy/Cô giáo tận tâm.
 Học sinh vừa hoàn thành các thử thách trong Tháp Arena và hệ thống phát hiện phần kiến thức sau đang là điểm yếu lớn nhất của em ấy:
@@ -1170,17 +1292,10 @@ HƯỚNG DẪN NỘI DUNG:
 3. Luôn dùng từ ngữ khích lệ, động viên để học sinh không nản chí.`;
 
   try {
-    const response = await ai.models.generateContent({
-      model: modelId,
-      contents: prompt,
-    });
-    const result = response.text || "AI không thể tạo hướng dẫn lúc này.";
-    if (response.text) {
-      await setCachedResponse(cacheKey, result);
-    }
-    return result;
-  } catch (error) {
-    console.error("Gemini Arena Study Guide Error:", error);
+    const result = await callAiGeneration({ prompt, cacheKey });
+    return result || "AI không thể tạo hướng dẫn lúc này.";
+  } catch (error: any) {
+    console.error("AI Arena Study Guide Error:", error);
     throw new Error("Không thể kết nối AI. Vui lòng kiểm tra API Key.");
   }
 };
@@ -1210,11 +1325,6 @@ export const generatePortfolioAnalysis = async (
   }
 ): Promise<string> => {
   const cacheKey = `portfolio_${studentName}_${portfolioData.avgScore.toFixed(2)}_${portfolioData.behaviorScore}_${portfolioData.arenaElo}_${portfolioData.towerFloor}`;
-  const cached = await getCachedResponse(cacheKey);
-  if (cached) return cached;
-
-  const ai = getAiClient();
-  const modelId = "gemini-2.5-flash";
 
   const prompt = `Bạn là Trợ lý AI OpenLMS, đang hỗ trợ Giáo viên phân tích hồ sơ học tập toàn diện của học sinh.
 
@@ -1259,17 +1369,10 @@ YÊU CẦU PHÂN TÍCH:
 5. Nếu dữ liệu còn ít, hãy đề xuất GV bổ sung thêm thông tin.`;
 
   try {
-    const response = await ai.models.generateContent({
-      model: modelId,
-      contents: prompt,
-    });
-    const result = response.text || "AI không thể tạo phân tích lúc này.";
-    if (response.text) {
-      await setCachedResponse(cacheKey, result);
-    }
-    return result;
-  } catch (error) {
-    console.error("Gemini Portfolio Analysis Error:", error);
+    const result = await callAiGeneration({ prompt, cacheKey });
+    return result || "AI không thể tạo phân tích lúc này.";
+  } catch (error: any) {
+    console.error("AI Portfolio Analysis Error:", error);
     throw new Error("Không thể kết nối AI. Vui lòng kiểm tra API Key.");
   }
 };
@@ -1280,9 +1383,6 @@ YÊU CẦU PHÂN TÍCH:
 export const generateRevengeQuestions = async (
   wrongQuestions: { content: string, topic?: string, subject?: string }[]
 ): Promise<{ topic: string, summary: string, questions: Question[] }> => {
-  const ai = getAiClient();
-  const modelId = "gemini-2.0-flash";
-
   const prompt = `Bạn là Trợ lý AI sư phạm tận tâm của Open LMS.
 Học sinh vừa làm sai các câu hỏi sau đây trong trận đấu Arena:
 ${JSON.stringify(wrongQuestions.map(q => ({ content: q.content, topic: q.topic, subject: q.subject })))}
@@ -1310,15 +1410,12 @@ CẤU TRÚC JSON YÊU CẦU:
 `;
 
   try {
-    const response = await ai.models.generateContent({
-      model: modelId,
-      contents: prompt,
-      config: {
-        responseMimeType: "application/json"
-      }
+    const rawResponse = await callAiGeneration({
+      prompt,
+      jsonMode: true
     });
 
-    const cleanedText = cleanJsonString(response.text || "{}");
+    const cleanedText = cleanJsonString(rawResponse || "{}");
     const result = JSON.parse(cleanedText);
     
     // Gán ID cho các câu hỏi phục thù
@@ -1333,18 +1430,16 @@ CẤU TRÚC JSON YÊU CẦU:
     }
     
     return result;
-  } catch (error) {
-    console.error("Gemini Revenge Generation Error:", error);
-    throw new Error("Không thể sinh câu hỏi phục thù từ AI.");
+  } catch (error: any) {
+    console.error("AI Revenge Generation Error:", error);
+    throw new Error(`Không thể sinh câu hỏi phục thù từ AI: ${error?.message || String(error)}`);
   }
 };
 
 /**
- * Trích xuất danh sách câu hỏi từ hình ảnh đề thi (OCR) bằng Gemini 2.0.
+ * Trích xuất danh sách câu hỏi từ hình ảnh đề thi (OCR).
  */
 export const parseQuestionsFromImage = async (base64Image: string, mimeType: string): Promise<Question[]> => {
-  const ai = getAiClient();
-
   const prompt = `
     Bạn là một trợ lý AI OCR chuyên trích xuất đề thi từ hình ảnh cho hệ thống LMS.
     Hãy phân tích hình ảnh đính kèm có chứa đề thi hoặc danh sách câu hỏi.
@@ -1364,13 +1459,6 @@ export const parseQuestionsFromImage = async (base64Image: string, mimeType: str
     ? base64Image.split(';base64,')[1] 
     : base64Image;
 
-  const inlineDataPart = {
-    inlineData: {
-      data: cleanBase64,
-      mimeType: mimeType
-    }
-  };
-
   const parseResponse = (text: string): Question[] => {
     const cleanedText = cleanJsonString(text || "[]");
     const parsedData = JSON.parse(cleanedText);
@@ -1388,54 +1476,22 @@ export const parseQuestionsFromImage = async (base64Image: string, mimeType: str
     }));
   };
 
-  let lastError: any = null;
+  try {
+    const rawResponse = await callAiGeneration({
+      prompt,
+      image: {
+        data: cleanBase64,
+        mimeType: mimeType || 'image/jpeg'
+      },
+      jsonMode: true,
+      schema: QUESTION_SCHEMA
+    });
 
-  for (const modelId of AI_MODELS) {
-    try {
-      console.log(`[OCR Parse] Trying ${modelId} with schema...`);
-      const response = await ai.models.generateContent({
-        model: modelId,
-        contents: [
-          prompt,
-          inlineDataPart
-        ],
-        config: {
-          responseMimeType: "application/json",
-          responseSchema: QUESTION_SCHEMA
-        }
-      });
-      const result = parseResponse(response.text || "[]");
-      console.log(`[OCR Parse] Success with ${modelId}! Got ${result.length} questions.`);
-      return result;
-    } catch (schemaError: any) {
-      console.warn(`[OCR Parse] ${modelId} failed:`, schemaError?.message || schemaError);
-      lastError = schemaError;
-      const errMsg = schemaError?.message || '';
-      if (errMsg.includes('429') || errMsg.includes('quota') || errMsg.includes('RESOURCE_EXHAUSTED')) {
-        continue;
-      }
-      
-      try {
-        console.log(`[OCR Parse] Retrying ${modelId} without schema...`);
-        const response = await ai.models.generateContent({
-          model: modelId,
-          contents: [
-            prompt + "\n\nIMPORTANT: Return ONLY a valid JSON array matching the schema.",
-            inlineDataPart
-          ],
-          config: {
-            responseMimeType: "application/json"
-          }
-        });
-        const result = parseResponse(response.text || "[]");
-        return result;
-      } catch (err) {
-        lastError = err;
-      }
-    }
+    return parseResponse(rawResponse);
+  } catch (error: any) {
+    console.error("AI OCR Parse Error:", error);
+    throw new Error(`Không thể OCR hình ảnh đề thi bằng AI: ${error?.message || String(error)}`);
   }
-
-  throw new Error(lastError?.message || "Không thể OCR hình ảnh đề thi bằng AI.");
 };
 
 /**
@@ -1446,8 +1502,6 @@ export const explainQuestionError = async (
   studentAnswer: string,
   correctAnswer: string
 ): Promise<string> => {
-  const ai = getAiClient();
-  const modelId = "gemini-2.0-flash";
   const prompt = `Bạn là Trợ lý Giáo viên AI của OpenLMS. Học sinh vừa làm sai câu hỏi sau:
   Câu hỏi: "${questionContent}"
   Đáp án học sinh chọn: "${studentAnswer}"
@@ -1456,11 +1510,8 @@ export const explainQuestionError = async (
   Hãy giải thích ngắn gọn (2-3 câu, tối đa 100 từ) bằng tiếng Việt lý do tại sao học sinh sai và cách tính/quy trình đúng để giải quyết câu này. Hãy dùng LaTeX ($...$) cho các công thức toán nếu có. Trả lời bằng định dạng Markdown thân thiện.`;
   
   try {
-    const response = await ai.models.generateContent({
-      model: modelId,
-      contents: prompt
-    });
-    return response.text || "Không thể tải lời giải lý thuyết lúc này.";
+    const result = await callAiGeneration({ prompt });
+    return result || "Không thể tải lời giải lý thuyết lúc này.";
   } catch (e) {
     console.error("Error explaining question error:", e);
     return `Lời giải chi tiết: Đáp án đúng là "${correctAnswer}". Bạn hãy xem lại kiến thức chuyên đề này nhé.`;
@@ -1475,9 +1526,6 @@ export const generateMissingQuestionFields = async (
   answers: string[],
   correctIndex: number
 ): Promise<{ correct_answer_string: string; guide: string; explanation: string }> => {
-  const ai = getAiClient();
-  const modelId = "gemini-2.5-flash";
-  
   const prompt = `
     You are an expert Math teacher assistant.
     Analyze the following math question and generate the missing fields:
@@ -1501,24 +1549,21 @@ export const generateMissingQuestionFields = async (
   `;
 
   try {
-    const response = await ai.models.generateContent({
-      model: modelId,
-      contents: prompt,
-      config: {
-        responseMimeType: "application/json",
-        responseSchema: {
-          type: Type.OBJECT,
-          properties: {
-            correct_answer_string: { type: Type.STRING },
-            guide: { type: Type.STRING },
-            explanation: { type: Type.STRING }
-          },
-          required: ["correct_answer_string", "guide", "explanation"]
-        }
+    const rawResponse = await callAiGeneration({
+      prompt,
+      jsonMode: true,
+      schema: {
+        type: Type.OBJECT,
+        properties: {
+          correct_answer_string: { type: Type.STRING },
+          guide: { type: Type.STRING },
+          explanation: { type: Type.STRING }
+        },
+        required: ["correct_answer_string", "guide", "explanation"]
       }
     });
 
-    const parsed = JSON.parse(response.text || "{}");
+    const parsed = JSON.parse(cleanJsonString(rawResponse || "{}"));
     return {
       correct_answer_string: parsed.correct_answer_string || "",
       guide: parsed.guide || "",
@@ -1554,7 +1599,6 @@ export const generateLessonContent = async (
   subject?: string,
   classLevel?: string,
 ): Promise<string> => {
-  const ai = getAiClient();
   const trimmed = rawText.trim().substring(0, 15000); // Cap input to ~15k chars
 
   const prompt = `Bạn là một giáo viên giỏi, chuyên soạn bài giảng trực tuyến cho học sinh ${classLevel || 'tiểu học & THCS'}.
@@ -1578,21 +1622,17 @@ ${subject ? `6. Môn học: ${subject}.` : ''}
 ${trimmed}
 --- HẾT TÀI LIỆU ---`;
 
-  for (const model of AI_MODELS) {
-    try {
-      const response = await ai.models.generateContent({
-        model,
-        contents: prompt,
-        config: { temperature: 0.5, maxOutputTokens: 4096 },
-      });
-      const text = response.text?.trim();
-      if (text && text.length > 100) {
-        return text;
-      }
-    } catch (err: any) {
-      console.warn(`[generateLessonContent] Model ${model} failed:`, err.message);
-      continue;
+  try {
+    const text = await callAiGeneration({
+      prompt,
+      temperature: 0.5,
+      maxTokens: 4096
+    });
+    if (text && text.trim().length > 50) {
+      return text.trim();
     }
+  } catch (err: any) {
+    console.warn(`[generateLessonContent] failed:`, err?.message || err);
   }
   throw new Error('Không thể tạo bài giảng. Vui lòng thử lại sau.');
 };
@@ -1610,7 +1650,6 @@ export const generateVideoQuestions = async (
   videoDurationSec: number,
   count: number = 3,
 ): Promise<{ timestamp: number; question: string; options: string[]; correctIndex: number }[]> => {
-  const ai = getAiClient();
   const trimmed = content.trim().substring(0, 8000);
 
   const prompt = `Bạn là AI chuyên tạo câu hỏi kiểm tra xen kẽ trong video bài giảng.
@@ -1640,28 +1679,26 @@ Quy tắc:
 ${trimmed}
 --- HẾT NỘI DUNG ---`;
 
-  for (const model of AI_MODELS) {
-    try {
-      const response = await ai.models.generateContent({
-        model,
-        contents: prompt,
-        config: { temperature: 0.6, maxOutputTokens: 2048 },
-      });
-      const raw = cleanJsonString(response.text || '');
-      const parsed = JSON.parse(raw);
+  try {
+    const raw = await callAiGeneration({
+      prompt,
+      jsonMode: true,
+      temperature: 0.6,
+      maxTokens: 2048
+    });
 
-      if (Array.isArray(parsed) && parsed.length > 0) {
-        return parsed.map((q: any) => ({
-          timestamp: Math.max(10, Math.min(videoDurationSec - 10, Number(q.timestamp) || 60)),
-          question: String(q.question || ''),
-          options: Array.isArray(q.options) ? q.options.map(String).slice(0, 4) : ['A', 'B', 'C', 'D'],
-          correctIndex: Math.min(3, Math.max(0, Number(q.correctIndex) || 0)),
-        }));
-      }
-    } catch (err: any) {
-      console.warn(`[generateVideoQuestions] Model ${model} failed:`, err.message);
-      continue;
+    const parsed = JSON.parse(cleanJsonString(raw || '[]'));
+
+    if (Array.isArray(parsed) && parsed.length > 0) {
+      return parsed.map((q: any) => ({
+        timestamp: Math.max(10, Math.min(videoDurationSec - 10, Number(q.timestamp) || 60)),
+        question: String(q.question || ''),
+        options: Array.isArray(q.options) ? q.options.map(String).slice(0, 4) : ['A', 'B', 'C', 'D'],
+        correctIndex: Math.min(3, Math.max(0, Number(q.correctIndex) || 0)),
+      }));
     }
+  } catch (err: any) {
+    console.warn(`[generateVideoQuestions] failed:`, err?.message || err);
   }
   throw new Error('Không thể tạo câu hỏi video. Vui lòng thử lại sau.');
 };

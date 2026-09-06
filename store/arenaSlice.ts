@@ -233,7 +233,7 @@ export const createArenaSlice: StateCreator<AppState, [], [], ArenaSliceState> =
   },
 
   addArenaQuestion: async (q) => {
-    const id = `aq_${Date.now()}`;
+    const id = (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : `aq_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
     const rowFull = { 
       id, 
       content: q.content, 
@@ -525,7 +525,16 @@ export const createArenaSlice: StateCreator<AppState, [], [], ArenaSliceState> =
     }
   },
 
-  updateMatchHp: async (matchId, player1Hp, player2Hp) => {
+  updateMatchHp: async (matchId, player1Hp, player2Hp, targetPlayerId, damageAmount) => {
+    if (targetPlayerId && damageAmount !== undefined && damageAmount > 0) {
+      const { error: rpcError } = await supabase.rpc('apply_arena_damage', {
+        p_match_id: matchId,
+        p_target_player_id: targetPlayerId,
+        p_damage_amount: damageAmount
+      });
+      if (!rpcError) return;
+      console.warn("RPC apply_arena_damage thất bại, sử dụng fallback direct update:", rpcError.message);
+    }
     await supabase.from('arena_matches').update({ player1_hp: player1Hp, player2_hp: player2Hp }).eq('id', matchId);
   },
 

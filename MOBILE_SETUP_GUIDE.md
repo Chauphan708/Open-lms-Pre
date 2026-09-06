@@ -21,7 +21,7 @@ Trước khi đi vào cấu hình riêng cho từng nền tảng, hãy đảm b�
 
 ## 🤖 PHẦN 2: HƯỚNG DẪN DÀNH CHO NỀN TẢNG ANDROID
 
-Thư mục dự án Android nằm tại: `C:\Users\PC\.gemini\antigravity\scratch\open-lms-aistudio\android`
+Thư mục dự án Android nằm tại: `./android` (ngay trong thư mục gốc của OpenLMS).
 
 ### 1. Cài đặt các công cụ cần thiết
 * **Tải và cài đặt Android Studio:** [Tải Android Studio tại đây](https://developer.android.com/studio).
@@ -46,7 +46,7 @@ Thư mục dự án Android nằm tại: `C:\Users\PC\.gemini\antigravity\scratc
   ```bash
   npx cap open android
   ```
-  *(Hoặc mở Android Studio -> Chọn **Open** -> Trỏ tới thư mục `C:\Users\PC\.gemini\antigravity\scratch\open-lms-aistudio\android`).*
+  *(Hoặc mở Android Studio -> Chọn **Open** -> Trỏ tới thư mục `android` của dự án).*
 * Đợi Android Studio hoàn tất việc tải và đồng bộ Gradle (có thể mất 1-3 phút ở lần đầu tiên).
 
 ### 4. Chạy và Build ứng dụng
@@ -66,7 +66,7 @@ Thư mục dự án Android nằm tại: `C:\Users\PC\.gemini\antigravity\scratc
 
 ## 🍏 PHẦN 3: HƯỚNG DẪN DÀNH CHO NỀN TẢNG iOS
 
-Thư mục dự án iOS nằm tại: `C:\Users\PC\.gemini\antigravity\scratch\open-lms-aistudio\ios`
+Thư mục dự án iOS nằm tại: `./ios` (ngay trong thư mục gốc của OpenLMS).
 
 *(Lưu ý: Để build ứng dụng iOS, bạn bắt buộc phải sử dụng máy tính chạy hệ điều hành macOS và có cài đặt Xcode).*
 

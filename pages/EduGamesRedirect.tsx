@@ -22,17 +22,13 @@ export const EduGamesRedirect = () => {
 
     if (user) {
       try {
-        // Lấy API Key từ localStorage của LMS (nếu có)
-        const geminiApiKey = localStorage.getItem('gemini_api_key');
-
-        // Tạo Payload "Mock JWT" chứa thông tin cơ bản
+        // Tạo Payload "Mock JWT" chứa thông tin định danh cơ bản (không gửi kèm secret key qua URL)
         const mockPayload = {
           id: user.id || 'guest',
           name: user.name || 'Người dùng LMS',
           role: (user.role || 'STUDENT').toLowerCase(),
           email: user.email || '',
-          class_id: user.className || '',
-          gemini_api_key: geminiApiKey // Gửi kèm API Key
+          class_id: user.className || ''
         };
 
         const base64Token = btoa(encodeURIComponent(JSON.stringify(mockPayload)));

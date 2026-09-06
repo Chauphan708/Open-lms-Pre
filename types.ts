@@ -631,7 +631,7 @@ export interface AppState {
 
   submitArenaAnswer: (matchId: string, playerId: string, questionIndex: number, answerIndex: number, timeTaken: number, isCorrect: boolean) => Promise<void>;
   finishMatch: (matchId: string, winnerId: string | null) => Promise<void>;
-  updateMatchHp: (matchId: string, player1Hp: number, player2Hp: number) => Promise<void>;
+  updateMatchHp: (matchId: string, player1Hp: number, player2Hp: number, targetPlayerId?: string | null, damageAmount?: number) => Promise<void>;
   fetchLeaderboard: () => Promise<ArenaProfile[]>;
 
   // ============================================

@@ -45,20 +45,26 @@ export default defineConfig(({ mode }) => {
             'vendor-react': ['react', 'react-dom', 'react-router-dom', 'zustand'],
             'vendor-supabase': ['@supabase/supabase-js'],
             'vendor-math': ['react-markdown', 'remark-math', 'rehype-katex'],
-            'vendor-ui': ['lucide-react']
+            'vendor-ui': ['lucide-react', 'react-hot-toast'],
+            'vendor-office': ['xlsx', 'docx', 'mammoth', 'file-saver'],
+            'vendor-pdf': ['jspdf', 'html2canvas'],
+            'vendor-vision': ['@mediapipe/tasks-vision'],
+            'vendor-ai': ['@google/genai']
           }
         }
       }
     },
     define: {
-      // Inject API_KEY và Supabase keys vào process.env để code client có thể đọc được
-      'process.env.API_KEY': JSON.stringify(env.API_KEY),
+      // Inject API_KEY, OPENROUTER_API_KEY và Supabase keys vào process.env để code client có thể đọc được
+      'process.env.API_KEY': JSON.stringify(env.API_KEY || env.VITE_API_KEY),
+      'process.env.OPENROUTER_API_KEY': JSON.stringify(env.OPENROUTER_API_KEY || env.VITE_OPENROUTER_API_KEY),
+      'process.env.OPENROUTER_MODEL': JSON.stringify(env.OPENROUTER_MODEL || env.VITE_OPENROUTER_MODEL),
       'process.env.VITE_SUPABASE_URL': JSON.stringify(env.VITE_SUPABASE_URL),
       'process.env.VITE_SUPABASE_ANON_KEY': JSON.stringify(env.VITE_SUPABASE_ANON_KEY)
     },
     resolve: {
       alias: {
-        '@': '/src',
+        '@': '.',
       },
     },
   };

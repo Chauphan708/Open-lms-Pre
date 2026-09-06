@@ -14,13 +14,32 @@ export const setSoundEnabled = (enabled: boolean) => {
   localStorage.setItem('arena_sound_enabled', String(enabled));
 };
 
+let arenaAudioCtx: AudioContext | null = null;
+const getArenaAudioContext = (): AudioContext | null => {
+  if (typeof window === 'undefined') return null;
+  const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+  if (!AudioContextClass) return null;
+
+  if (!arenaAudioCtx) {
+    try {
+      arenaAudioCtx = new AudioContextClass();
+    } catch (e) {
+      return null;
+    }
+  }
+
+  if (arenaAudioCtx.state === 'suspended') {
+    arenaAudioCtx.resume().catch(() => {});
+  }
+  return arenaAudioCtx;
+};
+
 export const playArenaSound = (type: keyof typeof SOUNDS) => {
   if (!isSoundEnabled()) return;
   try {
-    const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
-    if (!AudioContextClass) return;
+    const ctx = getArenaAudioContext();
+    if (!ctx) return;
     
-    const ctx = new AudioContextClass();
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
     

@@ -27,18 +27,36 @@ export const createAppSlice: StateCreator<AppState, [], [], AppSliceState> = (se
         set({ siteSettings: initial });
       }
 
-      // Sync Gemini API Key from Supabase to localStorage
+      // Sync OpenRouter & Gemini API Keys from Supabase to localStorage
       try {
+        const { data: openRouterKeyData } = await supabase
+          .from('system_settings')
+          .select('*')
+          .eq('key', 'openrouter_api_key')
+          .maybeSingle();
+        if (openRouterKeyData?.value?.key) {
+          localStorage.setItem('openrouter_api_key', openRouterKeyData.value.key.trim());
+        }
+
+        const { data: openRouterModelData } = await supabase
+          .from('system_settings')
+          .select('*')
+          .eq('key', 'openrouter_model')
+          .maybeSingle();
+        if (openRouterModelData?.value?.model) {
+          localStorage.setItem('openrouter_model', openRouterModelData.value.model.trim());
+        }
+
         const { data: apiKeyData } = await supabase
           .from('system_settings')
           .select('*')
           .eq('key', 'gemini_api_key')
           .maybeSingle();
-        if (apiKeyData && apiKeyData.value && apiKeyData.value.key) {
+        if (apiKeyData?.value?.key) {
           localStorage.setItem('gemini_api_key', apiKeyData.value.key.trim());
         }
       } catch (keyErr) {
-        console.error("Error fetching gemini api key from DB:", keyErr);
+        console.error("Error fetching AI API keys from DB:", keyErr);
       }
     } catch (err) {
       console.error("Error fetching site settings:", err);
@@ -108,10 +126,24 @@ export const createAppSlice: StateCreator<AppState, [], [], AppSliceState> = (se
       created_at: res.createdAt
     };
 
-    const { error } = await supabase.from('resources').insert(payload);
+    let { error } = await supabase.from('resources').insert(payload);
     if (error) {
-      console.error("Lỗi khi thêm resource:", error);
-      return false;
+      // Fallback nếu schema cũ dùng camelCase
+      const legacyPayload = {
+        id: res.id,
+        title: res.title,
+        url: res.url,
+        type: res.type,
+        topic: res.topic,
+        description: res.description,
+        addedBy: res.addedBy,
+        createdAt: res.createdAt
+      };
+      const retry = await supabase.from('resources').insert(legacyPayload);
+      if (retry.error) {
+        console.error("Lỗi khi thêm resource:", retry.error);
+        return false;
+      }
     }
     set(state => ({ resources: [res, ...state.resources] }));
     return true;

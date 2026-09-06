@@ -1,87 +1,75 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, Suspense, lazy } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { Layout } from './components/Layout';
-import { Dashboard } from './pages/Dashboard';
-import { ExamCreate } from './pages/ExamCreate';
-import { ExamMatrix } from './pages/ExamMatrix';
-import QuestionBank from './pages/QuestionBank';
-import { AIStats } from './pages/AIStats';
-import { ExamList } from './pages/ExamList';
-import { PublicLibrary } from './pages/PublicLibrary';
-import { ExamTake } from './pages/ExamTake';
-import { AcademicYearManage } from './pages/admin/AcademicYearManage';
-import { UserManage } from './pages/manage/UserManage';
-import { ClassManage } from './pages/teacher/ClassManage';
-import { ClassFunDashboard } from './pages/teacher/ClassFunDashboard';
-import { ClassFunRecord } from './pages/teacher/ClassFunRecord';
-import { ClassFunAttendance } from './pages/teacher/ClassFunAttendance';
-import { ClassFunWarning } from './pages/teacher/ClassFunWarning';
-import { DailyEvaluation } from './pages/teacher/DailyEvaluation';
-import { EvaluationHistory } from './pages/teacher/EvaluationHistory';
-import { AIGrading } from './pages/teacher/AIGrading';
-import { LiveRoom } from './pages/teacher/LiveRoom';
-import { LiveJoin } from './pages/student/LiveJoin';
-import { LiveLobby } from './pages/student/LiveLobby';
-// Discussion imports
-import { DiscussionRoom } from './pages/teacher/DiscussionRoom';
-import { StudentDiscussionRoom } from './pages/student/DiscussionRoom';
-import { DiscussionJoin } from './pages/student/DiscussionJoin';
-import { DiscussionList } from './pages/teacher/DiscussionList';
-import { DiscussionCreate } from './pages/teacher/DiscussionCreate';
-import { ExamResults } from './pages/teacher/ExamResults';
-import { AssignmentManage } from './pages/teacher/AssignmentManage';
-import { StudentXPStats } from './pages/teacher/StudentXPStats';
-import { TeacherAnalytics } from './pages/teacher/TeacherAnalytics';
-import { TeacherNotes } from './pages/teacher/TeacherNotes';
-// Student History
-import { StudentHistory } from './pages/student/StudentHistory';
-// Student Analytics
-import { LearningAnalytics } from './pages/student/LearningAnalytics';
-// Settings
-import { Settings } from './pages/Settings';
-// Resources
-import { ResourceLibrary } from './pages/ResourceLibrary';
-import { ArenaHome } from './pages/arena/ArenaHome';
-import { ArenaDashboard } from './pages/arena/ArenaDashboard';
-import { TowerMode } from './pages/arena/TowerMode';
-import { PvPLobby } from './pages/arena/PvPLobby';
-import { PvPBattle } from './pages/arena/PvPBattle';
-import { MatchResult } from './pages/arena/MatchResult';
-import { Leaderboard } from './pages/arena/Leaderboard';
-import { ArenaAdmin } from './pages/arena/ArenaAdmin';
-import { TournamentHost } from './pages/arena/TournamentHost';
-import { TournamentLobby } from './pages/arena/TournamentLobby';
-import { ArenaShop } from './pages/arena/ArenaShop';
-// Portfolio
-import { StudentPortfolio } from './pages/teacher/StudentPortfolio';
-import { MyPortfolio } from './pages/student/MyPortfolio';
-
-// Tools
-import { CountdownTimer } from './pages/tools/CountdownTimer';
-
-// EduGames SSO Bridge
-import { EduGamesRedirect } from './pages/EduGamesRedirect';
-
-// E-LEARNING MODULE
-import { CourseDashboard } from './pages/elearning/CourseDashboard';
-import { CourseLearn } from './pages/elearning/CourseLearn';
-import { CourseManage } from './pages/elearning/CourseManage';
-
-// PARENT PORTAL
-import { ParentLogin } from './pages/parent/ParentLogin';
-import { ParentDashboard } from './pages/parent/ParentDashboard';
-import { ParentEvaluations } from './pages/parent/ParentEvaluations';
-import { ParentBehavior } from './pages/parent/ParentBehavior';
-import { ParentExamHistory } from './pages/parent/ParentExamHistory';
+import { PageSkeleton } from './components/PageSkeleton';
 import { useParentStore } from './services/parentStore';
-
 import { supabase } from './services/supabaseClient';
 import { useStore } from './store';
 import { UserRole } from './types';
 import { Loader2, LogIn, Key, Mail, Eye, EyeOff, X } from 'lucide-react';
 
+// LAZY LOADED ROUTE COMPONENTS
+const Dashboard = lazy(() => import('./pages/Dashboard').then(m => ({ default: m.Dashboard })));
+const ExamCreate = lazy(() => import('./pages/ExamCreate').then(m => ({ default: m.ExamCreate })));
+const ExamMatrix = lazy(() => import('./pages/ExamMatrix').then(m => ({ default: m.ExamMatrix })));
+const QuestionBank = lazy(() => import('./pages/QuestionBank'));
+const AIStats = lazy(() => import('./pages/AIStats').then(m => ({ default: m.AIStats })));
+const ExamList = lazy(() => import('./pages/ExamList').then(m => ({ default: m.ExamList })));
+const PublicLibrary = lazy(() => import('./pages/PublicLibrary').then(m => ({ default: m.PublicLibrary })));
+const ExamTake = lazy(() => import('./pages/ExamTake').then(m => ({ default: m.ExamTake })));
+const AcademicYearManage = lazy(() => import('./pages/admin/AcademicYearManage').then(m => ({ default: m.AcademicYearManage })));
+const UserManage = lazy(() => import('./pages/manage/UserManage').then(m => ({ default: m.UserManage })));
+const ClassManage = lazy(() => import('./pages/teacher/ClassManage').then(m => ({ default: m.ClassManage })));
+const ClassFunDashboard = lazy(() => import('./pages/teacher/ClassFunDashboard').then(m => ({ default: m.ClassFunDashboard })));
+const ClassFunRecord = lazy(() => import('./pages/teacher/ClassFunRecord').then(m => ({ default: m.ClassFunRecord })));
+const ClassFunAttendance = lazy(() => import('./pages/teacher/ClassFunAttendance').then(m => ({ default: m.ClassFunAttendance })));
+const ClassFunWarning = lazy(() => import('./pages/teacher/ClassFunWarning').then(m => ({ default: m.ClassFunWarning })));
+const DailyEvaluation = lazy(() => import('./pages/teacher/DailyEvaluation').then(m => ({ default: m.DailyEvaluation })));
+const EvaluationHistory = lazy(() => import('./pages/teacher/EvaluationHistory').then(m => ({ default: m.EvaluationHistory })));
+const AIGrading = lazy(() => import('./pages/teacher/AIGrading').then(m => ({ default: m.AIGrading })));
+const LiveRoom = lazy(() => import('./pages/teacher/LiveRoom').then(m => ({ default: m.LiveRoom })));
+const LiveJoin = lazy(() => import('./pages/student/LiveJoin').then(m => ({ default: m.LiveJoin })));
+const LiveLobby = lazy(() => import('./pages/student/LiveLobby').then(m => ({ default: m.LiveLobby })));
+const DiscussionRoom = lazy(() => import('./pages/teacher/DiscussionRoom').then(m => ({ default: m.DiscussionRoom })));
+const StudentDiscussionRoom = lazy(() => import('./pages/student/DiscussionRoom').then(m => ({ default: m.StudentDiscussionRoom })));
+const DiscussionJoin = lazy(() => import('./pages/student/DiscussionJoin').then(m => ({ default: m.DiscussionJoin })));
+const DiscussionList = lazy(() => import('./pages/teacher/DiscussionList').then(m => ({ default: m.DiscussionList })));
+const DiscussionCreate = lazy(() => import('./pages/teacher/DiscussionCreate').then(m => ({ default: m.DiscussionCreate })));
+const ExamResults = lazy(() => import('./pages/teacher/ExamResults').then(m => ({ default: m.ExamResults })));
+const AssignmentManage = lazy(() => import('./pages/teacher/AssignmentManage').then(m => ({ default: m.AssignmentManage })));
+const StudentXPStats = lazy(() => import('./pages/teacher/StudentXPStats').then(m => ({ default: m.StudentXPStats })));
+const TeacherAnalytics = lazy(() => import('./pages/teacher/TeacherAnalytics').then(m => ({ default: m.TeacherAnalytics })));
+const TeacherNotes = lazy(() => import('./pages/teacher/TeacherNotes').then(m => ({ default: m.TeacherNotes })));
+const StudentHistory = lazy(() => import('./pages/student/StudentHistory').then(m => ({ default: m.StudentHistory })));
+const LearningAnalytics = lazy(() => import('./pages/student/LearningAnalytics').then(m => ({ default: m.LearningAnalytics })));
+const Settings = lazy(() => import('./pages/Settings').then(m => ({ default: m.Settings })));
+const ResourceLibrary = lazy(() => import('./pages/ResourceLibrary').then(m => ({ default: m.ResourceLibrary })));
+const ArenaHome = lazy(() => import('./pages/arena/ArenaHome').then(m => ({ default: m.ArenaHome })));
+const ArenaDashboard = lazy(() => import('./pages/arena/ArenaDashboard').then(m => ({ default: m.ArenaDashboard })));
+const TowerMode = lazy(() => import('./pages/arena/TowerMode').then(m => ({ default: m.TowerMode })));
+const PvPLobby = lazy(() => import('./pages/arena/PvPLobby').then(m => ({ default: m.PvPLobby })));
+const PvPBattle = lazy(() => import('./pages/arena/PvPBattle').then(m => ({ default: m.PvPBattle })));
+const MatchResult = lazy(() => import('./pages/arena/MatchResult').then(m => ({ default: m.MatchResult })));
+const Leaderboard = lazy(() => import('./pages/arena/Leaderboard').then(m => ({ default: m.Leaderboard })));
+const ArenaAdmin = lazy(() => import('./pages/arena/ArenaAdmin').then(m => ({ default: m.ArenaAdmin })));
+const TournamentHost = lazy(() => import('./pages/arena/TournamentHost').then(m => ({ default: m.TournamentHost })));
+const TournamentLobby = lazy(() => import('./pages/arena/TournamentLobby').then(m => ({ default: m.TournamentLobby })));
+const ArenaShop = lazy(() => import('./pages/arena/ArenaShop').then(m => ({ default: m.ArenaShop })));
+const StudentPortfolio = lazy(() => import('./pages/teacher/StudentPortfolio').then(m => ({ default: m.StudentPortfolio })));
+const MyPortfolio = lazy(() => import('./pages/student/MyPortfolio').then(m => ({ default: m.MyPortfolio })));
+const CountdownTimer = lazy(() => import('./pages/tools/CountdownTimer').then(m => ({ default: m.CountdownTimer })));
+const EduGamesRedirect = lazy(() => import('./pages/EduGamesRedirect').then(m => ({ default: m.EduGamesRedirect })));
+const CourseDashboard = lazy(() => import('./pages/elearning/CourseDashboard').then(m => ({ default: m.CourseDashboard })));
+const CourseLearn = lazy(() => import('./pages/elearning/CourseLearn').then(m => ({ default: m.CourseLearn })));
+const CourseManage = lazy(() => import('./pages/elearning/CourseManage').then(m => ({ default: m.CourseManage })));
+const ParentLogin = lazy(() => import('./pages/parent/ParentLogin').then(m => ({ default: m.ParentLogin })));
+const ParentDashboard = lazy(() => import('./pages/parent/ParentDashboard').then(m => ({ default: m.ParentDashboard })));
+const ParentEvaluations = lazy(() => import('./pages/parent/ParentEvaluations').then(m => ({ default: m.ParentEvaluations })));
+const ParentBehavior = lazy(() => import('./pages/parent/ParentBehavior').then(m => ({ default: m.ParentBehavior })));
+const ParentExamHistory = lazy(() => import('./pages/parent/ParentExamHistory').then(m => ({ default: m.ParentExamHistory })));
+
 const Login = () => {
-  const { setUser, users } = useStore();
+  const { setUser, users, siteSettings } = useStore();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -196,27 +184,29 @@ const Login = () => {
 
         {/* Forgot Password Modal */}
         {showForgotPassword && (
-          <div className="fixed inset-0 bg-black/60 z-[9999] flex items-center justify-center p-4">
+          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
             <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 animate-fade-in text-left">
               <div className="flex justify-between items-center mb-4">
                 <h3 className="text-lg font-bold text-gray-900">Khôi phục mật khẩu?</h3>
-                <button onClick={() => setShowForgotPassword(false)} className="text-gray-400 hover:text-gray-600">
+                <button onClick={() => setShowForgotPassword(false)} className="text-gray-400 hover:text-gray-600 p-1">
                   <X className="h-5 w-5" />
                 </button>
               </div>
               <div className="bg-indigo-50 border border-indigo-100 p-4 rounded-xl mb-4 text-indigo-800 text-sm">
                 <p className="font-bold flex items-center gap-2 mb-2">
-                  <Mail className="h-4 w-4" /> Email Admin:
+                  <Mail className="h-4 w-4 text-indigo-600" /> Email Hỗ trợ kỹ thuật:
                 </p>
-                <p className="font-mono bg-white/50 p-2 rounded border border-indigo-200 break-all">ptchau708@gmail.com</p>
-                <p className="mt-4 opacity-90 leading-relaxed">
+                <p className="font-mono bg-white/70 p-2 rounded-lg border border-indigo-200 break-all text-xs font-semibold text-indigo-950">
+                  {siteSettings?.email || 'admin@school.edu'}
+                </p>
+                <p className="mt-4 opacity-90 leading-relaxed text-xs">
                   Để bảo mật cao nhất, mật khẩu sẽ không hiển thị tại đây. 
-                  Bạn có thể reset mật khẩu trực tiếp qua cơ sở dữ liệu hoặc liên hệ hỗ trợ kỹ thuật.
+                  Bạn có thể liên hệ quản trị viên trường học hoặc hỗ trợ kỹ thuật để khôi phục mật khẩu.
                 </p>
               </div>
               <button 
                 onClick={() => setShowForgotPassword(false)}
-                className="w-full bg-indigo-600 text-white py-2.5 rounded-lg font-bold hover:bg-indigo-700 transition-all"
+                className="w-full bg-indigo-600 text-white py-2.5 rounded-xl font-bold hover:bg-indigo-700 transition-all text-sm"
               >
                 Tôi đã hiểu
               </button>
@@ -283,7 +273,8 @@ function App() {
 
   return (
     <BrowserRouter>
-      <Routes>
+      <Suspense fallback={<PageSkeleton />}>
+        <Routes>
         <Route path="/login" element={<LoginRoute />} />
 
         {/* PARENT ROUTES */}
@@ -596,7 +587,8 @@ function App() {
         } />
 
         <Route path="*" element={<Navigate to="/" />} />
-      </Routes>
+        </Routes>
+      </Suspense>
     </BrowserRouter>
   );
 }

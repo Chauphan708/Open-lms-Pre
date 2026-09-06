@@ -1,6 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { useStore } from '../store';
-import { setGeminiApiKey, getGeminiApiKey, clearGeminiApiKey } from '../services/geminiService';
+import {
+  setGeminiApiKey,
+  getGeminiApiKey,
+  clearGeminiApiKey,
+  setOpenRouterApiKey,
+  getOpenRouterApiKey,
+  clearOpenRouterApiKey,
+  setOpenRouterModel,
+  getOpenRouterModel,
+  testOpenRouterApiKey,
+  testGeminiApiKey,
+  POPULAR_OPENROUTER_MODELS,
+  DEFAULT_OPENROUTER_MODEL,
+  getActiveAiProviderInfo
+} from '../services/geminiService';
 import { supabase } from '../services/supabaseClient';
 import {
   User,
@@ -28,7 +42,10 @@ import {
   Zap,
   Loader2,
   Sun,
-  Moon
+  Moon,
+  Sparkles,
+  Cpu,
+  RefreshCw
 } from 'lucide-react';
 import { CustomToolMenu } from '../types';
 
@@ -97,18 +114,36 @@ export const Settings: React.FC = () => {
     }
   }, [siteSettings]);
 
-  // API Key State
-  const [apiKeyInput, setApiKeyInput] = useState('');
-  const [showApiKey, setShowApiKey] = useState(false);
-  const [apiKeyStatus, setApiKeyStatus] = useState<'idle' | 'checking' | 'valid' | 'invalid'>('idle');
-  const [apiKeyConfigured, setApiKeyConfigured] = useState(false);
-  const [apiTestError, setApiTestError] = useState<string | null>(null);
+  // OpenRouter State (Ưu tiên 1)
+  const [openRouterKeyInput, setOpenRouterKeyInput] = useState('');
+  const [openRouterModelInput, setOpenRouterModelInput] = useState(DEFAULT_OPENROUTER_MODEL);
+  const [showOpenRouterKey, setShowOpenRouterKey] = useState(false);
+  const [openRouterStatus, setOpenRouterStatus] = useState<'idle' | 'checking' | 'valid' | 'invalid'>('idle');
+  const [openRouterConfigured, setOpenRouterConfigured] = useState(false);
+  const [openRouterTestMsg, setOpenRouterTestMsg] = useState<string | null>(null);
+
+  // Google Gemini State (Ưu tiên 2 / Dự phòng)
+  const [geminiKeyInput, setGeminiKeyInput] = useState('');
+  const [showGeminiKey, setShowGeminiKey] = useState(false);
+  const [geminiStatus, setGeminiStatus] = useState<'idle' | 'checking' | 'valid' | 'invalid'>('idle');
+  const [geminiConfigured, setGeminiConfigured] = useState(false);
+  const [geminiTestMsg, setGeminiTestMsg] = useState<string | null>(null);
 
   useEffect(() => {
-    const existingKey = getGeminiApiKey();
-    if (existingKey) {
-      setApiKeyInput(existingKey);
-      setApiKeyConfigured(true);
+    const existingOrKey = getOpenRouterApiKey();
+    if (existingOrKey) {
+      setOpenRouterKeyInput(existingOrKey);
+      setOpenRouterConfigured(true);
+    }
+    const existingOrModel = getOpenRouterModel();
+    if (existingOrModel) {
+      setOpenRouterModelInput(existingOrModel);
+    }
+
+    const existingGeminiKey = getGeminiApiKey();
+    if (existingGeminiKey) {
+      setGeminiKeyInput(existingGeminiKey);
+      setGeminiConfigured(true);
     }
   }, []);
 
@@ -188,29 +223,34 @@ export const Settings: React.FC = () => {
     }, 500);
   };
 
-  const handleSaveApiKey = async () => {
-    if (!apiKeyInput.trim()) {
-      alert('Vui lòng nhập API Key!');
+  // --- OpenRouter Handlers (Ưu tiên 1) ---
+  const handleSaveOpenRouterKey = async () => {
+    if (!openRouterKeyInput.trim()) {
+      alert('Vui lòng nhập OpenRouter API Key!');
       return;
     }
     setLoading(true);
     try {
-      setGeminiApiKey(apiKeyInput.trim());
-      
-      const { error } = await supabase.from('system_settings').upsert({
-        key: 'gemini_api_key',
-        value: { key: apiKeyInput.trim() },
-        updated_at: new Date().toISOString()
-      });
+      const trimmedKey = openRouterKeyInput.trim();
+      const trimmedModel = openRouterModelInput.trim() || DEFAULT_OPENROUTER_MODEL;
+
+      setOpenRouterApiKey(trimmedKey);
+      setOpenRouterModel(trimmedModel);
+
+      const { error } = await supabase.from('system_settings').upsert([
+        { key: 'openrouter_api_key', value: { key: trimmedKey }, updated_at: new Date().toISOString() },
+        { key: 'openrouter_model', value: { model: trimmedModel }, updated_at: new Date().toISOString() }
+      ]);
 
       if (error) {
-        console.error("Lỗi khi lưu API Key lên database:", error);
-        alert('⚠️ Đã lưu API Key vào trình duyệt của bạn, nhưng gặp lỗi khi đồng bộ lên database: ' + error.message);
+        console.error("Lỗi khi lưu OpenRouter Key lên database:", error);
+        alert('⚠️ Đã lưu OpenRouter Key vào trình duyệt của bạn, nhưng gặp lỗi khi đồng bộ lên database: ' + error.message);
       } else {
-        alert('✅ Đã lưu và đồng bộ API Key lên hệ thống thành công!');
+        alert('✅ Đã lưu và đồng bộ OpenRouter API Key & Mô hình lên hệ thống thành công!');
       }
-      setApiKeyConfigured(true);
-      setApiKeyStatus('idle');
+      setOpenRouterConfigured(true);
+      setOpenRouterStatus('idle');
+      setOpenRouterTestMsg(null);
     } catch (e: any) {
       console.error(e);
       alert('❌ Lỗi: ' + e.message);
@@ -219,83 +259,127 @@ export const Settings: React.FC = () => {
     }
   };
 
-  const handleClearApiKey = async () => {
-    if (!confirm('Bạn có chắc muốn xóa API Key? Các tính năng AI sẽ ngừng hoạt động.')) return;
+  const handleClearOpenRouterKey = async () => {
+    if (!confirm('Bạn có chắc muốn xóa OpenRouter API Key? Hệ thống sẽ chuyển sang dùng Gemini (nếu có).')) return;
     setLoading(true);
     try {
-      clearGeminiApiKey();
-      setApiKeyInput('');
-      setApiKeyConfigured(false);
-      setApiKeyStatus('idle');
+      clearOpenRouterApiKey();
+      setOpenRouterKeyInput('');
+      setOpenRouterConfigured(false);
+      setOpenRouterStatus('idle');
+      setOpenRouterTestMsg(null);
 
-      const { error } = await supabase.from('system_settings').delete().eq('key', 'gemini_api_key');
+      const { error } = await supabase.from('system_settings').delete().eq('key', 'openrouter_api_key');
       if (error) {
-        console.error("Lỗi khi xóa API Key khỏi database:", error);
+        console.error("Lỗi khi xóa OpenRouter Key khỏi database:", error);
       }
-      alert('Đã xóa API Key thành công!');
+      alert('Đã xóa OpenRouter API Key thành công!');
     } catch (err: any) {
-      alert('Lỗi khi xóa API Key trên database: ' + err.message);
+      alert('Lỗi khi xóa OpenRouter Key trên database: ' + err.message);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleTestApiKey = async () => {
-    if (!apiKeyInput.trim()) {
-      alert('Vui lòng nhập API Key trước!');
+  const handleTestOpenRouterKey = async () => {
+    if (!openRouterKeyInput.trim()) {
+      alert('Vui lòng nhập OpenRouter API Key trước khi kiểm tra!');
       return;
     }
-    setApiKeyStatus('checking');
-    setApiTestError(null);
+    setOpenRouterStatus('checking');
+    setOpenRouterTestMsg(null);
     try {
-      // Lưu tạm key để test
-      setGeminiApiKey(apiKeyInput.trim());
-      const { GoogleGenAI } = await import('@google/genai');
-      const ai = new GoogleGenAI({ apiKey: apiKeyInput.trim() });
-      
-      let response;
-      let lastErrMessage = '';
-      try {
-        response = await ai.models.generateContent({
-          model: 'gemini-2.5-flash',
-          contents: 'Trả lời đúng 1 từ: Xin chào'
-        });
-      } catch (e: any) {
-        lastErrMessage = e?.message || e?.toString() || '';
-        // Nếu 2.5-flash bị quá tải, thử gọi 3.5-flash làm fallback kiểm tra
-        if (lastErrMessage.includes('503') || lastErrMessage.includes('demand') || lastErrMessage.includes('429') || lastErrMessage.includes('quota') || lastErrMessage.includes('UNAVAILABLE')) {
-          try {
-            response = await ai.models.generateContent({
-              model: 'gemini-3.5-flash',
-              contents: 'Trả lời đúng 1 từ: Xin chào'
-            });
-          } catch (e2: any) {
-            throw e2;
-          }
-        } else {
-          throw e;
-        }
-      }
-
-      if (response && response.text) {
-        setApiKeyStatus('valid');
-        setApiKeyConfigured(true);
-      } else {
-        setApiKeyStatus('invalid');
-        setApiTestError('Phản hồi trống từ API.');
-      }
+      const res = await testOpenRouterApiKey(openRouterKeyInput.trim(), openRouterModelInput.trim());
+      setOpenRouterStatus('valid');
+      setOpenRouterTestMsg(res.message);
+      setOpenRouterConfigured(true);
     } catch (err: any) {
-      console.error('API Key test failed:', err);
-      const errMsg = err?.message || err?.toString() || '';
+      console.error('OpenRouter test failed:', err);
+      setOpenRouterStatus('invalid');
+      setOpenRouterTestMsg(err.message || String(err));
+    }
+  };
+
+  // --- Google Gemini Handlers (Ưu tiên 2 / Dự phòng) ---
+  const handleSaveGeminiKey = async () => {
+    if (!geminiKeyInput.trim()) {
+      alert('Vui lòng nhập Google Gemini API Key!');
+      return;
+    }
+    setLoading(true);
+    try {
+      const trimmedKey = geminiKeyInput.trim();
+      setGeminiApiKey(trimmedKey);
       
-      // Nếu lỗi là do quá tải (503) hoặc hết quota (429) nhưng KHÔNG phải sai key (400, 403), tức là Key vẫn HỢP LỆ
-      if (errMsg.includes('503') || errMsg.includes('demand') || errMsg.includes('429') || errMsg.includes('quota') || errMsg.includes('UNAVAILABLE')) {
-        setApiKeyStatus('valid');
-        setApiKeyConfigured(true);
-        setApiTestError('API Key của bạn HỢP LỆ. Tuy nhiên mô hình Gemini tại vùng của bạn đang bị quá tải tạm thời (503/429). Hệ thống vẫn lưu key và tự sử dụng khi Google ổn định lại.');
+      const { error } = await supabase.from('system_settings').upsert({
+        key: 'gemini_api_key',
+        value: { key: trimmedKey },
+        updated_at: new Date().toISOString()
+      });
+
+      if (error) {
+        console.error("Lỗi khi lưu Gemini Key lên database:", error);
+        alert('⚠️ Đã lưu Gemini Key vào trình duyệt của bạn, nhưng gặp lỗi khi đồng bộ lên database: ' + error.message);
       } else {
-        setApiKeyStatus('invalid');
-        setApiTestError(errMsg);
+        alert('✅ Đã lưu và đồng bộ Google Gemini API Key lên hệ thống thành công!');
+      }
+      setGeminiConfigured(true);
+      setGeminiStatus('idle');
+      setGeminiTestMsg(null);
+    } catch (e: any) {
+      console.error(e);
+      alert('❌ Lỗi: ' + e.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleClearGeminiKey = async () => {
+    if (!confirm('Bạn có chắc muốn xóa Google Gemini API Key?')) return;
+    setLoading(true);
+    try {
+      clearGeminiApiKey();
+      setGeminiKeyInput('');
+      setGeminiConfigured(false);
+      setGeminiStatus('idle');
+      setGeminiTestMsg(null);
+
+      const { error } = await supabase.from('system_settings').delete().eq('key', 'gemini_api_key');
+      if (error) {
+        console.error("Lỗi khi xóa Gemini Key khỏi database:", error);
+      }
+      alert('Đã xóa Google Gemini API Key thành công!');
+    } catch (err: any) {
+      alert('Lỗi khi xóa Gemini Key trên database: ' + err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleTestGeminiKey = async () => {
+    if (!geminiKeyInput.trim()) {
+      alert('Vui lòng nhập Google Gemini API Key trước khi kiểm tra!');
+      return;
+    }
+    setGeminiStatus('checking');
+    setGeminiTestMsg(null);
+    try {
+      const res = await testGeminiApiKey(geminiKeyInput.trim());
+      setGeminiStatus('valid');
+      setGeminiTestMsg(res.message);
+      setGeminiConfigured(true);
+    } catch (err: any) {
+      console.error('Gemini Key test failed:', err);
+      const errMsg = err?.message || String(err);
+      
+      // Nếu lỗi do quá tải (503) hoặc quota (429), key vẫn hợp lệ
+      if (errMsg.includes('503') || errMsg.includes('demand') || errMsg.includes('429') || errMsg.includes('quota') || errMsg.includes('UNAVAILABLE')) {
+        setGeminiStatus('valid');
+        setGeminiConfigured(true);
+        setGeminiTestMsg('API Key của bạn HỢP LỆ. Tuy nhiên mô hình Gemini tại vùng của bạn đang bị quá tải tạm thời (503/429). Hệ thống vẫn lưu key và tự sử dụng khi Google ổn định lại.');
+      } else {
+        setGeminiStatus('invalid');
+        setGeminiTestMsg(errMsg);
       }
     }
   };
@@ -405,7 +489,7 @@ export const Settings: React.FC = () => {
               className={`w-full text-left px-4 py-3 rounded-lg flex items-center gap-3 transition-colors ${activeTab === 'APIKEY' ? 'bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 font-bold' : 'bg-white dark:bg-slate-900 text-gray-600 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800/50'}`}
             >
               <Key className="h-5 w-5" /> 🔑 API Key
-              {apiKeyConfigured && <span className="ml-auto w-2 h-2 bg-green-500 rounded-full" title="Đã cấu hình"></span>}
+              {(openRouterConfigured || geminiConfigured) && <span className="ml-auto w-2 h-2 bg-green-500 rounded-full" title="Đã cấu hình"></span>}
             </button>
           )}
 
@@ -765,117 +849,325 @@ export const Settings: React.FC = () => {
 
           {/* API KEY TAB */}
           {activeTab === 'APIKEY' && (
-            <div className="space-y-6 animate-fade-in">
-              <h2 className="text-xl font-bold text-gray-800 border-b pb-4 flex items-center gap-2">
-                <Key className="h-5 w-5 text-amber-500" /> Cấu hình Google Gemini API Key
-              </h2>
+            <div className="space-y-8 animate-fade-in">
+              <div className="border-b border-gray-200 pb-4">
+                <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
+                  <Cpu className="h-6 w-6 text-indigo-600" /> Cấu hình Trí tuệ Nhân tạo (AI Engine & API Keys)
+                </h2>
+                <p className="text-sm text-gray-500 mt-1">
+                  Hệ thống hỗ trợ cơ chế định tuyến thông minh 2 lớp: Ưu tiên gọi <strong>OpenRouter</strong> (đa mô hình hiện đại) và tự động chuyển sang <strong>Google Gemini</strong> dự phòng khi cần thiết.
+                </p>
+              </div>
 
-              {/* Trạng thái */}
-              <div className={`flex items-center gap-3 p-4 rounded-xl border ${apiKeyConfigured
-                ? 'bg-green-50 border-green-200'
-                : 'bg-amber-50 border-amber-200'
-                }`}>
-                {apiKeyConfigured
-                  ? <CheckCircle className="h-6 w-6 text-green-600 shrink-0" />
-                  : <AlertCircle className="h-6 w-6 text-amber-600 shrink-0" />
-                }
-                <div>
-                  <p className={`font-bold ${apiKeyConfigured ? 'text-green-800' : 'text-amber-800'}`}>
-                    {apiKeyConfigured ? '✅ API Key đã được cấu hình' : '⚠️ Chưa cấu hình API Key'}
-                  </p>
-                  <p className="text-sm text-gray-600">
-                    {apiKeyConfigured
-                      ? 'Các tính năng AI (tạo đề, chấm bài, phân tích) đã sẵn sàng.'
-                      : 'Bạn cần nhập API Key để sử dụng các tính năng AI.'}
-                  </p>
+              {/* TỔNG QUAN ĐỊNH TUYẾN AI HIỆN TẠI */}
+              <div className={`p-5 rounded-2xl border ${
+                openRouterConfigured
+                  ? 'bg-gradient-to-r from-purple-50 to-indigo-50 border-purple-200 text-purple-900'
+                  : geminiConfigured
+                    ? 'bg-gradient-to-r from-blue-50 to-cyan-50 border-blue-200 text-blue-900'
+                    : 'bg-gradient-to-r from-amber-50 to-orange-50 border-amber-200 text-amber-900'
+              }`}>
+                <div className="flex items-start gap-3.5">
+                  {openRouterConfigured ? (
+                    <Sparkles className="h-6 w-6 text-purple-600 shrink-0 mt-0.5" />
+                  ) : geminiConfigured ? (
+                    <CheckCircle className="h-6 w-6 text-blue-600 shrink-0 mt-0.5" />
+                  ) : (
+                    <AlertCircle className="h-6 w-6 text-amber-600 shrink-0 mt-0.5" />
+                  )}
+                  <div className="space-y-1.5 flex-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="font-bold text-base">Trạng thái điều phối AI:</span>
+                      {openRouterConfigured ? (
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-purple-100 text-purple-800 border border-purple-300">
+                          🟢 Ưu tiên 1: OpenRouter ({openRouterModelInput || DEFAULT_OPENROUTER_MODEL})
+                        </span>
+                      ) : geminiConfigured ? (
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-blue-100 text-blue-800 border border-blue-300">
+                          🔵 Ưu tiên 2: Google Gemini (Dự phòng)
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-100 text-amber-800 border border-amber-300">
+                          ⚠️ Chưa cấu hình API Key nào
+                        </span>
+                      )}
+                      {openRouterConfigured && geminiConfigured && (
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-green-100 text-green-800 border border-green-300">
+                          🔄 Gemini dự phòng sẵn sàng
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-sm opacity-90">
+                      {openRouterConfigured
+                        ? `Hệ thống sẽ gửi yêu cầu AI tới OpenRouter (${openRouterModelInput || DEFAULT_OPENROUTER_MODEL}). Nếu OpenRouter gặp sự cố hoặc hết quota, hệ thống sẽ ${geminiConfigured ? 'tự động chuyển sang Google Gemini' : 'báo lỗi (chưa cấu hình Gemini dự phòng)'}.`
+                        : geminiConfigured
+                          ? 'Hệ thống đang hoạt động với Google Gemini API. Bạn có thể cấu hình thêm OpenRouter Key bên dưới để kích hoạt các model thông minh nhất (Claude 3.5, DeepSeek V3, v.v.).'
+                          : 'Các tính năng AI như tạo đề thi, chấm bài tự luận, phân tích học sinh, chatbot trợ lý đang tạm dừng. Vui lòng nhập ít nhất một API Key bên dưới.'}
+                    </p>
+                  </div>
                 </div>
               </div>
 
-              {/* Nhập Key */}
-              <div className="space-y-2">
-                <label className="block text-sm font-bold text-gray-700">Google Gemini API Key</label>
-                <div className="relative">
-                  <input
-                    type={showApiKey ? 'text' : 'password'}
-                    value={apiKeyInput}
-                    onChange={e => { setApiKeyInput(e.target.value); setApiKeyStatus('idle'); }}
-                    placeholder="Dán API Key của bạn vào đây (VD: AQ...)"
-                    className="w-full border border-gray-300 bg-white text-gray-900 rounded-lg px-4 py-3 pr-12 focus:ring-2 focus:ring-indigo-500 outline-none font-mono text-sm"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowApiKey(!showApiKey)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                    title={showApiKey ? 'Ẩn API Key' : 'Hiện API Key'}
-                  >
-                    {showApiKey ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                  </button>
+              {/* ════════════ KHỐI 1: OPENROUTER (ƯU TIÊN 1) ════════════ */}
+              <div className="bg-white border border-purple-200 rounded-2xl p-6 shadow-sm space-y-5">
+                <div className="flex flex-wrap items-center justify-between gap-3 border-b border-gray-100 pb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2.5 bg-purple-100 text-purple-700 rounded-xl">
+                      <Sparkles className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <h3 className="font-bold text-gray-900 text-lg">1. OpenRouter API Key</h3>
+                        <span className="px-2 py-0.5 rounded text-xs font-extrabold bg-purple-600 text-white tracking-wide">
+                          ƯU TIÊN 1 (PRIMARY)
+                        </span>
+                      </div>
+                      <p className="text-xs text-gray-500 mt-0.5">
+                        Cổng API kết nối hàng trăm mô hình AI hàng đầu thế giới (Gemini 2.5, Claude 3.5, DeepSeek V3/R1, Llama 3.3, v.v.)
+                      </p>
+                    </div>
+                  </div>
+                  {openRouterConfigured && (
+                    <span className="text-xs font-bold text-green-700 bg-green-50 border border-green-200 px-3 py-1 rounded-full flex items-center gap-1.5">
+                      <CheckCircle className="h-3.5 w-3.5" /> Đã kết nối
+                    </span>
+                  )}
                 </div>
 
-                {/* Kết quả kiểm tra */}
-                {apiKeyStatus === 'valid' && (
-                  <p className="text-sm text-green-600 flex items-center gap-1">
-                    <CheckCircle className="h-4 w-4" /> Kết nối thành công! API Key hợp lệ.
-                  </p>
+                {/* Nhập OpenRouter Key */}
+                <div className="space-y-2">
+                  <label className="block text-sm font-bold text-gray-700">OpenRouter API Key (sk-or-v1-...)</label>
+                  <div className="relative">
+                    <input
+                      type={showOpenRouterKey ? 'text' : 'password'}
+                      value={openRouterKeyInput}
+                      onChange={e => { setOpenRouterKeyInput(e.target.value); setOpenRouterStatus('idle'); setOpenRouterTestMsg(null); }}
+                      placeholder="sk-or-v1-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+                      className="w-full border border-gray-300 bg-white text-gray-900 rounded-xl px-4 py-3 pr-12 focus:ring-2 focus:ring-purple-500 outline-none font-mono text-sm shadow-inner"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowOpenRouterKey(!showOpenRouterKey)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 p-1"
+                      title={showOpenRouterKey ? 'Ẩn API Key' : 'Hiện API Key'}
+                    >
+                      {showOpenRouterKey ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Chọn Mô hình AI (OpenRouter Model) */}
+                <div className="space-y-2">
+                  <label className="block text-sm font-bold text-gray-700 flex items-center justify-between">
+                    <span>Mô hình AI trên OpenRouter (Model)</span>
+                    <span className="text-xs font-normal text-gray-500">Mặc định: {DEFAULT_OPENROUTER_MODEL}</span>
+                  </label>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div>
+                      <select
+                        value={POPULAR_OPENROUTER_MODELS.some(m => m.id === openRouterModelInput) ? openRouterModelInput : 'custom'}
+                        onChange={e => {
+                          if (e.target.value !== 'custom') {
+                            setOpenRouterModelInput(e.target.value);
+                            setOpenRouterStatus('idle');
+                          }
+                        }}
+                        className="w-full border border-gray-300 bg-white text-gray-900 rounded-xl px-3 py-2.5 text-sm focus:ring-2 focus:ring-purple-500 outline-none font-medium"
+                      >
+                        {POPULAR_OPENROUTER_MODELS.map(m => (
+                          <option key={m.id} value={m.id}>
+                            {m.name} ({m.provider})
+                          </option>
+                        ))}
+                        <option value="custom">-- Nhập mã mô hình tùy chỉnh (Custom Model ID) --</option>
+                      </select>
+                    </div>
+                    <div>
+                      <input
+                        type="text"
+                        value={openRouterModelInput}
+                        onChange={e => { setOpenRouterModelInput(e.target.value); setOpenRouterStatus('idle'); }}
+                        placeholder="VD: google/gemini-2.5-flash hoặc deepseek/deepseek-chat"
+                        className="w-full border border-gray-300 bg-white text-gray-900 rounded-xl px-3 py-2.5 text-sm focus:ring-2 focus:ring-purple-500 outline-none font-mono"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Kết quả kiểm tra OpenRouter */}
+                {openRouterStatus === 'valid' && (
+                  <div className="p-3 bg-green-50 border border-green-200 rounded-xl flex items-center gap-2 text-sm text-green-700 font-medium">
+                    <CheckCircle className="h-4 w-4 shrink-0 text-green-600" />
+                    <span>{openRouterTestMsg || 'Kết nối thành công! OpenRouter API Key và Model hợp lệ.'}</span>
+                  </div>
                 )}
-                {apiKeyStatus === 'invalid' && (
-                  <div className="space-y-1">
-                    <p className="text-sm text-red-600 flex items-center gap-1 font-semibold">
-                      <AlertCircle className="h-4 w-4" /> API Key không hợp lệ hoặc đã hết hạn. Vui lòng kiểm tra lại.
-                    </p>
-                    {apiTestError && (
-                      <p className="text-xs text-red-500 bg-red-50 p-2 rounded border border-red-100 font-mono break-all">
-                        Chi tiết lỗi: {apiTestError}
+                {openRouterStatus === 'invalid' && (
+                  <div className="p-3 bg-red-50 border border-red-200 rounded-xl space-y-1 text-sm text-red-700">
+                    <div className="flex items-center gap-2 font-semibold">
+                      <AlertCircle className="h-4 w-4 shrink-0 text-red-600" />
+                      <span>Không thể kết nối OpenRouter. Vui lòng kiểm tra lại Key hoặc Model.</span>
+                    </div>
+                    {openRouterTestMsg && (
+                      <p className="text-xs text-red-600 font-mono bg-white p-2 rounded border border-red-100 break-all">
+                        Chi tiết: {openRouterTestMsg}
                       </p>
                     )}
                   </div>
                 )}
-              </div>
 
-              {/* Nút hành động */}
-              <div className="flex flex-wrap gap-3">
-                <button
-                  onClick={handleSaveApiKey}
-                  disabled={!apiKeyInput.trim()}
-                  className="bg-indigo-600 text-white px-5 py-2.5 rounded-lg font-bold hover:bg-indigo-700 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed transition"
-                >
-                  <Save className="h-4 w-4" /> Lưu API Key
-                </button>
-                <button
-                  onClick={handleTestApiKey}
-                  disabled={!apiKeyInput.trim() || apiKeyStatus === 'checking'}
-                  className="bg-emerald-600 text-white px-5 py-2.5 rounded-lg font-bold hover:bg-emerald-700 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed transition"
-                >
-                  {apiKeyStatus === 'checking'
-                    ? <><Loader2 className="h-4 w-4 animate-spin" /> Đang kiểm tra...</>
-                    : <><Zap className="h-4 w-4" /> Kiểm tra kết nối</>
-                  }
-                </button>
-                {apiKeyConfigured && (
+                {/* Nút hành động OpenRouter */}
+                <div className="flex flex-wrap items-center gap-3 pt-2">
                   <button
-                    onClick={handleClearApiKey}
-                    className="bg-white border border-red-300 text-red-600 px-5 py-2.5 rounded-lg font-bold hover:bg-red-50 flex items-center gap-2 transition"
+                    onClick={handleSaveOpenRouterKey}
+                    disabled={!openRouterKeyInput.trim() || loading}
+                    className="bg-purple-600 text-white px-5 py-2.5 rounded-xl font-bold hover:bg-purple-700 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed transition shadow-sm"
                   >
-                    <Trash2 className="h-4 w-4" /> Xóa API Key
+                    <Save className="h-4 w-4" /> Lưu cấu hình OpenRouter
                   </button>
-                )}
+                  <button
+                    onClick={handleTestOpenRouterKey}
+                    disabled={!openRouterKeyInput.trim() || openRouterStatus === 'checking'}
+                    className="bg-emerald-600 text-white px-5 py-2.5 rounded-xl font-bold hover:bg-emerald-700 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed transition shadow-sm"
+                  >
+                    {openRouterStatus === 'checking' ? (
+                      <><Loader2 className="h-4 w-4 animate-spin" /> Đang kiểm tra...</>
+                    ) : (
+                      <><Zap className="h-4 w-4" /> Kiểm tra kết nối OpenRouter</>
+                    )}
+                  </button>
+                  {openRouterConfigured && (
+                    <button
+                      onClick={handleClearOpenRouterKey}
+                      className="bg-white border border-red-200 text-red-600 px-4 py-2.5 rounded-xl font-bold hover:bg-red-50 flex items-center gap-2 transition ml-auto"
+                    >
+                      <Trash2 className="h-4 w-4" /> Xóa OpenRouter Key
+                    </button>
+                  )}
+                </div>
+
+                {/* Hướng dẫn OpenRouter */}
+                <div className="bg-purple-50/70 border border-purple-100 rounded-xl p-4 space-y-2 text-xs text-purple-900">
+                  <p className="font-bold flex items-center gap-1.5 text-purple-950">
+                    <ExternalLink className="h-3.5 w-3.5" /> Hướng dẫn lấy OpenRouter API Key:
+                  </p>
+                  <ol className="list-decimal list-inside space-y-1 text-purple-800">
+                    <li>Truy cập <a href="https://openrouter.ai/keys" target="_blank" rel="noopener noreferrer" className="underline font-bold text-purple-900 hover:text-purple-700">OpenRouter.ai → API Keys</a></li>
+                    <li>Đăng nhập (Google / GitHub) → Nhấn <strong>"Create Key"</strong></li>
+                    <li>Sao chép mã Key (dạng <code className="bg-purple-100 px-1 py-0.5 rounded">sk-or-v1-...</code>) và dán vào ô bên trên</li>
+                  </ol>
+                </div>
               </div>
 
-              {/* Hướng dẫn */}
-              <div className="bg-blue-50 border border-blue-200 rounded-xl p-5 space-y-3">
-                <h3 className="font-bold text-blue-800 flex items-center gap-2">
-                  <Zap className="h-4 w-4" /> Hướng dẫn lấy API Key miễn phí
-                </h3>
-                <ol className="text-sm text-blue-700 space-y-2 list-decimal list-inside">
-                  <li>Truy cập <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener noreferrer" className="underline font-bold hover:text-blue-900">Google AI Studio → API Keys</a></li>
-                  <li>Đăng nhập bằng tài khoản Google của bạn</li>
-                  <li>Nhấn <strong>"Create API Key"</strong> → Chọn project → Tạo key</li>
-                  <li>Copy API Key và dán vào ô bên trên</li>
-                  <li>Nhấn <strong>"Lưu API Key"</strong> để hoàn tất</li>
-                </ol>
-                <p className="text-xs text-blue-600 mt-2">
-                  💡 API Key được lưu trên trình duyệt của bạn (localStorage), không gửi đi đâu khác ngoài Google AI.
-                </p>
+              {/* ════════════ KHỐI 2: GOOGLE GEMINI (ƯU TIÊN 2 / DỰ PHÒNG) ════════════ */}
+              <div className="bg-white border border-blue-200 rounded-2xl p-6 shadow-sm space-y-5">
+                <div className="flex flex-wrap items-center justify-between gap-3 border-b border-gray-100 pb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2.5 bg-blue-100 text-blue-700 rounded-xl">
+                      <Key className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <h3 className="font-bold text-gray-900 text-lg">2. Google Gemini API Key</h3>
+                        <span className="px-2 py-0.5 rounded text-xs font-extrabold bg-blue-600 text-white tracking-wide">
+                          ƯU TIÊN 2 (DỰ PHÒNG / FALLBACK)
+                        </span>
+                      </div>
+                      <p className="text-xs text-gray-500 mt-0.5">
+                        API trực tiếp từ Google AI Studio (Gemini 2.5 Flash, Gemini 2.0 Flash) - Hoạt động tự động khi OpenRouter lỗi hoặc hết quota
+                      </p>
+                    </div>
+                  </div>
+                  {geminiConfigured && (
+                    <span className="text-xs font-bold text-green-700 bg-green-50 border border-green-200 px-3 py-1 rounded-full flex items-center gap-1.5">
+                      <CheckCircle className="h-3.5 w-3.5" /> Đã kết nối
+                    </span>
+                  )}
+                </div>
+
+                {/* Nhập Gemini Key */}
+                <div className="space-y-2">
+                  <label className="block text-sm font-bold text-gray-700">Google Gemini API Key (AIza...)</label>
+                  <div className="relative">
+                    <input
+                      type={showGeminiKey ? 'text' : 'password'}
+                      value={geminiKeyInput}
+                      onChange={e => { setGeminiKeyInput(e.target.value); setGeminiStatus('idle'); setGeminiTestMsg(null); }}
+                      placeholder="Dán API Key của bạn vào đây (VD: AIzaSy...)"
+                      className="w-full border border-gray-300 bg-white text-gray-900 rounded-xl px-4 py-3 pr-12 focus:ring-2 focus:ring-blue-500 outline-none font-mono text-sm shadow-inner"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowGeminiKey(!showGeminiKey)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 p-1"
+                      title={showGeminiKey ? 'Ẩn API Key' : 'Hiện API Key'}
+                    >
+                      {showGeminiKey ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Kết quả kiểm tra Gemini */}
+                {geminiStatus === 'valid' && (
+                  <div className="p-3 bg-green-50 border border-green-200 rounded-xl flex items-center gap-2 text-sm text-green-700 font-medium">
+                    <CheckCircle className="h-4 w-4 shrink-0 text-green-600" />
+                    <span>{geminiTestMsg || 'Kết nối thành công! Google Gemini API Key hợp lệ.'}</span>
+                  </div>
+                )}
+                {geminiStatus === 'invalid' && (
+                  <div className="p-3 bg-red-50 border border-red-200 rounded-xl space-y-1 text-sm text-red-700">
+                    <div className="flex items-center gap-2 font-semibold">
+                      <AlertCircle className="h-4 w-4 shrink-0 text-red-600" />
+                      <span>Không thể kết nối Gemini API. Vui lòng kiểm tra lại API Key.</span>
+                    </div>
+                    {geminiTestMsg && (
+                      <p className="text-xs text-red-600 font-mono bg-white p-2 rounded border border-red-100 break-all">
+                        Chi tiết: {geminiTestMsg}
+                      </p>
+                    )}
+                  </div>
+                )}
+
+                {/* Nút hành động Gemini */}
+                <div className="flex flex-wrap items-center gap-3 pt-2">
+                  <button
+                    onClick={handleSaveGeminiKey}
+                    disabled={!geminiKeyInput.trim() || loading}
+                    className="bg-blue-600 text-white px-5 py-2.5 rounded-xl font-bold hover:bg-blue-700 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed transition shadow-sm"
+                  >
+                    <Save className="h-4 w-4" /> Lưu Google Gemini Key
+                  </button>
+                  <button
+                    onClick={handleTestGeminiKey}
+                    disabled={!geminiKeyInput.trim() || geminiStatus === 'checking'}
+                    className="bg-emerald-600 text-white px-5 py-2.5 rounded-xl font-bold hover:bg-emerald-700 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed transition shadow-sm"
+                  >
+                    {geminiStatus === 'checking' ? (
+                      <><Loader2 className="h-4 w-4 animate-spin" /> Đang kiểm tra...</>
+                    ) : (
+                      <><Zap className="h-4 w-4" /> Kiểm tra kết nối Gemini</>
+                    )}
+                  </button>
+                  {geminiConfigured && (
+                    <button
+                      onClick={handleClearGeminiKey}
+                      className="bg-white border border-red-200 text-red-600 px-4 py-2.5 rounded-xl font-bold hover:bg-red-50 flex items-center gap-2 transition ml-auto"
+                    >
+                      <Trash2 className="h-4 w-4" /> Xóa Gemini Key
+                    </button>
+                  )}
+                </div>
+
+                {/* Hướng dẫn Gemini */}
+                <div className="bg-blue-50/70 border border-blue-100 rounded-xl p-4 space-y-2 text-xs text-blue-900">
+                  <p className="font-bold flex items-center gap-1.5 text-blue-950">
+                    <ExternalLink className="h-3.5 w-3.5" /> Hướng dẫn lấy Google Gemini API Key miễn phí:
+                  </p>
+                  <ol className="list-decimal list-inside space-y-1 text-blue-800">
+                    <li>Truy cập <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener noreferrer" className="underline font-bold text-blue-900 hover:text-blue-700">Google AI Studio → API Keys</a></li>
+                    <li>Đăng nhập bằng tài khoản Google → Nhấn <strong>"Create API Key"</strong></li>
+                    <li>Sao chép API Key và dán vào ô bên trên</li>
+                  </ol>
+                </div>
               </div>
             </div>
           )}

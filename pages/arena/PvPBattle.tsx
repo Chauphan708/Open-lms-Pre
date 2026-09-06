@@ -504,9 +504,9 @@ export const PvPBattle: React.FC = () => {
 
             const newOpHp = Math.max(0, (isPlayer1.current ? (match?.player2_hp || 100) : (match?.player1_hp || 100)) - damage);
             if (isPlayer1.current) {
-                await updateMatchHp(matchId, myHp, newOpHp);
+                await updateMatchHp(matchId, myHp, newOpHp, targetId || undefined, damage);
             } else {
-                await updateMatchHp(matchId, newOpHp, myHp);
+                await updateMatchHp(matchId, newOpHp, myHp, targetId || undefined, damage);
             }
         } else {
             // Wrong answer

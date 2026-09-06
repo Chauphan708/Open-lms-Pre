@@ -22,6 +22,9 @@ const SEED_USERS: User[] = [
   }
 ];
 
+let activeAttemptsChannel: RealtimeChannel | null = null;
+let activeNotifsChannel: RealtimeChannel | null = null;
+
 export const useStore = create<AppState>((set, get, api) => ({
   ...createArenaSlice(set, get, api),
   ...createAuthSlice(set, get, api),
@@ -100,7 +103,8 @@ export const useStore = create<AppState>((set, get, api) => ({
             className: u.class_name || u.className
           }));
           set({ users: mappedUsers as User[] });
-          localStorage.setItem('cache_initial_users', JSON.stringify(mappedUsers));
+          const sanitizedUsers = mappedUsers.map(({ password, ...u }: any) => u);
+          localStorage.setItem('cache_initial_users', JSON.stringify(sanitizedUsers));
         }
       });
       fetchPromises.push(usersPromise);
@@ -159,10 +163,19 @@ export const useStore = create<AppState>((set, get, api) => ({
     const topicsPromise = get().fetchCustomTopics();
     fetchPromises.push(topicsPromise);
 
-    // Đăng ký Realtime
+    // Đăng ký Realtime (Dọn dẹp kênh cũ trước để tránh rò rỉ listener)
     try {
+      if (activeAttemptsChannel) {
+        supabase.removeChannel(activeAttemptsChannel);
+        activeAttemptsChannel = null;
+      }
+      if (activeNotifsChannel) {
+        supabase.removeChannel(activeNotifsChannel);
+        activeNotifsChannel = null;
+      }
+
       // Attempts Realtime
-      supabase
+      activeAttemptsChannel = supabase
         .channel('schema-db-changes')
         .on(
           'postgres_changes',
@@ -191,7 +204,7 @@ export const useStore = create<AppState>((set, get, api) => ({
         .subscribe();
 
       // Notifications Realtime
-      supabase
+      activeNotifsChannel = supabase
         .channel('notifications-realtime')
         .on(
           'postgres_changes',

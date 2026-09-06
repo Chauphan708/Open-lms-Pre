@@ -20,7 +20,8 @@ export const createAuthSlice: StateCreator<AppState, [], [], AuthSliceState> = (
   })(),
   setUser: (user) => {
     if (user) {
-      localStorage.setItem('user_session', JSON.stringify(user));
+      const { password, ...safeUser } = user;
+      localStorage.setItem('user_session', JSON.stringify(safeUser));
     } else {
       localStorage.removeItem('user_session');
     }
@@ -125,7 +126,7 @@ export const createAuthSlice: StateCreator<AppState, [], [], AuthSliceState> = (
     if (affectedClass) {
       const updatedStudentIds = affectedClass.studentIds.filter(id => id !== userId);
       let { error: clsError } = await supabase.from('classes')
-        .update({ studentIds: updatedStudentIds })
+        .update({ student_ids: updatedStudentIds })
         .eq('id', affectedClass.id);
 
       if (!clsError) {
@@ -138,8 +139,8 @@ export const createAuthSlice: StateCreator<AppState, [], [], AuthSliceState> = (
     }
 
     await Promise.all([
-      supabase.from('attempts').delete().eq('studentId', userId),
-      supabase.from('notifications').delete().eq('userId', userId),
+      supabase.from('attempts').delete().eq('student_id', userId),
+      supabase.from('notifications').delete().eq('user_id', userId),
       supabase.from('arena_matches').delete().eq('player1_id', userId),
       supabase.from('arena_matches').delete().eq('player2_id', userId),
       supabase.from('arena_match_events').delete().eq('player_id', userId),
@@ -173,9 +174,11 @@ export const createAuthSlice: StateCreator<AppState, [], [], AuthSliceState> = (
     const isTeacherInfo = state.user.id !== 'admin1' && state.user.id !== 'teacher1' && state.user.id !== 'student1';
 
     if (isTeacherInfo && state.user.id) {
+      const newPrompts = [...(state.user.savedPrompts || []), prompt];
       supabase.from('profiles').update({
-        savedPrompts: [...(state.user.savedPrompts || []), prompt]
-      }).eq('id', state.user.id).then();
+        saved_prompts: newPrompts,
+        savedPrompts: newPrompts
+      } as any).eq('id', state.user.id).then();
     }
 
     const updatedUser = {
@@ -191,7 +194,10 @@ export const createAuthSlice: StateCreator<AppState, [], [], AuthSliceState> = (
     const isTeacherInfo = state.user.id !== 'admin1' && state.user.id !== 'teacher1' && state.user.id !== 'student1';
 
     if (isTeacherInfo && state.user.id) {
-      supabase.from('profiles').update({ customTools: tools }).eq('id', state.user.id).then();
+      supabase.from('profiles').update({
+        custom_tools: tools,
+        customTools: tools
+      } as any).eq('id', state.user.id).then();
     }
 
     const updatedUser = {
