@@ -3,8 +3,18 @@ import { useStore } from '../../store';
 import { supabase } from '../../services/supabaseClient';
 import {
   StickyNote, Search, Plus, Pin, Trash2, Edit3, Save, X, Tag,
-  Grid, List, CheckSquare, Calendar, Users, BookOpen, AlertCircle, Bookmark, CheckCircle2
+  Grid, List, CheckSquare, Calendar, Users, BookOpen, AlertCircle, Bookmark, CheckCircle2,
+  RefreshCw, Check, HelpCircle, ExternalLink, Sparkles, Settings, LogOut, Key, Copy, CheckCheck
 } from 'lucide-react';
+import {
+  isGoogleTasksConnected,
+  getGoogleClientId,
+  setGoogleClientId,
+  authorizeGoogleTasks,
+  disconnectGoogleTasks,
+  syncNotesToGoogleTasks,
+  syncSingleNoteToGoogleTasks
+} from '../../services/googleTasksService';
 
 interface TeacherNote {
   id: string;
@@ -36,6 +46,29 @@ const PASTEL_COLORS = [
   { hex: '#f3f4f6', label: 'Xám', text: '#374151', border: '#e5e7eb' }  // Gray
 ];
 
+const GEMINI_PROMPTS = [
+  {
+    category: '📅 Lập kế hoạch & Công việc',
+    title: 'Tổng hợp việc cần làm hôm nay',
+    prompt: '@Google Tasks Hãy xem danh mục "Sổ tay Giáo viên" và liệt kê tất cả các việc cần làm, chuẩn bị giáo án hoặc cuộc họp hôm nay.'
+  },
+  {
+    category: '📖 Soạn giáo án & bài giảng',
+    title: 'Phát triển dàn ý bài giảng từ ghi chú',
+    prompt: '@Google Tasks Từ ghi chú giáo án mới nhất của tôi trong Google Tasks, hãy mở rộng thành kế hoạch bài dạy 45 phút chi tiết theo định hướng phát triển phẩm chất năng lực học sinh.'
+  },
+  {
+    category: '👥 Quản lý & Theo dõi học sinh',
+    title: 'Nhắc nhở học sinh cần quan tâm',
+    prompt: '@Google Tasks Hãy lọc các ghi chú liên quan đến học sinh trong Sổ tay Giáo viên và tóm tắt những trường hợp tôi cần kiểm tra, động viên hoặc trao đổi với phụ huynh trong tuần này.'
+  },
+  {
+    category: '💡 Ý tưởng & Đổi mới dạy học',
+    title: 'Gợi ý giải pháp từ ý tưởng sư phạm',
+    prompt: '@Google Tasks Đọc các ghi chú ý tưởng của tôi trong Google Tasks và gợi ý 3 cách áp dụng thực tế vào lớp học tuần này để tạo sự hứng khởi cho học sinh.'
+  }
+];
+
 export const TeacherNotes: React.FC = () => {
   const { user: currentUser } = useStore();
   const [notes, setNotes] = useState<TeacherNote[]>([]);
@@ -53,6 +86,17 @@ export const TeacherNotes: React.FC = () => {
 
   // Todo input state inside modal
   const [newTodoText, setNewTodoText] = useState('');
+
+  // Google Tasks Integration States
+  const [isGoogleConnected, setIsGoogleConnected] = useState<boolean>(false);
+  const [isSyncing, setIsSyncing] = useState<boolean>(false);
+  const [syncProgress, setSyncProgress] = useState<{ current: number; total: number } | null>(null);
+  const [syncFeedback, setSyncFeedback] = useState<{ type: 'success' | 'error' | 'info'; message: string } | null>(null);
+  const [syncingNoteId, setSyncingNoteId] = useState<string | null>(null);
+  const [showClientIdModal, setShowClientIdModal] = useState<boolean>(false);
+  const [clientIdInput, setClientIdInput] = useState<string>('');
+  const [showGeminiGuideModal, setShowGeminiGuideModal] = useState<boolean>(false);
+  const [copiedPromptIdx, setCopiedPromptIdx] = useState<number | null>(null);
 
   // Load Notes
   useEffect(() => {
@@ -88,6 +132,119 @@ export const TeacherNotes: React.FC = () => {
   const saveToLocalStorage = (updatedNotes: TeacherNote[]) => {
     if (useLocalStorageFallback && currentUser) {
       localStorage.setItem(`notes_${currentUser.id}`, JSON.stringify(updatedNotes));
+    }
+  };
+
+  // Check Google Tasks initial connection status and load client ID
+  useEffect(() => {
+    setIsGoogleConnected(isGoogleTasksConnected());
+    setClientIdInput(getGoogleClientId());
+  }, []);
+
+  // Handle Google Tasks Authorization
+  const handleConnectGoogle = async () => {
+    const currentClientId = getGoogleClientId();
+    if (!currentClientId) {
+      setShowClientIdModal(true);
+      return;
+    }
+    try {
+      setIsSyncing(true);
+      setSyncFeedback({ type: 'info', message: 'Đang kết nối tài khoản Google...' });
+      await authorizeGoogleTasks(currentClientId);
+      setIsGoogleConnected(true);
+      setSyncFeedback({ type: 'success', message: 'Kết nối Google Tasks thành công! Bây giờ bạn có thể đồng bộ ghi chú.' });
+    } catch (err: any) {
+      console.error('Google Tasks connect error:', err);
+      setSyncFeedback({ type: 'error', message: err.message || 'Không thể kết nối Google Tasks. Vui lòng kiểm tra lại Google Client ID.' });
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
+  // Handle Save Client ID
+  const handleSaveClientId = () => {
+    if (!clientIdInput.trim()) {
+      alert('Vui lòng nhập Google Client ID.');
+      return;
+    }
+    setGoogleClientId(clientIdInput.trim());
+    setShowClientIdModal(false);
+    setTimeout(() => {
+      handleConnectGoogle();
+    }, 250);
+  };
+
+  // Handle Disconnect
+  const handleDisconnectGoogle = () => {
+    if (window.confirm('Bạn có muốn ngắt kết nối với Google Tasks trên máy tính này?')) {
+      disconnectGoogleTasks();
+      setIsGoogleConnected(false);
+      setSyncFeedback({ type: 'info', message: 'Đã ngắt kết nối với Google Tasks.' });
+    }
+  };
+
+  // Handle Sync All Notes
+  const handleSyncAllNotes = async () => {
+    if (notes.length === 0) {
+      setSyncFeedback({ type: 'info', message: 'Hiện chưa có ghi chú nào để đồng bộ.' });
+      return;
+    }
+
+    const currentClientId = getGoogleClientId();
+    if (!currentClientId) {
+      setShowClientIdModal(true);
+      return;
+    }
+
+    try {
+      setIsSyncing(true);
+      setSyncProgress({ current: 0, total: notes.length });
+      setSyncFeedback({ type: 'info', message: 'Đang chuẩn bị đồng bộ sang Google Tasks...' });
+
+      const result = await syncNotesToGoogleTasks(notes, (current, total) => {
+        setSyncProgress({ current, total });
+      });
+
+      setIsGoogleConnected(true);
+      setSyncFeedback({ type: 'success', message: result.message });
+    } catch (err: any) {
+      console.error('Sync all error:', err);
+      if (err.message && err.message.includes('Chưa cấu hình Google Client ID')) {
+        setShowClientIdModal(true);
+      } else {
+        setSyncFeedback({ type: 'error', message: err.message || 'Lỗi khi đồng bộ sang Google Tasks.' });
+      }
+    } finally {
+      setIsSyncing(false);
+      setSyncProgress(null);
+    }
+  };
+
+  // Handle Sync Single Note
+  const handleSyncSingleNote = async (note: TeacherNote) => {
+    const currentClientId = getGoogleClientId();
+    if (!currentClientId) {
+      setShowClientIdModal(true);
+      return;
+    }
+
+    try {
+      setSyncingNoteId(note.id);
+      setSyncFeedback({ type: 'info', message: `Đang đẩy ghi chú "${note.title}" sang Google Tasks...` });
+
+      await syncSingleNoteToGoogleTasks(note);
+      setIsGoogleConnected(true);
+      setSyncFeedback({ type: 'success', message: `Đã đẩy "${note.title}" sang Google Tasks thành công!` });
+    } catch (err: any) {
+      console.error('Sync single note error:', err);
+      if (err.message && err.message.includes('Chưa cấu hình Google Client ID')) {
+        setShowClientIdModal(true);
+      } else {
+        setSyncFeedback({ type: 'error', message: err.message || 'Lỗi khi đẩy ghi chú sang Google Tasks.' });
+      }
+    } finally {
+      setSyncingNoteId(null);
     }
   };
 
@@ -283,14 +440,128 @@ export const TeacherNotes: React.FC = () => {
               "Người thầy tốt nhất là người truyền cảm hứng." Ghi lại những lưu ý, giáo án giảng dạy hoặc nhắc nhở học sinh để tối ưu hóa buổi học của bạn.
             </p>
           </div>
-          <button
-            onClick={handleOpenAddModal}
-            className="flex items-center gap-2 bg-white text-indigo-700 hover:bg-indigo-50 px-5 py-3 rounded-2xl font-black text-sm transition-all shadow-md active:scale-95 flex-shrink-0"
-          >
-            <Plus className="h-5 w-5" /> Thêm ghi chú mới
-          </button>
+          <div className="flex flex-wrap items-center gap-3 flex-shrink-0">
+            <button
+              onClick={handleSyncAllNotes}
+              disabled={isSyncing}
+              className="flex items-center gap-2 bg-indigo-500/40 hover:bg-indigo-500/60 border border-white/20 text-white px-4 py-3 rounded-2xl font-bold text-sm transition-all shadow-md active:scale-95 backdrop-blur-xs disabled:opacity-50"
+              title="Đồng bộ toàn bộ ghi chú sang danh mục Sổ tay Giáo viên trên Google Tasks"
+            >
+              <RefreshCw className={`h-4 w-4 ${isSyncing ? 'animate-spin' : ''}`} />
+              <span>{isSyncing ? (syncProgress ? `Đang đồng bộ (${syncProgress.current}/${syncProgress.total})...` : 'Đang xử lý...') : 'Đồng bộ Google Tasks'}</span>
+              {isGoogleConnected && <span className="h-2 w-2 rounded-full bg-emerald-400 shadow-xs"></span>}
+            </button>
+            <button
+              onClick={handleOpenAddModal}
+              className="flex items-center gap-2 bg-white text-indigo-700 hover:bg-indigo-50 px-5 py-3 rounded-2xl font-black text-sm transition-all shadow-md active:scale-95"
+            >
+              <Plus className="h-5 w-5" /> Thêm ghi chú mới
+            </button>
+          </div>
         </div>
       </div>
+
+      {/* GOOGLE TASKS & GEMINI AI INTEGRATION CARD */}
+      <div className="bg-white rounded-2xl border border-indigo-100 shadow-sm p-4 transition-all">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <div className={`p-2.5 rounded-xl flex items-center justify-center ${
+              isGoogleConnected ? 'bg-emerald-50 text-emerald-600' : 'bg-indigo-50 text-indigo-600'
+            }`}>
+              <Sparkles className="h-5 w-5" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-bold text-gray-900">Google Tasks & Gemini AI</span>
+                {isGoogleConnected ? (
+                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800">
+                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-600"></span>
+                    Đã kết nối
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-gray-100 text-gray-600">
+                    Chưa kết nối
+                  </span>
+                )}
+              </div>
+              <p className="text-xs text-gray-500 mt-0.5">
+                Đồng bộ vào danh mục "📚 Sổ tay Giáo viên (OpenLMS)" trên Google Tasks để Google Gemini AI tự động lập kế hoạch và nhắc việc.
+              </p>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2 pt-2 sm:pt-0 border-t sm:border-t-0 border-gray-100">
+            <button
+              onClick={() => setShowGeminiGuideModal(true)}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200/60 transition-colors"
+              title="Xem các câu lệnh mẫu dùng với Google Gemini"
+            >
+              <Sparkles className="h-3.5 w-3.5" />
+              <span>Mẫu lệnh Gemini</span>
+            </button>
+
+            <button
+              onClick={() => setShowClientIdModal(true)}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 transition-colors"
+              title="Cấu hình Google OAuth Client ID"
+            >
+              <Settings className="h-3.5 w-3.5 text-gray-500" />
+              <span>Cấu hình API</span>
+            </button>
+
+            {isGoogleConnected && (
+              <button
+                onClick={handleDisconnectGoogle}
+                className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-xs font-semibold text-red-600 hover:bg-red-50 transition-colors"
+                title="Ngắt kết nối Google Tasks"
+              >
+                <LogOut className="h-3.5 w-3.5" />
+                <span>Ngắt</span>
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Progress bar during sync */}
+        {isSyncing && syncProgress && (
+          <div className="mt-3 pt-3 border-t border-gray-100">
+            <div className="flex justify-between text-xs text-indigo-700 font-medium mb-1">
+              <span>Đang đồng bộ ghi chú sang Google Tasks...</span>
+              <span>{syncProgress.current} / {syncProgress.total}</span>
+            </div>
+            <div className="w-full bg-gray-100 rounded-full h-2 overflow-hidden">
+              <div 
+                className="bg-indigo-600 h-2 rounded-full transition-all duration-300"
+                style={{ width: `${Math.round((syncProgress.current / syncProgress.total) * 100)}%` }}
+              />
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* SYNC FEEDBACK BANNER */}
+      {syncFeedback && (
+        <div className={`px-4 py-3 rounded-2xl flex items-center justify-between text-xs md:text-sm font-semibold transition-all ${
+          syncFeedback.type === 'success' 
+            ? 'bg-emerald-50 border border-emerald-200 text-emerald-800'
+            : syncFeedback.type === 'error'
+            ? 'bg-rose-50 border border-rose-200 text-rose-800'
+            : 'bg-indigo-50 border border-indigo-200 text-indigo-800'
+        }`}>
+          <div className="flex items-center gap-2.5">
+            {syncFeedback.type === 'success' && <CheckCircle2 className="h-5 w-5 text-emerald-600 flex-shrink-0" />}
+            {syncFeedback.type === 'error' && <AlertCircle className="h-5 w-5 text-rose-600 flex-shrink-0" />}
+            {syncFeedback.type === 'info' && <RefreshCw className="h-5 w-5 text-indigo-600 animate-spin flex-shrink-0" />}
+            <span>{syncFeedback.message}</span>
+          </div>
+          <button 
+            onClick={() => setSyncFeedback(null)}
+            className="p-1 rounded-lg hover:bg-black/5 text-gray-500 transition-colors"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+      )}
 
       {/* CLOUD STATUS INDICATOR */}
       {useLocalStorageFallback && (
@@ -595,6 +866,223 @@ export const TeacherNotes: React.FC = () => {
         </div>
       )}
 
+      {/* GOOGLE CLIENT ID CONFIGURATION MODAL */}
+      {showClientIdModal && (
+        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-xs">
+          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]">
+            <div className="p-5 border-b flex justify-between items-center bg-gray-50/50">
+              <h3 className="font-bold text-gray-900 flex items-center gap-2">
+                <Key className="h-5 w-5 text-indigo-600" />
+                Cấu hình Google Client ID (OAuth 2.0)
+              </h3>
+              <button
+                onClick={() => setShowClientIdModal(false)}
+                className="p-1 rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <div className="p-6 overflow-y-auto space-y-4 flex-1 text-sm text-gray-700 custom-scrollbar">
+              <div className="bg-indigo-50 border border-indigo-100 rounded-2xl p-4 text-xs text-indigo-900 space-y-2">
+                <div className="font-bold flex items-center gap-1.5 text-indigo-700">
+                  <Sparkles className="h-4 w-4" /> 4 bước đơn giản để lấy Client ID miễn phí từ Google:
+                </div>
+                <ol className="list-decimal pl-4 space-y-1.5 text-indigo-800 leading-relaxed">
+                  <li>
+                    Truy cập{' '}
+                    <a
+                      href="https://console.cloud.google.com/apis/credentials"
+                      target="_blank"
+                      rel="noreferrer"
+                      className="underline font-bold text-indigo-600 inline-flex items-center gap-0.5"
+                    >
+                      Google Cloud Credentials <ExternalLink className="h-3 w-3" />
+                    </a>
+                  </li>
+                  <li>
+                    Vào <b>Enabled APIs & Services</b> và tìm bật API <b>Google Tasks API</b>.
+                  </li>
+                  <li>
+                    Nhấn <b>Create Credentials</b> &rarr; <b>OAuth client ID</b> &rarr; Chọn Loại ứng dụng: <b>Web application</b>.
+                  </li>
+                  <li>
+                    Tại mục <b>Authorized JavaScript origins</b>, thêm URL:
+                    <code className="block mt-1 p-1.5 bg-white border border-indigo-200 rounded text-[11px] font-mono text-indigo-900 select-all">
+                      {typeof window !== 'undefined' ? window.location.origin : 'http://localhost:5173'}
+                    </code>
+                  </li>
+                  <li>Nhấn <b>Create</b> và sao chép <b>Client ID</b> dán vào ô bên dưới.</li>
+                </ol>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">
+                  Google Client ID (.apps.googleusercontent.com)
+                </label>
+                <input
+                  type="text"
+                  placeholder="Ví dụ: 1234567890-abcdefg.apps.googleusercontent.com"
+                  value={clientIdInput}
+                  onChange={e => setClientIdInput(e.target.value)}
+                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-xs font-mono focus:ring-2 focus:ring-indigo-500 outline-none"
+                />
+              </div>
+
+              <div className="text-[11px] text-gray-500 bg-gray-50 p-3 rounded-xl border border-gray-100 flex items-start gap-2">
+                <CheckCircle2 className="h-4 w-4 text-emerald-600 flex-shrink-0 mt-0.5" />
+                <span>
+                  <b>Cam kết bảo mật 100%:</b> Mã Client ID và Token xác thực được lưu trữ trực tiếp tại trình duyệt trên máy của bạn (LocalStorage) và gửi trực tiếp bằng giao thức mã hóa HTTPS tới máy chủ chính thức của Google (googleapis.com). Tuyệt đối không qua bất kỳ bên thứ 3 nào.
+                </span>
+              </div>
+            </div>
+
+            <div className="p-4 bg-gray-50 border-t flex justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => setShowClientIdModal(false)}
+                className="px-4 py-2 border text-gray-600 hover:bg-gray-100 rounded-xl text-xs font-bold transition-all"
+              >
+                Đóng
+              </button>
+              <button
+                type="button"
+                onClick={handleSaveClientId}
+                className="px-5 py-2 bg-indigo-600 text-white hover:bg-indigo-700 rounded-xl text-xs font-bold transition-all shadow-md active:scale-95 flex items-center gap-1.5"
+              >
+                <Save className="h-4 w-4" />
+                Lưu & Kết nối
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* GEMINI AI PROMPTS GUIDE MODAL */}
+      {showGeminiGuideModal && (
+        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-xs">
+          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-2xl overflow-hidden animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]">
+            <div className="p-5 border-b flex justify-between items-center bg-gradient-to-r from-indigo-50 to-purple-50">
+              <div>
+                <h3 className="font-bold text-gray-900 flex items-center gap-2">
+                  <Sparkles className="h-5 w-5 text-indigo-600" />
+                  Hướng dẫn tự động hóa với Google Gemini AI (@Tasks)
+                </h3>
+                <p className="text-xs text-gray-500 mt-0.5">
+                  Cách ra lệnh cho Gemini đọc và xử lý ghi chú Sổ tay Giáo viên của bạn
+                </p>
+              </div>
+              <button
+                onClick={() => setShowGeminiGuideModal(false)}
+                className="p-1 rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <div className="p-6 overflow-y-auto space-y-4 flex-1 custom-scrollbar">
+              <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 text-xs text-amber-900 space-y-1.5">
+                <div className="font-bold flex items-center gap-1.5 text-amber-800">
+                  <HelpCircle className="h-4 w-4" /> Cách kích hoạt tiện ích Google Tasks trong Gemini:
+                </div>
+                <p className="leading-relaxed">
+                  1. Mở ứng dụng <b>Google Gemini</b> trên điện thoại hoặc trang web{' '}
+                  <a
+                    href="https://gemini.google.com"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="underline font-bold text-indigo-600 inline-flex items-center gap-0.5"
+                  >
+                    gemini.google.com <ExternalLink className="h-3 w-3" />
+                  </a>.<br />
+                  2. Đảm bảo bạn đăng nhập cùng tài khoản Google đã đồng bộ.<br />
+                  3. Khi hỏi Gemini, chỉ cần gõ <b>@Google Tasks</b> hoặc <b>@Tasks</b> (hoặc ra lệnh giọng nói), Gemini sẽ tự động truy cập danh mục <i>"📚 Sổ tay Giáo viên (OpenLMS)"</i>.
+                </p>
+              </div>
+
+              <div className="space-y-3">
+                <h4 className="text-xs font-bold text-gray-400 uppercase tracking-widest">
+                  Mẫu câu lệnh thực tế cho Giáo viên (Nhấn để sao chép)
+                </h4>
+
+                <div className="grid grid-cols-1 gap-3">
+                  {GEMINI_PROMPTS.map((item, idx) => (
+                    <div
+                      key={idx}
+                      className="border border-gray-200 hover:border-indigo-300 rounded-2xl p-4 bg-gray-50/50 hover:bg-white transition-all shadow-xs space-y-2"
+                    >
+                      <div className="flex justify-between items-start gap-2">
+                        <div>
+                          <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded bg-indigo-100 text-indigo-800">
+                            {item.category}
+                          </span>
+                          <h5 className="text-xs font-bold text-gray-900 mt-1.5">{item.title}</h5>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            navigator.clipboard.writeText(item.prompt);
+                            setCopiedPromptIdx(idx);
+                            setTimeout(() => setCopiedPromptIdx(null), 2000);
+                          }}
+                          className={`flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                            copiedPromptIdx === idx
+                              ? 'bg-emerald-600 text-white'
+                              : 'bg-white border border-gray-200 text-gray-700 hover:bg-gray-100'
+                          }`}
+                        >
+                          {copiedPromptIdx === idx ? (
+                            <>
+                              <CheckCheck className="h-3.5 w-3.5" /> Đã chép
+                            </>
+                          ) : (
+                            <>
+                              <Copy className="h-3.5 w-3.5" /> Sao chép
+                            </>
+                          )}
+                        </button>
+                      </div>
+                      <p className="text-xs font-mono bg-white p-3 rounded-xl border border-gray-100 text-gray-700 select-all">
+                        {item.prompt}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div className="p-4 bg-gray-50 border-t flex flex-col sm:flex-row justify-between items-center gap-3">
+              <div className="flex items-center gap-2">
+                <a
+                  href="https://gemini.google.com"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-1.5 text-xs font-bold text-indigo-600 hover:underline"
+                >
+                  Mở Gemini Web <ExternalLink className="h-3.5 w-3.5" />
+                </a>
+                <span className="text-gray-300">|</span>
+                <a
+                  href="https://tasks.google.com"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-1.5 text-xs font-bold text-indigo-600 hover:underline"
+                >
+                  Mở Google Tasks Web <ExternalLink className="h-3.5 w-3.5" />
+                </a>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowGeminiGuideModal(false)}
+                className="w-full sm:w-auto px-5 py-2 bg-indigo-600 text-white hover:bg-indigo-700 rounded-xl text-xs font-bold transition-all shadow-md active:scale-95"
+              >
+                Đã hiểu
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 
@@ -631,6 +1119,17 @@ export const TeacherNotes: React.FC = () => {
                 {note.title}
               </div>
               <div className="flex items-center gap-1.5 flex-shrink-0 no-print">
+                {/* Sync to Google Tasks button */}
+                <button
+                  onClick={() => handleSyncSingleNote(note)}
+                  disabled={syncingNoteId === note.id}
+                  className={`p-1.5 rounded-lg transition-colors hover:bg-white/40 ${
+                    syncingNoteId === note.id ? 'text-indigo-600' : 'text-gray-400 hover:text-indigo-600'
+                  }`}
+                  title="Đẩy ghi chú này sang Google Tasks (để Gemini AI đọc)"
+                >
+                  <Sparkles className={`h-4 w-4 ${syncingNoteId === note.id ? 'animate-spin text-indigo-600' : ''}`} />
+                </button>
                 {/* Pin Action */}
                 <button
                   onClick={() => handleTogglePin(note)}
