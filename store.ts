@@ -125,14 +125,16 @@ export const useStore = create<AppState>((set, get, api) => ({
     }
 
     // 2. Tải Academic Years
-    const yearsPromise = supabase.from('academic_years').select('*').order('created_at', { ascending: false }).then(({ data }) => {
-      if (data) {
+    const yearsPromise = supabase.from('academic_years').select('*').then(({ data, error }) => {
+      if (!error && data) {
         const mappedYears: AcademicYear[] = data.map((y: any) => ({
           id: String(y.id),
           name: y.name,
-          isActive: Boolean(y.is_active ?? y.isActive ?? false),
+          isActive: Boolean(y.isActive ?? y.is_active ?? false),
           semesters: Array.isArray(y.semesters) ? y.semesters : (typeof y.semesters === 'string' ? JSON.parse(y.semesters) : [])
         }));
+        // Sắp xếp năm học mới nhất lên đầu
+        mappedYears.sort((a, b) => b.name.localeCompare(a.name));
         set({ academicYears: mappedYears });
         localStorage.setItem('cache_initial_years', JSON.stringify(mappedYears));
       }

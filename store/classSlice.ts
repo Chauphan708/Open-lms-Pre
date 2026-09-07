@@ -10,16 +10,27 @@ export type ClassSliceState = Pick<AppState,
 export const createClassSlice: StateCreator<AppState, [], [], ClassSliceState> = (set, get) => ({
   academicYears: [],
   addAcademicYear: async (year) => {
-    const payload = {
+    const payload: any = {
       id: year.id,
       name: year.name,
-      is_active: year.isActive ?? false,
+      isActive: Boolean(year.isActive),
       semesters: year.semesters
     };
-    const { error } = await supabase.from('academic_years').insert(payload);
+    let { error } = await supabase.from('academic_years').insert(payload);
+    if (error && error.message?.toLowerCase().includes('isactive')) {
+      const fallbackPayload = {
+        id: year.id,
+        name: year.name,
+        is_active: Boolean(year.isActive),
+        semesters: year.semesters
+      };
+      const res = await supabase.from('academic_years').insert(fallbackPayload);
+      error = res.error;
+    }
+
     if (!error) {
       if (year.isActive) {
-        await supabase.from('academic_years').update({ is_active: false }).neq('id', year.id);
+        await supabase.from('academic_years').update({ isActive: false }).neq('id', year.id);
         set((state) => {
           const next = [...state.academicYears.map(y => ({ ...y, isActive: false })), year];
           localStorage.setItem('cache_initial_years', JSON.stringify(next));
@@ -38,15 +49,25 @@ export const createClassSlice: StateCreator<AppState, [], [], ClassSliceState> =
     }
   },
   updateAcademicYear: async (updatedYear) => {
-    const payload = {
+    const payload: any = {
       name: updatedYear.name,
-      is_active: updatedYear.isActive ?? false,
+      isActive: Boolean(updatedYear.isActive),
       semesters: updatedYear.semesters
     };
-    const { error } = await supabase.from('academic_years').update(payload).eq('id', updatedYear.id);
+    let { error } = await supabase.from('academic_years').update(payload).eq('id', updatedYear.id);
+    if (error && error.message?.toLowerCase().includes('isactive')) {
+      const fallbackPayload = {
+        name: updatedYear.name,
+        is_active: Boolean(updatedYear.isActive),
+        semesters: updatedYear.semesters
+      };
+      const res = await supabase.from('academic_years').update(fallbackPayload).eq('id', updatedYear.id);
+      error = res.error;
+    }
+
     if (!error) {
       if (updatedYear.isActive) {
-        await supabase.from('academic_years').update({ is_active: false }).neq('id', updatedYear.id);
+        await supabase.from('academic_years').update({ isActive: false }).neq('id', updatedYear.id);
         set((state) => {
           const next = state.academicYears.map(y => y.id === updatedYear.id ? updatedYear : { ...y, isActive: false });
           localStorage.setItem('cache_initial_years', JSON.stringify(next));
@@ -66,8 +87,15 @@ export const createClassSlice: StateCreator<AppState, [], [], ClassSliceState> =
   },
   setActiveAcademicYear: async (yearId: string) => {
     try {
-      await supabase.from('academic_years').update({ is_active: false }).neq('id', yearId);
-      const { error } = await supabase.from('academic_years').update({ is_active: true }).eq('id', yearId);
+      let { error } = await supabase.from('academic_years').update({ isActive: true }).eq('id', yearId);
+      if (error && error.message?.toLowerCase().includes('isactive')) {
+        await supabase.from('academic_years').update({ is_active: false }).neq('id', yearId);
+        const res = await supabase.from('academic_years').update({ is_active: true }).eq('id', yearId);
+        error = res.error;
+      } else if (!error) {
+        await supabase.from('academic_years').update({ isActive: false }).neq('id', yearId);
+      }
+
       if (!error) {
         set((state) => {
           const next = state.academicYears.map(y => ({
