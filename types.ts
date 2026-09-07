@@ -44,6 +44,28 @@ export interface AcademicYear {
   }[];
 }
 
+export interface AcademicYearProposal {
+  id: string;
+  proposalId: string;
+  action: 'CREATE' | 'UPDATE';
+  yearId?: string;
+  name: string;
+  semesters: {
+    id: string;
+    name: string;
+    startDate: string;
+    endDate: string;
+  }[];
+  proposerId: string;
+  proposerName: string;
+  proposerEmail?: string;
+  reason?: string;
+  status: 'PENDING' | 'APPROVED' | 'REJECTED';
+  adminNote?: string;
+  createdAt: string;
+  reviewedAt?: string;
+}
+
 export interface Class {
   id: string;
   name: string;
