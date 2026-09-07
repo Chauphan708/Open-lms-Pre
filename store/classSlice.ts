@@ -89,6 +89,13 @@ export const createClassSlice: StateCreator<AppState, [], [], ClassSliceState> =
     }
   },
   deleteAcademicYear: async (yearId: string) => {
+    // Kiểm tra trực tiếp trong CSDL toàn trường
+    const { data: dbClasses } = await supabase.from('classes').select('id, name').eq('academic_year_id', yearId).limit(1);
+    if (dbClasses && dbClasses.length > 0) {
+      alert(`Không thể xóa năm học này vì đang có lớp học trực thuộc trong trường (VD: lớp ${dbClasses[0].name}). Vui lòng chuyển hoặc xóa các lớp liên quan trước.`);
+      return false;
+    }
+
     const classesUsingYear = get().classes.filter(c => c.academicYearId === yearId);
     if (classesUsingYear.length > 0) {
       alert(`Không thể xóa năm học này vì đang có ${classesUsingYear.length} lớp học trực thuộc. Vui lòng chuyển hoặc xóa các lớp liên quan trước.`);

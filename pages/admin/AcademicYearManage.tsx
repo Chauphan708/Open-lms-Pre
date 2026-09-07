@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useStore } from '../../store';
 import { AcademicYear } from '../../types';
 import { CalendarRange, Plus, Save, Edit2, Trash2, Star, CheckCircle2, AlertCircle, X, Clock, Info } from 'lucide-react';
@@ -84,8 +84,13 @@ export const AcademicYearManage: React.FC = () => {
     addAcademicYear, 
     updateAcademicYear, 
     setActiveAcademicYear, 
-    deleteAcademicYear 
+    deleteAcademicYear,
+    fetchClasses
   } = useStore();
+
+  useEffect(() => {
+    fetchClasses();
+  }, [fetchClasses]);
 
   const [isCreating, setIsCreating] = useState(false);
   const [editingYear, setEditingYear] = useState<AcademicYear | null>(null);

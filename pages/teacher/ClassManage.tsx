@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { useStore } from '../../store';
 import { useClassFunStore } from '../../services/classFunStore';
 import { Class, User } from '../../types';
-import { School, Plus, Users, ChevronDown, UserPlus, Dices, CheckSquare, Square, Zap, LayoutGrid, ArrowDownAZ, SortAsc, GripVertical } from 'lucide-react';
+import { School, Plus, Users, ChevronDown, UserPlus, Dices, CheckSquare, Square, Zap, LayoutGrid, ArrowDownAZ, SortAsc, GripVertical, CalendarRange } from 'lucide-react';
 import { DuckRace } from '../../components/classfun/DuckRace';
 import { RandomRoulette } from '../../components/classfun/RandomRoulette';
 import { GroupManageModal } from '../../components/classfun/GroupManageModal';
@@ -244,9 +245,23 @@ export const ClassManage: React.FC = () => {
           <h2 className="font-bold text-gray-800 flex items-center gap-2 dark:text-slate-200">
             <School className="h-5 w-5" /> Lớp của tôi
           </h2>
-          <button onClick={() => setIsCreating(true)} className="p-1 hover:bg-gray-100 rounded dark:hover:bg-slate-800">
-            <Plus className="h-5 w-5 text-indigo-600" />
-          </button>
+          <div className="flex items-center gap-1.5">
+            <Link
+              to="/admin/years"
+              className="px-2.5 py-1.5 hover:bg-indigo-50 text-gray-700 hover:text-indigo-700 rounded-lg dark:hover:bg-slate-800 dark:text-slate-300 text-xs font-semibold flex items-center gap-1.5 transition-colors border border-gray-200 dark:border-slate-700"
+              title="Quản lý Năm học (thêm mới, cài đặt thời gian HK1, HK2)"
+            >
+              <CalendarRange className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400" />
+              <span className="hidden sm:inline">Năm học</span>
+            </Link>
+            <button 
+              onClick={() => setIsCreating(true)} 
+              className="p-1.5 hover:bg-indigo-50 rounded-lg text-indigo-600 dark:hover:bg-slate-800 border border-gray-200 dark:border-slate-700" 
+              title="Thêm lớp mới"
+            >
+              <Plus className="h-4 w-4" />
+            </button>
+          </div>
         </div>
 
         {isCreating && (
@@ -258,13 +273,26 @@ export const ClassManage: React.FC = () => {
               value={newClassName}
               onChange={e => setNewClassName(e.target.value)}
             />
-            <label className="block text-xs font-bold text-gray-700 dark:text-slate-300">Năm học</label>
+            <div className="flex justify-between items-center">
+              <label className="block text-xs font-bold text-gray-700 dark:text-slate-300">Năm học</label>
+              <Link 
+                to="/admin/years" 
+                className="text-[11px] text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 font-medium flex items-center gap-1 hover:underline"
+                title="Thêm năm học mới hoặc cài đặt lại thời gian HK1, HK2"
+              >
+                <CalendarRange className="w-3 h-3" /> Cài đặt năm học & HK
+              </Link>
+            </div>
             <select
               className="w-full p-2 border border-gray-300 rounded text-sm bg-white text-gray-900 dark:bg-slate-900 dark:border-slate-800 dark:text-slate-100"
               value={selectedYear}
               onChange={e => setSelectedYear(e.target.value)}
             >
-              {academicYears.map(y => <option key={y.id} value={y.id}>{y.name}</option>)}
+              {academicYears.map(y => (
+                <option key={y.id} value={y.id}>
+                  {y.name} {y.isActive ? '(Hiện hành)' : ''}
+                </option>
+              ))}
             </select>
             <div className="flex gap-2">
               <button onClick={() => setIsCreating(false)} className="flex-1 bg-gray-100 text-gray-600 text-xs py-2 rounded font-medium dark:bg-slate-850 dark:text-slate-400">Hủy</button>

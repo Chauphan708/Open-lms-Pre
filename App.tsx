@@ -521,12 +521,24 @@ function App() {
           </ProtectedRoute>
         } />
 
-        {/* ADMIN ROUTES */}
+        {/* ADMIN & TEACHER SHARED - ACADEMIC YEARS */}
         <Route path="/admin/years" element={
-          <ProtectedRoute roles={['ADMIN']}>
+          <ProtectedRoute roles={['ADMIN', 'TEACHER']}>
             <AcademicYearManage />
           </ProtectedRoute>
         } />
+        <Route path="/teacher/years" element={
+          <ProtectedRoute roles={['ADMIN', 'TEACHER']}>
+            <AcademicYearManage />
+          </ProtectedRoute>
+        } />
+        <Route path="/manage/years" element={
+          <ProtectedRoute roles={['ADMIN', 'TEACHER']}>
+            <AcademicYearManage />
+          </ProtectedRoute>
+        } />
+
+        {/* ADMIN ONLY ROUTES */}
         <Route path="/admin/teachers" element={
           <ProtectedRoute roles={['ADMIN']}>
             <UserManage targetRole="TEACHER" title="Quản lý Giáo Viên" />

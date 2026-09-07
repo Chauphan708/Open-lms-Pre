@@ -176,9 +176,9 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
     {
       title: 'Quản lý Hệ thống',
       icon: Settings,
-      roles: ['ADMIN'],
+      roles: ['ADMIN', 'TEACHER'],
       items: [
-        { label: 'Quản lý Năm học', path: '/admin/years', icon: CalendarRange, roles: ['ADMIN'] },
+        { label: 'Quản lý Năm học', path: '/admin/years', icon: CalendarRange, roles: ['ADMIN', 'TEACHER'] },
         { label: 'Quản lý Giáo viên', path: '/admin/teachers', icon: Users, roles: ['ADMIN'] },
       ]
     },
